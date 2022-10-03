@@ -25,11 +25,12 @@ def extract_metadata(text):
                                          'opengraph'])
     return metadata
 
-
 def sources(name):
     g = Graph()
     g = dblp(name, g)
     g = zenodo(name, g)
+    # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
+    g.parse('zenodo2schema.ttl')
     return g.serialize(format="turtle")
 
 
@@ -41,7 +42,7 @@ def zenodo(name, g):
         if('conceptdoi' in data):
             # TODO Align and extend with schema.org concepts
             subject = URIRef(data['conceptdoi'])
-            object = URIRef(data['metadata']['resource_type']['type'])
+            object = URIRef('zenodo:'+data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
         if('conceptrecid' in data):
             # TODO parse this
