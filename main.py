@@ -172,6 +172,39 @@ def zenodo(name, g, results):
     return g, results
 
 
+file_widget_js = open("widget.js", "r")
+widget_js = file_widget_js.read()
+file_widget_js.close()
+
+
+widget_button = """
+        <!DOCTYPE html>
+            <html>
+            <head>
+                <script>
+                    (function (w, d, s, o, f, js, fjs) {
+                        w['nfdi4dsWidget'] = o;
+                        w[o] =
+                            w[o] ||
+                            function () {
+                                (w[o].q = w[o].q || []).push(arguments);
+                            };
+                        (js = d.createElement(s)),
+                            (fjs = d.getElementsByTagName(s)[0]);
+                        js.id = o;
+                        js.src = f;
+                        js.async = 1;
+                        fjs.parentNode.insertBefore(js, fjs);
+                     })(window, document, 'script', 'nfdi4ds', 'https://tibhannover.gitlab.io/nfdi4ds/nfdi4ds-widget/widget.js');
+                    nfdi4ds('widget');
+                </script>
+            </head>
+            <body>
+                 <div class="nfdi4ds-banner" data-variant="button" data-button-color="dark" data-menu-color="light"></div>
+            </body>
+            </html>
+        """
+
 with gr.Blocks() as demo:
     gr.HTML(widget_button)
     with gr.Row():
