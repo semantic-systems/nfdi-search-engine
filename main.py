@@ -172,9 +172,59 @@ def zenodo(name, g, results):
     return g, results
 
 
+widget_button = """
+        <!DOCTYPE html>
+        <html>
+           <head>
+              <style>
+                 h1  {font-size: 20px;} 
+                 h2  {font-size: 18px;}
+                 h3 {font-size: 15px;}
+                 a  { color: blue; }
+                 p { color: gray; display: inline;}
+                 .menu-small {width: 20%}
+                 .row { display: flex; }
+                 .column { flex: 50%;}
+              </style>
+           </head>
+           <body>
+              <div class="menu">
+                 <h1>More from NFDI4DS?</h1>
+                 <div class="row">
+                    <div class="column menu-small">
+                       <h2><a href='https://www.nfdi4datascience.de/en/events/events'>Events</a></h2>
+                    </div>
+                    <div class="column menu-small">
+                       <h2><a href='https://twitter.com/nfdi4ds'>Community</a></h2>
+                    </div>
+                    <div class="column">
+                       <h2>
+                       Services</h1>
+                       <h3>
+                          <a href='https://orkg.org/'>ORKG</a>
+                          <p>The ORKG aims to describe papers in a structured manner.</p>
+                       </h3>
+                       <h3>
+                          <a href='https://dblp.org/'>DBLP
+                          <a>
+                             <p>The dblp computer science bibliography provides open bibliographic information</p>
+                       </h3>
+                       <h3><a href='https://ceur-ws.org/'>CEUR</a><p>CEUR Proceedings is a free open-access publication service</p></h3>
+                       <h3>
+                          <a href='https://mybinder.org/'>MyBinder</a>
+                          <p>Turn a Git repo into a collection of interactive notebooks</p>
+                       </h3>
+                    </div>
+                 </div>
+              </div>
+           </body>
+        </html>
+        """
+
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
+            gr.HTML(widget_button)
             input_text = gr.Textbox(label="Search Term")
             search = gr.Button("Search")
             html = gr.HTML("<h1 style = 'font-size: 20px;'>Search Results</h1>")
