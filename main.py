@@ -48,41 +48,41 @@ def format_results(results):
                             <html>
                             <head>
                             <style> 
-                                h2  {display: inline; font-size: 20px;}
-                                h1  {display: inline; font-size: 30px;} 
+                                .subtitle  {display: inline; font-size: 20px;}
+                                .title  {display: inline; font-size: 30px;} 
                                 a  { color: blue;  }
-                                .faded { color: gray;  }
+                                .url { color: gray;  }
                                 .emoji { font-size:20px }
                                 .emoji-title { font-size:30px }
                             </style>
                             </head>
                             <body>"""
-    person_result = "<h1>Researchers - </h1><span class='emoji-title'>&#129417;</span><br><br>"
+    person_result = "<h1 class='title'>Researchers - </h1><span class='emoji-title'>&#129417;</span><br><br>"
     exist_person = False
-    article_result = "<h1>Articles - </h1><span class='emoji-title'>&#128240;</span><br><br>"
+    article_result = "<h1 class='title'>Articles - </h1><span class='emoji-title'>&#128240;</span><br><br>"
     exist_article = False
-    zenodo_result = "<h1>Zenodo - </h1><span class='emoji-title'>&#128188;</span><br><br>"
+    zenodo_result = "<h1 class='title'>Zenodo - </h1><span class='emoji-title'>&#128188;</span><br><br>"
     exist_zenodo = False
     for result in results:
         if type(result) is Person:
-            person_result += "<span class='emoji'>&#129417;</span><h2><a href='"+result.URL+"' target='_blank' >"+result.name+\
+            person_result += "<span class='emoji'>&#129417;</span><h2 class='subtitle'><a href='"+result.URL+"' target='_blank' >"+result.name+\
                                  "</a></h2><p class='faded'>"+result.URL+"</p><br>"
             exist_person = True
         elif type(result) is Article:
             if "," in result.URL:
-                article_result += "<p class='faded'>" + result.URL \
-                                     + "</p><span class='emoji'>&#128240;</span><h2></i><a href='" +\
+                article_result += "<p class='url'>" + result.URL \
+                                     + "</p><span class='emoji'>&#128240;</span><h2 class='subtitle'></i><a href='" +\
                                      result.URL.split(",")[0] + "' target='_blank'>" + \
                                      result.title + "</a></h2> - " + result.date + "<p>" + result.authors + "</p><br>"
             else:
-                article_result += "<p class='faded'>" + result.URL +\
-                                     "</p><span class='emoji'>&#128240;</span><h2><a href='"+result.URL+\
+                article_result += "<p class='url'>" + result.URL +\
+                                     "</p><span class='emoji'>&#128240;</span><h2 class='subtitle'><a href='"+result.URL+\
                                      "' target='_blank'>" + result.title + \
                                      "</a></h2> - "+result.date+"<p>"+result.authors+"</p><br>"
             exist_article = True
         elif type(result) is Zenodo:
-            zenodo_result += "<p class='faded'>" + result.URL +\
-                                 "</p><span class='emoji'>&#128188;</span><h2><a href='"+\
+            zenodo_result += "<p class='url'>" + result.URL +\
+                                 "</p><span class='emoji'>&#128188;</span><h2 class='subtitle'><a href='"+\
                                  result.URL+"' target='_blank'>" + result.id \
                                  + "</a></h2><p>" + result.type + "</p><br>"
             exist_zenodo = True
@@ -177,11 +177,11 @@ widget_button = """
         <html>
            <head>
               <style>
-                 h1  {font-size: 20px;} 
-                 h2  {font-size: 18px;}
-                 h3 {font-size: 15px;}
+                 .menu-tittle  {font-size: 20px;} 
+                 .menu-option  {font-size: 18px;}
+                 .menu-suboption {font-size: 15px;}
                  a  { color: blue; }
-                 p { color: gray; display: inline;}
+                 .menu-description { color: gray; display: inline;}
                  .menu-small {width: 20%}
                  .row { display: flex; }
                  .column { flex: 50%;}
@@ -189,30 +189,32 @@ widget_button = """
            </head>
            <body>
               <div class="menu">
-                 <h1>More from NFDI4DS?</h1>
+                 <h1 class='menu-tittle'>More from NFDI4DS?</h1>
                  <div class="row">
                     <div class="column menu-small">
-                       <h2><a href='https://www.nfdi4datascience.de/en/events/events'>Events</a></h2>
+                       <h2 class='menu-option'><a href='https://www.nfdi4datascience.de/en/events/events'>Events</a></h2>
                     </div>
                     <div class="column menu-small">
-                       <h2><a href='https://twitter.com/nfdi4ds'>Community</a></h2>
+                       <h2 class='menu-option'><a href='https://twitter.com/nfdi4ds'>Community</a></h2>
                     </div>
                     <div class="column">
-                       <h2>
-                       Services</h1>
-                       <h3>
+                       <h2 class='menu-option'> Services </h2>
+                       <h3 class='menu-suboption'>
                           <a href='https://orkg.org/'>ORKG</a>
-                          <p>The ORKG aims to describe papers in a structured manner.</p>
+                          <p class='menu-description'>The ORKG aims to describe papers in a structured manner.</p>
                        </h3>
-                       <h3>
-                          <a href='https://dblp.org/'>DBLP
-                          <a>
-                             <p>The dblp computer science bibliography provides open bibliographic information</p>
+                       <h3 class='menu-suboption'>
+                          <a href='https://dblp.org/'>DBLP</a>
+                            <p class='menu-description'>The dblp computer science bibliography provides 
+                                open bibliographic information</p>
                        </h3>
-                       <h3><a href='https://ceur-ws.org/'>CEUR</a><p>CEUR Proceedings is a free open-access publication service</p></h3>
-                       <h3>
+                       <h3 class='menu-suboption'>
+                        <a href='https://ceur-ws.org/'>CEUR</a>
+                        <p class='menu-description'>CEUR Proceedings is a free open-access publication service</p>
+                       </h3>
+                       <h3 class='menu-suboption'>
                           <a href='https://mybinder.org/'>MyBinder</a>
-                          <p>Turn a Git repo into a collection of interactive notebooks</p>
+                          <p class='menu-description'>Turn a Git repo into a collection of interactive notebooks</p>
                        </h3>
                     </div>
                  </div>
