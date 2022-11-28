@@ -3,19 +3,19 @@ import json
 import extruct
 import gradio as gr
 import requests
-from rdflib import Graph, URIRef, Literal, BNode
-from rdflib.namespace import RDF
-from diophila import OpenAlex
+from rdflib import Graph, URIRef, Literal, BNode, Namespace
+from rdflib.namespace import RDF, FOAF, DCTERMS, XSD, SDO
+from search_openalex import *
 
 
 def sources(name):
     g = Graph()
-    # g = dblp(name, g)
-    # g = zenodo(name, g)
-    g = openalex(name, g)
+    g = dblp(name, g)
+    g = zenodo(name, g)
+    g = open_alex(name, g)
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
-    return g.serialize(format="turtle")
+    return g.serialize(format="ttl")
 
 
 # rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL access token zenodo
@@ -73,33 +73,11 @@ def zenodo(name, g):
     return g
 
 
-def openalex(name, g):
-    oa = OpenAlex()
-    # pages = [1, 2, 3]
-    api_response_works = oa.get_list_of_works(search=name)
-    api_response_authors = oa.get_list_of_authors(search=name)
-    api_response_concepts = oa.get_list_of_concepts(search=name)
-    # g.add("Works search results")
-    for works in api_response_works:
-        for work in works['results']:
-            if 'id' in work:
-                # TODO Align and extend with schema.org concepts
-                subject = URIRef(work['id'])
-                object = URIRef(work['doi'])
-                g.add((subject, RDF.type, object))
-
-    # g.add("Authors ID with their work_api_url")
-    for authors in api_response_authors:
-        for author in authors['results']:
-            if 'id' in author:
-                subject = URIRef(author['id'])
-                object = URIRef(author['works_api_url'])
-                g.add((subject, RDF.type, object))
-
-    print(f"Graph g has {len(g)} statements.")
+def open_alex(name, g):
+    search_result = json.dumps(find(name))
+    g.parse(data=search_result, format='json-ld')
     return g
 
 
 demo = gr.Interface(fn=sources, inputs="text", outputs="text")
-
 demo.launch()
