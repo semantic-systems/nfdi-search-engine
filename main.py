@@ -3,16 +3,19 @@ import json
 import extruct
 import gradio as gr
 import requests
-from rdflib import Graph, URIRef, Literal, BNode
-from rdflib.namespace import  RDF
+from rdflib import Graph, URIRef, Literal, BNode, Namespace
+from rdflib.namespace import RDF, FOAF, DCTERMS, XSD, SDO
+from search_openalex import *
+
 
 def sources(name):
     g = Graph()
     g = dblp(name, g)
     g = zenodo(name, g)
+    g = open_alex(name, g)
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
-    return g.serialize(format="turtle")
+    return g.serialize(format="ttl")
 
 
 # rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL access token zenodo
@@ -34,9 +37,6 @@ def extract_metadata(text):
     return metadata
 
 
-
-
-
 def dblp(name, g):
     headers = {'Accept': 'application/json'}
 
@@ -56,21 +56,28 @@ def dblp(name, g):
 
     return g
 
+
 def zenodo(name, g):
     response = requests.get('https://zenodo.org/api/records',
                             params={'q': name,
                                     'access_token': 'rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL'})
     for data in response.json()['hits']['hits']:
-        if('conceptdoi' in data):
+        if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
             subject = URIRef(data['conceptdoi'])
-            object = URIRef('zenodo:'+data['metadata']['resource_type']['type'])
+            object = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
-        if('conceptrecid' in data):
+        if 'conceptrecid' in data:
             # TODO parse this
             print('TODO')
     return g
 
-demo = gr.Interface(fn=sources, inputs="text", outputs="text")
 
+def open_alex(name, g):
+    search_result = json.dumps(find(name))
+    g.parse(data=search_result, format='json-ld')
+    return g
+
+
+demo = gr.Interface(fn=sources, inputs="text", outputs="text")
 demo.launch()
