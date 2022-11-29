@@ -1,20 +1,20 @@
 from diophila import OpenAlex
 import json
+from objects import Person, Article
 
-
-def find(search_key):
+def find(search_key, results):
     oa = OpenAlex()
     search_result = {
         "@context": "http://schema.org/"
     }
-    works_search_result = find_works(oa, search_key)
-    authors_search_result = find_authors(oa, search_key)
+    works_search_result, results = find_works(oa, search_key, results)
+    authors_search_result, results = find_authors(oa, search_key, results)
     api_response_concepts = oa.get_list_of_concepts(search=search_key)
     search_result.update({"@graph": [{"graph1": works_search_result}, {"graph2": authors_search_result}]})
-    return search_result
+    return search_result, results
 
 
-def find_authors(oa, search_key):
+def find_authors(oa, search_key, results):
     api_response_authors = oa.get_list_of_authors(search=search_key)
     list_of_authors = []
     for authors in api_response_authors:
@@ -33,10 +33,14 @@ def find_authors(oa, search_key):
                     'x_concepts': concepts,
                     'works_api_url': author['works_api_url']
                 })
-        return list_of_authors
+                if author['display_name'] is None or author['id'] is None:
+                    continue
+                results.append(Person(author['display_name'], author['id']))
+
+        return list_of_authors, results
 
 
-def find_works(oa, search_key):
+def find_works(oa, search_key, results):
     api_response_works = oa.get_list_of_works(search=search_key)
 
     list_of_works = []
@@ -45,7 +49,15 @@ def find_works(oa, search_key):
             if 'id' in work:
                 list_of_works.append(parse_to_jsonld(work))
 
-    return list_of_works
+                if work["display_name"] is None or work["id"] is None or work["publication_year"] is None:
+                    continue
+                if len(work["authorships"]) == 1:
+                    author = work["authorships"][0]["author"]["display_name"]
+                else:
+                    author = ','.join(current_author["author"]["display_name"] for current_author in work["authorships"])
+                results.append(Article(work["display_name"], work["id"], author, str(work["publication_year"])))
+
+    return list_of_works, results
 
 
 def update_list_of_works(param, list_of_works):

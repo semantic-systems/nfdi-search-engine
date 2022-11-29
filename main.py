@@ -5,32 +5,15 @@ import gradio as gr
 import requests
 from rdflib import Graph, URIRef, Literal, BNode, Namespace
 from rdflib.namespace import RDF, FOAF, DCTERMS, XSD, SDO
+from objects import Person, Zenodo, Article
 from search_openalex import *
-
-class Person:
-  def __init__(self, name, URL):
-    self.name = name
-    self.URL = URL
-
-class Article:
-  def __init__(self, title, URL, authors, date):
-    self.title = title
-    self.URL = URL
-    self.authors = authors
-    self.date = date
-
-class Zenodo:
-  def __init__(self, id, type, URL):
-    self.id = id
-    self.type = type
-    self.URL = URL
 
 def sources(name):
     g = Graph()
     results = []
     g, results = dblp(name, g, results)
     g, results = zenodo(name, g, results)
-    g = open_alex(name, g)
+    g, results  = open_alex(name, g, results)
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
     g = g.serialize(format="ttl")
@@ -67,7 +50,7 @@ def format_results(results):
     exist_zenodo = False
     for result in results:
         if type(result) is Person:
-            person_result += "<span class='emoji'>&#129417;</span><h2 class='subtitle'><a href='"+result.URL+"' target='_blank' >"+result.name+\
+            person_result += "<span class='emoji'>&#129417;</span><h2 class='subtitle'><a href='"+result.URL+"' target='_blank' >"+result.name + \
                                  "</a></h2><p class='faded'>"+result.URL+"</p><br>"
             exist_person = True
         elif type(result) is Article:
@@ -224,11 +207,6 @@ widget_button = """
         </html>
         """
 
-def open_alex(name, g):
-    search_result = json.dumps(find(name))
-    g.parse(data=search_result, format='json-ld')
-    return g
-
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
@@ -238,10 +216,11 @@ with gr.Blocks() as demo:
             html = gr.HTML("<h1 style = 'font-size: 20px;'>Search Results</h1>")
     search.click(sources, input_text, html)
 
-def open_alex(name, g):
-    search_result = json.dumps(find(name))
+def open_alex(name, g, results):
+    serializable_results, results = find(name, results)
+    search_result = json.dumps(serializable_results)
     g.parse(data=search_result, format='json-ld')
-    return g
+    return g, results
 
 
 demo.launch()
