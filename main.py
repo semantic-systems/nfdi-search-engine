@@ -3,8 +3,9 @@ import json
 import extruct
 import gradio as gr
 import requests
-from rdflib import Graph, URIRef, Literal, BNode
-from rdflib.namespace import  RDF
+from rdflib import Graph, URIRef, Literal, BNode, Namespace
+from rdflib.namespace import RDF, FOAF, DCTERMS, XSD, SDO
+from search_openalex import *
 
 class Person:
   def __init__(self, name, URL):
@@ -29,9 +30,10 @@ def sources(name):
     results = []
     g, results = dblp(name, g, results)
     g, results = zenodo(name, g, results)
+    g = open_alex(name, g)
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
-    g = g.serialize(format="turtle")
+    g = g.serialize(format="ttl")
     return format_results(results)
 
 
@@ -160,10 +162,10 @@ def zenodo(name, g, results):
                             params={'q': name,
                                     'access_token': 'rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL'})
     for data in response.json()['hits']['hits']:
-        if('conceptdoi' in data):
+        if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
             subject = URIRef(data['conceptdoi'])
-            object = URIRef('zenodo:'+data['metadata']['resource_type']['type'])
+            object = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
             results.append(Zenodo(subject, object, data["links"]["doi"]))
         if 'conceptrecid' in data:
@@ -222,6 +224,11 @@ widget_button = """
            </body>
         </html>
         """
+
+def open_alex(name, g):
+    search_result = json.dumps(find(name))
+    g.parse(data=search_result, format='json-ld')
+    return g
 
 with gr.Blocks() as demo:
     with gr.Row():
