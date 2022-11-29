@@ -122,8 +122,6 @@ def extract_metadata(text):
 
 
 
-
-
 def dblp(name, g, results):
     headers = {'Accept': 'application/json'}
 
@@ -156,6 +154,7 @@ def dblp(name, g, results):
     print(f"Graph g has {len(g)} statements.")
 
     return g, results
+
 
 def zenodo(name, g, results):
     response = requests.get('https://zenodo.org/api/records',
@@ -238,5 +237,11 @@ with gr.Blocks() as demo:
             search = gr.Button("Search")
             html = gr.HTML("<h1 style = 'font-size: 20px;'>Search Results</h1>")
     search.click(sources, input_text, html)
+
+def open_alex(name, g):
+    search_result = json.dumps(find(name))
+    g.parse(data=search_result, format='json-ld')
+    return g
+
 
 demo.launch()
