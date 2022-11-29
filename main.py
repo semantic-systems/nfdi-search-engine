@@ -166,7 +166,7 @@ def zenodo(name, g, results):
             object = URIRef('zenodo:'+data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
             results.append(Zenodo(subject, object, data["links"]["doi"]))
-        if('conceptrecid' in data):
+        if 'conceptrecid' in data:
             # TODO parse this
             print('TODO')
     return g, results
