@@ -136,6 +136,7 @@ def dblp(name, g, results):
 
     print(f"Graph g has {len(g)} statements.")
 
+    response.close()
     return g, results
 
 
@@ -150,6 +151,9 @@ def zenodo(name, g, results):
             object = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
             results.append(Zenodo(subject, object, data["links"]["doi"], data['metadata']['publication_date'], data['metadata']['title']))
+
+    response.close()
+
     return g, results
 
 
