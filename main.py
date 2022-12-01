@@ -68,8 +68,8 @@ def format_results(results):
         elif type(result) is Zenodo:
             zenodo_result += "<p class='url'>" + result.URL +\
                                  "</p><span class='emoji'>&#128188;</span><h2 class='subtitle'><a href='"+\
-                                 result.URL+"' target='_blank'>" + result.id \
-                                 + "</a></h2><p>" + result.type + "</p><br>"
+                                 result.URL+"' target='_blank'>" + result.title + \
+                                 "</a></h2> - "+result.date+ "<p>" + result.type + "</p><br>"
             exist_zenodo = True
         else:
             print("Type of result not yet handled")
@@ -146,13 +146,10 @@ def zenodo(name, g, results):
     for data in response.json()['hits']['hits']:
         if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
-            subject = URIRef(data['conceptdoi'])
+            subject = URIRef(data['conceptrecid'])
             object = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
-            results.append(Zenodo(subject, object, data["links"]["doi"]))
-        if 'conceptrecid' in data:
-            # TODO parse this
-            print('TODO')
+            results.append(Zenodo(subject, object, data["links"]["doi"], data['metadata']['publication_date'], data['metadata']['title']))
     return g, results
 
 

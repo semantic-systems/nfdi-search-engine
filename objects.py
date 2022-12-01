@@ -11,7 +11,9 @@ class Article:
     self.date = date
 
 class Zenodo:
-  def __init__(self, id, type, URL):
+  def __init__(self, id, type, URL, date, title):
     self.id = id
     self.type = type
     self.URL = URL
+    self.date = date
+    self.title = title
