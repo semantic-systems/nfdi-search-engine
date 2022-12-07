@@ -2,6 +2,14 @@ from diophila import OpenAlex
 import json
 from objects import Person, Article
 
+
+def open_alex(name, g, results):
+    serializable_results, results = find(name, results)
+    search_result = json.dumps(serializable_results)
+    g.parse(data=search_result, format='json-ld')
+    return g, results
+
+
 def find(search_key, results):
     oa = OpenAlex()
     search_result = {
@@ -54,7 +62,8 @@ def find_works(oa, search_key, results):
                 if len(work["authorships"]) == 1:
                     author = work["authorships"][0]["author"]["display_name"]
                 else:
-                    author = ','.join(current_author["author"]["display_name"] for current_author in work["authorships"])
+                    author = ','.join(
+                        current_author["author"]["display_name"] for current_author in work["authorships"])
                 results.append(Article(work["display_name"], work["id"], author, str(work["publication_year"])))
 
     return list_of_works, results
