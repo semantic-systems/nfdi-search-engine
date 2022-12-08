@@ -1,7 +1,11 @@
 import extruct
 
+
 def extract_metadata(text):
-    """Extract all metadata present in the page and return a dictionary of metadata lists.
+    """
+    Extract all metadata present in the page and return a dictionary of metadata lists.
+
+        Initially authored by Ricardo Usbeck
 
     Args:
 

@@ -5,6 +5,16 @@ from objects import Zenodo
 
 # rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL access token zenodo
 def search(name, g, results):
+    """
+    Request from the zenodo database and gathers it in the data types
+    Args:
+        name: keyword to search for
+        g: graph containing the search answer
+        results: search answer formatted into the data types of Zenodo
+
+    Returns:
+        the graph object and the results array
+    """
     response = requests.get('https://zenodo.org/api/records',
                             params={'q': name,
                                     'access_token': 'rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL'})

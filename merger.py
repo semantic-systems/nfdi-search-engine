@@ -4,7 +4,18 @@ import search_openalex
 import zenodo
 import dblp
 
+
 def sources(name):
+    """
+    It queries all the databases merging the results into single objects
+        Initially authored by Ricardo Usbeck
+    Args:
+        name: keyword to search for in the databases
+
+    Returns:
+        the graph object and the formatted results
+
+    """
     g = Graph()
     results = []
     g, results = dblp.search(name, g, results)

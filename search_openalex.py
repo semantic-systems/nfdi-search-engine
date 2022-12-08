@@ -4,6 +4,18 @@ from objects import Person, Article
 
 
 def open_alex(name, g, results):
+    """
+    Obtain the results from the database request handles them accordingly
+        Initially authored by Tilahun Taffa
+    Args:
+        name: keyword to search for
+        g: graph containing the search answer
+        results: search answer formatted into the data types of Person and Article
+
+    Returns:
+        the graph object and the results array
+
+    """
     serializable_results, results = find(name, results)
     search_result = json.dumps(serializable_results)
     g.parse(data=search_result, format='json-ld')

@@ -1,7 +1,8 @@
 import gradio as gr
 import controller
 
-
+# Simple text menu temporarily replacing the NFDI widget menu.
+# The intended menu is at https://tibhannover.gitlab.io/nfdi4ds/nfdi4ds-widget/ but Gradio is not compatible with it
 widget_menu = """
         <!DOCTYPE html>
         <html>
@@ -53,6 +54,7 @@ widget_menu = """
         </html>
         """
 
+# Formation of GUI through blocks to create a vertical view
 with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():

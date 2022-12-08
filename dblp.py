@@ -3,7 +3,18 @@ import requests
 from objects import Person, Article
 import json
 
+
 def search(name, g, results):
+    """
+        Request from the dblp database and gathers it in the data types
+    Args:
+        name: keyword to search for
+        g: graph containing the search answer
+        results: search answer formatted into the data types of Person and Article
+
+    Returns:
+        the graph object and the results array
+    """
     headers = {'Accept': 'application/json'}
 
     response = requests.get('https://dblp.uni-trier.de/search?q=' + name, headers=headers)
