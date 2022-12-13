@@ -1,6 +1,7 @@
 from diophila import OpenAlex
 import json
 from objects import Person, Article
+import utils
 
 
 def open_alex(name, g, results):
@@ -55,7 +56,8 @@ def find_authors(oa, search_key, results):
                 })
                 if author['display_name'] is None or author['id'] is None:
                     continue
-                results.append(Person(author['display_name'], author['id']))
+                if not utils.is_author_in(author['display_name'], results):
+                    results.append(Person(author['display_name'], author['id']))
 
         return list_of_authors, results
 
@@ -76,7 +78,8 @@ def find_works(oa, search_key, results):
                 else:
                     author = ','.join(
                         current_author["author"]["display_name"] for current_author in work["authorships"])
-                results.append(Article(work["display_name"], work["id"], author, str(work["publication_year"])))
+                if not utils.is_article_in(work["display_name"], results):
+                    results.append(Article(work["display_name"], work["id"], author, str(work["publication_year"])))
 
     return list_of_works, results
 

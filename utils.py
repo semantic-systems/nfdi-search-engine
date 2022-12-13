@@ -1,5 +1,5 @@
 import extruct
-
+from objects import Article, Person
 
 def extract_metadata(text):
     """
@@ -20,3 +20,22 @@ def extract_metadata(text):
                                          'microdata',
                                          'opengraph'])
     return metadata
+
+
+def is_author_in(name, authors):
+    for author in authors:
+        if type(author) is not Person:
+            print(type(author))
+            continue
+        if author.name == name:
+            return True
+    return False
+
+
+def is_article_in(title, articles):
+    for article in articles:
+        if type(article) is not Article:
+            continue
+        if article.title == title:
+            return True
+    return False
