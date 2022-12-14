@@ -13,7 +13,7 @@ def search_sources():
 
     """
     keyword = request.args.get('keyword')
-    graph, rich_snippet = mapping.sources(keyword)
+    graph, rich_snippet = merger.sources(keyword)
     return {
         "rich_snippet": rich_snippet,
         "graph": graph

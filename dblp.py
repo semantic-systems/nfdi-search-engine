@@ -25,7 +25,8 @@ def search(name, g, results):
     # TODO unclear why this loop takes so long
     for data in metadata['microdata']:
         if data['@type'] == 'Person':
-            results.append(Person(data["name"], data["url"]))
+            if not utils.is_author_in(data["name"], results):
+                results.append(Person(data["name"], data["url"]))
             g.parse(data=json.dumps(data), format='json-ld')
         if data['@type'] == 'ScholarlyArticle':
             author = ""
@@ -39,8 +40,8 @@ def search(name, g, results):
                 url = ','.join(data["url"])
             else:
                 url = data["url"]
-
-            results.append(Article(data["name"], url, author, data["datePublished"]))
+            if not utils.is_article_in(data["name"], results):
+                results.append(Article(data["name"], url, author, data["datePublished"]))
             g.parse(data=json.dumps(data), format='json-ld')
 
     print(f"Graph g has {len(g)} statements.")
