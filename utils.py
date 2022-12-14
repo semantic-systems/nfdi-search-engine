@@ -35,7 +35,6 @@ def is_author_in(name, authors):
     """
     for author in authors:
         if type(author) is not Person:
-            print(type(author))
             continue
         if author.name == name:
             return True
