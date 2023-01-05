@@ -25,7 +25,11 @@ def search(name, g, results):
     # TODO unclear why this loop takes so long
     for data in metadata['microdata']:
         if data['@type'] == 'Person':
-            if not utils.is_author_in(data["name"], results):
+            possible_author = utils.is_author_in(data["name"], results)
+            if possible_author:
+                results[results.index(possible_author)] = Person(data["name"], possible_author.URL + ' - ' +
+                                                                 data["url"])
+            else:
                 results.append(Person(data["name"], data["url"]))
             g.parse(data=json.dumps(data), format='json-ld')
         if data['@type'] == 'ScholarlyArticle':
@@ -37,10 +41,17 @@ def search(name, g, results):
 
             url = ""
             if type(data["url"]) == list:
-                url = ','.join(data["url"])
+                url = ' - '.join(data["url"])
             else:
                 url = data["url"]
-            if not utils.is_article_in(data["name"], results):
+
+            possible_article = utils.is_article_in(data["name"], results)
+            if possible_article:
+                print(possible_article.title)
+                results[results.index(possible_article)] = Article(possible_article.title,
+                                                                   possible_article.URL + ' - ' + url,
+                                                                   author, possible_article.date)
+            else:
                 results.append(Article(data["name"], url, author, data["datePublished"]))
             g.parse(data=json.dumps(data), format='json-ld')
 
