@@ -57,14 +57,15 @@ def format_results(results):
     exist_zenodo = False
     for result in results:
         if type(result) is Person:
-            person_result += "<span class='emoji'>&#129417;</span><h2 class='subtitle'><a href='"+result.URL+"' target='_blank' >"+result.name + \
+            person_result += "<span class='emoji'>&#129417;</span><h2 class='subtitle'><a href='" + \
+                             result.URL.split(' - ')[0]+"' target='_blank' >"+result.name + \
                                  "</a></h2><p class='faded'>"+result.URL+"</p><br>"
             exist_person = True
         elif type(result) is Article:
-            if "," in result.URL:
+            if " - " in result.URL:
                 article_result += "<p class='url'>" + result.URL \
                                      + "</p><span class='emoji'>&#128240;</span><h2 class='subtitle'></i><a href='" +\
-                                     result.URL.split(",")[0] + "' target='_blank'>" + \
+                                     result.URL.split(" - ")[0] + "' target='_blank'>" + \
                                      result.title + "</a></h2> - " + result.date + "<p>" + result.authors + "</p><br>"
             else:
                 article_result += "<p class='url'>" + result.URL +\

@@ -37,8 +37,8 @@ def is_author_in(name, authors):
         if type(author) is not Person:
             continue
         if author.name == name:
-            return True
-    return False
+            return author
+    return None
 
 
 def is_article_in(title, articles):
@@ -56,5 +56,5 @@ def is_article_in(title, articles):
         if type(article) is not Article:
             continue
         if article.title == title:
-            return True
-    return False
+            return article
+    return None

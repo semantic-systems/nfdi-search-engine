@@ -56,8 +56,13 @@ def find_authors(oa, search_key, results):
                 })
                 if author['display_name'] is None or author['id'] is None:
                     continue
-                if not utils.is_author_in(author['display_name'], results):
+                possible_author = utils.is_author_in(author['display_name'], results)
+                if possible_author:
+                    results[results.index(possible_author)] = Person(author['display_name'], possible_author.URL + ' - ' +
+                                                                     author['id'])
+                else:
                     results.append(Person(author['display_name'], author['id']))
+
 
         return list_of_authors, results
 
@@ -78,7 +83,12 @@ def find_works(oa, search_key, results):
                 else:
                     author = ','.join(
                         current_author["author"]["display_name"] for current_author in work["authorships"])
-                if not utils.is_article_in(work["display_name"], results):
+                possible_article = utils.is_article_in(work["display_name"], results)
+                if possible_article:
+                    results[results.index(possible_article)] = Article(possible_article.title,
+                                                                       possible_article.URL + ' - ' + work["id"],
+                                                                       author, possible_article.date)
+                else:
                     results.append(Article(work["display_name"], work["id"], author, str(work["publication_year"])))
 
     return list_of_works, results
