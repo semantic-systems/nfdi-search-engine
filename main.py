@@ -25,6 +25,7 @@ def sources(search_term):
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
     # g = g.serialize(format="ttl")
+    # FIXME: PW: Neither g nor its Turtle serialization is used later on at the moment. We could sove a lot of time if we dropped the rdflib Graph representation and worked with the plain result list instead
 
     logger.info(f'Got {len(results)} results')
     return format_results(results)
