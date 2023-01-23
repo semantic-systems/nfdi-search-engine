@@ -84,7 +84,7 @@ def format_results(results):
                 url = result.url
 
             article_result +=\
-                f"<p class='url'>{result.url}</p>" \
+                f"<p class='url'>{url}</p>" \
                 f"<span class='emoji'>&#128240;</span>" \
                 f"<h2 class='subtitle'><a href='{url}' target='_blank'>{result.title}</a></h2>" \
                 f" - {result.date}" \
