@@ -1,4 +1,5 @@
 import json
+import logging
 
 import extruct
 import gradio as gr
@@ -7,6 +8,10 @@ from rdflib import Graph, URIRef, Literal, BNode, Namespace
 from rdflib.namespace import RDF, FOAF, DCTERMS, XSD, SDO
 from objects import Person, Zenodo, Article
 from search_openalex import *
+
+logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
+logger = logging.getLogger('nfdi_search_engine')
+
 
 def sources(name):
     g = Graph()
@@ -17,6 +22,8 @@ def sources(name):
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
     g = g.serialize(format="ttl")
+
+    logger.info(f'Got {len(results)} results')
     return format_results(results)
 
 
@@ -72,7 +79,7 @@ def format_results(results):
                                  "</a></h2> - "+result.date+ "<p>" + result.type + "</p><br>"
             exist_zenodo = True
         else:
-            print("Type of result not yet handled")
+            logger.warning(f"Type {type(result)} of result not yet handled")
 
     #Checking that we have actual results and act accordingly if not
     if not exist_person:
@@ -109,7 +116,10 @@ def dblp(name, g, results):
     headers = {'Accept': 'application/json'}
 
     response = requests.get('https://dblp.uni-trier.de/search?q=' + name, headers=headers)
-    print(response.status_code)
+
+    logger.debug(f'DBLP response status code: {response.status_code}')
+    logger.debug(f'DBLP response headers: {response.headers}')
+
     # TODO unclear why here are only a few but now all results returned
     metadata = extract_metadata(response.content)
 
@@ -133,8 +143,8 @@ def dblp(name, g, results):
 
             results.append(Article(data["name"], url, author, data["datePublished"]))
             g.parse(data=json.dumps(data), format='json-ld')
+    logger.info(f"Graph g has {len(g)} statements after querying DBLP.")
 
-    print(f"Graph g has {len(g)} statements.")
 
     return g, results
 
@@ -143,6 +153,10 @@ def zenodo(name, g, results):
     response = requests.get('https://zenodo.org/api/records',
                             params={'q': name,
                                     'access_token': 'rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL'})
+
+    logger.debug(f'Zenodo response status code: {response.status_code}')
+    logger.debug(f'Zenodo response headers: {response.headers}')
+
     for data in response.json()['hits']['hits']:
         if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
@@ -150,6 +164,8 @@ def zenodo(name, g, results):
             object = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             g.add((subject, RDF.type, object))
             results.append(Zenodo(subject, object, data["links"]["doi"], data['metadata']['publication_date'], data['metadata']['title']))
+
+    logger.info(f"Graph g has {len(g)} statements after querying Zenodo.")
     return g, results
 
 

@@ -1,6 +1,12 @@
+import logging
+
 from diophila import OpenAlex
 import json
+
 from objects import Person, Article
+
+logger = logging.getLogger('nfdi_search_engine')
+
 
 def find(search_key, results):
     oa = OpenAlex()
@@ -37,6 +43,7 @@ def find_authors(oa, search_key, results):
                     continue
                 results.append(Person(author['display_name'], author['id']))
 
+        logger.info(f'Got {len(list_of_authors)} author records from OpenAlex')
         return list_of_authors, results
 
 
@@ -51,12 +58,14 @@ def find_works(oa, search_key, results):
 
                 if work["display_name"] is None or work["id"] is None or work["publication_year"] is None:
                     continue
+
                 if len(work["authorships"]) == 1:
                     author = work["authorships"][0]["author"]["display_name"]
                 else:
                     author = ','.join(current_author["author"]["display_name"] for current_author in work["authorships"])
                 results.append(Article(work["display_name"], work["id"], author, str(work["publication_year"])))
 
+    logger.info(f'Got {len(list_of_works)} publication records from OpenAlex')
     return list_of_works, results
 
 
