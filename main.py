@@ -17,9 +17,10 @@ logger = logging.getLogger('nfdi_search_engine')
 def sources(search_term):
     g = Graph()
     results = []
-    g, results = dblp(name, g, results)
-    g, results = zenodo(name, g, results)
-    g, results  = open_alex(name, g, results)
+
+    dblp(search_term, g, results)
+    zenodo(search_term, g, results)
+    open_alex(search_term, g, results)
 
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
@@ -260,7 +261,6 @@ def dblp(search_term: str, g: Graph, results: List):
     logger.info(f"Graph g has {len(g)} statements after querying DBLP.")
 
 
-    return g, results
 
 
 def zenodo(search_term, g, results):
@@ -288,7 +288,6 @@ def zenodo(search_term, g, results):
             )
 
     logger.info(f"Graph g has {len(g)} statements after querying Zenodo.")
-    return g, results
 
 
 widget_button = """
@@ -357,7 +356,6 @@ def open_alex(name, g, results):
     search_result = json.dumps(serializable_results)
 
     g.parse(data=search_result, format='json-ld')
-    return g, results
 
 
 demo.launch()
