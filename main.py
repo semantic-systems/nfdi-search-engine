@@ -24,7 +24,7 @@ def sources(search_term):
 
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
-    g = g.serialize(format="ttl")
+    # g = g.serialize(format="ttl")
 
     logger.info(f'Got {len(results)} results')
     return format_results(results)

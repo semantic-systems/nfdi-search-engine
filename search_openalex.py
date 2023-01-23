@@ -15,7 +15,7 @@ def find(search_key: str, results: List):
     }
     works_search_result, results = find_works(oa, search_key, results)
     authors_search_result, results = find_authors(oa, search_key, results)
-    api_response_concepts = oa.get_list_of_concepts(search=search_key)
+    # api_response_concepts = oa.get_list_of_concepts(search=search_key)
     search_results_json_ld.update(
         {
             "@graph":
@@ -160,7 +160,7 @@ def get_authorship_information(work_authors):
 
 def parse_to_jsonld(work: dict) -> dict:
     host_venue = work['host_venue']
-    display_name = work['display_name']
+    # display_name = work['display_name']
     host_information = [{'@id': host_venue['id'], '@type': host_venue['type'],
                          'name': host_venue['display_name'], 'publisher': host_venue['publisher']
                          }]
