@@ -262,6 +262,9 @@ def dblp(search_term: str, g: Graph, results: List):
     logger.info(f"Graph g has {len(g)} statements after querying DBLP.")
 
 
+def _make_zenodo_uri(data: dict) -> URIRef:
+    # FIXME: PW: The conceptrecid is usually just an integer like 6857079 which results in a weird URI; would propose to use, e.g., data['links']['conceptdoi'] instead
+    return URIRef(data['conceptrecid'])
 
 
 def zenodo(search_term, g, results):
@@ -275,7 +278,7 @@ def zenodo(search_term, g, results):
     for data in response.json()['hits']['hits']:
         if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
-            resource = URIRef(data['conceptrecid'])
+            resource = _make_zenodo_uri(data)
             resource_type = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             g.add((resource, RDF.type, resource_type))
             results.append(
