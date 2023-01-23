@@ -98,6 +98,7 @@ def find_authors(oa, search_key, results):
                         )
                     )
 
+        # FIXME: PW: Returns results after processing the first authors entry in api_response_authors. Is this intended?
         logger.info(f'Got {len(list_of_authors)} author records from OpenAlex')
         return list_of_authors, results
 
