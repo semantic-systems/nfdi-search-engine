@@ -1,19 +1,26 @@
+import dataclasses
+
+from rdflib import URIRef
+
+
+@dataclasses.dataclass
 class Person:
-  def __init__(self, name, URL):
-    self.name = name
-    self.URL = URL
+    name: str
+    url: str
 
+
+@dataclasses.dataclass
 class Article:
-  def __init__(self, title, URL, authors, date):
-    self.title = title
-    self.URL = URL
-    self.authors = authors
-    self.date = date
+    title: str
+    url: str
+    authors: str
+    date: str
 
+
+@dataclasses.dataclass
 class Zenodo:
-  def __init__(self, id, type, URL, date, title):
-    self.id = id
-    self.type = type
-    self.URL = URL
-    self.date = date
-    self.title = title
+    uri: URIRef
+    resource_type: URIRef
+    url: str
+    date: str  # e.g. '2022-07-06'
+    title: str
