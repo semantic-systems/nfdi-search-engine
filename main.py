@@ -362,4 +362,4 @@ def open_alex(name, g, results):
     g.parse(data=search_result, format='json-ld')
 
 
-demo.launch()
+demo.launch(server_name="0.0.0.0")
