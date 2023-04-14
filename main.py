@@ -208,9 +208,10 @@ with gr.Blocks() as demo:
     with gr.Row():
         with gr.Column():
             gr.HTML(widget_button)
-            input_text = gr.Textbox(label="Search Term")
+            input_text = gr.Textbox(label="Search Term", lines=1, max_lines=1)
             search = gr.Button("Search")
             html = gr.HTML("<h1 style = 'font-size: 20px;'>Search Results</h1>")
+    input_text.submit(sources, input_text, html)
     search.click(sources, input_text, html)
 
 def open_alex(name, g, results):
