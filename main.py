@@ -23,7 +23,7 @@ def sources(search_term):
     open_alex(search_term, g, results)
 
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
-    g.parse('zenodo2schema.ttl')
+    # g.parse('zenodo2schema.ttl')
     # g = g.serialize(format="ttl")
     # FIXME: PW: Neither g nor its Turtle serialization is used later on at the moment. We could sove a lot of time if we dropped the rdflib Graph representation and worked with the plain result list instead
 
@@ -190,7 +190,7 @@ def dblp(search_term: str, g: Graph, results: List):
                 )
             )
 
-            g.parse(data=json.dumps(data), format='json-ld')
+            # g.parse(data=json.dumps(data), format='json-ld')
 
         elif data['@type'] == 'ScholarlyArticle':
             # E.g.
@@ -258,8 +258,8 @@ def dblp(search_term: str, g: Graph, results: List):
                 )
             )
 
-            g.parse(data=json.dumps(data), format='json-ld')
-    logger.info(f"Graph g has {len(g)} statements after querying DBLP.")
+            # g.parse(data=json.dumps(data), format='json-ld')
+    # logger.info(f"Graph g has {len(g)} statements after querying DBLP.")
 
 
 def _make_zenodo_uri(data: dict) -> URIRef:
@@ -280,7 +280,7 @@ def zenodo(search_term, g, results):
             # TODO Align and extend with schema.org concepts
             resource = _make_zenodo_uri(data)
             resource_type = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
-            g.add((resource, RDF.type, resource_type))
+            # g.add((resource, RDF.type, resource_type))
             results.append(
                 Zenodo(
                     uri=resource,
@@ -291,7 +291,7 @@ def zenodo(search_term, g, results):
                 )
             )
 
-    logger.info(f"Graph g has {len(g)} statements after querying Zenodo.")
+    # logger.info(f"Graph g has {len(g)} statements after querying Zenodo.")
 
 
 widget_button = """
@@ -357,9 +357,9 @@ with gr.Blocks() as demo:
 
 def open_alex(name, g, results):
     serializable_results = search_openalex.find(name, results)
-    search_result = json.dumps(serializable_results)
+    # search_result = json.dumps(serializable_results)
 
-    g.parse(data=search_result, format='json-ld')
+    # g.parse(data=search_result, format='json-ld')
 
 
 demo.launch(server_name="0.0.0.0")
