@@ -1,0 +1,7 @@
+services:
+    search-engine:
+        build: .
+        ports:
+            - 6000:7860
+        restart: unless-stopped
+

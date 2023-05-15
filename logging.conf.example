@@ -1,0 +1,36 @@
+# vim: set syntax=dosini:
+
+[loggers]
+keys = root, nfdi_search_engine
+
+[handlers]
+keys = console, file
+
+[formatters]
+keys = simple
+
+[logger_root]
+level = INFO
+handlers = console
+
+[logger_nfdi_search_engine]
+level = DEBUG
+handlers = console
+qualname = nfdi_search_engine
+propagate = 0
+
+[handler_console]
+class = StreamHandler
+level = DEBUG
+formatter = simple
+args = (sys.stderr,)
+
+[handler_file]
+class = FileHandler
+level = INFO
+formatter = simple
+args = ('/tmp/nfdi_search_engine.log',)
+
+[formatter_simple]
+format = %(asctime)s - %(name)s - %(levelname)s - %(message)s
+datefmt =
