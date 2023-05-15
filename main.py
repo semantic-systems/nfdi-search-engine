@@ -1,5 +1,4 @@
 import logging
-import os
 from objects import Person, Zenodo, Article
 from flask import Flask, render_template, request
 import threading
@@ -67,4 +66,4 @@ def sources():
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5002)
