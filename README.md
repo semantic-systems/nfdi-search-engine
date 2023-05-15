@@ -1,7 +1,4 @@
-# nfdi-search-engine
+# NFDI-Search-Engine
 
-<img width="1362" alt="image" src="https://user-images.githubusercontent.com/13245994/204567935-406adb65-b986-4fe3-829b-5b4e905a183f.png">
-
-<img width="1362" alt="image" src="https://user-images.githubusercontent.com/13245994/204567963-816fd62f-a809-4c2a-88e4-18d54c8773db.png">
-
-Please use Flask instead of Gradio
+<img width="1432" alt="nfdi-search-engine-user-inerface" src="https://github.com/semantic-systems/nfdi-search-engine/assets/58974800/a07180e2-b2ec-4ef7-b040-871203f91d12">
+<img width="1432" alt="Screenshot 2023-05-15 at 14 43 08" src="https://github.com/semantic-systems/nfdi-search-engine/assets/58974800/c8890b40-bd33-4069-80cf-f2cdf72d8b3f">
