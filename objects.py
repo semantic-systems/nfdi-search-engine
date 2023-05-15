@@ -1,19 +1,32 @@
+import dataclasses
+
+
+@dataclasses.dataclass
 class Person:
-  def __init__(self, name, URL):
-    self.name = name
-    self.URL = URL
+    name: str
+    url: str
+    affiliation: str
 
+
+@dataclasses.dataclass
 class Article:
-  def __init__(self, title, URL, authors, date):
-    self.title = title
-    self.URL = URL
-    self.authors = authors
-    self.date = date
+    title: str
+    url: str
+    authors: str
+    date: str
 
+
+@dataclasses.dataclass
 class Zenodo:
-  def __init__(self, id, type, URL, date, title):
-    self.id = id
-    self.type = type
-    self.URL = URL
-    self.date = date
-    self.title = title
+    resource_type: str
+    url: str
+    date: str  # e.g. '2022-07-06'
+    title: str
+    author: str
+
+
+@dataclasses.dataclass
+class Institute:
+    name: str
+    url: str
+    country: str
