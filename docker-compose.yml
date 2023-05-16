@@ -2,6 +2,6 @@ services:
     search-engine:
         build: .
         ports:
-            - 6000:7860
+            - 6000:5002
         restart: unless-stopped
 
