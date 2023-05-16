@@ -12,4 +12,4 @@ COPY . .
 
 CMD [ "python3", "-m" , "main" ]
 
-EXPOSE 7860/tcp
+EXPOSE 5002/tcp
