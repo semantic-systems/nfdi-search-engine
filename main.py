@@ -62,6 +62,8 @@ def sources():
                 data['Zenodo'].append(result)
             else:
                 logger.warning(f"Type {type(result)} of result not yet handled")
+        # Remove items without results
+        data = dict((k, result) for k, result in data.items() if result)
         return render_template('result.html', data=data, search_term=search_term)
 
 
