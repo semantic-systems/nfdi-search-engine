@@ -9,9 +9,11 @@ import search_openalex
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/sources', methods=['POST', 'GET'])
 def sources():
@@ -63,6 +65,15 @@ def sources():
             else:
                 logger.warning(f"Type {type(result)} of result not yet handled")
         return render_template('result.html', data=data, search_term=search_term)
+
+
+@app.route('/details', methods=['POST', 'GET'])
+def details():
+    if request.method == 'GET':
+        print(request.args)
+        search_term = request.args.get('searchTerm')
+        print(search_term)
+        return render_template('details.html', search_term=search_term)
 
 
 if __name__ == "__main__":

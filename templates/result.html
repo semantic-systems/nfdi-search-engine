@@ -36,45 +36,41 @@
             <br><br>
             <ul>
                 {% for data in datas %}
-                {% if title == 'Researchers' %}
-                    {% if data %}
-                        <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank' >{{data.name}}</a></h2></li>
-                        <div style="margin-left:10px;">
-                            <p class='faded'>{{data.url}}</p>
-                        </div>
-                    {% else %}
-                        <p>No data found for {{ title }}</p>
+                    {% if title == 'Researchers' %}
+                        {% if data %}
+                            <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank' >{{data.name}}</a></h2></li>
+                            <a href='/details?searchTerm={{data.name}}'>View Details</a>
+                            <div style="margin-left:10px;">
+                                <p class='faded'>{{data.url}}</p>
+                            </div>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-                {% if title == 'Articles' %}
-                    {% if data %}
-                        <p class='url'>{{data.url}}</p>
-                        <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2> 
-                            <span style="color: gray;"> - {{data.date}}</span></li>
-                        
-                        <div style="margin-left:10px;">
-                            <p>{{data.authors}}</p>
-                        </div>
-                    {% else %}
-                        <p>No data found for {{ title }}</p>
+                    {% if title == 'Articles' %}
+                        {% if data %}
+                            <p class='url'>{{data.url}}</p>
+                            <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+                                <span style="color: gray;"> - {{data.date}}</span></li>
+                            <a href='/details?article={{data.url}}' >View Details</a>
+                            <div style="margin-left:10px;">
+                                <p>{{data.authors}}</p>
+                            </div>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-                {% if title == 'Zenodo' %}
-                    {% if data %}
-                        <p class='url'>{{data.url}}</p>
-                        <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
-                            <span style="color: gray;"> - {{data.date}}</span></li>
-                        
-                        <div style="margin-left:10px;">
-                            <p>{{data.resource_type}}</p>
-                        </div>
-                    {% else %}
-                        <p>No data found for {{ title }}</p>
+                    {% if title == 'Zenodo' %}
+                        {% if data %}
+                            <p class='url'>{{data.url}}</p>
+                            <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+                                <span style="color: gray;"> - {{data.date}}</span></li>
+                            <div style="margin-left:10px;">
+                                <p>{{data.resource_type}}</p>
+                            </div>
+                        {% endif %}
                     {% endif %}
-                {% endif %}
-                
-            {% endfor %}
+                {% endfor %}
             </ul>
+        {% else %}
+            <p>No results found for "{{search_term}}"</p>
+            <span class='emoji-title'>&#128546;</span>
         {% endfor %}
     </div>
 </body>
