@@ -128,26 +128,27 @@ def dblp(search_term: str, results):
             #   'pagination': '50467-50478',
             #   'datePublished': '2022'
             # }
-            if type(data["author"]) == list:
-                author = ', '.join([authors["name"] for authors in data["author"]])
-            elif type(data["author"]) == dict:
-                author = data["author"]["name"]
-            else:
-                author = data["author"]
-            url = ''
-            if 'url' in data:
-                if type(data["url"]) == list:
-                    url = ', '.join(data["url"])
+            if 'author' in data:
+                if type(data["author"]) == list:
+                    author = ', '.join([authors["name"] for authors in data["author"]])
+                elif type(data["author"]) == dict:
+                    author = data["author"]["name"]
                 else:
-                    url = data["url"]
-            results.append(
-                Article(
-                    title=data["name"],
-                    url=url,
-                    authors=author,
-                    date=data["datePublished"]
+                    author = data["author"]
+                url = ''
+                if 'url' in data:
+                    if type(data["url"]) == list:
+                        url = ', '.join(data["url"])
+                    else:
+                        url = data["url"]
+                results.append(
+                    Article(
+                        title=data["name"],
+                        url=url,
+                        authors=author,
+                        date=data["datePublished"]
+                    )
                 )
-            )
     logger.info(f"Got {len(results)} Researchers and scholarly articls from DBLP")
     # return results
     # g.parse(data=json.dumps(data), format='json-ld')
