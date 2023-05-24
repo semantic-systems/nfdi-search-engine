@@ -5,6 +5,7 @@ import threading
 import search_dblp
 import search_zenodo
 import search_openalex
+import details_page
 
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
@@ -72,10 +73,15 @@ def sources():
 @app.route('/details', methods=['POST', 'GET'])
 def details():
     if request.method == 'GET':
-        print(request.args)
+        # data_type = request.args.get('type')
+        details = {}
+        name = ''
         search_term = request.args.get('searchTerm')
-        print(search_term)
-        return render_template('details.html', search_term=search_term)
+        if search_term.startswith('https://openalex.org/'):
+            details, name = details_page.search_openalex(search_term)
+        elif search_term.startswith('https://dblp'):
+            details = details_page.search_dblp(search_term)
+        return render_template('details.html', search_term=search_term, details=details, name=name)
 
 
 if __name__ == "__main__":

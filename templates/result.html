@@ -39,7 +39,8 @@
                     {% if title == 'Researchers' %}
                         {% if data %}
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank' >{{data.name}}</a></h2></li>
-                            <a href='/details?searchTerm={{data.name}}'>View Details</a>
+<!--                            <a href='/details?type=person&searchTerm={{data.name}}'>View Details</a>-->
+                            <a href='/details?searchTerm={{data.url}}'>View Details</a>
                             <div style="margin-left:10px;">
                                 <p class='faded'>{{data.url}}</p>
                             </div>
@@ -50,7 +51,7 @@
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
                                 <span style="color: gray;"> - {{data.date}}</span></li>
-                            <a href='/details?article={{data.url}}' >View Details</a>
+<!--                            <a href='/details?type=article&searchTerm={{data.url}}' >View Details</a>-->
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
                             </div>
