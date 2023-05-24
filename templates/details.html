@@ -8,6 +8,13 @@
     <title>Result</title>
 </head>
 <body>
-details about {{article}}
+<div style="margin-left:10px;">
+    <h1> {{name}}</h1>
+    <ul>
+        {% for detail, value in details.items() %}
+            <li> {{detail}}: {{value}} </li>
+        {% endfor %}
+    </ul>
+</div>
 </body>
 </html>
