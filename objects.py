@@ -53,31 +53,32 @@ class Dataset:
     title: str
     url: str
     authors: str
-    version_unique_downloads: int
-    version_unique_views: int
+    date: str
 
 
 @dataclasses.dataclass
 class Software:
     title: str
     url: str
+    date: str
+    authors: str
     version: str
-    version_unique_downloads: int
-    version_unique_views: int
 
 
 @dataclasses.dataclass
 class Image:
     title: str
-    owner: str
+    authors: str
     url: str
+    date: str
 
 
 @dataclasses.dataclass
 class Video:
     title: str
     url: str
-    creators: str
+    authors: str
+    date: str
 
 
 @dataclasses.dataclass
@@ -85,6 +86,7 @@ class Lesson:
     title: str
     url: str
     authors: str
+    date: str
     
     
 @dataclasses.dataclass
