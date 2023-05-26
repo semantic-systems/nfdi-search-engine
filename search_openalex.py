@@ -1,7 +1,8 @@
 import requests
 import logging
-from objects import Person, Article
-import utils, json
+from objects import Person, Article, Institute, Funder, Publisher
+import json
+import utils
 
 
 def open_alex(name, g, results):
@@ -30,6 +31,8 @@ logger = logging.getLogger('nfdi_search_engine')
 def find(search_key: str, results):
     find_authors(search_key, results)
     find_works(search_key, results)
+    find_institute(search_key, results)
+    logger.info(f"Got {len(results)} author, publication, and institute records from OpenAlex")
     return results
 
 
@@ -77,7 +80,7 @@ def find_authors(search_key, results):
                             affiliation=affiliation
                         )
                     )
-    logger.info(f'Got {len(results)} author records from OpenAlex')
+    # logger.info(f'Got {len(results)} author records from OpenAlex')
 
 
 def find_works(search_key, results):
@@ -102,8 +105,40 @@ def find_works(search_key, results):
                         title=work["display_name"],
                         url=work["id"],
                         authors=author,
+                        description='',
                         date=str(work["publication_year"])
                     )
                 )
-    logger.info(f'Got {len(results)} publication records from OpenAlex')
+    # logger.info(f'Got {len(results)} publication records from OpenAlex')
 
+
+def find_institute(search_key, results):
+    institute_api_url = "https://api.openalex.org/institutions?search="
+    api_response = requests.get(institute_api_url + search_key)
+    if api_response.status_code != 404:
+        api_data = api_response.json()
+        # print(api_data)
+        for institute in api_data["results"]:
+            if 'id' in institute:
+                institute_acronym = ', '.join(
+                    inst_acronym for inst_acronym in institute["display_name_acronyms"])
+
+                description = ''
+                if 'wikipedia' in institute["ids"]:
+                    # institute_wikipedia_link = institute["ids"]["wikipedia"]
+                    description = utils.read_wikipedia(institute["display_name"])
+
+                institute_country = ''
+                if 'country' in institute["geo"]:
+                    institute_country = institute["geo"]["country"]
+                results.append(
+                    Institute(
+                        id=institute["id"],
+                        name=institute["display_name"],
+                        country=institute_country,
+                        institute_type=institute["type"],
+                        acronyms_name=institute_acronym,
+                        homepage_url=institute["homepage_url"],
+                        description=description)
+                )
+    # logger.info(f'Got {len(results)} institute records from OpenAlex')
