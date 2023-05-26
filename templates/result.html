@@ -46,7 +46,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
-                                <span style="color: gray;"> - {{data.date}}</span></li>
+                                <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
@@ -57,7 +57,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
-                                <span style="color: gray;"> - {{data.date}}</span></li>
+                                <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
@@ -68,7 +68,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
-                                <span style="color: gray;"> - {{data.date}} (Version: {{data.version}})</span></li>
+                                <span style="color: gray;"> - {{data.date}} (Version: {{data.version}})<br> {{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
@@ -79,7 +79,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
-                                <span style="color: gray;"> - {{data.date}}</span></li>
+                                <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
@@ -90,7 +90,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
-                                <span style="color: gray;"> - {{data.date}}</span></li>
+                                <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
@@ -116,6 +116,17 @@
 
                             <div style="margin-left:10px;">
                                 <p>{{data.authors}}</p>
+                            </div>
+                        {% endif %}
+                    {% endif %}
+                    {% if title == 'Institute' %}
+                        {% if data %}
+                            <p class='url'>{{data.id}}, Type: {{data.institute_type}}</p>
+                            <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> ({{data.acronyms_name}})</h2>
+                                <span style="color: gray;"> {{data.country}}</span></li>
+
+                            <div style="margin-left:10px;">
+                                <p>{{data.description}}</p>
                             </div>
                         {% endif %}
                     {% endif %}
@@ -156,7 +167,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
-                                <span style="color: gray;"> - {{data.date}}</span></li>
+                                <span style="color: gray;"> - {{data.date}}<br>{{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p>{{data.resource_type}}</p>
