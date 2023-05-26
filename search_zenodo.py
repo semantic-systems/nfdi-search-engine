@@ -1,4 +1,6 @@
 import requests
+
+import utils
 from objects import Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson
 import logging
 import os
@@ -23,12 +25,15 @@ def zenodo(search_term, results):
             zenedo_resource_type = 'zenodo:' + data['metadata']['resource_type']['type']
             resource_type = data['metadata']['resource_type']['type']
             authors_list = '; '.join([authors["name"] for authors in data['metadata']['creators']])
+            description_txt = data["metadata"]["description"]
+            description = utils.remove_html_tags(description_txt)
             if resource_type == 'publication':
                 results.append(
                     Article(
                         title=data['metadata']['title'],
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
+                        description=description,
                         authors=authors_list
                     )
                 )
@@ -38,6 +43,7 @@ def zenodo(search_term, results):
                         title=data['metadata']['title'],
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
+                        description=description,
                         authors=authors_list
                     )
                 )
@@ -47,6 +53,7 @@ def zenodo(search_term, results):
                         title=data['metadata']['title'],
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
+                        description=description,
                         authors=authors_list
                     )
                 )
@@ -56,6 +63,7 @@ def zenodo(search_term, results):
                         title=data['metadata']['title'],
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
+                        description=description,
                         authors=authors_list
                     )
                 )
@@ -68,6 +76,7 @@ def zenodo(search_term, results):
                         title=data['metadata']['title'],
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
+                        description=description,
                         version=version,
                         authors=authors_list
                     )
@@ -78,6 +87,7 @@ def zenodo(search_term, results):
                         title=data['metadata']['title'],
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
+                        description=description,
                         authors=authors_list
                     )
                 )
@@ -106,10 +116,9 @@ def zenodo(search_term, results):
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
                         title=data['metadata']['title'],
+                        description=description,
                         author=authors_list
                     )
                 )
 
     logger.info(f'Got {len(results)} records from Zenodo')
-    # return results
-    # logger.info(f"Graph g has {len(g)} statements after querying Zenodo.")
