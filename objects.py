@@ -13,6 +13,7 @@ class Article:
     title: str
     url: str
     authors: str
+    description: str
     date: str
 
 
@@ -22,14 +23,20 @@ class Zenodo:
     url: str
     date: str  # e.g. '2022-07-06'
     title: str
+    description: str
     author: str
 
 
 @dataclasses.dataclass
 class Institute:
     name: str
-    url: str
+    id: str
     country: str
+    institute_type: str
+    acronyms_name: str
+    homepage_url: str
+    description: str
+
 
 
 @dataclasses.dataclass
@@ -37,6 +44,7 @@ class Presentation:
     title: str
     url: str
     authors: str
+    description: str
     date: str
 
 
@@ -45,6 +53,7 @@ class Poster:
     title: str
     url: str
     authors: str
+    description: str
     date: str
 
 
@@ -53,6 +62,7 @@ class Dataset:
     title: str
     url: str
     authors: str
+    description: str
     date: str
 
 
@@ -62,6 +72,7 @@ class Software:
     url: str
     date: str
     authors: str
+    description: str
     version: str
 
 
@@ -86,6 +97,7 @@ class Lesson:
     title: str
     url: str
     authors: str
+    description: str
     date: str
     
     
