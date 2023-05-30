@@ -3,6 +3,7 @@
 {% block style_sheet %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
 {% endblock %}
+{% block search_term %}{{search_term}}{% endblock %}
 {% block content %}
     <div style="margin-left:10px;">
         {% for title, datas in data.items() %}
