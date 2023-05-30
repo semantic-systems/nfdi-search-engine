@@ -1,4 +1,3 @@
-import extruct
 import logging
 import requests
 
@@ -7,15 +6,15 @@ import requests
 
 
 def search_openalex(search_term: str):
-    details = {}
+    details = {'OpenAlex': search_term}
     api_url = "https://api.openalex.org/"
     api_url_author = requests.get(api_url + search_term)
     if api_url_author.status_code != 404:
         author = api_url_author.json()
         if author['orcid']:
-            details['orcid'] = author['orcid']
+            details['ORCID number'] = author['orcid']
         details['Number of works'] = author['works_count']
-        details['citations'] = author['cited_by_count']
+        details['Number of citations'] = author['cited_by_count']
         return details, author['display_name']
     return details, ''
 
