@@ -73,6 +73,7 @@ def dblp(search_term: str, results):
                         title=data["name"],
                         url=url,
                         authors=author,
+                        description='',
                         date=data["datePublished"]
                     )
                 )
