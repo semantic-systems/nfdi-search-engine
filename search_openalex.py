@@ -1,8 +1,7 @@
 import requests
 import logging
 from objects import Person, Article
-import utils, json
-
+import json
 
 def open_alex(name, g, results):
     """
@@ -40,32 +39,6 @@ def find_authors(search_key, results):
         authors = api_response_authors.json()
         if 'results' in authors:
             for author in authors['results']:
-                # E.g.:
-                #  {
-                #    "id": "https://openalex.org/A4222267058",
-                #    "orcid": None,
-                #    "display_name": "Ricardo Usbeck",
-                #    "display_name_alternatives": [],
-                #    "relevance_score": 184.41525,
-                #    "works_count": 1,
-                #    "cited_by_count": 4,
-                #    "ids": {
-                #      "openalex": "https://openalex.org/A4222267058"
-                #    },
-                #    "x_concepts": [
-                #      ...
-                #    ],
-                #    "counts_by_year": [
-                #      {
-                #        "year": 2022,
-                #        "works_count": 1,
-                #        "cited_by_count": 4
-                #      }
-                #    ],
-                #    "works_api_url": "https://api.openalex.org/works?filter=author.id:A4222267058",
-                #    "updated_date": "2023-01-18T18:01:48.538514",
-                #    "created_date": "2022-04-05"
-                # }
                 if author['last_known_institution']:
                     affiliation = author['last_known_institution']['display_name']
 
