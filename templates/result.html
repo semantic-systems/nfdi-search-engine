@@ -122,33 +122,33 @@
                     {% if title == 'Institute' %}
                         {% if data %}
                             <p class='url'>{{data.id}}, Type: {{data.institute_type}}</p>
-                            <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> ({{data.acronyms_name}})</h2>
-                                <span style="color: gray;"> {{data.country}}</span></li>
+                            <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> {{data.acronyms_name}}</h2>
+                                <span style="color: gray;"> {{data.country}} <br> {{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
-                                <p>{{data.description}}</p>
+                                <p></p>
                             </div>
                         {% endif %}
                     {% endif %}
                     {% if title == 'Publisher' %}
                         {% if data %}
-                            <p class='url'>{{data.url}}</p>
-                            <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.name}}</a> </h2>
-                                <span style="color: gray;"> - H-Index: {{data.h_index}}</span></li>
+                            <p class='url'>{{data.id}}</p>
+                            <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> </h2>
+                                <span style="color: gray;">  (H_Index: {{data.h_index}}, Works_count: {{data.works_count}}, Country_code: {{data.country_codes}})<br> {{data.description}} <br></span></li>
 
                             <div style="margin-left:10px;">
-                                <p>{{data.authors}}</p>
+                                <p></p>
                             </div>
                         {% endif %}
                     {% endif %}
                     {% if title == 'Funder' %}
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
-                            <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> (Grants: {{data.grants_count}})</h2>
-                                <span style="color: gray;"> - {{data.description}}</span></li>
+                            <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> </h2>
+                                <span style="color: gray;"> (Grants: {{data.grants_count}}, Works_count: {{data.works_count}}) <br>{{data.description}}<br></span></li>
 
                             <div style="margin-left:10px;">
-                                <p>{{data.authors}}</p>
+                                <p></p>
                             </div>
                         {% endif %}
                     {% endif %}
