@@ -32,6 +32,8 @@ def find(search_key: str, results):
     find_authors(search_key, results)
     find_works(search_key, results)
     find_institute(search_key, results)
+    find_funder(search_key, results)
+    find_publisher(search_key, results)
     logger.info(f"Got {len(results)} author, publication, and institute records from OpenAlex")
     return results
 
@@ -117,7 +119,6 @@ def find_institute(search_key, results):
     api_response = requests.get(institute_api_url + search_key)
     if api_response.status_code != 404:
         api_data = api_response.json()
-        # print(api_data)
         for institute in api_data["results"]:
             if 'id' in institute:
                 institute_acronym = ', '.join(
@@ -142,3 +143,49 @@ def find_institute(search_key, results):
                         description=description)
                 )
     # logger.info(f'Got {len(results)} institute records from OpenAlex')
+
+
+def find_funder(search_key, results):
+    funder_api_url = "https://api.openalex.org/funders?search="
+    api_response = requests.get(funder_api_url + search_key)
+    if api_response.status_code == 404:
+        return
+    api_data = api_response.json()
+    for funder in api_data["results"]:
+        if 'id' in funder:
+            results.append(
+                Funder(
+                    id=funder["id"],
+                    name=funder["display_name"],
+                    homepage_url=funder["homepage_url"],
+                    country_code=funder["country_code"],
+                    grants_count=funder["grants_count"],
+                    works_count=funder["works_count"],
+                    description=funder["description"])
+            )
+
+
+def find_publisher(search_key, results):
+    publisher_api_url = "https://api.openalex.org/publishers?search="
+    api_response = requests.get(publisher_api_url + search_key)
+    if api_response.status_code == 404:
+        return
+    api_data = api_response.json()
+    for publisher in api_data["results"]:
+        country_codes = ', '.join(
+                country_code for country_code in publisher["country_codes"])
+        h_index = ''
+        if 'h_index' in publisher["summary_stats"]:
+            h_index = publisher["summary_stats"]["h_index"]
+        if 'id' in publisher:
+            results.append(
+                Publisher(
+                    id=publisher["id"],
+                    name=publisher["display_name"],
+                    country_codes=country_codes,
+                    works_count=publisher["works_count"],
+                    homepage_url=publisher['homepage_url'],
+                    h_index=h_index,
+                    description='')
+            )
+
