@@ -3,6 +3,7 @@ from objects import Article, Person
 import wikipedia
 from bs4 import BeautifulSoup
 
+
 def extract_metadata(text):
     """
     Extract all metadata present in the page and return a dictionary of metadata lists.
@@ -75,6 +76,11 @@ def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
     cleaned_text = soup.text
     cleaned_text.strip()
-    return cleaned_text
-
+    sentences = cleaned_text.split('.')
+    if len(sentences) <= 5:
+        return cleaned_text
+    else:
+        first_n_sentences: str = '. '.join(
+                sentence for sentence in sentences[0:4])
+        return first_n_sentences
 

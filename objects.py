@@ -103,14 +103,21 @@ class Lesson:
     
 @dataclasses.dataclass
 class Publisher:
+    id: str
     name: str
-    url: str
-    h_index: int
+    homepage_url: str
+    country_codes: str
+    works_count: str
+    h_index: str
+    description: str
 
 
 @dataclasses.dataclass
 class Funder:
     name: str
+    id: str
     description: str
-    grants_count: int
+    country_code: str
+    grants_count: str
     homepage_url: str
+    works_count: str
