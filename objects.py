@@ -24,7 +24,12 @@ class Zenodo:
     title: str
     author: str
 
-
+@dataclasses.dataclass
+class Ieee:
+    title: str
+    url: str
+    date: str
+    authors: str
 @dataclasses.dataclass
 class Institute:
     name: str

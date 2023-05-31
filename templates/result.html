@@ -63,11 +63,23 @@
                     {% if data %}
                         <p class='url'>{{data.url}}</p>
                         <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
-                            <span style="color: gray;"> - {{data.date}}</span></li>
+                            <!-- <span style="color: gray;"> - {{data.date}}</span></li> -->
                         
-                        <div style="margin-left:10px;">
+                        <!-- <div style="margin-left:10px;">
                             <p>{{data.resource_type}}</p>
-                        </div>
+                        </div> -->
+                    {% else %}
+                        <p>No data found for {{ title }}</p>
+                    {% endif %}
+                {% endif %}
+                {% if title == 'Ieee' %}
+                    {% if data %}
+                        <p class='url'>{{data.url}}</p>
+                        <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+                            <span style="color: gray;"> - {{data.date}}</span></li>
+                        <div style="margin-left:10px;">
+                            <p>{{data.authors}}</p>
+                        </div>       
                     {% else %}
                         <p>No data found for {{ title }}</p>
                     {% endif %}
