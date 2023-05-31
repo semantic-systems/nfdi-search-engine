@@ -1,5 +1,5 @@
 import logging
-from objects import Person, Zenodo, Article, Ieee
+from objects import Person, Zenodo, Article, Ieee, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher
 from flask import Flask, render_template, request
 import threading
 import search_dblp
@@ -24,6 +24,18 @@ def sources():
             'Articles': [],
             'Zenodo': [],
             'Ieee': [],
+            'Dataset': [],
+            'Software': [],
+            'Presentation': [],
+            'Poster': [],
+            'Lesson': [],
+            'Video': [],
+            'Institute': [],
+            'Publisher': [],
+            'Funder': [],
+            'Image': [],
+            'Zenodo': []
+
         }
         results = []
         threads = []
@@ -66,6 +78,36 @@ def sources():
             elif isinstance(result, Article):
                 data['Articles'].append(result)
 
+            elif isinstance(result, Dataset):
+                data['Dataset'].append(result)
+
+            elif isinstance(result, Software):
+                data['Software'].append(result)
+
+            elif isinstance(result, Presentation):
+                data['Presentation'].append(result)
+
+            elif isinstance(result, Poster):
+                data['Poster'].append(result)
+
+            elif isinstance(result, Lesson):
+                data['Lesson'].append(result)
+
+            elif isinstance(result, Video):
+                data['Video'].append(result)
+
+            elif isinstance(result, Institute):
+                data['Institute'].append(result)
+
+            elif isinstance(result, Publisher):
+                data['Publisher'].append(result)
+
+            elif isinstance(result, Funder):
+                data['Funder'].append(result)
+
+            elif isinstance(result, Image):
+                data['Image'].append(result)
+
             elif isinstance(result, Zenodo):
                 data['Zenodo'].append(result)
 
@@ -74,6 +116,8 @@ def sources():
                 
             else:
                 logger.warning(f"Type {type(result)} of result not yet handled")
+        # Remove items without results
+        data = dict((k, result) for k, result in data.items() if result)
         return render_template('result.html', data=data, search_term=search_term)
 
 
