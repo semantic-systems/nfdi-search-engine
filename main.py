@@ -14,6 +14,8 @@ def index():
     return render_template('index.html')
 
 @app.route('/sources', methods=['POST', 'GET'])
+
+# TODO This function also needs to be refactored to reduce repetition and improve code maintainability.
 def sources():
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
