@@ -40,10 +40,10 @@ def search_dblp(search_term: str):
 
     author = ET.fromstring(response)[0]
     name = author.find('.author').text
-    if hasattr(author, author.text):
-        details['Last known institution'] = details['Last known institution'] = author.find('.note').text
-    else:
+    if author.find('.note') is None:
         details['Last known institution'] = ""
+    else:
+        details['Last known institution'] = author.find('.note').text
     for url in author.findall('.url'):
         links.append(url.text)
     return details, links, name
