@@ -13,6 +13,11 @@ jobs:
     steps:
       - name: 'Check out repo'
         uses: actions/checkout@v3
-      - name: 'Write dummy file for debugging'
-        run: 'echo "Works" >> /tmp/gh_action_was_here.txt'
-        
+        with:
+          ref: main
+      - name: 'Stop the running NFDI Search Engine'
+        run: docker compose down
+      - name: 'Delete old Docker image'
+        run: docker image rm nfdi-search-engine-search-engine
+      - name: 'Re-build Docker container from current source'
+        run: docker compose up --force-recreate --pull --build -d
