@@ -9,7 +9,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: sems-kg-1
+    runs-on: self-hosted
     steps:
       - name: 'Check out repo'
         uses: actions/checkout@v3
