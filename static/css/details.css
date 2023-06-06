@@ -1,0 +1,48 @@
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 5px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Header/Blog Title */
+.header {
+  padding: 1px;
+  font-size: 40px;
+  text-align: center;
+  background-color:  WhiteSmoke;
+}
+
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1%;
+}
+
+/* Add a card effect for articles */
+.leftcard {
+  flex: 69%;
+  background-color: WhiteSmoke;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+.rightcard {
+  flex: 30%;
+  background-color: WhiteSmoke;
+  padding: 20px;
+  margin-top: 20px;
+}
+
+@media (max-width: 800px) {
+  .leftcard, .rightcard {
+    flex: 100%;
+  }
+}

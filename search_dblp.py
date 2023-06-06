@@ -48,7 +48,7 @@ def dblp(search_term: str, results):
     # I.e. the JSON-LD parsing takes that long
     for data in metadata['microdata']:
         if data['@type'] == 'Person':
-           
+
             results.append(
                 Person(
                     name=data["name"],
