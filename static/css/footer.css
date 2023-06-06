@@ -1,0 +1,149 @@
+
+.footer {
+    position: fixed;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    width: 100%;
+
+    
+    visibility: visible;
+    opacity: 1;
+
+    --dark-gray: rgb(90, 90, 90);
+    --light-gray: rgb(148, 148, 148);
+    --focus-blue: rgb(69, 159, 189);
+
+    background: var(--light-gray);
+}
+
+.footer_top {
+    padding: 20px 0px 20px;
+    position: relative;
+    overflow-x: hidden;
+    padding: 0 calc(15vw) 0 calc(20vw);
+}
+
+.footer_bottom {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 20px;
+    color: #7f88a6;
+    /* padding: 27px 0px; */
+    padding-top: 50px;
+    padding-bottom: 50px;    
+}
+
+/* .footer_top .company_widget p {
+    font-size: 16px;
+    font-weight: 300;
+    line-height: 28px;
+    color: #6a7695;
+    margin-bottom: 20px;
+} */
+
+a:hover,
+a:focus 
+{
+    text-decoration: none;
+    outline: none;
+}
+
+.footer_top .f_widget.about-widget .f_list li a:hover {
+    color: var(--focus-blue);
+}
+
+.footer_top .f_widget.about-widget .f_list li {
+    margin-bottom: 11px;
+}
+
+.f_widget.about-widget .f_list li:last-child {
+    margin-bottom: 0px;
+}
+
+.f_widget.about-widget .f_list li {
+    margin-bottom: 15px;
+}
+
+.f_widget.about-widget .f_list {
+    margin-bottom: 0px;
+}
+
+.footer_top .f_social_icon a {
+    width: 44px;
+    height: 44px;
+    line-height: 43px;
+    background: transparent;
+    border: 1px solid #e2e2eb;
+    font-size: 24px;
+}
+
+.f_social_icon a {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    font-size: 14px;
+    line-height: 45px;
+    color: #858da8;
+    display: inline-block;
+    background: #ebeef5;
+    text-align: center;
+    -webkit-transition: all 0.2s linear;
+    -o-transition: all 0.2s linear;
+    transition: all 0.2s linear;
+}
+
+.ti-facebook:before {
+    content: "\e741";
+}
+
+.ti-twitter-alt:before {
+    content: "\e74b";
+}
+
+.ti-vimeo-alt:before {
+    content: "\e74a";
+}
+
+.ti-pinterest:before {
+    content: "\e731";
+}
+
+.footer_top .f_social_icon a:hover {
+    background: var(--focus-blue);
+    border-color: var(--focus-blue);
+    color: white;
+}
+
+.footer_top .f_social_icon a+a {
+    margin-left: 4px;
+}
+
+.footer_top .f-title {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    color: #263b5e;
+}
+
+.f_600 {
+    font-weight: 600;
+}
+
+.f_size_18 {
+    font-size: 18px;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #4b505e;
+}
+
+.footer_top .f_widget.about-widget .f_list li a {
+    color: #6a7695;
+}
+
+
