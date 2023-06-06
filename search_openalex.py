@@ -1,7 +1,8 @@
 import requests
 import logging
-from objects import Person, Article
-import utils, json
+from objects import Person, Article, Institute, Funder, Publisher
+import json
+import utils
 
 
 def open_alex(name, g, results):
@@ -30,6 +31,10 @@ logger = logging.getLogger('nfdi_search_engine')
 def find(search_key: str, results):
     find_authors(search_key, results)
     find_works(search_key, results)
+    find_institute(search_key, results)
+    find_funder(search_key, results)
+    find_publisher(search_key, results)
+    logger.info(f"Got {len(results)} author, publication, and institute records from OpenAlex")
     return results
 
 
@@ -40,32 +45,6 @@ def find_authors(search_key, results):
         authors = api_response_authors.json()
         if 'results' in authors:
             for author in authors['results']:
-                # E.g.:
-                #  {
-                #    "id": "https://openalex.org/A4222267058",
-                #    "orcid": None,
-                #    "display_name": "Ricardo Usbeck",
-                #    "display_name_alternatives": [],
-                #    "relevance_score": 184.41525,
-                #    "works_count": 1,
-                #    "cited_by_count": 4,
-                #    "ids": {
-                #      "openalex": "https://openalex.org/A4222267058"
-                #    },
-                #    "x_concepts": [
-                #      ...
-                #    ],
-                #    "counts_by_year": [
-                #      {
-                #        "year": 2022,
-                #        "works_count": 1,
-                #        "cited_by_count": 4
-                #      }
-                #    ],
-                #    "works_api_url": "https://api.openalex.org/works?filter=author.id:A4222267058",
-                #    "updated_date": "2023-01-18T18:01:48.538514",
-                #    "created_date": "2022-04-05"
-                # }
                 if author['last_known_institution']:
                     affiliation = author['last_known_institution']['display_name']
 
@@ -77,7 +56,7 @@ def find_authors(search_key, results):
                             affiliation=affiliation
                         )
                     )
-    logger.info(f'Got {len(results)} author records from OpenAlex')
+    # logger.info(f'Got {len(results)} author records from OpenAlex')
 
 
 def find_works(search_key, results):
@@ -102,8 +81,85 @@ def find_works(search_key, results):
                         title=work["display_name"],
                         url=work["id"],
                         authors=author,
+                        description='',
                         date=str(work["publication_year"])
                     )
                 )
-    logger.info(f'Got {len(results)} publication records from OpenAlex')
+    # logger.info(f'Got {len(results)} publication records from OpenAlex')
+
+
+def find_institute(search_key, results):
+    institute_api_url = "https://api.openalex.org/institutions?search="
+    api_response = requests.get(institute_api_url + search_key)
+    if api_response.status_code != 404:
+        api_data = api_response.json()
+        for institute in api_data["results"]:
+            if 'id' in institute:
+                institute_acronym = ', '.join(
+                    inst_acronym for inst_acronym in institute["display_name_acronyms"])
+
+                description = ''
+                if 'wikipedia' in institute["ids"]:
+                    # institute_wikipedia_link = institute["ids"]["wikipedia"]
+                    description = utils.read_wikipedia(institute["display_name"])
+
+                institute_country = ''
+                if 'country' in institute["geo"]:
+                    institute_country = institute["geo"]["country"]
+                results.append(
+                    Institute(
+                        id=institute["id"],
+                        name=institute["display_name"],
+                        country=institute_country,
+                        institute_type=institute["type"],
+                        acronyms_name=institute_acronym,
+                        homepage_url=institute["homepage_url"],
+                        description=description)
+                )
+    # logger.info(f'Got {len(results)} institute records from OpenAlex')
+
+
+def find_funder(search_key, results):
+    funder_api_url = "https://api.openalex.org/funders?search="
+    api_response = requests.get(funder_api_url + search_key)
+    if api_response.status_code == 404:
+        return
+    api_data = api_response.json()
+    for funder in api_data["results"]:
+        if 'id' in funder:
+            results.append(
+                Funder(
+                    id=funder["id"],
+                    name=funder["display_name"],
+                    homepage_url=funder["homepage_url"],
+                    country_code=funder["country_code"],
+                    grants_count=funder["grants_count"],
+                    works_count=funder["works_count"],
+                    description=funder["description"])
+            )
+
+
+def find_publisher(search_key, results):
+    publisher_api_url = "https://api.openalex.org/publishers?search="
+    api_response = requests.get(publisher_api_url + search_key)
+    if api_response.status_code == 404:
+        return
+    api_data = api_response.json()
+    for publisher in api_data["results"]:
+        country_codes = ', '.join(
+                country_code for country_code in publisher["country_codes"])
+        h_index = ''
+        if 'h_index' in publisher["summary_stats"]:
+            h_index = publisher["summary_stats"]["h_index"]
+        if 'id' in publisher:
+            results.append(
+                Publisher(
+                    id=publisher["id"],
+                    name=publisher["display_name"],
+                    country_codes=country_codes,
+                    works_count=publisher["works_count"],
+                    homepage_url=publisher['homepage_url'],
+                    h_index=h_index,
+                    description='')
+            )
 
