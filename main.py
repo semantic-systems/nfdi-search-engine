@@ -1,5 +1,5 @@
 import logging
-from objects import Person, Zenodo, Article
+from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher
 from flask import Flask, render_template, request
 import threading
 import search_dblp
@@ -14,6 +14,8 @@ def index():
     return render_template('index.html')
 
 @app.route('/sources', methods=['POST', 'GET'])
+
+# TODO This function also needs to be refactored to reduce repetition and improve code maintainability.
 def sources():
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
@@ -21,6 +23,16 @@ def sources():
         data = {
             'Researchers': [],
             'Articles': [],
+            'Dataset': [],
+            'Software': [],
+            'Presentation': [],
+            'Poster': [],
+            'Lesson': [],
+            'Video': [],
+            'Institute': [],
+            'Publisher': [],
+            'Funder': [],
+            'Image': [],
             'Zenodo': []
         }
         results = []
@@ -57,6 +69,36 @@ def sources():
 
             elif isinstance(result, Article):
                 data['Articles'].append(result)
+
+            elif isinstance(result, Dataset):
+                data['Dataset'].append(result)
+
+            elif isinstance(result, Software):
+                data['Software'].append(result)
+
+            elif isinstance(result, Presentation):
+                data['Presentation'].append(result)
+
+            elif isinstance(result, Poster):
+                data['Poster'].append(result)
+
+            elif isinstance(result, Lesson):
+                data['Lesson'].append(result)
+
+            elif isinstance(result, Video):
+                data['Video'].append(result)
+
+            elif isinstance(result, Institute):
+                data['Institute'].append(result)
+
+            elif isinstance(result, Publisher):
+                data['Publisher'].append(result)
+
+            elif isinstance(result, Funder):
+                data['Funder'].append(result)
+
+            elif isinstance(result, Image):
+                data['Image'].append(result)
 
             elif isinstance(result, Zenodo):
                 data['Zenodo'].append(result)

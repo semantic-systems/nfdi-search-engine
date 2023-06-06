@@ -1,0 +1,21 @@
+name: 'Deploy NFDI Search Engine on sems-kg-1'
+on:
+  workflow_dispatch:
+  push:
+    branches: 
+      - main
+
+jobs:
+  deploy:
+    runs-on: self-hosted
+    steps:
+      - name: 'Check out repo'
+        uses: actions/checkout@v3
+        with:
+          ref: main
+      - name: 'Stop the running NFDI Search Engine'
+        run: docker compose down
+      - name: 'Delete old Docker image'
+        run: docker image rm nfdi-search-engine-search-engine
+      - name: 'Re-build Docker container from current source'
+        run: docker compose up --force-recreate --pull --build -d

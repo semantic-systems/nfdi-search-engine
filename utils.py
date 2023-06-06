@@ -1,5 +1,8 @@
 import extruct
 from objects import Article, Person
+import wikipedia
+from bs4 import BeautifulSoup
+
 
 def extract_metadata(text):
     """
@@ -58,3 +61,26 @@ def is_article_in(title, articles):
         if article.title == title:
             return article
     return None
+
+
+def read_wikipedia(title):
+    wikipedia.set_lang("en")
+    try:
+        summary_text = wikipedia.summary(title, 3, redirect=True)
+    except:
+        return ""
+    return summary_text
+
+
+def remove_html_tags(text):
+    soup = BeautifulSoup(text, "html.parser")
+    cleaned_text = soup.text
+    cleaned_text.strip()
+    sentences = cleaned_text.split('.')
+    if len(sentences) <= 5:
+        return cleaned_text
+    else:
+        first_n_sentences: str = '. '.join(
+                sentence for sentence in sentences[0:4])
+        return first_n_sentences
+
