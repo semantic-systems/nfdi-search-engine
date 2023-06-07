@@ -67,6 +67,7 @@ a:focus
 
 .f_widget.about-widget .f_list {
     margin-bottom: 0px;
+    text-align: center;
 }
 
 .footer_top .f_social_icon a {
@@ -140,6 +141,7 @@ h4,
 h5,
 h6 {
     color: #4b505e;
+    text-align: center;
 }
 
 .footer_top .f_widget.about-widget .f_list li a {
