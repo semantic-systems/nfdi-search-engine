@@ -1,0 +1,31 @@
+{% extends "search_layout.html" %}
+{% block title %} {{name}} {% endblock %}
+{% block style_sheet %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/details.css') }}">
+{% endblock %}
+{% block content %}
+    <div style="margin-left:10px;">
+    <div class="header">
+        <h2>{{name}}</h2>
+    </div>
+    <div class="container">
+        <div class="leftcard">
+            <h3>Details</h3>
+            <ul>
+                {% for detail, value in details.items() %}
+                    <li> {{detail}}: {{value}}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        <div class="rightcard">
+            <h3>Links</h3>
+            <ul>
+                {% for link in links %}
+                        <li><a href="{{link}}" target="_blank">{{link}}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    </div>
+{% endblock %}

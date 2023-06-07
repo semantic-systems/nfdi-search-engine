@@ -5,17 +5,18 @@ import threading
 import search_dblp
 import search_zenodo
 import search_openalex
+import details_page
 
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
+
 
 @app.route('/')
 def index():
     return render_template('index.html')
 
-@app.route('/sources', methods=['POST', 'GET'])
 
-# TODO This function also needs to be refactored to reduce repetition and improve code maintainability.
+@app.route('/sources', methods=['POST', 'GET'])
 def sources():
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
@@ -107,6 +108,21 @@ def sources():
         # Remove items without results
         data = dict((k, result) for k, result in data.items() if result)
         return render_template('result.html', data=data, search_term=search_term)
+
+
+@app.route('/details', methods=['POST', 'GET'])
+def details():
+    if request.method == 'GET':
+        # data_type = request.args.get('type')
+        details = {}
+        links = {}
+        name = ''
+        search_term = request.args.get('searchTerm')
+        if search_term.startswith('https://openalex.org/'):
+            details, links, name = details_page.search_openalex(search_term)
+        elif search_term.startswith('https://dblp'):
+            details, links, name = details_page.search_dblp(search_term)
+        return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
 
 
 if __name__ == "__main__":

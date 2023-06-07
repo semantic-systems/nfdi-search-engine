@@ -99,7 +99,7 @@ class Lesson:
     authors: str
     description: str
     date: str
-    
+
     
 @dataclasses.dataclass
 class Publisher:

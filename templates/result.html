@@ -1,33 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% extends "search_layout.html" %}
+{% block title %}Result{% endblock %}
+{% block style_sheet %}
     <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
-    <title>Result</title>
-</head>
-<body>
-    <h2 style="color:gray;">Search Result</h2>
-    <form action="/sources" method="GET">
-        <div>
-            <div class="searchbox">
-                <svg aria-hidden="true" viewBox="0 0 24 24">
-                    <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
-                </svg>
-                <input
-                    aria-label="Search for Article, Researcher"
-                    autocomplete="off"
-                    inputmode="search"
-                    placeholder="Search for Article, Researcher"
-                    type="search"
-                    name="txtSearchTerm"
-                    value="{{ search_term }}"
-                />
-            </div>
-        </div>
-    </form>
-    <hr/>
+{% endblock %}
+{% block search_term %}{{search_term}}{% endblock %}
+{% block content %}
     <div style="margin-left:10px;">
         {% for title, datas in data.items() %}
             <br>
@@ -37,6 +14,7 @@
                     {% if title == 'Researchers' %}
                         {% if data %}
                             <li><h2 class='subtitle'><a href='{{data.url}}' target='_blank' >{{data.name}}</a></h2></li>
+                            <a href='/details?searchTerm={{data.url}}'>View Details</a>
                             <div style="margin-left:10px;">
                                 <p class='faded'>{{data.url}}</p>
                             </div>
@@ -134,7 +112,7 @@
                         {% if data %}
                             <p class='url'>{{data.id}}</p>
                             <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> </h2>
-                                <span style="color: gray;">  (H_Index: {{data.h_index}}, Works_count: {{data.works_count}}, Country_code: {{data.country_codes}})<br> {{data.description}} <br></span></li>
+                                <span style="color: gray;">  (H_Index: {{data.h_index}}, Works_count: {{data.works_count}}, Country_code: {{data.country_codes}})<br> {{data.description}} </span></li>
 
                             <div style="margin-left:10px;">
                                 <p></p>
@@ -145,7 +123,7 @@
                         {% if data %}
                             <p class='url'>{{data.url}}</p>
                             <li><h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> </h2>
-                                <span style="color: gray;"> (Grants: {{data.grants_count}}, Works_count: {{data.works_count}}) <br>{{data.description}}<br></span></li>
+                                <span style="color: gray;"> (Grants: {{data.grants_count}}, Works_count: {{data.works_count}}) <br>{{data.description}}</span></li>
 
                             <div style="margin-left:10px;">
                                 <p></p>
@@ -180,5 +158,4 @@
             <p>No results found for {{search_term}}</p>
         {% endfor %}
     </div>
-</body>
-</html>
+{% endblock %}
