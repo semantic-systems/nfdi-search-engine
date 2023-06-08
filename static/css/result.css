@@ -2,7 +2,7 @@ html {
     --dark-gray: rgb(90, 90, 90);
     --light-gray: rgb(148, 148, 148);
     --focus-blue: rgb(69, 159, 189);
-    margin:  0px auto auto 40px;
+    margin: 0;
 }
 
 .bsearch{
@@ -28,6 +28,7 @@ h3 {
     (var(--box-height) - var(--icon-size)) / 2
     );
     width: 550px;
+    margin-left: 40px;
 }
 .searchbox input[type='search'] {
     border: var(--border-width) solid var(--dark-gray);
@@ -77,4 +78,14 @@ p  { margin-top: 4px; }
 
 ul {
     list-style-type: none;
+}
+
+.result_container{
+    margin-bottom: 330px;
+    overflow: visible;
+    min-height: calc(100vh - 170px);
+    position: relative;
+    z-index: 1;
+    background-color: #fff;
+    padding-left: 40px;
 }
