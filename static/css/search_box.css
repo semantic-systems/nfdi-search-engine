@@ -2,7 +2,7 @@ html {
     --dark-gray: rgb(90, 90, 90);
     --light-gray: rgb(148, 148, 148);
     --focus-blue: rgb(69, 159, 189);
-    margin: 25px;
+    margin: 0;
 }
 
 .bsearch{
@@ -11,6 +11,13 @@ html {
     margin-top: 20px;
     /* align-items:center;  */
     justify-content:center;
+
+    margin-bottom: 330px;
+    overflow: visible;
+    min-height: calc(100vh - 170px);
+    position: relative;
+    z-index: 1;
+    background-color: #fff;
 }
 
 h3 {

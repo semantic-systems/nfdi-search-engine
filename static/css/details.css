@@ -1,15 +1,16 @@
-ul {
-  list-style-type: none;
-  margin: 0;
-  padding: 0;
-}
-
-li {
-  margin-bottom: 5px;
-}
 
 * {
   box-sizing: border-box;
+}
+
+.details_wrapper {
+  margin-bottom: 330px;
+  overflow: visible;
+  min-height: calc(100vh - 170px);
+  position: relative;
+  z-index: 1;
+  background-color: #fff;
+  padding-left: 40px;
 }
 
 /* Header/Blog Title */
@@ -20,10 +21,11 @@ li {
   background-color:  WhiteSmoke;
 }
 
-.container {
+.details_container {
   display: flex;
   flex-wrap: wrap;
   gap: 1%;
+  margin: 50px
 }
 
 /* Add a card effect for articles */
@@ -31,14 +33,26 @@ li {
   flex: 69%;
   background-color: WhiteSmoke;
   padding: 20px;
-  margin-top: 20px;
+  /* margin-top: 20px; */
 }
 
 .rightcard {
   flex: 30%;
   background-color: WhiteSmoke;
   padding: 20px;
-  margin-top: 20px;
+  /* margin-top: 20px; */
+}
+
+.leftcard ul, 
+.rightcard ul {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leftcard li,
+.rightcard li {
+  margin-bottom: 5px;
 }
 
 @media (max-width: 800px) {
