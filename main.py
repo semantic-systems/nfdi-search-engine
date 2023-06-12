@@ -5,7 +5,9 @@ import threading
 import search_dblp
 import search_zenodo
 import search_openalex
+import resodate
 import details_page
+import search_wikidata
 import search_gesis
 import search_cordis
 
@@ -53,6 +55,12 @@ def sources():
         def openalex_search():
             search_openalex.find(search_term, results)
 
+        def resodate_search():
+            resodate.search(search_term, results)
+
+        def wikidata_search():
+            search_wikidata.wikidata_search(search_term, results)
+
         def gesis_search():
             search_gesis.gesis(search_term, results)
 
@@ -63,8 +71,10 @@ def sources():
         t1 = threading.Thread(target=dblp_search)
         t2 = threading.Thread(target=zenodo_search)
         t3 = threading.Thread(target=openalex_search)
-        t4 = threading.Thread(target=gesis_search)
-        t5 = threading.Thread(target=cordis_search)
+        t4 = threading.Thread(target=wikidata_search)
+        t5 = threading.Thread(target=resodate_search)
+        t6 = threading.Thread(target=gesis_search)
+        t7 = threading.Thread(target=cordis_search)
 
         # Start all threads
         t1.start()
@@ -72,6 +82,8 @@ def sources():
         t3.start()
         t4.start()
         t5.start()
+        t6.start()
+        t7.start()
 
         # Wait for all threads to finish
         t1.join()
@@ -79,6 +91,8 @@ def sources():
         t3.join()
         t4.join()
         t5.join()
+        t6.join()
+        t7.join()
 
         logger.info(f'Got {len(results)} results')
         for result in results:
