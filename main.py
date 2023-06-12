@@ -57,19 +57,19 @@ def sources():
         t1 = threading.Thread(target=dblp_search)
         t2 = threading.Thread(target=zenodo_search)
         t3 = threading.Thread(target=openalex_search)
-        t4 = threading.Thread(target=resodate_search)
+        t5 = threading.Thread(target=resodate_search)
 
         # Start all threads
         t1.start()
         t2.start()
         t3.start()
-        t4.start()
+        t5.start()
 
         # Wait for all threads to finish
         t1.join()
         t2.join()
         t3.join()
-        t4.join()
+        t5.join()
         
         logger.info(f'Got {len(results)} results')
         for result in results:
