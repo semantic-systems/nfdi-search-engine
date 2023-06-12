@@ -181,6 +181,32 @@
         </div>
         {% endif %}
         {% endif %}
+        {% if title == 'Gesis' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+            <span style="color: gray;"> - {{data.date}}<br>{{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.resource_type}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Cordis' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+            <span style="color: gray;"> - {{data.date}}<br>{{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.resource_type}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
         {% endfor %}
     </ul>
     {% else %}
