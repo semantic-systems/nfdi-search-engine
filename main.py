@@ -3,7 +3,7 @@ import logging.config
 import os
 
 from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 import threading
 import search_dblp
 import search_zenodo
@@ -17,11 +17,24 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    response = make_response(render_template('index.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        response.set_cookie('search-session', request.cookies['session'])
+
+    return response
 
 
 @app.route('/sources', methods=['POST', 'GET'])
 def sources():
+    # The search-session cookie setting can still be None if a user enters the
+    # /sources endpoint directly without going to / first!!!
+    logger.debug(
+        f'Search session {request.cookies.get("search-session")} '
+        f'searched for "{request.args.get("txtSearchTerm")}"'
+    )
+
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
         results = []
