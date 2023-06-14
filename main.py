@@ -2,13 +2,17 @@ import logging
 import logging.config
 import os
 
-from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher
+from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis
 from flask import Flask, render_template, request, make_response
 import threading
 import search_dblp
 import search_zenodo
 import search_openalex
+import resodate
 import details_page
+import search_wikidata
+import search_gesis
+import search_cordis
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -51,7 +55,9 @@ def sources():
             'Publisher': [],
             'Funder': [],
             'Image': [],
-            'Zenodo': []
+            'Zenodo': [],
+            'Gesis': [],
+            'Cordis': [],
         }
         results = []
         threads = []
@@ -65,21 +71,46 @@ def sources():
         
         def openalex_search():
             search_openalex.find(search_term, results)
+
+        def resodate_search():
+            resodate.search(search_term, results)
+
+        def wikidata_search():
+            search_wikidata.wikidata_search(search_term, results)
+
+        def gesis_search():
+            search_gesis.gesis(search_term, results)
+
+        def cordis_search():
+            search_cordis.cordis(search_term, results)
         
         # Create a thread for each API call
         t1 = threading.Thread(target=dblp_search)
         t2 = threading.Thread(target=zenodo_search)
         t3 = threading.Thread(target=openalex_search)
+        t4 = threading.Thread(target=wikidata_search)
+        t5 = threading.Thread(target=resodate_search)
+        t6 = threading.Thread(target=gesis_search)
+        t7 = threading.Thread(target=cordis_search)
 
         # Start all threads
         t1.start()
         t2.start()
         t3.start()
+        t4.start()
+        t5.start()
+        t6.start()
+        t7.start()
 
         # Wait for all threads to finish
         t1.join()
         t2.join()
         t3.join()
+        t4.join()
+        t5.join()
+        t6.join()
+        t7.join()
+
         logger.info(f'Got {len(results)} results')
         for result in results:
             if isinstance(result, Person):
@@ -120,6 +151,12 @@ def sources():
 
             elif isinstance(result, Zenodo):
                 data['Zenodo'].append(result)
+
+            elif isinstance(result, Gesis):
+                data['Gesis'].append(result)
+
+            elif isinstance(result, Cordis):
+                data['Cordis'].append(result)   
             else:
                 logger.warning(f"Type {type(result)} of result not yet handled")
         # Remove items without results
