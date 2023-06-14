@@ -1,4 +1,7 @@
 import logging
+import logging.config
+import os
+
 from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher
 from flask import Flask, render_template, request
 import threading
@@ -7,6 +10,7 @@ import search_zenodo
 import search_openalex
 import details_page
 
+logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
 
