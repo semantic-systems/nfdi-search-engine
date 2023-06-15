@@ -9,7 +9,7 @@ import pandas as pd
 logger = logging.getLogger('nfdi_search_engine')
 
 
-def wikidata_search(search_string: str, results):
+def search(search_string: str, results):
     """ Obtain the results from Wikidata request and handles them accordingly.
 
       Args:

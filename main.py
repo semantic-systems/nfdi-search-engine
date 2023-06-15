@@ -2,14 +2,8 @@ import logging
 from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis
 from flask import Flask, render_template, request
 import threading
-import search_dblp
-import search_zenodo
-import search_openalex
-import resodate
+import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis
 import details_page
-import search_wikidata
-import search_gesis
-import search_cordis
 
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
@@ -24,7 +18,23 @@ def index():
 def sources():
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
+
         results = []
+        threads = []
+
+        # add all the sources here in this list; for simplicity we should use the exact module name
+        # ensure the main method which execute the search is named "search" in the module 
+        # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
+        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis]
+        for source in sources:
+            t = threading.Thread(target=source.search, args=(search_term, results,))
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
+            # print(t.is_alive())
+
         data = {
             'Researchers': [],
             'Articles': [],
@@ -41,107 +51,35 @@ def sources():
             'Zenodo': [],
             'Gesis': [],
             'Cordis': [],
-        }
-        results = []
-        threads = []
-
-        # Define a function for each API call
-        def dblp_search():
-            search_dblp.dblp(search_term, results)
-        
-        def zenodo_search():
-            search_zenodo.zenodo(search_term, results)
-        
-        def openalex_search():
-            search_openalex.find(search_term, results)
-
-        def resodate_search():
-            resodate.search(search_term, results)
-
-        def wikidata_search():
-            search_wikidata.wikidata_search(search_term, results)
-
-        def gesis_search():
-            search_gesis.gesis(search_term, results)
-
-        def cordis_search():
-            search_cordis.cordis(search_term, results)
-        
-        # Create a thread for each API call
-        t1 = threading.Thread(target=dblp_search)
-        t2 = threading.Thread(target=zenodo_search)
-        t3 = threading.Thread(target=openalex_search)
-        t4 = threading.Thread(target=wikidata_search)
-        t5 = threading.Thread(target=resodate_search)
-        # t6 = threading.Thread(target=gesis_search)
-        t7 = threading.Thread(target=cordis_search)
-
-        # Start all threads
-        t1.start()
-        t2.start()
-        t3.start()
-        t4.start()
-        t5.start()
-        # t6.start()
-        t7.start()
-
-        # Wait for all threads to finish
-        t1.join()
-        t2.join()
-        t3.join()
-        t4.join()
-        t5.join()
-        # t6.join()
-        t7.join()
+        }      
 
         logger.info(f'Got {len(results)} results')
+
+        object_mappings = {Person       : 'Researchers'   ,
+                           Article      : 'Articles'      ,
+                           Dataset      : 'Dataset'       ,
+                           Software     : 'Software'      ,
+                           Presentation : 'Presentation'  ,
+                           Poster       : 'Poster'        ,
+                           Lesson       : 'Lesson'        ,
+                           Video        : 'Video'         ,
+                           Institute    : 'Institute'     ,
+                           Publisher    : 'Publisher'     ,
+                           Funder       : 'Funder'        ,
+                           Image        : 'Image'         ,
+                           Zenodo       : 'Zenodo'        ,
+                           Gesis        : 'Gesis'         ,
+                           Cordis       : 'Cordis'        ,                
+                           }
+
         for result in results:
-            if isinstance(result, Person):
-                data['Researchers'].append(result)
-
-            elif isinstance(result, Article):
-                data['Articles'].append(result)
-
-            elif isinstance(result, Dataset):
-                data['Dataset'].append(result)
-
-            elif isinstance(result, Software):
-                data['Software'].append(result)
-
-            elif isinstance(result, Presentation):
-                data['Presentation'].append(result)
-
-            elif isinstance(result, Poster):
-                data['Poster'].append(result)
-
-            elif isinstance(result, Lesson):
-                data['Lesson'].append(result)
-
-            elif isinstance(result, Video):
-                data['Video'].append(result)
-
-            elif isinstance(result, Institute):
-                data['Institute'].append(result)
-
-            elif isinstance(result, Publisher):
-                data['Publisher'].append(result)
-
-            elif isinstance(result, Funder):
-                data['Funder'].append(result)
-
-            elif isinstance(result, Image):
-                data['Image'].append(result)
-
-            elif isinstance(result, Zenodo):
-                data['Zenodo'].append(result)
-
-            elif isinstance(result, Gesis):
-                data['Gesis'].append(result)
-
-            elif isinstance(result, Cordis):
-                data['Cordis'].append(result)   
+            result_type = type(result)
+            if result_type in object_mappings.keys():
+                data[object_mappings[result_type]].append(result)
             else:
-                logger.warning(f"Type {type(result)} of result not yet handled")
+                logger.warning(f"Type {result_type} of result not yet handled")   
+       
+        
         # Remove items without results
         data = dict((k, result) for k, result in data.items() if result)
         return render_template('result.html', data=data, search_term=search_term)

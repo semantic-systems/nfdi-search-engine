@@ -5,7 +5,7 @@ import os
 
 logger = logging.getLogger('nfdi_search_engine')
 
-def cordis(search_term, results):
+def search(search_term, results):
     api_url = f'https://cordis.europa.eu/search/?q=%27{search_term}%27%20AND%20contenttype=%27project%27&p=1&num=10&srt=/project/contentUpdateDate:decreasing&format=json'
     response = requests.get(api_url)
     

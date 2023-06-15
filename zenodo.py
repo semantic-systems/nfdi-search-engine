@@ -9,7 +9,7 @@ import os
 logger = logging.getLogger('nfdi_search_engine')
 
 
-def zenodo(search_term, results):
+def search(search_term, results):
     response = requests.get('https://zenodo.org/api/records',
                             params={'q': search_term,
                                     'access_token': 'rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL'})
