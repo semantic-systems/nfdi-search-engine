@@ -6,3 +6,4 @@ diophila~=0.4.0
 requests==2.31.0
 Wikipedia>=1.4.0
 beautifulsoup4>=2.4.1
+pandas >=2.0.1

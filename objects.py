@@ -121,3 +121,22 @@ class Funder:
     grants_count: str
     homepage_url: str
     works_count: str
+
+
+@dataclasses.dataclass
+class Gesis:
+    resource_type: str
+    url: str
+    date: str 
+    title: str
+    description: str
+    authors: str
+
+
+@dataclasses.dataclass
+class Cordis:
+    id: str
+    url: str
+    date: str 
+    title: str
+    description: str
