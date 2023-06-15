@@ -28,7 +28,7 @@ def open_alex(name, g, results):
 logger = logging.getLogger('nfdi_search_engine')
 
 
-def find(search_key: str, results):
+def search(search_key: str, results):
     find_authors(search_key, results)
     find_works(search_key, results)
     find_institute(search_key, results)

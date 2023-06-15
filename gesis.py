@@ -8,7 +8,7 @@ from objects import Dataset, Article
 
 logger = logging.getLogger('nfdi_search_engine')
 
-def gesis(search_term, results):
+def search(search_term, results):
 
     api_url = f'http://193.175.238.35:8089/dc/_search?q={search_term}'
     # api_url = f'http://193.175.238.35:8089/_search?q={search_term}'
