@@ -25,7 +25,7 @@ def sources():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
-        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis]
+        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
