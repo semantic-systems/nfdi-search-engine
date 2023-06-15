@@ -73,7 +73,7 @@ def sources():
         t3 = threading.Thread(target=openalex_search)
         t4 = threading.Thread(target=wikidata_search)
         t5 = threading.Thread(target=resodate_search)
-        t6 = threading.Thread(target=gesis_search)
+        # t6 = threading.Thread(target=gesis_search)
         t7 = threading.Thread(target=cordis_search)
 
         # Start all threads
@@ -82,7 +82,7 @@ def sources():
         t3.start()
         t4.start()
         t5.start()
-        t6.start()
+        # t6.start()
         t7.start()
 
         # Wait for all threads to finish
@@ -91,7 +91,7 @@ def sources():
         t3.join()
         t4.join()
         t5.join()
-        t6.join()
+        # t6.join()
         t7.join()
 
         logger.info(f'Got {len(results)} results')
