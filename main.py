@@ -1,6 +1,7 @@
 import logging
 import logging.config
 import os
+import uuid
 
 from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis
 from flask import Flask, render_template, request, make_response
@@ -25,7 +26,10 @@ def index():
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
-        response.set_cookie('search-session', request.cookies['session'])
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
 
     return response
 
