@@ -8,9 +8,10 @@
 <div class="result_container">
     {% for title, datas in data.items() %}
     <br>
-    <h1 class='title'>{{ title }} </h1>
-    <ul>
+
+        <ul><details><summary> <h1 class='title'>{{ title }} </h1></summary>
         {% for data in datas %}
+
         {% if title == 'Researchers' %}
         {% if data %}
         <li>
@@ -212,5 +213,6 @@
     {% else %}
     <p>No results found for {{search_term}}</p>
     {% endfor %}
+</details>
 </div>
 {% endblock %}
