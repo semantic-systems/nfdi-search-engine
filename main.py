@@ -88,15 +88,23 @@ def sources():
 @app.route('/details', methods=['POST', 'GET'])
 def details():
     if request.method == 'GET':
-        # data_type = request.args.get('type')
         details = {}
         links = {}
         name = ''
         search_term = request.args.get('searchTerm')
+        if search_term.startswith('https://orcid.org/'):
+            details, links, name = details_page.search_by_orcid(search_term)
+            return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
+
+        orcid = details_page.get_orcid(search_term)
+        if orcid != '':
+            return render_template('details.html', search_term=orcid, details=details, links=links, name='')
+
         if search_term.startswith('https://openalex.org/'):
             details, links, name = details_page.search_openalex(search_term)
         elif search_term.startswith('https://dblp'):
             details, links, name = details_page.search_dblp(search_term)
+
         return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
 
 

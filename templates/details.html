@@ -4,6 +4,11 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/result.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/details.css') }}">
 {% endblock %}
+{% block redirect %}
+    {% if search_term.startswith('https://orcid.org/') and name == '' %}
+        <meta http-equiv="Refresh" content="0; url='/details?searchTerm={{search_term}}'" />
+    {% endif %}
+{% endblock %}
 {% block content %}
 <div class="details_wrapper">
     <div class="header">
