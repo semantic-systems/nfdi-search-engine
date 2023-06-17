@@ -4,6 +4,7 @@ import logging
 import os
 from objects import Dataset, Article
 import re
+import utils
 
 logger = logging.getLogger('nfdi_search_engine')
 
@@ -36,9 +37,10 @@ def search(search_term, results):
             authors = dc_fields['creator']['all'][0] if 'creator' in dc_fields and 'all' in dc_fields['creator'] else ''
             authors_list = '; '.join(authors for authors in dc_fields['creator']['all'])
             description = dc_fields['description']['all'][0] if 'description' in dc_fields and 'all' in dc_fields['description'] else ''
-            #extract the first two sentences from the description
-            sentences = re.split(r'(?<=[.!?])\s+', description)
-            short_description = ' '.join(sentences[:2])
+            #extract the first five sentences from the description
+            # sentences = re.split(r'(?<=[.!?])\s+', description)
+            # short_description = ' '.join(sentences[:2])
+            short_description = utils.remove_html_tags(description)
             type = dc_fields['type']['all'][0] if 'type' in dc_fields and 'all' in dc_fields['type'] else 'Type not available'
             date = dc_fields['date']['nn'][0]
             id = hit['_id']
