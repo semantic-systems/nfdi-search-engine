@@ -8,10 +8,210 @@
 <div class="result_container">
     {% for title, datas in data.items() %}
     <br>
+        <ul><details open><summary> <h1 class='title'>{{ title }} </h1></summary>
+        {% for data in datas[:5] %}
 
-        <ul><details><summary> <h1 class='title'>{{ title }} </h1></summary>
-        {% for data in datas %}
+        {% if title == 'Researchers' %}
+        {% if data %}
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.name}}</a></h2>
+        </li>
+        <a href='/details?searchTerm={{data.url}}'>View Details</a>
+        <div style="margin-left:10px;">
+            <p class='faded'>{{data.url}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Articles' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span>
+        </li>
 
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Dataset' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Software' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}} (Version: {{data.version}})<br> {{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Presentation' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Poster' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Video' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Lesson' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Institute' %}
+        {% if data %}
+        <p class='url'>{{data.id}}, Type: {{data.institute_type}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a>
+                {{data.acronyms_name}}</h2>
+            <span style="color: gray;"> {{data.country}} <br> {{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p></p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Publisher' %}
+        {% if data %}
+        <p class='url'>{{data.id}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> </h2>
+            <span style="color: gray;"> (H_Index: {{data.h_index}}, Works_count: {{data.works_count}}, Country_code:
+                {{data.country_codes}})<br> {{data.description}} </span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p></p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Funder' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.homepage_url}}' target='_blank'>{{data.name}}</a> </h2>
+            <span style="color: gray;"> (Grants: {{data.grants_count}}, Works_count: {{data.works_count}})
+                <br>{{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p></p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Image' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
+            <span style="color: gray;"> - {{data.date}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.authors}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Zenodo' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+            <span style="color: gray;"> - {{data.date}}<br>{{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.resource_type}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Gesis' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+            <span style="color: gray;"> - {{data.date}}<br>{{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.resource_type}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% if title == 'Cordis' %}
+        {% if data %}
+        <p class='url'>{{data.url}}</p>
+        <li>
+            <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a></h2>
+            <span style="color: gray;"> - {{data.date}}<br>{{data.description}}</span>
+        </li>
+
+        <div style="margin-left:10px;">
+            <p>{{data.resource_type}}</p>
+        </div>
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+
+        <!-- collapsible part of results-->
+        <details><summary> <h1 class='seemore'> Show more {{title}} </h1></summary>
+        {% for data in datas[5:]%}
         {% if title == 'Researchers' %}
         {% if data %}
         <li>
