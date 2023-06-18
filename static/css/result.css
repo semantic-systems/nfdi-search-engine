@@ -70,7 +70,7 @@ input[type='search']::-webkit-search-decoration {
 
 .subtitle  {display: inline; font-size: 16px;}
 .title  {display: inline; font-size: 25px; margin-bottom: 5px;}
-.seemore {display: inline; font-size: 18px; color: gray}
+.showall {display: inline; font-size: 18px; color: gray}
 a  { color: blue;  }
 p  { margin-top: 4px; }
 .url { color: gray; margin-bottom: 2px; }
@@ -94,5 +94,9 @@ ul {
 details > summary{
     list-style-type: none;
     margin-bottom: 0.5rem;
+}
+
+details > summary:after{
+
 }
 

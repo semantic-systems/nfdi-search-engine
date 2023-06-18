@@ -210,7 +210,8 @@
         {% endfor %}
 
         <!-- collapsible part of results-->
-        <details><summary> <h1 class='seemore'> Show more {{title}} </h1></summary>
+        {% if datas[5] %}
+            <details><summary> <h1 class='showall'> Show all {{ datas|length }} {{ title }} results for "{{ search_term }}"</h1></summary>
         {% for data in datas[5:]%}
         {% if title == 'Researchers' %}
         {% if data %}
@@ -409,10 +410,10 @@
         {% endif %}
         {% endif %}
         {% endfor %}
-    </ul>
+        {% endif %}
+        </details></details></ul>
     {% else %}
     <p>No results found for {{search_term}}</p>
     {% endfor %}
-</details>
 </div>
 {% endblock %}
