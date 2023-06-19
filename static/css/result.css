@@ -89,3 +89,10 @@ ul {
     background-color: #fff;
     padding-left: 40px;
 }
+
+.emptySearch {
+    padding-left: 90px;
+    padding-top: 10px;
+    color: var(--dark-gray);
+    text-align: left;
+}

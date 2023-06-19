@@ -14,7 +14,7 @@
 
 <body>
     <h2 style="color:gray;">Search Result</h2>
-    <form action="/sources" method="GET">
+    <form name="searchbox" action="/sources" onsubmit="return validateForm()" method="GET" required>
         <div>
             <div class="searchbox">
                 <svg aria-hidden="true" viewBox="0 0 24 24">
@@ -25,9 +25,20 @@
                     placeholder="Search for Article, Researcher" type="search" name="txtSearchTerm"
                     value="{% block search_term %}{% endblock %}" />
             </div>
+            <div class="emptySearch" id="emptySearch"></div>
         </div>
     </form>
     <hr />
+    <script>
+        function validateForm() {
+            var search = document.forms["searchbox"]["txtSearchTerm"].value;
+            if (search == "" || search == null) {
+                document.getElementById("emptySearch").innerHTML = "\u2B11" + "Please enter a search term";
+                return false;
+            }
+        }
+    </script>
+
     {% block content %}{% endblock %}
 
     {% include 'footer.html' %}
