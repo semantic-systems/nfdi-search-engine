@@ -1,4 +1,6 @@
 import logging
+from string import Template
+
 import requests
 import xml.etree.ElementTree as ET
 
@@ -72,35 +74,80 @@ def get_orcid(search_term):
         for url in author.findall('.url'):
             if url.text.startswith('https://orcid.org/'):
                 return url.text
+    if search_term.startswith('http://www.wikidata'):
+        url = search_term
+        headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+        response = requests.get(url, headers=headers)
+
+        wikidata_id = search_term.split('/')[-1]
+
+        if response.status_code == 200:
+            data = response.json()
+            author = (data['entities'][wikidata_id])
+            if 'P496' in author['claims'].keys():
+                orcid = author['claims']['P496'][0]['mainsnak']['datavalue']['value']
+                return 'https://orcid.org/' + orcid
     return ''
 
 
 def search_by_orcid(search_term):
+    details_wiki, links_wiki, name = search_wikidata(search_term)
     details_dblp, links_dblp, name = search_dblp(search_term)
     details_alex, links_alex, name = search_openalex(search_term)
-    details_alex.update(details_dblp)
-    links = list(dict.fromkeys(links_alex + links_dblp))
-    return details_alex, links, name
+    details_wiki.update(details_alex)
+    details_wiki.update(details_dblp)
+    links = list(dict.fromkeys(links_alex + links_dblp + links_wiki))
+    return details_wiki, links, name
 
 
 def search_wikidata(search_term):
-    url = search_term
-    headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
-    response = requests.get(url, headers=headers)
-
-    wikidata_id = search_term.split('/')[-1]
     details = {}
     links = []
     name = ''
+    if search_term.startswith('http://www.wikidata'):
+        url = search_term
+        headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+        response = requests.get(url, headers=headers)
 
-    if response.status_code == 200:
-        data = response.json()
-        author = (data['entities'][wikidata_id])
-        name = author.get('labels').get('en').get('value')
-        details['Description'] = author.get('descriptions').get('en').get('value')
-        links.append(search_term)
+        wikidata_id = search_term.split('/')[-1]
+
+        if response.status_code == 200:
+            data = response.json()
+            author = (data['entities'][wikidata_id])
+            name = author.get('labels').get('en').get('value')
+            if 'en' in author.get('descriptions').keys():
+                details['Description'] = author.get('descriptions').get('en').get('value')
+            links.append('https://www.wikidata.org/entity/' + wikidata_id)
+            return details, links, name
+
         return details, links, name
-
+    elif search_term.startswith('https://orcid.org/'):
+        orcid = search_term.split('/')[-1]
+        url = 'https://query.wikidata.org/sparql'
+        headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+        query_template = Template('''
+        SELECT DISTINCT ?item ?itemLabel WHERE {
+          SERVICE wikibase:label { bd:serviceParam wikibase:language "[AUTO_LANGUAGE]". }
+          {
+            SELECT DISTINCT ?item WHERE {
+              ?item p:P496 ?statement0.
+              ?statement0 (ps:P496) "$orcid".
+            }
+            LIMIT 100
+          }
+        }
+          ''')
+        response = requests.get(url,
+                                params={'format': 'json',
+                                        'query': query_template.substitute(orcid=orcid),
+                                        }, timeout=(3, 15), headers=headers)
+        if response.status_code == 200:
+            data = response.json()
+            wikidata_link = ''
+            match = data['results']['bindings']
+            if match:
+                wikidata_link = match[0]['item']['value']
+                return search_wikidata(wikidata_link)
     return details, links, name
 
 # dblp: P2456
