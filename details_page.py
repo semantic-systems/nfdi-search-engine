@@ -81,3 +81,27 @@ def search_by_orcid(search_term):
     details_alex.update(details_dblp)
     links = list(dict.fromkeys(links_alex + links_dblp))
     return details_alex, links, name
+
+
+def search_wikidata(search_term):
+    url = search_term
+    headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+    response = requests.get(url, headers=headers)
+
+    wikidata_id = search_term.split('/')[-1]
+    details = {}
+    links = []
+    name = ''
+
+    if response.status_code == 200:
+        data = response.json()
+        author = (data['entities'][wikidata_id])
+        name = author.get('labels').get('en').get('value')
+        details['Description'] = author.get('descriptions').get('en').get('value')
+        links.append(search_term)
+        return details, links, name
+
+    return details, links, name
+
+# dblp: P2456
+# orcid: P496
