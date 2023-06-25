@@ -211,7 +211,7 @@
 
         <!-- collapsible part of results-->
         {% if datas[5] %}
-            <details><summary> <h1 class='showall'> Show all {{ datas|length }} {{ title }} results for "{{ search_term }}"</h1></summary>
+            <details class='description showall'><summary data-open="Show all {{ datas|length }} {{ title }} results for '{{ search_term }}'" data-closed="Show less"> </summary>
         {% for data in datas[5:]%}
         {% if title == 'Researchers' %}
         {% if data %}

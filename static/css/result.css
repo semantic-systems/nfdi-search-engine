@@ -91,12 +91,16 @@ ul {
     padding-left: 40px;
 }
 
-details > summary{
+details.description[open] summary::after{
     list-style-type: none;
     margin-bottom: 0.5rem;
+    content: attr(data-closed);
 }
 
-details > summary:after{
-
+details.description:not([open]) summary::after{
+    list-style-type: none;
+    margin-bottom: 0.5rem;
+    content: attr(data-open);
 }
+
 
