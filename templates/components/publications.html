@@ -1,0 +1,54 @@
+<table id="tbl-publications" class="datatable display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Publications</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for title, datas in data.items() %}
+        {% if title == 'Articles' %}
+        {% for data in datas %}
+        {% if data %}
+        <tr>
+            <td>
+                <div class="card mb-2 p-3 bg-light">
+                    <div class="row">
+                        <div class="col-lg-9 fw-bold ">
+                            <a class="text-decoration-none" href='{{data.url}}' target='_blank'>{{data.title}}</a>
+                        </div>
+                        <div class="col-lg-2 text-end">{{data.date}}</div>
+                        <div class="col-lg-1 text-end"><a target='_blank' href="#" title="bookmark"><i
+                                    class="bi bi-bookmark"></i></a></div>
+                    </div>
+                    <div class="row px-1">
+                        <div class="col-lg-12 px-0">
+                            <a href="#" class="btn btn-light text-dark rounded-5 p-0 pe-3 fs-6" tabindex="-1"
+                                role="button" aria-disabled="true"><i
+                                    class="ps-1 pe-2 bi-person-circle"></i>{{data.authors}}</a>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <p class="card-text">{{data.description}}</p>
+                        </div>
+                    </div>
+                    <div class="row pt-3">
+                        <div class="col-lg-10 text-start">
+                            <span class="badge text-bg-info">DBLP</span>
+                            <span class="badge text-bg-info">English</span>
+                            <span class="badge text-bg-info">PDF</span>
+                            <span class="badge text-bg-info">License</span>
+                        </div>
+                        <div class="col-lg-2 text-end">
+                            <a href="#" class="btn btn-success p-1">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+    </tbody>
+</table>

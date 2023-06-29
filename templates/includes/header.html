@@ -1,0 +1,76 @@
+<header class="p-3 mb-3 border-bottom">
+    <div class="container">
+        <div class="d-flex flex-wrap align-items-center justify-content-center justify-content-lg-start">
+            <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+                <img src="{{ url_for('static', filename='images/logo_NFDI4DS.svg') }}" width="100" height="60"
+                    role="img" aria-label="NFDI4DS Search Engine" />
+            </a>
+
+            <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 px-5">
+                <li><a href="#" class="nav-link px-2 link-dark">About Us</a></li>
+                <li>
+                    <!-- NFDI4DS Button-->
+                    <div class="col-12 col-lg-auto mb-3 px-2 pt-2 mb-lg-0 me-lg-3 nfdi4ds-banner" data-variant="button"
+                        data-button-color="light" data-menu-color="light"></div>
+                    <script>
+                        (function (w, d, s, o, f, js, fjs) {
+                            w['nfdi4dsWidget'] = o;
+                            w[o] =
+                                w[o] ||
+                                function () {
+                                    (w[o].q = w[o].q || []).push(arguments);
+                                };
+                            (js = d.createElement(s)),
+                                (fjs = d.getElementsByTagName(s)[0]);
+                            js.id = o;
+                            js.src = f;
+                            js.async = 1;
+                            fjs.parentNode.insertBefore(js, fjs);
+                        })(window, document, 'script', 'nfdi4ds', 'https://tibhannover.gitlab.io/nfdi4ds/nfdi4ds-widget/widget.js');
+                        nfdi4ds('widget');
+                    </script>
+                    <!-- End NFDI4DS Button -->
+
+                </li>
+            </ul>
+
+            {% if search_term %}
+
+            <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET">
+                <!-- <input type="search" class="form-control" placeholder="Search..." aria-label="Search"> -->
+                <div>
+                    <div class="searchbox">
+                        <svg aria-hidden="true" viewBox="0 0 24 24">
+                            <path
+                                d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                        </svg>
+                        <input class="form-control" aria-label="Search for Article, Researcher" autocomplete="off"
+                            inputmode="search" placeholder="Search for Article, Researcher" type="search"
+                            name="txtSearchTerm" value="{{search_term}}" />
+                    </div>
+                </div>
+            </form>
+
+            {% endif %}
+
+
+
+            <div class="dropdown text-end">
+                <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" id="dropdownUser1"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="{{ url_for('static', filename='images/user.png') }}" alt="user" width="48" height="48"
+                        class="rounded-circle">
+                </a>
+                <ul class="dropdown-menu text-small" aria-labelledby="dropdownUser1">
+                    <li><a class="dropdown-item" href="#">Login / Register</a></li>
+                    <li><a class="dropdown-item" href="#">Settings</a></li>
+                    <li><a class="dropdown-item" href="#">Profile</a></li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="#">Sign out</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</header>

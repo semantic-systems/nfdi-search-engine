@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    response = make_response(render_template('index.html'))
+    response = make_response(render_template('index-new.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -28,7 +28,7 @@ def index():
     return response
 
 
-@app.route('/sources', methods=['POST', 'GET'])
+@app.route('/results', methods=['POST', 'GET'])
 def sources():
     # The search-session cookie setting can still be None if a user enters the
     # /sources endpoint directly without going to / first!!!
@@ -103,7 +103,7 @@ def sources():
         
         # Remove items without results
         data = dict((k, result) for k, result in data.items() if result)
-        return render_template('result.html', data=data, search_term=search_term)
+        return render_template('results.html', data=data, search_term=search_term)
 
 
 @app.route('/details', methods=['POST', 'GET'])
