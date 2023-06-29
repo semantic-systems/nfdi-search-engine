@@ -1,36 +1,49 @@
-<!-- <table id="tbl-researchers" class="datatable display" style="width:100%">
+<table id="tbl-researchers" class="datatable display" style="width:100%">
     <thead>
         <tr>
             <th>Researchers</th>
         </tr>
     </thead>
-    <tbody> -->
+    <tbody>
 
-<div class="d-flex justify-content-around">
-    {% for title, datas in data.items() %}
-    {% if title == 'Researchers' %}
-    {% for data in datas %}
-    {% if data %}
-    <!-- <tr>
-            <td class="d-flex justify-content-around"> -->
-    <div class="card mb-2 p-3 bg-light text-center" style="width: 18rem;">
-        <img src="https://codingyaar.com/wp-content/uploads/bootstrap-profile-card-image.jpg" class="card-img-top"
-            alt="...">
-        <div class="card-body">
-            <h5 class="card-title"><a class="text-decoration-none"
-                    href='/details?searchTerm={{data.url}}'>{{data.name}}</a></h5>
-            <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of
-                            the card's
-                            content.</p> -->
-            <a href="{{data.url}}" target='_blank' class="btn btn-primary">Know More</a>
-        </div>
-    </div>
-    <!-- </td>
-        </tr> -->
-    {% endif %}
-    {% endfor %}
-    {% endif %}
-    {% endfor %}
-</div>
-<!-- </tbody>
-</table> -->
+        <!-- <div class="d-flex justify-content-around"> -->
+        {% set loop_counter = namespace(value=0) %}
+        {% for title, datas in data.items() %}
+        {% if title == 'Researchers' %}
+        {% for data in datas %}
+
+        {% if loop_counter.value % 3 == 0 %}
+        <tr>
+            <td class="d-flex justify-content-around">
+                {% endif %}
+
+                {% if data %}
+
+                <div class="card mb-2 p-3 bg-light text-center" style="width: 18rem;">
+                    <!-- <p>{{ loop_counter.value }}</p> -->
+                    <img src="https://codingyaar.com/wp-content/uploads/bootstrap-profile-card-image.jpg"
+                        class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title"><a class="text-decoration-none"
+                                href='/details?searchTerm={{data.url}}'>{{data.name}}</a></h5>
+                        <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of
+                                    the card's
+                                    content.</p> -->
+                        <a href="{{data.url}}" target='_blank' class="btn btn-primary">Know More</a>
+                    </div>
+                </div>
+
+                {% endif %}
+
+                {% if loop_counter.value % 3 == 2 %}
+            </td>
+        </tr>
+        {% endif %}
+        {% set loop_counter.value = loop_counter.value + 1 %}
+
+        {% endfor %}
+        {% endif %}
+        {% endfor %}
+        <!-- </div> -->
+    </tbody>
+</table>
