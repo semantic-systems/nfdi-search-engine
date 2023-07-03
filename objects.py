@@ -146,4 +146,13 @@ class Cordis:
 class Orcid:
     id: str
     url: str
-    name: str 
+    name: str
+
+    
+@dataclasses.dataclass
+class Gepris:
+    url: str
+    title: str
+    description: str
+    date: str
+    applicant_or_leader:str

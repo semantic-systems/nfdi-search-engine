@@ -2,11 +2,10 @@ import logging
 import logging.config
 import os
 import uuid
-
-from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid
+from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from flask import Flask, render_template, request, make_response
 import threading
-import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg, orcid
+import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg, orcid, gepris
 import details_page
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
@@ -46,7 +45,8 @@ def sources():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
-        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg, orcid]
+        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg, orcid, gepris]
+
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -73,6 +73,7 @@ def sources():
             'Gesis': [],
             'Cordis': [],
             'Orcid': [],
+            'Gepris': []
         }      
 
         logger.info(f'Got {len(results)} results')
@@ -91,9 +92,9 @@ def sources():
                            Image        : 'Image'         ,
                            Zenodo       : 'Zenodo'        ,
                            Gesis        : 'Gesis'         ,
-                           Cordis       : 'Cordis'        , 
-                           Orcid        : 'Orcid'         ,          
-                             
+                           Cordis       : 'Cordis'        ,
+                           Orcid        : 'Orcid'         ,
+                           Gepris       : 'Gepris'
                            }
 
         for result in results:
