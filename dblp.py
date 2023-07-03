@@ -28,7 +28,7 @@ def extract_metadata(text: bytes) -> object:
 
 
 # def dblp(search_term: str, g, results):
-def dblp(search_term: str, results):
+def search(search_term: str, results):
     headers = {'Accept': 'application/json'}
     response = requests.get(
         'https://dblp.uni-trier.de/search?q=' + search_term,

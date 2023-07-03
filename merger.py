@@ -1,6 +1,6 @@
 from rdflib import Graph
 from objects import Person, Zenodo, Article
-import search_openalex
+import openalex
 
 
 def sources(name):
@@ -18,7 +18,7 @@ def sources(name):
     results = []
     # g, results = dblp.search(name, g, results)
     # g, results = zenodo.search(name, g, results)
-    g, results = search_openalex.open_alex(name, g, results)
+    g, results = openalex.open_alex(name, g, results)
     # TODO add materialized triples via https://github.com/RDFLib/OWL-RL
     g.parse('zenodo2schema.ttl')
     g = g.serialize(format="ttl")
