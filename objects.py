@@ -140,3 +140,10 @@ class Cordis:
     date: str 
     title: str
     description: str
+
+
+@dataclasses.dataclass
+class Orcid:
+    id: str
+    url: str
+    name: str 
