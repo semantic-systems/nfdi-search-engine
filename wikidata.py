@@ -4,7 +4,6 @@ from objects import Person, Article
 from string import Template
 import pandas as pd
 
-
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
@@ -59,7 +58,7 @@ ORDER BY DESC(?dateYear)
 
     response = requests.get(url,
                             params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, timeout=(3,15), headers=headers)
+                                    }, timeout=(3, 15), headers=headers)
     logger.debug(f'DBLP response status code: {response.status_code}')
     logger.debug(f'DBLP response headers: {response.headers}')
 
@@ -81,6 +80,7 @@ ORDER BY DESC(?dateYear)
                     description='',
                     date=row['date']
                 ))
+
 
 def wikidata_person_search(search_string: str, results):
     url = 'https://query.wikidata.org/sparql'
@@ -120,12 +120,12 @@ def wikidata_person_search(search_string: str, results):
         if data["results"]["bindings"]:
             result_df = pd.json_normalize(data['results']['bindings'])
             df = result_df[['item.value', 'label.value']]
-            df.columns = ['url','name']
+            df.columns = ['url', 'name']
             df_dict = df.to_dict('records')
 
             for row in df_dict:
                 results.append(Person(
-                    name = row['name'],
-                    url = row['url'],
-                    affiliation = ''
-               ))
+                    name=row['name'],
+                    url=row['url'],
+                    affiliation=''
+                ))
