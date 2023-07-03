@@ -89,3 +89,10 @@ a  { color: blue;  }
 .url { color: gray;  }
 .emoji { font-size:15px }
 .emoji-title { font-size:20px }
+
+.emptySearch {
+    padding-left: 52px;
+    padding-top: 10px;
+    color: var(--dark-gray);
+    text-align: left;
+}

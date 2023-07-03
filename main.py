@@ -1,21 +1,42 @@
 import logging
+import logging.config
+import os
+import uuid
+
 from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, make_response
 import threading
-import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis
+import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg
 import details_page
 
+logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    response = make_response(render_template('index.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
 
 
 @app.route('/sources', methods=['POST', 'GET'])
 def sources():
+    # The search-session cookie setting can still be None if a user enters the
+    # /sources endpoint directly without going to / first!!!
+    logger.debug(
+        f'Search session {request.cookies.get("search-session")} '
+        f'searched for "{request.args.get("txtSearchTerm")}"'
+    )
+
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
 
@@ -25,7 +46,7 @@ def sources():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
-        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis]
+        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
