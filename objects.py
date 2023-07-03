@@ -148,7 +148,7 @@ class Orcid:
     url: str
     name: str
 
-    
+
 @dataclasses.dataclass
 class Gepris:
     url: str
