@@ -2,7 +2,7 @@ html {
     --dark-gray: rgb(90, 90, 90);
     --light-gray: rgb(148, 148, 148);
     --focus-blue: rgb(69, 159, 189);
-    margin: 0;
+    margin: 5px;
 }
 
 .bsearch{
@@ -104,7 +104,21 @@ details.description:not([open]) summary::after{
     content: attr(data-open);
 }
 
+details.authors > summary {
+  list-style: none;
+}
 
+details.authors[open] summary::after{
+    display: block;
+    margin-bottom: 1em;
+    content: attr(data-open);
+}
+
+details.authors:not([open]) summary::after{
+    display: block;
+    margin-bottom: 1em;
+    content: attr(data-closed);
+}
 
 .emptySearch {
     padding-left: 90px;

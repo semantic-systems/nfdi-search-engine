@@ -78,7 +78,7 @@ def search(search_term, results):
                     try:
                         display_name = name_data.get('credit-name', {}).get('value') or name_data.get('display-name', {}).get('value')
                     except AttributeError:
-                        display_name = f"{given_names}{family_name}"
+                        display_name = f"{given_names} {family_name}"
 
                     # Extract email information
                     email = json_data.get('emails', {}).get('email', [])

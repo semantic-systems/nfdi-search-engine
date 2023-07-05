@@ -29,9 +29,20 @@
             <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
             <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span>
         </li>
-
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -42,9 +53,20 @@
             <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
             <span style="color: gray;"> - {{data.date}}<br> {{data.description}}</span>
         </li>
-
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -55,9 +77,20 @@
             <h2 class='subtitle'><a href='{{data.url}}' target='_blank'>{{data.title}}</a> </h2>
             <span style="color: gray;"> - {{data.date}} (Version: {{data.version}})<br> {{data.description}}</span>
         </li>
-
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -70,7 +103,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -83,7 +128,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -96,7 +153,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -109,7 +178,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -164,7 +245,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -190,7 +283,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -246,7 +351,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -259,7 +376,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -272,7 +401,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -285,7 +426,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -298,7 +451,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -311,7 +476,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -324,7 +501,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
@@ -379,7 +568,19 @@
         </li>
 
         <div style="margin-left:10px;">
-            <p>{{data.authors}}</p>
+            {% if data.authors.count(';') == 0 %}
+                {% if data.authors.count(',') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{', '.join(data.authors.split(', ', 3)[:3])}} +{{data.authors.split(', ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% else %}
+                {% if data.authors.count(';') <= 2 %}
+                    <p>{{data.authors}}</p>
+                {% else %}
+                    <details class="authors"><summary data-closed="{{'; '.join(data.authors.split('; ', 3)[:3])}} +{{data.authors.split('; ')|length - 3}} more" data-open="{{data.authors}}"></summary></details>
+                {% endif %}
+            {% endif %}
         </div>
         {% endif %}
         {% endif %}
