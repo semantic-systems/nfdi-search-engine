@@ -5,7 +5,7 @@ services:
             - 6000:5002
         restart: unless-stopped
         networks:
-            - search-engine-network
+            - search_engine_network
 networks:
-    search-engine-network:
+    search_engine_network:
         external: true
