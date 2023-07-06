@@ -4,4 +4,8 @@ services:
         ports:
             - 6000:5002
         restart: unless-stopped
-
+        networks:
+            - search-engine-network
+networks:
+    search-engine-network:
+        external: true
