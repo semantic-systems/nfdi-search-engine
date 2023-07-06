@@ -5,7 +5,7 @@ import uuid
 from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from flask import Flask, render_template, request, make_response
 import threading
-import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris #, eulg
+import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # eulg
 import details_page
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
