@@ -54,6 +54,7 @@ def search_wikidata(search_term: str):
                       'P496': 'https://orcid.org/$1', 'P10897': 'https://orkg.org/resource/$1',
                       'P1153': 'https://www.scopus.com/authid/detail.uri?authorId=$1',
                       'P2002': 'https://twitter.com/$1'}
+    not_relevant_codes = {'P31', 'P248', 'P106', 'P735', 'P27', 'P569', 'P19'} #don't contain links
     details = {}
     links = []
     name = ''
@@ -73,6 +74,8 @@ def search_wikidata(search_term: str):
     links.append('https://www.wikidata.org/entity/' + wikidata_id)
     links_dict = author['claims']
     for code in links_dict.keys():
+        if code in not_relevant_codes:
+            continue
         end_of_link = links_dict[code][0]['mainsnak']['datavalue']['value']
         if code in formatter_urls:
             link = formatter_urls[code].replace('$1', end_of_link)
@@ -86,7 +89,7 @@ def search_wikidata(search_term: str):
 def get_wiki_link(code):
     headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
     url = 'https://www.wikidata.org/wiki/Special:EntityData/' + code
-    response = requests.get(url, headers=headers)
+    response = requests.get(url, headers=headers, timeout=1)
     if response.status_code != 200:
         return
     data = response.json()
