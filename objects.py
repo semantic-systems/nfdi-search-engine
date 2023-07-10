@@ -1,11 +1,73 @@
 import dataclasses
-
+from typing import Union
 
 @dataclasses.dataclass
-class Person:
+class thing:
     name: str
+    alternateName: str
+    description: str
     url: str
-    affiliation: str
+    image: str #url of the image
+
+@dataclasses.dataclass
+class Organization(thing):
+    address: str
+    email: str
+    legalName: str
+    location: str
+    logo: str # url
+    numberOfEmployees: str
+    telephone: str
+
+@dataclasses.dataclass
+class Person(thing):
+    additionalName: str
+    address: str
+    affiliation: Organization
+    alumniOf: Organization
+    birthDate: str
+    birthPlace: str
+    deathDate: str
+    deathPlace: str
+    email: str
+    familyName: str
+    gender: str
+    givenName: str # usually the first name
+    homeLocation: str
+    honorificPrefix: str #An honorific prefix preceding a Person's name such as Dr/Mrs/Mr.
+    honorificSuffix: str #An honorific suffix following a Person's name such as M.D./PhD/MSCSW.
+    jobTitle: str
+    nationality: str # we can later link it to country 
+    workLocation: str
+    worksFor: Organization
+
+@dataclasses.dataclass
+class CreativeWork(thing):
+    abstract: str
+    accountablePerson: Person
+    alternativeHeadline: str
+    author: Person
+    citation: str # this should actually reference to articles
+    countryOfOrigin: str
+    creativeWorkStatus: str
+    dateCreated: str
+    dateModified: str
+    datePublished: str
+    funder: Union[Organization, Person]  # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
+    funding: str # we can change this to Grant
+    genre: str
+    headline: str
+    inLanguage: str
+    keywords: str
+    license: str # url or license type
+    publication: str #publication event
+    publisher: Union[Organization, Person]
+    sourceOrganization: Organization
+    sponsor: Union[Organization, Person]
+    text: str
+    thumbnail: str #ImageObject
+    thumbnailUrl: str #url
+    version: str   
 
 
 @dataclasses.dataclass
@@ -15,6 +77,11 @@ class Article:
     authors: str
     description: str
     date: str
+    articleBody: str
+    pageEnd: str
+    pageStart: str
+    pagination: str
+    wordCount: str
 
 
 @dataclasses.dataclass
