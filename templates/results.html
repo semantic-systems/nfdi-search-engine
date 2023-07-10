@@ -25,44 +25,25 @@
                             class="px-1 bi-people-fill"></i>Researchers</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="datasets-tab" data-bs-toggle="tab" data-bs-target="#datasets"
-                        type="button" role="tab" aria-controls="datasets" aria-selected="false"><i
-                            class="px-1 bi-database-fill-gear"></i>Datasets</button>
+                    <button class="nav-link" id="scholarly-resources-tab" data-bs-toggle="tab"
+                        data-bs-target="#scholarly-resources" type="button" role="tab"
+                        aria-controls="scholarly-resources" aria-selected="false"><i
+                            class="px-1 bi-database-fill-gear"></i>Scholarly Resources</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="softwares-tab" data-bs-toggle="tab" data-bs-target="#softwares"
-                        type="button" role="tab" aria-controls="softwares" aria-selected="false"><i
-                            class="px-1 bi-file-code-fill"></i>Softwares</button>
+                    <button class="nav-link" id="organizations-tab" data-bs-toggle="tab" data-bs-target="#organizations"
+                        type="button" role="tab" aria-controls="organizations" aria-selected="false"><i
+                            class="px-1 bi-bank"></i>Organizations</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="images-tab" data-bs-toggle="tab" data-bs-target="#images" type="button"
-                        role="tab" aria-controls="images" aria-selected="false"><i
-                            class="px-1 bi-file-image-fill"></i>Images</button>
+                    <button class="nav-link" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button"
+                        role="tab" aria-controls="events" aria-selected="false"><i
+                            class="px-1 bi-newspaper"></i>Events</button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="videos-tab" data-bs-toggle="tab" data-bs-target="#videos" type="button"
-                        role="tab" aria-controls="videos" aria-selected="false"><i
-                            class="px-1 bi-file-play-fill"></i>Videos</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="presentations-tab" data-bs-toggle="tab" data-bs-target="#presentations"
-                        type="button" role="tab" aria-controls="presentations" aria-selected="false"><i
-                            class="px-1 bi-file-slides-fill"></i>Presentations</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="institutes-tab" data-bs-toggle="tab" data-bs-target="#institutes"
-                        type="button" role="tab" aria-controls="institutes" aria-selected="false"><i
-                            class="px-1 bi-bank"></i>Institutes</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="publishers-tab" data-bs-toggle="tab" data-bs-target="#publishers"
-                        type="button" role="tab" aria-controls="publishers" aria-selected="false"><i
-                            class="px-1 bi-newspaper"></i>Publishers</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="funders-tab" data-bs-toggle="tab" data-bs-target="#funders"
-                        type="button" role="tab" aria-controls="funders" aria-selected="false"><i
-                            class="px-1 bi-currency-exchange"></i>Funders</button>
+                    <button class="nav-link" id="others-tab" data-bs-toggle="tab" data-bs-target="#others" type="button"
+                        role="tab" aria-controls="others" aria-selected="false"><i
+                            class="px-1 bi-file-code-fill"></i>Others</button>
                 </li>
             </ul>
             <div class="tab-content" id="myTabContent">
@@ -73,17 +54,13 @@
                 </div>
                 <div class="tab-pane fade p-5" id="researchers" role="tabpanel" aria-labelledby="researchers-tab">
                     {% include 'components/researchers.html' %}
-
                 </div>
-                <div class="tab-pane fade" id="datasets" role="tabpanel" aria-labelledby="datasets-tab">...</div>
-                <div class="tab-pane fade" id="softwares" role="tabpanel" aria-labelledby="softwares-tab">...</div>
-                <div class="tab-pane fade" id="images" role="tabpanel" aria-labelledby="images-tab">...</div>
-                <div class="tab-pane fade" id="videos" role="tabpanel" aria-labelledby="videos-tab">...</div>
-                <div class="tab-pane fade" id="presentations" role="tabpanel" aria-labelledby="presentations-tab">...
+                <div class="tab-pane fade" id="scholarly-resources" role="tabpanel"
+                    aria-labelledby="scholarly-resources-tab">...</div>
+                <div class="tab-pane fade" id="organizations" role="tabpanel" aria-labelledby="organizations-tab">...
                 </div>
-                <div class="tab-pane fade" id="institutes" role="tabpanel" aria-labelledby="institutes-tab">...</div>
-                <div class="tab-pane fade" id="publishers" role="tabpanel" aria-labelledby="publishers-tab">...</div>
-                <div class="tab-pane fade" id="funders" role="tabpanel" aria-labelledby="funders-tab">...</div>
+                <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">...</div>
+                <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
             </div>
         </div>
     </div>
