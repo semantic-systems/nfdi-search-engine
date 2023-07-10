@@ -6,7 +6,7 @@ from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Soft
 from flask import Flask, render_template, request, make_response
 import threading
 import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, eulg, orcid, gepris, ieee, #eulg
-import details_page
+import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -122,6 +122,8 @@ def details():
             details, links, name = details_page.search_openalex(search_term)
         elif search_term.startswith('https://dblp'):
             details, links, name = details_page.search_dblp(search_term)
+        elif search_term.startswith('http://www.wikidata.org'):
+            details, links, name = details_page.search_wikidata(search_term)
         return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
 
 
