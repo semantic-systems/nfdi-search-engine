@@ -1,6 +1,6 @@
 from typing import Union, List
 import dataclasses
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, fields, field
 
 @dataclass
 class thing:
@@ -69,7 +69,7 @@ class Person(thing):
 class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
-    author: List[Person] = None
+    author: List[Person] = field(default_factory=list)
     citation: str = "" # this should actually reference to articles
     countryOfOrigin: str = ""
     creativeWorkStatus: str = ""
@@ -101,7 +101,7 @@ class CreativeWork(thing):
 
 
 @dataclass
-class Article:    
+class Article(CreativeWork):    
     articleBody: str = ""
     pageEnd: str = ""
     pageStart: str = ""

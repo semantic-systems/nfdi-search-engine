@@ -3,7 +3,6 @@ import logging
 import json
 import utils
 from objects import Article, Person
-import re
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -26,26 +25,25 @@ def search(search_term: str, results):
 
             total_hits = search_result['hits']['total']['value']
 
-            if total_hits > 0:
-                hits = search_result['hits']['hits']
+            logger.info(f'RESODATE - {total_hits} hits/records found')
 
-                # regex pattern to remove html tags such as <div>, <p>, and <br>
-                regex_pattern = r"<[\S]+>"
+            if total_hits > 0:
+                hits = search_result['hits']['hits']                
 
                 for hit in hits:
-                    hit_source = hit['_source']
+                    hit_source = hit.get('_source', None)
                     publication = Article()
                     publication.source = 'RESODATE'
-                    publication.name = hit_source["name"]                    
-                    publication.url = hit_source['id']
-                    publication.description = utils.remove_html_tags(hit_source["description"])
-                    publication.abstract = utils.remove_html_tags(hit_source["description"])
-                    publication.keywords = hit_source['keywords']
-                    for creator in hit_source['creator']:
+                    publication.name = hit_source.get("name", "")             
+                    publication.url = hit_source.get("id", "")
+                    publication.description = utils.remove_html_tags(hit_source.get("description", ""))
+                    publication.abstract = utils.remove_html_tags( hit_source.get("description", ""))
+                    publication.keywords =  hit_source.get("keywords", "")
+                    for creator in hit_source.get("creator", []):
                         if creator['type'] == 'Person':
                             author = Person()
-                            author.name = creator['name']
-                            author.identifier = creator['id'] 
+                            author.name = creator.get("name", "")
+                            author.identifier = creator.get("id", "") 
                             publication.author.append(author)               
                     
                     
@@ -65,4 +63,4 @@ def search(search_term: str, results):
         # pprint(results)
 
     except Exception as ex:
-        print(ex.__str__)
+        logger.error(f'Exception: {str(ex)}')
