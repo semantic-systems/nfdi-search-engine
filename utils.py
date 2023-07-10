@@ -72,17 +72,23 @@ def read_wikipedia(title):
     return summary_text
 
 
+# def remove_html_tags(text):
+#     soup = BeautifulSoup(text, "html.parser")
+#     cleaned_text = soup.text
+#     cleaned_text.strip()
+#     sentences = cleaned_text.split('.')
+#     if len(sentences) <= 5:
+#         return cleaned_text
+#     else:
+#         first_n_sentences: str = '. '.join(
+#                 sentence for sentence in sentences[0:4])
+#         return first_n_sentences
+
+
 def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
-    cleaned_text = soup.text
-    cleaned_text.strip()
-    sentences = cleaned_text.split('.')
-    if len(sentences) <= 5:
-        return cleaned_text
-    else:
-        first_n_sentences: str = '. '.join(
-                sentence for sentence in sentences[0:4])
-        return first_n_sentences
+    return soup.text.strip()
+
 
 #region DECORATORS
 

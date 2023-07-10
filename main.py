@@ -136,13 +136,20 @@ def search_results():
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
 
-        results = []
+        results = {
+            'publications': [],
+            'researchers': [],
+            'scholarly_resources': [],
+            'organizations': [],
+            'events': [],
+            'others': []
+        }      
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
-        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
+        sources = [resodate]
+        # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -152,59 +159,68 @@ def search_results():
         for t in threads:
             t.join()
             # print(t.is_alive())
+        
+        logger.info(f'Got {len(results["publications"])} publications')
+        logger.info(f'Got {len(results["researchers"])} researchers')
+        logger.info(f'Got {len(results["scholarly_resources"])} scholarly_resources')
+        logger.info(f'Got {len(results["organizations"])} organizations')
+        logger.info(f'Got {len(results["events"])} events')
+        logger.info(f'Got {len(results["others"])} others')
 
-        data = {
-            'Researchers': [],
-            'Articles': [],
-            'Dataset': [],
-            'Software': [],
-            'Presentation': [],
-            'Poster': [],
-            'Lesson': [],
-            'Video': [],
-            'Institute': [],
-            'Publisher': [],
-            'Funder': [],
-            'Image': [],
-            'Zenodo': [],
-            'Gesis': [],
-            'Cordis': [],
-            'Orcid': [],
-            'Gepris': []
-        }      
 
-        logger.info(f'Got {len(results)} results')
 
-        object_mappings = {Person       : 'Researchers'   ,
-                           Article      : 'Articles'      ,
-                           Dataset      : 'Dataset'       ,
-                           Software     : 'Software'      ,
-                           Presentation : 'Presentation'  ,
-                           Poster       : 'Poster'        ,
-                           Lesson       : 'Lesson'        ,
-                           Video        : 'Video'         ,
-                           Institute    : 'Institute'     ,
-                           Publisher    : 'Publisher'     ,
-                           Funder       : 'Funder'        ,
-                           Image        : 'Image'         ,
-                           Zenodo       : 'Zenodo'        ,
-                           Gesis        : 'Gesis'         ,
-                           Cordis       : 'Cordis'        ,
-                           Orcid        : 'Orcid'         ,
-                           Gepris       : 'Gepris'
-                           }
+        # data = {
+        #     'Researchers': [],
+        #     'Articles': [],
+        #     'Dataset': [],
+        #     'Software': [],
+        #     'Presentation': [],
+        #     'Poster': [],
+        #     'Lesson': [],
+        #     'Video': [],
+        #     'Institute': [],
+        #     'Publisher': [],
+        #     'Funder': [],
+        #     'Image': [],
+        #     'Zenodo': [],
+        #     'Gesis': [],
+        #     'Cordis': [],
+        #     'Orcid': [],
+        #     'Gepris': []
+        # }      
 
-        for result in results:
-            result_type = type(result)
-            if result_type in object_mappings.keys():
-                data[object_mappings[result_type]].append(result)
-            else:
-                logger.warning(f"Type {result_type} of result not yet handled")   
+        
+
+        # object_mappings = {Person       : 'Researchers'   ,
+        #                    Article      : 'Articles'      ,
+        #                    Dataset      : 'Dataset'       ,
+        #                    Software     : 'Software'      ,
+        #                    Presentation : 'Presentation'  ,
+        #                    Poster       : 'Poster'        ,
+        #                    Lesson       : 'Lesson'        ,
+        #                    Video        : 'Video'         ,
+        #                    Institute    : 'Institute'     ,
+        #                    Publisher    : 'Publisher'     ,
+        #                    Funder       : 'Funder'        ,
+        #                    Image        : 'Image'         ,
+        #                    Zenodo       : 'Zenodo'        ,
+        #                    Gesis        : 'Gesis'         ,
+        #                    Cordis       : 'Cordis'        ,
+        #                    Orcid        : 'Orcid'         ,
+        #                    Gepris       : 'Gepris'
+        #                    }
+
+        # for result in results:
+        #     result_type = type(result)
+        #     if result_type in object_mappings.keys():
+        #         data[object_mappings[result_type]].append(result)
+        #     else:
+        #         logger.warning(f"Type {result_type} of result not yet handled")   
        
         
         # Remove items without results
-        data = dict((k, result) for k, result in data.items() if result)
-        return render_template('results.html', data=data, search_term=search_term)
+        # data = dict((k, result) for k, result in data.items() if result)
+        return render_template('results.html', data=results, search_term=search_term)
 
 
 

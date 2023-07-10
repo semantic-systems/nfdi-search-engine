@@ -1,90 +1,122 @@
+from typing import Union, List
 import dataclasses
-from typing import Union
+from dataclasses import dataclass, fields
 
-@dataclasses.dataclass
+@dataclass
 class thing:
-    name: str
-    alternateName: str
-    description: str
-    url: str
-    image: str #url of the image
+    name: str = ""
+    alternateName: str = ""
+    description: str = ""
+    url: str = ""
+    image: str = "" #url of the image
+    identifier: str = ""
+    source: str = ""
 
-@dataclasses.dataclass
+    def __post_init__(self):
+    # Loop through the fields
+        for field in fields(self):
+            # If there is a default and the value of the field is none we can assign a value
+            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                setattr(self, field.name, field.default)
+
+@dataclass
 class Organization(thing):
-    address: str
-    email: str
-    legalName: str
-    location: str
-    logo: str # url
-    numberOfEmployees: str
-    telephone: str
+    address: str = ""
+    email: str = ""
+    legalName: str = ""
+    location: str = ""
+    logo: str = "" # url
+    numberOfEmployees: str = ""
+    telephone: str = ""
 
-@dataclasses.dataclass
+    def __post_init__(self):
+    # Loop through the fields
+        for field in fields(self):
+            # If there is a default and the value of the field is none we can assign a value
+            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                setattr(self, field.name, field.default)
+
+@dataclass
 class Person(thing):
-    additionalName: str
-    address: str
-    affiliation: Organization
-    alumniOf: Organization
-    birthDate: str
-    birthPlace: str
-    deathDate: str
-    deathPlace: str
-    email: str
-    familyName: str
-    gender: str
-    givenName: str # usually the first name
-    homeLocation: str
-    honorificPrefix: str #An honorific prefix preceding a Person's name such as Dr/Mrs/Mr.
-    honorificSuffix: str #An honorific suffix following a Person's name such as M.D./PhD/MSCSW.
-    jobTitle: str
-    nationality: str # we can later link it to country 
-    workLocation: str
-    worksFor: Organization
+    additionalName: str = ""
+    address: str = ""
+    affiliation: Organization = None
+    alumniOf: Organization = None
+    birthDate: str = ""
+    birthPlace: str = ""
+    deathDate: str = ""
+    deathPlace: str = ""
+    email: str = ""
+    familyName: str = ""
+    gender: str = ""
+    givenName: str = "" # usually the first name
+    homeLocation: str = ""
+    honorificPrefix: str = "" #An honorific prefix preceding a Person's name such as Dr/Mrs/Mr.
+    honorificSuffix: str = "" #An honorific suffix following a Person's name such as M.D./PhD/MSCSW.
+    jobTitle: str = ""
+    nationality: str = "" # we can later link it to country 
+    workLocation: str = ""
+    worksFor: Organization = None
 
-@dataclasses.dataclass
+    def __post_init__(self):
+    # Loop through the fields
+        for field in fields(self):
+            # If there is a default and the value of the field is none we can assign a value
+            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                setattr(self, field.name, field.default)
+
+@dataclass
 class CreativeWork(thing):
-    abstract: str
-    accountablePerson: Person
-    alternativeHeadline: str
-    author: Person
-    citation: str # this should actually reference to articles
-    countryOfOrigin: str
-    creativeWorkStatus: str
-    dateCreated: str
-    dateModified: str
-    datePublished: str
-    funder: Union[Organization, Person]  # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
-    funding: str # we can change this to Grant
-    genre: str
-    headline: str
-    inLanguage: str
-    keywords: str
-    license: str # url or license type
-    publication: str #publication event
-    publisher: Union[Organization, Person]
-    sourceOrganization: Organization
-    sponsor: Union[Organization, Person]
-    text: str
-    thumbnail: str #ImageObject
-    thumbnailUrl: str #url
-    version: str   
+    abstract: str = ""
+    alternativeHeadline: str = ""
+    author: List[Person] = None
+    citation: str = "" # this should actually reference to articles
+    countryOfOrigin: str = ""
+    creativeWorkStatus: str = ""
+    dateCreated: str = ""
+    dateModified: str = ""
+    datePublished: str = ""
+    funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
+    funding: str = "" # we can change this to Grant
+    genre: str = ""
+    headline: str = ""
+    inLanguage: str = ""
+    keywords: str = ""
+    license: str = "" # url or license type
+    publication: str = "" #publication event
+    publisher: Union[Organization, Person] = None
+    sourceOrganization: Organization = None
+    sponsor: Union[Organization, Person] = None
+    text: str = ""
+    thumbnail: str = "" #ImageObject
+    thumbnailUrl: str = "" #url
+    version: str = ""   
+
+    def __post_init__(self):
+    # Loop through the fields
+        for field in fields(self):
+            # If there is a default and the value of the field is none we can assign a value
+            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                setattr(self, field.name, field.default)
 
 
-@dataclasses.dataclass
-class Article:
-    title: str
-    url: str
-    authors: str
-    description: str
-    date: str
-    articleBody: str
-    pageEnd: str
-    pageStart: str
-    pagination: str
-    wordCount: str
+@dataclass
+class Article:    
+    articleBody: str = ""
+    pageEnd: str = ""
+    pageStart: str = ""
+    pagination: str = ""
+    wordCount: str = ""
+
+    def __post_init__(self):
+    # Loop through the fields
+        for field in fields(self):
+            # If there is a default and the value of the field is none we can assign a value
+            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                setattr(self, field.name, field.default)
 
 
-@dataclasses.dataclass
+@dataclass
 class Zenodo:
     resource_type: str
     url: str
@@ -94,7 +126,7 @@ class Zenodo:
     author: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Institute:
     name: str
     id: str
@@ -106,7 +138,7 @@ class Institute:
 
 
 
-@dataclasses.dataclass
+@dataclass
 class Presentation:
     title: str
     url: str
@@ -115,7 +147,7 @@ class Presentation:
     date: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Poster:
     title: str
     url: str
@@ -124,7 +156,7 @@ class Poster:
     date: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Dataset:
     title: str
     url: str
@@ -133,7 +165,7 @@ class Dataset:
     date: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Software:
     title: str
     url: str
@@ -143,7 +175,7 @@ class Software:
     version: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Image:
     title: str
     authors: str
@@ -151,7 +183,7 @@ class Image:
     date: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Video:
     title: str
     url: str
@@ -159,7 +191,7 @@ class Video:
     date: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Lesson:
     title: str
     url: str
@@ -168,7 +200,7 @@ class Lesson:
     date: str
 
     
-@dataclasses.dataclass
+@dataclass
 class Publisher:
     id: str
     name: str
@@ -179,7 +211,7 @@ class Publisher:
     description: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Funder:
     name: str
     id: str
@@ -190,7 +222,7 @@ class Funder:
     works_count: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Gesis:
     resource_type: str
     url: str
@@ -200,7 +232,7 @@ class Gesis:
     authors: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Cordis:
     id: str
     url: str
@@ -209,14 +241,14 @@ class Cordis:
     description: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Orcid:
     id: str
     url: str
     name: str
 
 
-@dataclasses.dataclass
+@dataclass
 class Gepris:
     url: str
     title: str

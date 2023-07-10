@@ -2,8 +2,7 @@ import requests
 import logging
 import json
 import utils
-from pprint import pprint
-from objects import Article
+from objects import Article, Person
 import re
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
@@ -35,17 +34,33 @@ def search(search_term: str, results):
 
                 for hit in hits:
                     hit_source = hit['_source']
-                    description = re.sub(regex_pattern, '', hit_source["description"], 0, re.MULTILINE)
-                    description = utils.remove_html_tags(description)
-                    results.append(
-                        Article(
-                            title=hit_source["name"],
-                            url=hit_source['id'],
-                            authors=', '.join([creator['name'] for creator in hit_source['creator']]),
-                            description=description,
-                            date=str(hit_source["datePublished"])
-                        )
-                    )
+                    publication = Article()
+                    publication.source = 'RESODATE'
+                    publication.name = hit_source["name"]                    
+                    publication.url = hit_source['id']
+                    publication.description = utils.remove_html_tags(hit_source["description"])
+                    publication.abstract = utils.remove_html_tags(hit_source["description"])
+                    publication.keywords = hit_source['keywords']
+                    for creator in hit_source['creator']:
+                        if creator['type'] == 'Person':
+                            author = Person()
+                            author.name = creator['name']
+                            author.identifier = creator['id'] 
+                            publication.author.append(author)               
+                    
+                    
+                    results['publications'].append(publication)
+
+                    # results.append(
+                    #     Article(
+                    #         # title=hit_source["name"],
+                    #         # url=hit_source['id'],
+                    #         authors=', '.join([creator['name'] for creator in hit_source['creator']]),
+                    #         # description=description,
+                    #         date=str(hit_source["datePublished"])
+                    #     )
+                    # )
+                    
 
         # pprint(results)
 
