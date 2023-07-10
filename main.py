@@ -122,6 +122,8 @@ def details():
             details, links, name = details_page.search_openalex(search_term)
         elif search_term.startswith('https://dblp'):
             details, links, name = details_page.search_dblp(search_term)
+        elif search_term.startswith('http://www.wikidata.org'):
+            details, links, name = details_page.search_wikidata(search_term)
         return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
 
 

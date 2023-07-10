@@ -45,3 +45,53 @@ def search_dblp(search_term: str):
     for url in author.findall('.url'):
         links.append(url.text)
     return details, links, name
+
+
+def search_wikidata(search_term: str):
+    formatter_urls = {'P214': 'https://viaf.org/viaf/$1/', 'P227': 'https://d-nb.info/gnd/$1',
+                      'P2456': 'https://dblp.org/search/author/api?q=$1',
+                      'P1960': 'https://scholar.google.com/citations?user=$1',
+                      'P496': 'https://orcid.org/$1', 'P10897': 'https://orkg.org/resource/$1',
+                      'P1153': 'https://www.scopus.com/authid/detail.uri?authorId=$1',
+                      'P2002': 'https://twitter.com/$1'}
+    details = {}
+    links = []
+    name = ''
+    url = search_term
+    headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+    response = requests.get(url, headers=headers)
+
+    if response.status_code != 200:
+        return details, links, name
+
+    wikidata_id = search_term.split('/')[-1]
+    data = response.json()
+    author = data['entities'][wikidata_id]
+    name = author.get('labels').get('en').get('value')
+    if 'en' in author.get('descriptions').keys():
+        details['Description'] = author.get('descriptions').get('en').get('value')
+    links.append('https://www.wikidata.org/entity/' + wikidata_id)
+    links_dict = author['claims']
+    for code in links_dict.keys():
+        end_of_link = links_dict[code][0]['mainsnak']['datavalue']['value']
+        if code in formatter_urls:
+            link = formatter_urls[code].replace('$1', end_of_link)
+            links.append(link)
+        else:
+            link = get_wiki_link(code)
+            if link is not None and isinstance(end_of_link, str):
+                links.append(link.replace('$1', end_of_link))
+    return details, links, name
+
+def get_wiki_link(code):
+    headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+    url = 'https://www.wikidata.org/wiki/Special:EntityData/' + code
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        return
+    data = response.json()
+    claims = data['entities'][code]['claims']
+    if 'P1630' in claims.keys():
+        formatter_link = claims['P1630'][0]['mainsnak']['datavalue']['value']
+        return formatter_link
+    return
