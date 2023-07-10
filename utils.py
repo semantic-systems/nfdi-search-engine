@@ -84,3 +84,21 @@ def remove_html_tags(text):
                 sentence for sentence in sentences[0:4])
         return first_n_sentences
 
+#region DECORATORS
+
+from functools import wraps
+from time import time
+import inspect
+
+def timeit(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        ts = time()
+        result = f(*args, **kwargs)
+        te = time()
+        filename = os.path.basename(inspect.getfile(f))
+        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
+        return result
+    return decorated_function
+
+#endregion
