@@ -47,6 +47,48 @@ def search_dblp(search_term: str):
     return details, links, name
 
 
+def search_orcid(search_term):
+    orcid_id = search_term.split('/')[-1]
+    headers = {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'User-Agent': 'nfdi4dsBot/1.0 (https://https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)'
+    }
+    url = 'https://pub.orcid.org/v3.0/' + orcid_id + '/person'
+    response = requests.get(url, headers=headers)
+
+    details = {}
+    links = [search_term]
+    name = ''
+    if response.status_code != 200:
+        return details, links, name
+
+    data = response.json()
+    name_data = data.get('name', {})
+    given_names = name_data.get('given-names', {}).get('value', '')
+    family_name = name_data.get('family-name', {}).get('value', '')
+    name = f"{given_names} {family_name}"
+    try:
+        details['Also known as'] = name_data.get('credit-name', {}).get('value') or name_data.get('display-name', {}).get('value')
+    except AttributeError:
+        pass
+
+    for url in data.get('researcher-urls', {}).get('researcher-url', []):
+        link = url.get('url').get('value')
+        if not link.startswith('http://purl.org'):
+            links.append(link)
+    for url in data.get('external-identifiers', {}).get('external-identifier', []):
+        link = url.get('external-id-url').get('value')
+        links.append(link)
+
+    email = data.get('emails', {}).get('email', [])
+    email = email[0]['email'] if email else None
+    if email is not None:
+        details['Email'] = email
+
+    return details, links, name
+
+
 def search_wikidata(search_term: str):
     formatter_urls = {'P214': 'https://viaf.org/viaf/$1/', 'P227': 'https://d-nb.info/gnd/$1',
                       'P2456': 'https://dblp.org/search/author/api?q=$1',
