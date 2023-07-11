@@ -4,7 +4,6 @@ from objects import Person, Article
 from string import Template
 import pandas as pd
 
-# logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
 
@@ -18,9 +17,8 @@ def search(search_string: str, results):
       Returns:
             the results array
       """
-
-    wikidata_article_search(search_string, results)
     wikidata_person_search(search_string, results)
+    wikidata_article_search(search_string, results)
 
     logger.info(f"Got {len(results)} author and publication records from Wikidata")
     return results
@@ -38,7 +36,7 @@ def wikidata_article_search(search_string: str, results):
     SERVICE wikibase:mwapi
     {
       bd:serviceParam wikibase:endpoint "www.wikidata.org";
-                      wikibase:limit 1000;
+                      wikibase:limit "once";
                       wikibase:api "Generator";
                       mwapi:generator "search";
                       mwapi:gsrsearch "$search_string";
@@ -58,7 +56,7 @@ ORDER BY DESC(?dateYear)
 
     response = requests.get(url,
                             params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, timeout=(3, 15), headers=headers)
+                                    }, headers=headers)
     logger.debug(f'DBLP response status code: {response.status_code}')
     logger.debug(f'DBLP response headers: {response.headers}')
 
@@ -86,32 +84,31 @@ def wikidata_person_search(search_string: str, results):
     url = 'https://query.wikidata.org/sparql'
     headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
     query_template = Template('''
-    SELECT DISTINCT ?item ?label ?employer ?employerLabel
-  WHERE
-  {
+   SELECT DISTINCT ?item ?itemLabel
+   WHERE
+   {
     SERVICE wikibase:mwapi
     {
       bd:serviceParam wikibase:endpoint "www.wikidata.org";
-                      wikibase:api "Generator";
-                      mwapi:generator "search";
-                      mwapi:gsrsearch "$search_string";
-                      mwapi:gsrlimit "150".
-      ?item wikibase:apiOutputItem mwapi:title.
+                      wikibase:api "EntitySearch";
+                     
+                      mwapi:search "$search_string";
+                      mwapi:language "en";
+                      mwapi:limit "150".
+      ?item wikibase:apiOutputItem mwapi:item.
     }
-    ?item rdfs:label ?label. FILTER( LANG(?label)="en" )
-
-    # ?item wdt:P31/wdt:P279* wd:Q5 .
+    #?item (wdt:P279*/wdt:P31) wd:Q482980 .
     ?item wdt:P106 ?occ .
-    ?occ wdt:P279* wd:Q482980 .
-   SERVICE wikibase:label {
-     bd:serviceParam wikibase:language "en" .
+    ?occ wdt:P279* wd:Q1650915 .
+    SERVICE wikibase:label {
+    bd:serviceParam wikibase:language "en" .
   }
   }
       ''')
 
     response = requests.get(url,
                             params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, timeout=(3, 15), headers=headers)
+                                    }, headers=headers)
     logger.debug(f'DBLP response status code: {response.status_code}')
     logger.debug(f'DBLP response headers: {response.headers}')
 
@@ -119,7 +116,7 @@ def wikidata_person_search(search_string: str, results):
         data = response.json()
         if data["results"]["bindings"]:
             result_df = pd.json_normalize(data['results']['bindings'])
-            df = result_df[['item.value', 'label.value']]
+            df = result_df[['item.value', 'itemLabel.value']]
             df.columns = ['url', 'name']
             df_dict = df.to_dict('records')
 
