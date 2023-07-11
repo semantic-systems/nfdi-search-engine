@@ -2,7 +2,7 @@ import logging
 import logging.config
 import os
 import uuid
-from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
+# from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from objects import Article, Organization, Person
 from flask import Flask, render_template, request, make_response
 import threading
@@ -139,9 +139,10 @@ def search_results():
         results = {
             'publications': [],
             'researchers': [],
-            'scholarly_resources': [],
+            'resources': [],
             'organizations': [],
             'events': [],
+            'funding': [],
             'others': []
         }      
         threads = []

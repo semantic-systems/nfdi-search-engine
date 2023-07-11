@@ -11,38 +11,42 @@
         {% if data %}
         <tr>
             <td>
-                <div class="card mb-2 p-3 bg-light">
-                    <div class="row">
-                        <div class="col-lg-9 fw-bold ">
-                            <a class="text-decoration-none" href='{{data.url}}' target='_blank'>{{data.name}}</a>
+                <div class="card mb-2 p-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-9 fs-6"></div>
+
+
+
+                            <div class="col-lg-9 fs-6">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    {{data.name}}</a>
+                            </div>
+                            <div class="col-lg-2 text-end">{{data.date}}</div>
+                            <div class="col-lg-1 text-end"><a target='_blank' href="#" title="bookmark"><i
+                                        class="bi bi-bookmark"></i></a></div>
                         </div>
-                        <div class="col-lg-2 text-end">{{data.date}}</div>
-                        <div class="col-lg-1 text-end"><a target='_blank' href="#" title="bookmark"><i
-                                    class="bi bi-bookmark"></i></a></div>
-                    </div>
-                    <div class="row px-1">
-                        <div class="col-lg-12 px-0 mt-2 mb-2">
-                            {% for author in data.author %}
-                            <a href="{{author.identifier}}" class="btn btn-light text-dark rounded-5 p-0 pe-3 fs-6"
-                                tabindex="-1" role="button" aria-disabled="true"><i
-                                    class="ps-1 pe-2 bi-person-circle"></i>{{author.name}}</a>
-                            {% endfor %}
+                        <div class="row px-1">
+                            <div class="col-lg-12 px-0 mt-2 mb-2">
+                                {% for author in data.author %}
+                                <a href="{{author.identifier}}" class="btn btn-light text-dark rounded-5 p-0 pe-3 fs-6"
+                                    tabindex="-1" role="button" aria-disabled="true"><i
+                                        class="ps-1 pe-2 bi-person-circle"></i>{{author.name}}</a>
+                                {% endfor %}
+                            </div>
                         </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-lg-12">
-                            <p class="card-text">{{data.description|truncate(500)}}</p>
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <p class="card-text">{{data.description|truncate(500)}}</p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="row pt-3">
-                        <div class="col-lg-10 text-start">
-                            <span class="badge text-bg-info">DBLP</span>
-                            <span class="badge text-bg-info">English</span>
-                            <span class="badge text-bg-info">PDF</span>
-                            <span class="badge text-bg-info">License</span>
-                        </div>
-                        <div class="col-lg-2 text-end">
-                            <a href="#" class="btn btn-success p-1">View Details</a>
+                        <div class="row pt-3">
+                            <div class="col-lg-10 text-start">
+                                <span class="badge text-bg-info">DBLP</span>
+                                <span class="badge text-bg-info">English</span>
+                                <span class="badge text-bg-info">PDF</span>
+                                <span class="badge text-bg-info">License</span>
+                            </div>
                         </div>
                     </div>
                 </div>

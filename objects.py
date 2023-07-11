@@ -39,24 +39,24 @@ class Organization(thing):
 @dataclass
 class Person(thing):
     additionalName: str = ""
-    address: str = ""
-    affiliation: Organization = None
-    alumniOf: Organization = None
+    address: str = "" #this should be a list
+    affiliation: Organization = None  #this should be a list
+    alumniOf: Organization = None  #this should be a list
     birthDate: str = ""
     birthPlace: str = ""
     deathDate: str = ""
     deathPlace: str = ""
-    email: str = ""
+    email: str = ""  #this should be a list
     familyName: str = ""
     gender: str = ""
     givenName: str = "" # usually the first name
-    homeLocation: str = ""
-    honorificPrefix: str = "" #An honorific prefix preceding a Person's name such as Dr/Mrs/Mr.
-    honorificSuffix: str = "" #An honorific suffix following a Person's name such as M.D./PhD/MSCSW.
-    jobTitle: str = ""
-    nationality: str = "" # we can later link it to country 
-    workLocation: str = ""
-    worksFor: Organization = None
+    homeLocation: str = ""  #this should be a list
+    honorificPrefix: str = "" #An honorific prefix preceding a Person's name such as Dr/Mrs/Mr.  #this should be a list
+    honorificSuffix: str = "" #An honorific suffix following a Person's name such as M.D./PhD/MSCSW.  #this should be a list
+    jobTitle: str = ""  #this should be a list
+    nationality: str = "" # we can later link it to country   #this should be a list
+    workLocation: str = ""  #this should be a list
+    worksFor: Organization = None  #this should be a list
 
     def __post_init__(self):
     # Loop through the fields
@@ -69,7 +69,7 @@ class Person(thing):
 class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
-    author: List[Person] = field(default_factory=list)
+    author: List[Union[Organization, Person]] = field(default_factory=list)
     citation: str = "" # this should actually reference to articles
     countryOfOrigin: str = ""
     creativeWorkStatus: str = ""
@@ -81,7 +81,7 @@ class CreativeWork(thing):
     genre: str = ""
     headline: str = ""
     inLanguage: str = ""
-    keywords: str = ""
+    keywords: List[str] = field(default_factory=list)
     license: str = "" # url or license type
     publication: str = "" #publication event
     publisher: Union[Organization, Person] = None
@@ -114,6 +114,11 @@ class Article(CreativeWork):
             # If there is a default and the value of the field is none we can assign a value
             if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
                 setattr(self, field.name, field.default)
+
+
+@dataclass
+class Dataset(CreativeWork): 
+    pass
 
 
 @dataclass

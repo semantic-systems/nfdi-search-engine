@@ -38,7 +38,7 @@ def search(search_term: str, results):
                     publication.url = hit_source.get("id", "")
                     publication.description = utils.remove_html_tags(hit_source.get("description", ""))
                     publication.abstract = utils.remove_html_tags( hit_source.get("description", ""))
-                    publication.keywords =  hit_source.get("keywords", "")
+                    # publication.keywords =  hit_source.get("keywords", "") #read all keywords
                     for creator in hit_source.get("creator", []):
                         if creator['type'] == 'Person':
                             author = Person()
