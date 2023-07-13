@@ -17,14 +17,6 @@ a:focus {
     outline: none;
 }
 
-.card:hover {
-    /* transform: scale(1.01); */
-    /* box-shadow: 0 10px 20px rgba(0, 0, 0, .12), 0 4px 8px rgba(0, 0, 0, .06); */
-    background-color: #f0f0f0;
-}
-
-
-
 
 /* Header styles */
 
@@ -113,7 +105,9 @@ input[type='search']::-webkit-search-decoration {
 }
 
 .card:hover {
-    border-color: #000;
+    /* transform: scale(1.01); */
+    /* box-shadow: 0 10px 20px rgba(0, 0, 0, .12), 0 4px 8px rgba(0, 0, 0, .06); */
+    background-color: #f9f9f9;
 }
 
 .card-img-top {

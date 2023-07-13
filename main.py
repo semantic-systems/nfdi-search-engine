@@ -27,9 +27,9 @@ def index():
 
     return response
 
-@app.route('/index-new')
+@app.route('/index-old')
 def index_new():
-    response = make_response(render_template('index-new.html'))
+    response = make_response(render_template('index-old.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -142,7 +142,7 @@ def search_results():
             'resources': [],
             'organizations': [],
             'events': [],
-            'funding': [],
+            'fundings': [],
             'others': []
         }      
         threads = []
@@ -163,9 +163,10 @@ def search_results():
         
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
-        logger.info(f'Got {len(results["scholarly_resources"])} scholarly_resources')
+        logger.info(f'Got {len(results["resources"])} resources')
         logger.info(f'Got {len(results["organizations"])} organizations')
         logger.info(f'Got {len(results["events"])} events')
+        logger.info(f'Got {len(results["fundings"])} fundings')
         logger.info(f'Got {len(results["others"])} others')
 
 
@@ -221,7 +222,7 @@ def search_results():
         
         # Remove items without results
         # data = dict((k, result) for k, result in data.items() if result)
-        return render_template('results.html', data=results, search_term=search_term)
+        return render_template('results.html', results=results, search_term=search_term)
 
 
 
