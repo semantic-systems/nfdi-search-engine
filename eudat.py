@@ -1,15 +1,11 @@
 import requests
-from objects import CreativeWork, Collection, Sound, Image, Dataset, Video, Event, Software, Service, Text
-import datetime
+#from objects import CreativeWork, Collection, Sound, Image, Dataset, Video, Event, Software, Service, Text
+from objects import Dataset
+import logging
+from utils import guess_date
 
 
-def guess_date(string):
-    for fmt in ["%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%Y%m%d", "%Y-%m-%dT%H:%M:%S.%fZ"]:
-        try:
-            return datetime.datetime.strptime(string, fmt).date().strftime("%Y")
-        except ValueError:
-            continue
-
+logger = logging.getLogger('nfdi_search_engine')
 
 
 def search(search_string: str, results):
@@ -22,17 +18,22 @@ def search(search_string: str, results):
           Returns:
                 the results array
           """
-    url = 'https://b2share.eudat.eu/api/records/'
+    api_url = 'https://b2share.eudat.eu/api/records/'
+    result_url_start = 'https://b2share.eudat.eu/records/'
+    response = requests.get(api_url, params={'q': search_string, 'sort': 'mostrecent'})
+    data = response.json()
 
-    r = requests.get(url, params={'q': search_string, 'sort': 'mostrecent'})
-    data = r.json()
-    if r.status_code == 200:
+    logger.debug(f'Eudat response status code: {response.status_code}')
+    logger.debug(f'Eudat response headers: {response.headers}')
+
+    if response.status_code == 200:
         try:
             hits = data.get('hits', {}).get('hits', [])
         except AttributeError:
             hits = []  # Set hits as an empty list if the 'get' operation fails due to AttributeError
-
         for hit in hits:
+            result_id = hit["id"]
+            url = result_url_start + result_id
             metadata = hit["metadata"]
             # doi = metadata.get("DOI", "")
             # epic_pid = metadata.get("ePIC_PID", "")
@@ -42,9 +43,11 @@ def search(search_string: str, results):
             description = description[0:150] + "..." if description != "" else ""
             publication_state = metadata.get("publication_state", "")
             publication_date = metadata.get("publication_date", "")
-            version = metadata.get("version", "")
+            formatted_date = guess_date(publication_date)
             if publication_date != "":
-                publication_date = guess_date(publication_date)
+                publication_date = formatted_date if formatted_date !="" else publication_date
+
+            version = metadata.get("version", "")
             authors = []
             for creator in metadata.get("creators", {}):
                 authors.append(creator["creator_name"].rstrip())
@@ -66,6 +69,17 @@ def search(search_string: str, results):
                 resource_types.append(resource["resource_type_general"])
 
             category = resource_types[0] if len(resource_types) == 1 else "CreativeWork"
+
+            # for now all categories got to "Dataset".
+            results.append(Dataset(
+                title=title,
+                description=description,
+                url=url,
+                authors=", ".join(authors),
+                date=publication_date))
+
+            # Category matching for later use.
+            """
             match category:
                 case "Collection" | "Sound" | "Text":
                     results.append(category(
@@ -133,22 +147,12 @@ def search(search_string: str, results):
                         authors=", ".join(authors),
                         url=url
                     ))
+                    
+                    """
+
+    logger.info(f"Got {len(results)} records from Eudat")
+
     return results
-
-
-'''
-            result.append(Eudat(title=title,
-                                description=description,
-                                license=license,
-                                license_identifier=license_identifier,
-                                epic_pid=epic_pid,
-                                authors=", ".join(authors),
-                                publication_state=publication_state,
-                                date=publication_date,
-                                doi=doi,
-                                resource_type=", ".join(resource_types),
-                                alternate_identifiers=alternate_identifiers))
-    '''
 
 
 

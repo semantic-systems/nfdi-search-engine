@@ -1,3 +1,5 @@
+import datetime
+
 import extruct
 from objects import Article, Person
 import wikipedia
@@ -84,3 +86,9 @@ def remove_html_tags(text):
                 sentence for sentence in sentences[0:4])
         return first_n_sentences
 
+def guess_date(string):
+    for fmt in ["%Y/%m/%d", "%d-%m-%Y", "%Y-%m-%d", "%d/%m/%Y", "%d.%m.%Y", "%Y%m%d", "%Y-%m-%dT%H:%M:%S.%fZ"]:
+        try:
+            return datetime.datetime.strptime(string, fmt).date().strftime("%Y")
+        except ValueError:
+            continue
