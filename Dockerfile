@@ -10,6 +10,6 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-CMD [ "gunicorn", "-w", "4" , "main:app" ]
+CMD [ "gunicorn", "-w", "4" , "-b", "0.0.0.0", "main:app" ]
 
-EXPOSE 5002/tcp
+EXPOSE 8000/tcp
