@@ -28,7 +28,7 @@ a:focus {
     position: relative;
     z-index: 1;
     background-color: #fff;
-    margin-top: calc(20vh);
+    margin-top: calc(10vh);
 }
 
 .searchbox {
@@ -168,7 +168,7 @@ input[type='search']::-webkit-search-decoration {
     width: 2rem;
 }
 
-.nfdi-logo {
-    height: 3rem;
+.nfdi4ds-logo {
+    height: 2rem;
     /* width: 2rem; */
 }

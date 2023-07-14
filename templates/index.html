@@ -13,12 +13,18 @@
 
         <div class="bsearch">
             <form action="/results" method="GET">
-                <div class="mt-3">
-                    <h2 class="text-center text-dark p-2">Welcome to NFDI4DS Maven</h2>
-                    <h4 class="text-center text-secondary p-2">The vision of NFDI4DS is to support all steps of the
-                        complex and interdisciplinary research data lifecycle. Here you can explore all NFDI4DS
-                        services.</h4>
-
+                <div class="">
+                    <h2 class="text-center text-dark fs-1 fw-bold mb-4">Welcome to NFDI4DS Maven</h2>
+                    <div class="row mb-4">
+                        <div class="col-3"></div>
+                        <div class="col-6 text-center">
+                            <h4 class="text-secondary">The vision of NFDI4DS is to support all
+                                steps of the
+                                complex and interdisciplinary research data lifecycle. Here you can explore all NFDI4DS
+                                services.</h4>
+                        </div>
+                        <div class="col-3"></div>
+                    </div>
                     <div class="searchbox mx-auto">
                         <svg aria-hidden="true" viewBox="0 0 24 24">
                             <path
@@ -27,10 +33,168 @@
                         <input aria-label="Search for Articles and Researchers" autocomplete="off" inputmode="search"
                             placeholder="Search" type="search" name="txtSearchTerm" />
                     </div>
+                    <!--sample search terms-->
+                    <div class="d-flex justify-content-center mt-2">
+                        <a href="/results?txtSearchTerm=Ricardo+Usbeck" class="btn btn-success btn-sm m-2"
+                            role="button">Ricardo Usbeck</a>
+                        <a href="/results?txtSearchTerm=Rana+Abdullah" class="btn btn-secondary btn-sm m-2"
+                            role="button">Rana
+                            Abdullah</a>
+                        <a href="/results?txtSearchTerm=Albert+Einstein" class="btn btn-info btn-sm m-2"
+                            role="button">Albert Eistein</a>
+                    </div>
                 </div>
             </form>
         </div>
 
+        <!--DATA SOURCES-->
+        <div class="row mt-5">
+            <h2 class="text-center text-dark fs-1 fw-bold mt-5 mb-2">Data Sources</h2>
+            <div class="col-md-12">
+                <div class="lc-block">
+                    <div id="carouselLogosSources" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
+                        <div class="carousel-inner px-5">
+                            <div class="carousel-item active">
+                                <div class="row text-center">
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3 mb-3"
+                                            src="{{ url_for('static', filename='images/DBLP_Logo_320x120.png') }}"
+                                            alt="DBLP">
+                                    </div>
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/OpenAlex-logo.png') }}"
+                                            alt="OPENALEX">
+                                    </div>
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/orcid.logo.svg') }}" alt="ORCID">
+                                    </div>
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/Wikidata-logo.png') }}"
+                                            alt="WIKIDATA">
+                                    </div>
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/zenodo-logo.png') }}"
+                                            alt="ZENODO">
+                                    </div>
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/Datacite-Logo.png') }}"
+                                            alt="DATACITE">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row">
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3 mb-3"
+                                            src="{{ url_for('static', filename='images/GEPRIS_Logo.png') }}"
+                                            alt="GEPRIS">
+                                    </div>
+                                    <div class="col-6 col-lg-2  align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/GESIS-Logo.svg') }}" alt="GESIS">
+                                    </div>
+                                    <div class="col-6 col-lg-2  align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/oersi-logo.svg') }}" alt="OERSI">
+                                    </div>
+                                    <div class="col-6 col-lg-2  align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/resodate-logo.svg') }}"
+                                            alt="RESODATE">
+                                    </div>
+                                    <div class="col-6 col-lg-2  align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/ieee-logo.svg') }}" alt="IEEE">
+                                    </div>
+                                    <div class="col-6 col-lg-2  align-self-center">
+                                        <img class="d-block w-100 px-3  mb-3"
+                                            src="{{ url_for('static', filename='images/eulg-logo.svg') }}" alt="EULG">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!--
+                        <ol class="carousel-indicators position-relative mt-3">
+                            <li data-bs-target="#carouselLogosSources" data-bs-slide-to="0" class="active bg-dark carousel-control-prev-icon"></li>
+                            <li data-bs-target="#carouselLogosSources" data-bs-slide-to="1" class="bg-dark"></li>
+                        </ol>
+                        -->
+                        <div class="w-100 px-3 text-center mt-4">
+                            <a class="carousel-control-prev position-relative d-inline me-4"
+                                href="#carouselLogosSources" data-bs-slide="prev">
+                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z">
+                                    </path>
+                                </svg>
+                                <span class="visually-hidden">Previous</span>
+                            </a>
+                            <a class="carousel-control-next position-relative d-inline" href="#carouselLogosSources"
+                                data-bs-slide="next">
+                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z">
+                                    </path>
+                                </svg>
+                                <span class="visually-hidden">Next</span>
+                            </a>
+                        </div>
+                    </div>
+                </div><!-- /lc-block -->
+            </div><!-- /col -->
+        </div>
+
+        <!--PARTNERS-->
+        <div class="row mt-5">
+            <h2 class="text-center text-dark fs-1 fw-bold mt-5 mb-2">Partners</h2>
+            <div class="col-md-12">
+                <div class="lc-block">
+                    <div id="carouselLogosPartners" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
+                        <div class="carousel-inner px-5">
+                            <div class="carousel-item active">
+                                <div class="row text-center">
+                                    <div class="col-6 col-lg-2 align-self-center">
+                                        <img class="d-block w-100 px-3 mb-3"
+                                            src="{{ url_for('static', filename='images/Partner1.png') }}"
+                                            alt="Partner 1">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-100 px-3 text-center mt-4">
+                            <a class="carousel-control-prev position-relative d-inline me-4"
+                                href="#carouselLogosPartners" data-bs-slide="prev">
+                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z">
+                                    </path>
+                                </svg>
+                                <span class="visually-hidden">Previous</span>
+                            </a>
+                            <a class="carousel-control-next position-relative d-inline" href="#carouselLogosPartners"
+                                data-bs-slide="next">
+                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd"
+                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z">
+                                    </path>
+                                </svg>
+                                <span class="visually-hidden">Next</span>
+                            </a>
+                        </div>
+                    </div>
+                </div><!-- /lc-block -->
+            </div><!-- /col -->
+        </div>
     </div>
 </main>
 
