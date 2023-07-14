@@ -2,7 +2,7 @@ services:
     search-engine:
         build: .
         ports:
-            - 6001:8000
+            - 6000:8000
         restart: unless-stopped
         networks:
             - demo_network
