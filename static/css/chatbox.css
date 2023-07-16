@@ -36,6 +36,9 @@
   color: #D8DADF;
   font-size: 32px;
 }
+.chat .chat-header .bi-dash-circle-fill:hover {
+  color: #7f838d;
+}
 .chat .chat-history {
   padding: 20px 20px 20px;
   border-bottom: 2px solid white;

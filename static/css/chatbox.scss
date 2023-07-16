@@ -59,6 +59,10 @@ $gray: #92959E;
             float: right;
             color: #D8DADF;
             font-size: 32px;
+
+            &:hover {
+                color: darken($gray, 7%);
+            }
         }
     }
 

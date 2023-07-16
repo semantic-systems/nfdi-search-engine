@@ -5,45 +5,62 @@
         </tr>
     </thead>
     <tbody>
-
-        <!-- <div class="d-flex justify-content-around"> -->
-        {% set loop_counter = namespace(value=0) %}
-        {% for title, datas in data.items() %}
-        {% if title == 'Researchers' %}
-        {% for data in datas %}
-
-        {% if loop_counter.value % 3 == 0 %}
+        {% for researcher in results.researchers %}
         <tr>
-            <td class="d-flex justify-content-around">
-                {% endif %}
-
-                {% if data %}
-
-                <div class="card mb-2 p-3 bg-light text-center" style="width: 18rem;">
-                    <!-- <p>{{ loop_counter.value }}</p> -->
-                    <img src="https://codingyaar.com/wp-content/uploads/bootstrap-profile-card-image.jpg"
-                        class="card-img-top" alt="...">
+            <td>
+                <div class="card mb-2 p-3">
                     <div class="card-body">
-                        <h5 class="card-title"><a class="text-decoration-none"
-                                href='/details?searchTerm={{data.url}}'>{{data.name}}</a></h5>
-                        <!-- <p class="card-text">Some quick example text to build on the card title and make up the bulk of
-                                    the card's
-                                    content.</p> -->
-                        <a href="{{data.url}}" target='_blank' class="btn btn-primary">Know More</a>
+                        <div class="row">
+                            <div class="col-lg-11 fs-6">
+                                <div class="row">
+                                    <div class="col-lg-12 fs-6">
+                                        <a class="text-dark fw-bold" href='#' target='_blank'>
+                                            {{publication.name}}</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12 px-0 mt-2 mb-2">
+                                        {% for author in publication.author %}
+                                        <a href="{{author.identifier}}"
+                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1"
+                                            tabindex="-1" role="button" aria-disabled="true"><i
+                                                class="ps-1 pe-2 bi-person-circle"></i>{{author.name}}</a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <p class="card-text">{{publication.description|truncate(500)}}</p>
+                                    </div>
+                                </div>
+                                <div class="row pt-3">
+                                    <div class="col-lg-9 text-start">
+                                        <span class="badge text-bg-info">DBLP</span>
+                                        <span class="badge text-bg-info">English</span>
+                                        <span class="badge text-bg-info">PDF</span>
+                                        <span class="badge text-bg-info">License</span>
+                                    </div>
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge text-bg-info">12.07.2023</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-1">
+                                <div class="row fs-5">
+                                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                class="bi bi-bookmark"></i></a></div> -->
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                class="bi bi-share"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                class="bi bi-download"></i></a></div>
+
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                {% endif %}
-
-                {% if loop_counter.value % 3 == 2 %}
             </td>
         </tr>
-        {% endif %}
-        {% set loop_counter.value = loop_counter.value + 1 %}
-
         {% endfor %}
-        {% endif %}
-        {% endfor %}
-        <!-- </div> -->
     </tbody>
 </table>

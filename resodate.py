@@ -2,7 +2,7 @@ import requests
 import logging
 import json
 import utils
-from objects import Article, Person
+from objects import Article, Person, Organization
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -14,7 +14,7 @@ def search(search_term: str, results):
                                                                                                             '+') + '"'
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json',
-                   'User-Agent': 'nfdi4dsBot/1.0 (https://https://www.nfdi4datascience.de/nfdi4dsBot/; '
+                   'User-Agent': 'nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; '
                                  'nfdi4dsBot@nfdi4datascience.de) '
                    }
 
@@ -42,10 +42,10 @@ def search(search_term: str, results):
                     for creator in hit_source.get("creator", []):
                         if creator['type'] == 'Person':
                             author = Person()
+                            author.type = creator['type']
                             author.name = creator.get("name", "")
                             author.identifier = creator.get("id", "") 
-                            publication.author.append(author)               
-                    
+                            publication.author.append(author)    
                     
                     results['publications'].append(publication)
 

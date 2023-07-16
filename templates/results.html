@@ -8,13 +8,13 @@
 {% block content %}
 
 <!-- ### main content ### -->
-<main class='main-content'>
+<main class=''>
     <div id='mainContent' class="container">
 
         <div class="container-fluid">
             <div class="row flex-nowrap">
 
-                <div class="col m-4">
+                <div class="col mt-4">
                     <div class="row">
                         <div class="col">
                             <ul class="nav nav-tabs nav-justify mb-3" id="myTab" role="tablist">
@@ -106,7 +106,8 @@
                         <div class="col-auto text-end">
                             <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse"><img
                                     style="height: 48px; width: 48px;"
-                                    src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar" /></a>
+                                    src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar"
+                                    title="Chat with me" /></a>
                         </div>
                     </div>
                     <div class="tab-content" id="myTabContent">
