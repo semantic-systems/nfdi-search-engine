@@ -225,6 +225,18 @@ def search_results():
         return render_template('results.html', results=results, search_term=search_term)
 
 
+@app.route('/chatbox')
+def chatbox():
+    response = make_response(render_template('chatbox.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
 
 
 @app.route('/details', methods=['POST', 'GET'])

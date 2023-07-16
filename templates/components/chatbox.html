@@ -1,0 +1,99 @@
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbox.css') }}">
+{% endblock stylesheets %}
+
+{% block content %}
+
+<div id="chatbox" class="container clearfix collapse collapse-horizontal show sticky-top">
+
+    <div class="chat">
+        <div class="chat-header clearfix d-flex align-items-center">
+            <img src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar" />
+            <div class="flex-fill chat-about">
+                <div class="chat-with">Chat with NFDI4DS Maven</div>
+            </div>
+            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse"><i class="bi bi-dash-circle-fill"></i></a>
+        </div> <!-- end chat-header -->
+
+        <div class="chat-history" style="height: calc(100vh - 450px);">
+            <!-- <div class="chat-history"> -->
+            <ul class="list-unstyled">
+
+                <li class="clearfix">
+                    <div class="message-data">
+                        <span class="message-data-name"><i class="fa fa-circle online"></i> Maven</span>
+                        <span class="message-data-time">10:12 AM, Today</span>
+                    </div>
+                    <div class="message my-message">
+                        I am here to help. You can ask me anything you want. For example:
+                    </div>
+                    <div id="sample-questions" class="list-group pb-3 w-90" style="margin-top: -25px;">
+                        <a href="#" class="list-group-item list-group-item-action list-group-item-primary">question
+                            1</a>
+                        <a href="#" class="list-group-item list-group-item-action list-group-item-success">question
+                            2</a>
+                        <a href="#" class="list-group-item list-group-item-action list-group-item-warning">question
+                            3</a>
+                    </div>
+                </li>
+
+                <li id="spinner-block" style="display: none;">
+                    <div class="spinner-grow spinner-grow-sm" role="status" style="color:#86BB71;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="spinner-grow spinner-grow-sm" role="status" style="color:#AED2A6">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div class="spinner-grow spinner-grow-sm" role="status" style="color:#DAE9DA;">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </li>
+
+            </ul>
+
+        </div> <!-- end chat-history -->
+
+        <div class="chat-message clearfix">
+            <textarea name="message-to-send" id="message-to-send" placeholder="Type your message" rows="3"></textarea>
+            <button>Send</button>
+        </div> <!-- end chat-message -->
+
+    </div> <!-- end chat -->
+
+</div> <!-- end container -->
+
+<script id="message-template" type="text/x-handlebars-template">
+{% raw %}
+    <li class="clearfix">
+    <div class="message-data text-end">
+        <span class="message-data-time" >{{time}}, Today</span> &nbsp; &nbsp;
+        <span class="message-data-name" >Me</span> <i class="fa fa-circle me"></i>
+    </div>
+    <div class="message other-message float-end">
+        {{messageOutput}}
+    </div>
+    </li>
+{% endraw %}
+</script>
+
+<script id="message-response-template" type="text/x-handlebars-template">
+{% raw %}
+    <li>
+    <div class="message-data">
+        <span class="message-data-name"><i class="fa fa-circle online"></i> Maven</span>
+        <span class="message-data-time">{{time}}, Today</span>
+    </div>
+    <div class="message my-message">
+        {{response}}
+    </div>
+    </li>
+{% endraw %}
+</script>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+{% endblock javascripts %}

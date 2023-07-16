@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Dashboard {% endblock title %}
+{% block title %} Search Results {% endblock title %}
 
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}{% endblock stylesheets %}
@@ -11,93 +11,127 @@
 <main class='main-content'>
     <div id='mainContent' class="container">
 
-        <div class="m-4">
+        <div class="container-fluid">
+            <div class="row flex-nowrap">
 
-            <ul class="nav nav-tabs nav-fill mb-3" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link active fs-6 position-relative" id="publications-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#publications" type="button" role="tab" aria-controls="publications"
-                        aria-selected="true"><i class="px-1 bi-journal-album"></i>Publications
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.publications|count}}
-                            <span class="visually-hidden">publications</span>
-                        </span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fs-6 position-relative" id="researchers-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#researchers" type="button" role="tab" aria-controls="researchers"
-                        aria-selected="false"><i class="px-1 bi-people-fill"></i>Researchers
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.researchers|count}}
-                            <span class="visually-hidden">researchers</span>
-                        </span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fs-6 position-relative" id="resources-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#resources" type="button" role="tab" aria-controls="resources"
-                        aria-selected="false"><i class="px-1 bi-database-fill-gear"></i>Resources
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.resources|count}}
-                            <span class="visually-hidden">resources</span>
-                        </span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fs-6 position-relative" id="organizations-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#organizations" type="button" role="tab" aria-controls="organizations"
-                        aria-selected="false"><i class="px-1 bi-bank"></i>Organizations
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.organizations|count}}
-                            <span class="visually-hidden">organizations</span>
-                        </span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fs-6 position-relative" id="events-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#events" type="button" role="tab" aria-controls="events"
-                        aria-selected="false"><i class="px-1 bi-calendar3"></i>Events
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.events|count}}
-                            <span class="visually-hidden">events</span>
-                        </span>
-                    </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fs-6 position-relative" id="fundings-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#fundings" type="button" role="tab" aria-controls="fundings"
-                        aria-selected="false"><i class="px-1 bi-currency-exchange"></i>Fundings
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.fundings|count}}
-                            <span class="visually-hidden">fundings</span>
-                        </span>
-                    </button>
-                <li class="nav-item" role="presentation">
-                    <button class="nav-link fs-6 position-relative" id="others-tab" data-mdb-toggle="tab"
-                        data-mdb-target="#others" type="button" role="tab" aria-controls="others"
-                        aria-selected="false"><i class="px-1 bi-file-code-fill"></i>Others
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                            {{results.researchers|count}}
-                            <span class="visually-hidden">researchers</span>
-                        </span>
-                    </button>
-                </li>
-            </ul>
-            <div class="tab-content" id="myTabContent">
-                <div class="tab-pane fade show active p-5" id="publications" role="tabpanel"
-                    aria-labelledby="publications-tab">
-                    {% include 'components/publications.html' %}
-                </div>
-                <div class="tab-pane fade p-5" id="researchers" role="tabpanel" aria-labelledby="researchers-tab">
+                <div class="col m-4">
+                    <div class="row">
+                        <div class="col">
+                            <ul class="nav nav-tabs nav-justify mb-3" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active fs-6 position-relative" id="publications-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#publications" type="button" role="tab"
+                                        aria-controls="publications" aria-selected="true"><i
+                                            class="px-1 bi-journal-album"></i>Publications
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.publications|count}}
+                                            <span class="visually-hidden">publications</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fs-6 position-relative" id="researchers-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#researchers" type="button" role="tab"
+                                        aria-controls="researchers" aria-selected="false"><i
+                                            class="px-1 bi-people-fill"></i>Researchers
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.researchers|count}}
+                                            <span class="visually-hidden">researchers</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fs-6 position-relative" id="resources-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#resources" type="button" role="tab"
+                                        aria-controls="resources" aria-selected="false"><i
+                                            class="px-1 bi-database-fill-gear"></i>Resources
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.resources|count}}
+                                            <span class="visually-hidden">resources</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fs-6 position-relative" id="organizations-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#organizations" type="button" role="tab"
+                                        aria-controls="organizations" aria-selected="false"><i
+                                            class="px-1 bi-bank"></i>Organizations
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.organizations|count}}
+                                            <span class="visually-hidden">organizations</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fs-6 position-relative" id="events-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#events" type="button" role="tab"
+                                        aria-controls="events" aria-selected="false"><i
+                                            class="px-1 bi-calendar3"></i>Events
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.events|count}}
+                                            <span class="visually-hidden">events</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fs-6 position-relative" id="fundings-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#fundings" type="button" role="tab"
+                                        aria-controls="fundings" aria-selected="false"><i
+                                            class="px-1 bi-currency-exchange"></i>Fundings
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.fundings|count}}
+                                            <span class="visually-hidden">fundings</span>
+                                        </span>
+                                    </button>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link fs-6 position-relative" id="others-tab"
+                                        data-mdb-toggle="tab" data-mdb-target="#others" type="button" role="tab"
+                                        aria-controls="others" aria-selected="false"><i
+                                            class="px-1 bi-file-code-fill"></i>Others
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                            {{results.researchers|count}}
+                                            <span class="visually-hidden">researchers</span>
+                                        </span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-auto text-end">
+                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse"><img
+                                    style="height: 48px; width: 48px;"
+                                    src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar" /></a>
+                        </div>
+                    </div>
+                    <div class="tab-content" id="myTabContent">
+                        <div class="tab-pane fade show active" id="publications" role="tabpanel"
+                            aria-labelledby="publications-tab">
+                            {% include 'components/publications.html' %}
+                        </div>
+                        <div class="tab-pane fade" id="researchers" role="tabpanel" aria-labelledby="researchers-tab">
 
+                        </div>
+                        <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">...
+                        </div>
+                        <div class="tab-pane fade" id="organizations" role="tabpanel"
+                            aria-labelledby="organizations-tab">...
+                        </div>
+                        <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">...</div>
+                        <div class="tab-pane fade" id="fundings" role="tabpanel" aria-labelledby="fundings-tab">...
+                        </div>
+                        <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
+                    </div>
                 </div>
-                <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">...</div>
-                <div class="tab-pane fade" id="organizations" role="tabpanel" aria-labelledby="organizations-tab">...
+
+                <div class="col-auto px-0">
+                    {% include 'components/chatbox.html' %}
                 </div>
-                <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">...</div>
-                <div class="tab-pane fade" id="fundings" role="tabpanel" aria-labelledby="fundings-tab">...</div>
-                <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
             </div>
         </div>
     </div>
