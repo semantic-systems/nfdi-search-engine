@@ -10,7 +10,7 @@ logger = logging.getLogger('nfdi_search_engine')
 @utils.timeit
 def search(search_term: str, results):
     try:
-        url = 'https://resodate.org/resources/api/search/oer_data/_search?pretty&q="' + search_term.replace(' ',
+        url = 'https://resodate.org/resources/api/search/oer_data/_search?pretty&size=100&q="' + search_term.replace(' ',
                                                                                                             '+') + '"'
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json',

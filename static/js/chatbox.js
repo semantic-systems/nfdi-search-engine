@@ -48,7 +48,7 @@
         var templateResponse = Handlebars.compile( $("#message-response-template").html());
         var contextResponse = { 
           // response: this.getRandomItem(this.messageResponses),
-          response: 'you entered ' + this.messageToSend,
+          response: 'you have asked me ' + this.messageToSend,
           time: this.getCurrentTime()
         };    
         
@@ -57,7 +57,7 @@
           this.$chatHistoryList.find('li').last().remove();
           this.$chatHistoryList.append(templateResponse(contextResponse));
           this.scrollToBottom();
-        }.bind(this), 1500);        
+        }.bind(this), 2000);        
         
       }
       

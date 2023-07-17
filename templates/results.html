@@ -147,35 +147,15 @@
 
     $(document).ready(function () {
 
-        var table1 = $('#tbl-publications').DataTable({});
-
-
-        var table2 = $('#tbl-researchers').DataTable({
-            dom: '<"top">rt<"bottom"p><"clear">',
-            "pageLength": 5,
-        });
-
-        table1.on('page.dt', function () {
+        var dataTable = $('.datatable').DataTable({});
+        dataTable.on('page.dt', function () {
             $('html, body').scrollTop(100)
-            // $('html, body').stop().animate({
-            //     scrollTop: $(".dataTables_wrapper").offset().top
-            // }, 'slow');
+            $('html, body').stop().animate({
+                scrollTop: $(".dataTables_wrapper").offset().top
+            }, 'slow');
 
-            // $('thead tr th:first-child').focus().blur();
+            $('thead tr th:first-child').focus().blur();
         });
-        table2.on('page.dt', function () {
-            $('html, body').scrollTop(100)
-            // $('html, body').stop().animate({
-            //     scrollTop: $(".dataTables_wrapper").offset().top
-            // }, 'slow');
-
-            // $('thead tr th:first-child').focus().blur();
-        });
-
-
-
-
-
     });
 
 
