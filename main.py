@@ -6,8 +6,8 @@ import uuid
 from objects import Article, Organization, Person
 from flask import Flask, render_template, request, make_response
 import threading
-import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris #,eulg
-import details_page
+import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris, ieee #eulg
+# import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -59,7 +59,7 @@ def sources():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis]
-        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
+        sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris, ieee] #, eulg]
 
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -251,6 +251,10 @@ def details():
             details, links, name = details_page.search_openalex(search_term)
         elif search_term.startswith('https://dblp'):
             details, links, name = details_page.search_dblp(search_term)
+        elif search_term.startswith('http://www.wikidata.org'):
+            details, links, name = details_page.search_wikidata(search_term)
+        elif search_term.startswith('https://orcid.org/'):
+            details, links, name = details_page.search_orcid(search_term)
         return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
 
 
