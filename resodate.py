@@ -10,12 +10,13 @@ logger = logging.getLogger('nfdi_search_engine')
 @utils.timeit
 def search(search_term: str, results):
     try:
-        url = 'https://resodate.org/resources/api/search/oer_data/_search?pretty&size=100&q="' + search_term.replace(' ',
-                                                                                                            '+') + '"'
+                
+        base_url = utils.config["search_url_resodate"]
+        url = base_url + '"' + search_term.replace(' ', '+') + '"'
+        
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json',
-                   'User-Agent': 'nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; '
-                                 'nfdi4dsBot@nfdi4datascience.de) '
+                   'User-Agent': utils.config["request_header_user_agent"]
                    }
 
         response = requests.get(url, headers=headers)
@@ -36,31 +37,41 @@ def search(search_term: str, results):
                     publication.source = 'RESODATE'
                     publication.name = hit_source.get("name", "")             
                     publication.url = hit_source.get("id", "")
+                    publication.image = hit_source.get("image", "")
                     publication.description = utils.remove_html_tags(hit_source.get("description", ""))
                     publication.abstract = utils.remove_html_tags( hit_source.get("description", ""))
-                    # publication.keywords =  hit_source.get("keywords", "") #read all keywords
+                    keywords = hit_source.get("keywords", None)
+                    if keywords:
+                        for keyword in keywords:
+                            publication.keywords.append(keyword)
+
+                    languages = hit_source.get("inLanguage", None)
+                    if languages:
+                        for language in languages:
+                            publication.inLanguage.append(language)
+                    
+                    publication.datePublished = hit_source.get("datePublished", "") 
+                    publication.license = hit_source.get("license", {}).get("id", "")
+
                     for creator in hit_source.get("creator", []):
                         if creator['type'] == 'Person':
                             author = Person()
                             author.type = creator['type']
                             author.name = creator.get("name", "")
                             author.identifier = creator.get("id", "") 
-                            publication.author.append(author)    
+                            publication.author.append(author)  
+
+                    encodings = hit_source.get("encoding", None)
+                    if encodings:
+                        for encoding in encodings:
+                            publication.encoding_contentUrl = encoding.get("contentUrl", "")
+                            publication.encodingFormat = encoding.get("encodingFormat", "")
                     
                     results['publications'].append(publication)
 
-                    # results.append(
-                    #     Article(
-                    #         # title=hit_source["name"],
-                    #         # url=hit_source['id'],
-                    #         authors=', '.join([creator['name'] for creator in hit_source['creator']]),
-                    #         # description=description,
-                    #         date=str(hit_source["datePublished"])
-                    #     )
-                    # )
                     
 
-        # pprint(results)
+
 
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

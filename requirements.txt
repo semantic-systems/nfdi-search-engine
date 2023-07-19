@@ -8,3 +8,5 @@ Wikipedia>=1.4.0
 beautifulsoup4>=2.4.1
 pandas>=2.0.1
 elg~=0.5.0
+PyYAML~=6.0
+

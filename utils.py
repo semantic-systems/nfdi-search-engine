@@ -3,6 +3,10 @@ from objects import Article, Person
 import wikipedia
 from bs4 import BeautifulSoup
 
+# read config file
+import yaml
+with open("config.yaml", "r") as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
 def extract_metadata(text):
     """

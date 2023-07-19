@@ -82,11 +82,13 @@ class CreativeWork(thing):
     dateCreated: str = ""
     dateModified: str = ""
     datePublished: str = ""
+    encoding_contentUrl: str = "" 
+    encodingFormat: str = ""
     funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
     funding: str = "" # we can change this to Grant
     genre: str = ""
     headline: str = ""
-    inLanguage: str = ""
+    inLanguage: List[str] = field(default_factory=list)
     keywords: List[str] = field(default_factory=list)
     license: str = "" # url or license type
     publication: str = "" #publication event
