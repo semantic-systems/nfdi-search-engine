@@ -89,6 +89,14 @@ a:focus {
     width: 90%;
 }
 
+.fs-7 {
+    font-size: .75rem !important;
+}
+
+.fs-8 {
+    font-size: .50rem !important;
+}
+
 /* Header styles */
 
 
@@ -245,4 +253,13 @@ input[type='search']::-webkit-search-decoration {
 .nfdi4ds-logo {
     height: 2rem;
     /* width: 2rem; */
+}
+
+
+/***********************************************/
+/* Publication Details styles */
+/***********************************************/
+
+.summary-block {
+    width: 100px;
 }
