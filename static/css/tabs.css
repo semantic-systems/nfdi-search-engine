@@ -1,0 +1,48 @@
+.tabs-section {
+  position: relative;
+}
+.tabs-section > .nav-tabs {
+  position: relative;
+  margin: 0;
+  cursor: auto;
+  border: none;
+  z-index: 1;
+}
+.tabs-section > .nav-tabs li[role=presentation] {
+  display: inline-block;
+  border: none;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+.tabs-section > .nav-tabs li[role=presentation]:not(:last-child) {
+  padding-right: 25px;
+}
+.tabs-section > .nav-tabs li[role=presentation] button[role=tab] {
+  margin: 0;
+  padding: 2px 5px 2px 5px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  text-transform: none;
+  text-align: center;
+  letter-spacing: 0.25px;
+  color: #9a9a9a;
+  background: none;
+  border: none;
+  line-height: 50px;
+  transition: color 0.3s ease, box-shadow 0.2s ease;
+  border-bottom: 5px solid transparent;
+}
+.tabs-section > .nav-tabs li[role=presentation] button[role=tab]:hover, .tabs-section > .nav-tabs li[role=presentation] button[role=tab]:focus, .tabs-section > .nav-tabs li[role=presentation] button[role=tab].active {
+  color: #0075AD;
+  background-color: #f0f0f0;
+  border-bottom: 5px solid #a0a0a0;
+}
+.tabs-section > .nav-tabs li[role=presentation] button[role=tab] span {
+  background-color: #0075AD;
+}
+.tabs-section > .tab-content {
+  position: relative;
+  min-height: 500px;
+  margin: 0;
+  padding: 0;
+}/*# sourceMappingURL=tabs.css.map */

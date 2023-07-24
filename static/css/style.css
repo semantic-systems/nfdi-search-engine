@@ -5,6 +5,10 @@ html {
     margin: 0;
 }
 
+body {
+    font-family: Helvetica, Arial, sans-serif
+}
+
 .page-container {
     min-height: 100vh;
     display: flex;
@@ -173,14 +177,8 @@ input[type='search']::-webkit-search-decoration {
 }
 
 /***********************************************/
-/* tab navigation styles */
+/* DataTable styles */
 /***********************************************/
-
-.nav-item {
-    margin-bottom: 20px;
-}
-
-
 
 .datatable thead {
     display: none;
@@ -199,9 +197,13 @@ input[type='search']::-webkit-search-decoration {
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
+.authors a:hover {
+    background-color: #c9c9c9;
+}
 
-
-
+.bg-pill {
+    background-color: #0075AD;
+}
 
 /***********************************************/
 /* Footer styles */
@@ -261,5 +263,12 @@ input[type='search']::-webkit-search-decoration {
 /***********************************************/
 
 .summary-block {
+    border: 2px solid #c9c9c9;
     width: 100px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.rounded-extra {
+    border-radius: 1.0rem !important;
 }
