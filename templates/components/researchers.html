@@ -5,53 +5,46 @@
         </tr>
     </thead>
     <tbody>
-        {% for researcher in results.researchers %}
         <tr>
             <td>
                 <div class="card mb-2 p-3">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-lg-11 fs-6">
-                                <div class="row">
-                                    <div class="col-lg-12 fs-6">
-                                        <a class="text-dark fw-bold" href='#' target='_blank'>
-                                            {{researcher.name}}</a>
+                                <div class="row mb-2">
+                                    <div class="col-lg-12 fs-5">
+                                        <a class="text-secondary fw-bold" href='/researcher-details' target='_blank'>
+                                            Ricardo Usbeck</a>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-lg-12 px-0 mt-2 mb-2">
-                                        {% for author in publication.author %}
-                                        <a href="{{author.identifier}}"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1"
-                                            tabindex="-1" role="button" aria-disabled="true"><i
-                                                class="ps-1 pe-2 bi-person-circle"></i>{{author.name}}</a>
-                                        {% endfor %}
+                                    <div class="col-lg-12 my-2 authors">
+
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <p class="card-text">{{publication.description|truncate(500)}}</p>
+                                        <p class="card-text">More details about the author</p>
                                     </div>
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-lg-9 text-start">
-                                        <span class="badge text-bg-info">DBLP</span>
-                                        <span class="badge text-bg-info">English</span>
-                                        <span class="badge text-bg-info">PDF</span>
-                                        <span class="badge text-bg-info">License</span>
+                                        <span class="badge bg-pill">DBLP</span>
+                                        <span class="badge bg-pill">DESIGNATION</span>
+                                        <span class="badge bg-pill">INFORMATION</span>
                                     </div>
                                     <div class="col-lg-3 text-end">
-                                        <span class="badge text-bg-info">12.07.2023</span>
+                                        <span class="badge bg-pill">DATE OF BIRTH</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-lg-1">
                                 <div class="row fs-5">
                                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
-                                                class="bi bi-bookmark"></i></a></div> -->
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                    class="bi bi-bookmark"></i></a></div> -->
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
                                                 class="bi bi-share"></i></a></div>
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Download"><i
                                                 class="bi bi-download"></i></a></div>
 
                                 </div>
@@ -61,6 +54,5 @@
                 </div>
             </td>
         </tr>
-        {% endfor %}
     </tbody>
 </table>
