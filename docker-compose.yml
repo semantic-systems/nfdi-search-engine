@@ -5,7 +5,7 @@ services:
             - 6000:8000
         restart: unless-stopped
         networks:
-            - demo_network
+            - nfdi-search-engine_default
 networks:
-    demo_network:
+    nfdi-search-engine_default:
         external: true

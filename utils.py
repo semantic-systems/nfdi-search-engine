@@ -3,6 +3,10 @@ from objects import Article, Person
 import wikipedia
 from bs4 import BeautifulSoup
 
+# read config file
+import yaml
+with open("config.yaml", "r") as f:
+    config = yaml.load(f, Loader=yaml.FullLoader)
 
 def extract_metadata(text):
     """
@@ -72,15 +76,40 @@ def read_wikipedia(title):
     return summary_text
 
 
+# def remove_html_tags(text):
+#     soup = BeautifulSoup(text, "html.parser")
+#     cleaned_text = soup.text
+#     cleaned_text.strip()
+#     sentences = cleaned_text.split('.')
+#     if len(sentences) <= 5:
+#         return cleaned_text
+#     else:
+#         first_n_sentences: str = '. '.join(
+#                 sentence for sentence in sentences[0:4])
+#         return first_n_sentences
+
+
 def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
-    cleaned_text = soup.text
-    cleaned_text.strip()
-    sentences = cleaned_text.split('.')
-    if len(sentences) <= 5:
-        return cleaned_text
-    else:
-        first_n_sentences: str = '. '.join(
-                sentence for sentence in sentences[0:4])
-        return first_n_sentences
+    return soup.text.strip()
 
+
+#region DECORATORS
+
+from functools import wraps
+from time import time
+import inspect
+import os
+
+def timeit(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        ts = time()
+        result = f(*args, **kwargs)
+        te = time()
+        filename = os.path.basename(inspect.getfile(f))
+        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
+        return result
+    return decorated_function
+
+#endregion
