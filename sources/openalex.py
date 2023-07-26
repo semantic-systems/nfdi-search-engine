@@ -1,39 +1,18 @@
 import requests
 import logging
 from objects import Person, Article, Institute, Funder, Publisher
-import json
 import utils
-
-
-def open_alex(name, g, results):
-    """
-    Obtain the results from the database request handles them accordingly
-        Initially authored by Tilahun Taffa
-    Args:
-        name: keyword to search for
-        g: graph containing the search answer
-        results: search answer formatted into the data types of Person and Article
-
-    Returns:
-        the graph object and the results array
-
-    """
-    serializable_results, results = find(name, results)
-    search_result = json.dumps(serializable_results)
-    g.parse(data=search_result, format='json-ld')
-    return g, results
-
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
 
 def search(search_key: str, results):
-    find_authors(search_key, results)
+    # find_authors(search_key, results)
     find_works(search_key, results)
-    find_institute(search_key, results)
-    find_funder(search_key, results)
-    find_publisher(search_key, results)
+    # find_institute(search_key, results)
+    # find_funder(search_key, results)
+    # find_publisher(search_key, results)
     logger.info(f"Got {len(results)} author, publication, and institute records from OpenAlex")
     return results
 
@@ -68,14 +47,55 @@ def find_works(search_key, results):
             if 'id' in work:
                 if work["display_name"] is None \
                         or work["id"] is None \
-                        or work["publication_year"] is None:
+                        or work["doi"] is None \
+                        or work["publication_date"] is None:
                     continue
+                publication = Article()
+                publication.source = 'OpenAlex'
+                publication.name = work["display_name"]
+                publication.url = work["doi"]
+                # publication.image = hit_source.get("image", "")
+                # publication.description = utils.remove_html_tags(hit_source.get("description", ""))
+                abstract_index = work["abstract_inverted_index"]
+                abstract = list(abstract_index.keys())
+                publication.abstract = str(abstract)
+                keywords = work["concepts"]
+                if keywords:
+                    for keyword in keywords:
+                        publication.keywords.append(keyword["display_name"])
+                languages = work["language"]
+                if languages:
+                    for language in languages:
+                        publication.inLanguage.append(language)
+
+                publication.datePublished = str(work["publication_date"])
+                publication.license = ''
 
                 if len(work["authorships"]) == 1:
-                    author = work["authorships"][0]["author"]["display_name"]
+                    author = Person()
+                    author.name = work["authorships"][0]["author"]["display_name"]
+                    author.type = 'Person'
+                    author.identifier = work["id"]
+                    publication.author.append(author)
+                    # authorship = work["authorships"][0]["author"]["display_name"]
                 else:
-                    author = ', '.join(
-                        current_author["author"]["display_name"] for current_author in work["authorships"])
+                    # authorship = ', '.join(
+                    #   current_author["author"]["display_name"] for current_author in work["authorships"])
+                    for current_author in work["authorships"]:
+                        author = Person()
+                        author.name = current_author["author"]["display_name"]
+                        author.type = 'Person'
+                        author.identifier = current_author["author"]["orcid"]
+                        publication.author.append(author)
+
+                encodings = []
+                if encodings:
+                    for encoding in encodings:
+                        publication.encoding_contentUrl = encoding.get("contentUrl", "")
+                        publication.encodingFormat = encoding.get("encodingFormat", "")
+
+                results['publications'].append(publication)
+                ''''
                 results.append(
                     Article(
                         title=work["display_name"],
@@ -85,6 +105,8 @@ def find_works(search_key, results):
                         date=str(work["publication_year"])
                     )
                 )
+                '''
+
     # logger.info(f'Got {len(results)} publication records from OpenAlex')
 
 
@@ -147,7 +169,7 @@ def find_publisher(search_key, results):
     api_data = api_response.json()
     for publisher in api_data["results"]:
         country_codes = ', '.join(
-                country_code for country_code in publisher["country_codes"])
+            country_code for country_code in publisher["country_codes"])
         h_index = ''
         if 'h_index' in publisher["summary_stats"]:
             h_index = publisher["summary_stats"]["h_index"]
@@ -162,4 +184,3 @@ def find_publisher(search_key, results):
                     h_index=h_index,
                     description='')
             )
-
