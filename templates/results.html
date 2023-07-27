@@ -14,14 +14,13 @@
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
-
         <div class="container-fluid">
-            <div class="row flex-nowrap">
-
+            <div class="row">
                 <div class="col mt-4">
                     <div class="row">
                         <div class="col tabs-section">
-                            <ul class="nav nav-tabs nav-justify mb-3" id="myTab" role="tablist">
+                            <ul class="nav nav-tabs nav-paginator" data-paginator-item-count="4"
+                                data-paginator-buttons-class="nav-link" id="myTab" role="tablist">
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link active position-relative" id="publications-tab"
                                         data-bs-toggle="tab" data-bs-target="#publications" type="button" role="tab"
@@ -104,8 +103,9 @@
                             </ul>
                         </div>
                         <div class="col-auto text-end">
-                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse"><img
-                                    style="height: 48px; width: 48px;"
+                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse" id="chatbox-link"
+                                style="display: none;">
+                                <img style="height: 48px; width: 48px;"
                                     src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar"
                                     title="Chat with me" /></a>
                         </div>
@@ -129,8 +129,7 @@
                         <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
                     </div>
                 </div>
-
-                <div class="col-auto px-0">
+                <div class="col-auto px-0 mt-4">
                     {% include 'components/chatbox.html' %}
                 </div>
             </div>
@@ -156,6 +155,15 @@
 
             $('thead tr th:first-child').focus().blur();
         });
+
+        $('#chatbox').on('show.bs.collapse hidden.bs.collapse', function (e) {
+            if (e.type == 'show') {
+                $('#chatbox-link').hide()
+            } else {
+                $('#chatbox-link').show()
+            }
+        });
+
     });
 
 
