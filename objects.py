@@ -126,7 +126,15 @@ class Article(CreativeWork):
 
 @dataclass
 class Dataset(CreativeWork): 
-    pass
+    distribution: str = "" # can be DataDownload
+    issn: str = "" #it can be the unique ID of dataset
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
 
 
 @dataclass
@@ -169,13 +177,13 @@ class Poster:
     date: str
 
 
-@dataclass
-class Dataset:
-    title: str
-    url: str
-    authors: str
-    description: str
-    date: str
+# @dataclass
+# class Dataset:
+#     title: str
+#     url: str
+#     authors: str
+#     description: str
+#     date: str
 
 
 @dataclass
