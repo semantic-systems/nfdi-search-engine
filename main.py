@@ -54,7 +54,7 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, gesis]
+        sources = [resodate, openalex, dblp, gesis]
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
         for source in sources:
