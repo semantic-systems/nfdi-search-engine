@@ -3,7 +3,7 @@ import logging.config
 import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
-from objects import Article, Organization, Person
+from objects import Article, Organization, Person, Dataset
 from flask import Flask, render_template, request, make_response
 import threading
 from sources import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris, ieee #eulg
@@ -54,7 +54,7 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, openalex, dblp, zenodo]
+        sources = [resodate, openalex, dblp, zenodo, gesis]
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
         for source in sources:
@@ -93,6 +93,20 @@ def chatbox():
 @app.route('/publication-details')
 def publication_details():
     response = make_response(render_template('publication-details.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
+
+
+@app.route('/resource-details')
+def resources_details():
+    response = make_response(render_template('resource-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
