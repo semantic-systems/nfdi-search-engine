@@ -4,14 +4,13 @@ import json
 import utils
 from objects import Article, Person
 
-# logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
 def search(search_term: str, results):
     try:
                 
-        base_url = utils.config["search_url_resodate"]
+        base_url = utils.config["search_url_oersi"]
         url = base_url + '"' + search_term.replace(' ', '+') + '"'
         
         headers = {'Accept': 'application/json',
@@ -26,7 +25,7 @@ def search(search_term: str, results):
 
             total_hits = search_result['hits']['total']['value']
 
-            logger.info(f'RESODATE - {total_hits} hits/records found')
+            logger.info(f'OERSI - {total_hits} hits/records found')
 
             if total_hits > 0:
                 hits = search_result['hits']['hits']                
@@ -34,7 +33,7 @@ def search(search_term: str, results):
                 for hit in hits:
                     hit_source = hit.get('_source', None)
                     publication = Article()
-                    publication.source = 'RESODATE'
+                    publication.source = 'OERSI'
                     publication.name = hit_source.get("name", "")             
                     publication.url = hit_source.get("id", "")
                     publication.image = hit_source.get("image", "")
@@ -69,9 +68,7 @@ def search(search_term: str, results):
                     
                     results['publications'].append(publication)
 
-                    
-
-
-
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+
+
