@@ -55,21 +55,19 @@ def find_works(search_key, results):
                 publication.name = work["display_name"]
                 publication.url = work["doi"]
                 # publication.image = hit_source.get("image", "")
-                # publication.description = utils.remove_html_tags(hit_source.get("description", ""))
-                abstract_index = work["abstract_inverted_index"]
-                abstract = list(abstract_index.keys())
-                publication.abstract = str(abstract)
+                publication.description = generate_string_from_keys(work["abstract_inverted_index"]) # Generate the string using keys from the dictionary
+                publication.abstract = ''
                 keywords = work["concepts"]
                 if keywords:
                     for keyword in keywords:
                         publication.keywords.append(keyword["display_name"])
-                languages = work["language"]
-                if languages:
-                    for language in languages:
-                        publication.inLanguage.append(language)
+                publication.inLanguage.append(str(work["language"]))
 
                 publication.datePublished = str(work["publication_date"])
-                publication.license = ''
+                if work["primary_location"]["license"] is None:
+                    publication.license = ''
+                else:
+                    publication.license = work["primary_location"]["license"]
 
                 if len(work["authorships"]) == 1:
                     author = Person()
@@ -77,7 +75,6 @@ def find_works(search_key, results):
                     author.type = 'Person'
                     author.identifier = work["id"]
                     publication.author.append(author)
-                    # authorship = work["authorships"][0]["author"]["display_name"]
                 else:
                     # authorship = ', '.join(
                     #   current_author["author"]["display_name"] for current_author in work["authorships"])
@@ -88,11 +85,8 @@ def find_works(search_key, results):
                         author.identifier = current_author["author"]["orcid"]
                         publication.author.append(author)
 
-                encodings = []
-                if encodings:
-                    for encoding in encodings:
-                        publication.encoding_contentUrl = encoding.get("contentUrl", "")
-                        publication.encodingFormat = encoding.get("encodingFormat", "")
+                publication.encoding_contentUrl = ''
+                publication.encodingFormat = ''
 
                 results['publications'].append(publication)
                 ''''
@@ -184,3 +178,10 @@ def find_publisher(search_key, results):
                     h_index=h_index,
                     description='')
             )
+
+
+def generate_string_from_keys(dictionary):
+    keys_list = list(dictionary.keys())
+    keys_string = " ".join(keys_list)
+    print(keys_string)
+    return keys_string
