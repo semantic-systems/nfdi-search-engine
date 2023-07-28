@@ -71,12 +71,8 @@ def search(search_term: str, results):
                 publication.image = data["image"]
                 publication.description = ''
                 publication.abstract = ''
-                keywords = ''
-                if keywords:
-                    for keyword in keywords:
-                        publication.keywords.append('')
+                publication.keywords.append('')
                 publication.inLanguage.append("")
-
                 publication.datePublished = data["datePublished"]
                 publication.license = ''
                 author = Person()
@@ -98,7 +94,6 @@ def search(search_term: str, results):
                 publication.encodingFormat = ''
 
                 results['publications'].append(publication)
-
                 '''
                 results.append(
                     Article(
