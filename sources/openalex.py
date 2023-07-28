@@ -55,18 +55,19 @@ def find_works(search_key, results):
                 publication.name = work["display_name"]
                 publication.url = work["doi"]
                 # publication.image = hit_source.get("image", "")
-                publication.description = generate_string_from_keys(work["abstract_inverted_index"]) # Generate the string using keys from the dictionary
+                publication.description = ''
+                if not work["abstract_inverted_index"] is None:
+                    publication.description = generate_string_from_keys(work["abstract_inverted_index"]) # Generate the string using keys from the dictionary
                 publication.abstract = ''
                 keywords = work["concepts"]
                 if keywords:
                     for keyword in keywords:
                         publication.keywords.append(keyword["display_name"])
-                publication.inLanguage.append(str(work["language"]))
 
+                publication.inLanguage.append(str(work["language"]))
                 publication.datePublished = str(work["publication_date"])
-                if work["primary_location"]["license"] is None:
-                    publication.license = ''
-                else:
+                publication.license = ''
+                if not work["primary_location"]["license"] is None:
                     publication.license = work["primary_location"]["license"]
 
                 if len(work["authorships"]) == 1:
@@ -183,5 +184,4 @@ def find_publisher(search_key, results):
 def generate_string_from_keys(dictionary):
     keys_list = list(dictionary.keys())
     keys_string = " ".join(keys_list)
-    print(keys_string)
     return keys_string
