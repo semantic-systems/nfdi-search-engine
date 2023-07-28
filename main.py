@@ -6,7 +6,7 @@ import uuid
 from objects import Article, Organization, Person, Dataset
 from flask import Flask, render_template, request, make_response
 import threading
-from sources import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris, ieee #eulg
+from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee #eulg
 # import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
 
@@ -54,7 +54,7 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, openalex, dblp, zenodo, gesis]
+        sources = [resodate, oersi, openalex, dblp, zenodo, gesis]
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
         for source in sources:
