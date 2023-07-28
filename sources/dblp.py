@@ -3,7 +3,7 @@ import requests
 from objects import Person, Article
 import logging
 import os
-
+import pprint
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
@@ -41,14 +41,13 @@ def search(search_term: str, results):
     # TODO unclear why here are only a few but now all results returned
 
     metadata = extract_metadata(response.content)
-
     # TODO unclear why this loop takes so long
     #The profiler indicates that the JSON-LD parsing process is responsible for the majority of the execution time, taking approximately 18.21 seconds.
     #
     # I.e. the JSON-LD parsing takes that long
     for data in metadata['microdata']:
         if data['@type'] == 'Person':
-
+            '''
             results.append(
                 Person(
                     name=data["name"],
@@ -56,20 +55,51 @@ def search(search_term: str, results):
                     affiliation=""
                 )
             )
+            '''
         elif data['@type'] == 'ScholarlyArticle':
             if 'author' in data:
-                if type(data["author"]) == list:
-                    author = ', '.join([authors["name"] for authors in data["author"]])
-                elif type(data["author"]) == dict:
-                    author = data["author"]["name"]
-                else:
-                    author = data["author"]
                 url = ''
                 if 'url' in data:
                     if type(data["url"]) == list:
                         url = ', '.join(data["url"])
                     else:
                         url = data["url"]
+                publication = Article()
+                publication.source = 'DBLP'
+                publication.name = data["name"]
+                publication.url = url
+                publication.image = data["image"]
+                publication.description = ''
+                publication.abstract = ''
+                keywords = ''
+                if keywords:
+                    for keyword in keywords:
+                        publication.keywords.append('')
+                publication.inLanguage.append("")
+
+                publication.datePublished = data["datePublished"]
+                publication.license = ''
+                author = Person()
+                author.type = 'Person'
+                if type(data["author"]) == list:
+                    #author = ', '.join([authors["name"] for authors in data["author"]])
+                    for authors in data["author"]:
+                        author2 = Person()
+                        author2.name = authors["name"]
+                        author2.type = 'Person'
+                        publication.author.append(author2)
+                elif type(data["author"]) == dict:
+                    author.name = data["author"]["name"]
+                    publication.author.append(author)
+                else:
+                    author.name = data["author"]
+                    publication.author.append(author)
+                publication.encoding_contentUrl = ''
+                publication.encodingFormat = ''
+
+                results['publications'].append(publication)
+
+                '''
                 results.append(
                     Article(
                         title=data["name"],
@@ -79,6 +109,7 @@ def search(search_term: str, results):
                         date=data["datePublished"]
                     )
                 )
+                '''
     logger.info(f"Got {len(results)} Researchers and scholarly articls from DBLP")
     # return results
     # g.parse(data=json.dumps(data), format='json-ld')
