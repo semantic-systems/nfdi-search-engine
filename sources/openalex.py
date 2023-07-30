@@ -41,11 +41,11 @@ def find_authors(search_key, results):
                     authorObj.name = author.get('display_name', '')
                     authorObj.orcid = author.get('orcid', '')
 
-                    print(type(author.get('last_known_institution', {})))
-                    
-
-                    authorObj.affiliation = author.get('last_known_institution', {}).get('display_name', '')
-                    # authorObj.affiliation = author.get(('last_known_institution', 'display_name'), '')
+                    last_known_institution = author.get('last_known_institution', {})
+                    if last_known_institution:
+                        authorObj.affiliation = author.get('last_known_institution', {}).get('display_name')
+                    else:
+                        authorObj.affiliation = ''                    
                     authorObj.works_count = author.get('works_count', '')
                     authorObj.cited_by_count = author.get('cited_by_count', '')
 
