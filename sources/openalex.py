@@ -1,15 +1,15 @@
 import requests
 import logging
-from objects import Person, Article, Institute, Funder, Publisher
+from objects import Person, Author, Article, Institute, Funder, Publisher
 import utils
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
-
-def search(search_key: str, results):
-    # find_authors(search_key, results)
+@utils.timeit
+def search(search_key: str, results):    
     find_works(search_key, results)
+    find_authors(search_key, results)
     # find_institute(search_key, results)
     # find_funder(search_key, results)
     # find_publisher(search_key, results)
@@ -18,25 +18,41 @@ def search(search_key: str, results):
 
 
 def find_authors(search_key, results):
-    author_api_url = "https://api.openalex.org/authors?search="
-    api_response_authors = requests.get(author_api_url + search_key)
-    if api_response_authors.status_code != 404:
-        authors = api_response_authors.json()
-        if 'results' in authors:
-            for author in authors['results']:
-                if author['last_known_institution']:
-                    affiliation = author['last_known_institution']['display_name']
 
-                if author['display_name'] and author['id'] and author['last_known_institution']:
-                    results.append(
-                        Person(
-                            name=author['display_name'],
-                            url=author['id'],
-                            affiliation=affiliation
-                        )
-                    )
-    # logger.info(f'Got {len(results)} author records from OpenAlex')
+    try:
+        base_url = utils.config["search_url_openalex_authors"]
+        headers = {'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'User-Agent': utils.config["request_header_user_agent"]
+                    }    
+        response = requests.get(base_url + search_key, headers=headers)
 
+        if response.status_code == 200:
+            search_result = response.json()
+
+            records_found = search_result['meta']['count']
+            logger.info(f'OpenAlex Authors - {records_found} records found')
+
+            authors = search_result.get('results', None)
+            if authors:
+                for author in authors:
+                    authorObj = Author()
+                    authorObj.source = 'OpenAlex'
+                    authorObj.name = author.get('display_name', '')
+                    authorObj.orcid = author.get('orcid', '')
+
+                    print(type(author.get('last_known_institution', {})))
+                    
+
+                    authorObj.affiliation = author.get('last_known_institution', {}).get('display_name', '')
+                    # authorObj.affiliation = author.get(('last_known_institution', 'display_name'), '')
+                    authorObj.works_count = author.get('works_count', '')
+                    authorObj.cited_by_count = author.get('cited_by_count', '')
+
+                    results['researchers'].append(authorObj)
+
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
 
 def find_works(search_key, results):
     api_url = "https://api.openalex.org/works?search="

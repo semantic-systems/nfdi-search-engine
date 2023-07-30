@@ -5,6 +5,7 @@
         </tr>
     </thead>
     <tbody>
+        {% for researcher in results.researchers %}
         <tr>
             <td>
                 <div class="card">
@@ -18,11 +19,11 @@
                                 <div class="row">
                                     <div class="col-md-6 fs-5">
                                         <a class="text-secondary fw-bold" href='/researcher-details' target='_blank'>
-                                            Ricardo Usbeck</a>
+                                            {{researcher.name}}</a>
                                     </div>
                                     <div class="col-md-6 fs-6">
-                                        <a class="text-secondary fw-bold" href='#' target='_blank'>
-                                            ORCID: 0000-0000-0000-0000</a>
+                                        <a class="text-secondary fw-bold" href='{{researcher.orcid}}' target='_blank'>
+                                            ORCID: {{ researcher.orcid|replace('https://orcid.org/', '') }}</a>
                                     </div>
                                 </div>
                                 <div class="row px-2 pt-3">
@@ -34,16 +35,25 @@
                                         </div>
                                         <div class="d-flex flex-column">
                                             <span class="">Last Known Institution</span>
-                                            <span class="fw-bold">Hamburg University</span>
+                                            <span class="fw-bold">{{ researcher.affiliation }}</span>
                                         </div>
                                         <div class="d-flex flex-column">
                                             <span class="">Works Count</span>
-                                            <span class="fw-bold">XX</span>
+                                            <span class="fw-bold">{{researcher.works_count}}</span>
                                         </div>
                                         <div class="d-flex flex-column">
                                             <span class="">Citations Count</span>
-                                            <span class="fw-bold">XX</span>
+                                            <span class="fw-bold">{{researcher.cited_by_count}}</span>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <div class="row px-2 pt-3">
+                                    <div class="col-lg-9 text-start">
+                                        <span class="badge bg-pill">{{researcher.source}}</span>
+                                    </div>
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill"></span>
                                     </div>
                                 </div>
                             </div>
@@ -63,5 +73,6 @@
                 </div>
             </td>
         </tr>
+        {% endfor %}
     </tbody>
 </table>
