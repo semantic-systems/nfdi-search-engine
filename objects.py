@@ -140,9 +140,16 @@ class Dataset(CreativeWork):
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
 @dataclass
 class Project(Organization): 
-    date_start: str = ""
-    date_end: str = ""
+    dateStart: str = ""
+    dateEnd: str = ""
+    dateLastModified : str = ""
     abstract: str = ""
+    inLanguage: List[str] = field(default_factory=list)
+    availableLanguages: List[str] = field(default_factory=list)
+    objective: str = ""
+    status: str = ""
+
+
 
     def __post_init__(self):
         # Loop through the fields
