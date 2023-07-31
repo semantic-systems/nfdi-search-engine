@@ -35,8 +35,7 @@ def search(search_term, results):
             # Extract the JSON response
             data = response.json()
             total_records = data.get("total_records", "")
-            # just to test, it should delete after########################################### 
-            # print("Total Records:", total_records)
+            
             logger.info(f'IEEE - {total_records} records found')
 
             # Check if there are any articles found
@@ -52,6 +51,15 @@ def search(search_term, results):
                     publication.description = utils.remove_html_tags(description)
                     publication.datePublished = article.get('publication_date', '')
                     publication.url = article.get('html_url', '')
+                    publication.publisher = article.get('publisher', '')
+                    publication.pageStart = article.get('start_page', '')
+                    publication.pageEnd = article.get('end_page', '')
+                    publication.citation = article.get('citing_paper_count', '')
+                    keywords = article.get("keywords", '')
+                    if keywords:
+                        for keyword in keywords:
+                            publication.keywords.append(keyword)
+
                     languages = article.get("inLanguage", None)
                     if languages:
                         for language in languages:
@@ -73,7 +81,7 @@ def search(search_term, results):
             print("Failed to retrieve the data:", response.text)
 
         # Logging the number of records retrieved from Ieee
-        logger.info(f'Got {len(results)} records from Ieee')
+        # logger.info(f'Got {len(results)} records from Ieee')
 
     except requests.exceptions.RequestException as e:
         print("An error occurred during the request:", str(e))
