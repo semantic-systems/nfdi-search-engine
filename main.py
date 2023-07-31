@@ -3,7 +3,7 @@ import logging.config
 import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
-from objects import Article, Organization, Person, Dataset
+from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response
 import threading
 from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee #eulg
@@ -54,7 +54,7 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, oersi, openalex, dblp, zenodo, gesis, ieee]
+        sources = [resodate, oersi, openalex, dblp, zenodo, gesis, ieee, cordis]
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
         for source in sources:
