@@ -1,11 +1,12 @@
 import requests
 import logging
 import utils
-from objects import Article
+from objects import Article, Person
 
 logger = logging.getLogger('nfdi_search_engine')
 
 
+@utils.timeit
 def search(search_term, results):
     # API key and 
     api_key = '4nm2vdr778weget78v9ubgdb'
@@ -33,34 +34,38 @@ def search(search_term, results):
         if response.status_code == 200:
             # Extract the JSON response
             data = response.json()
+            total_records = data.get("total_records", "")
+            # just to test, it should delete after########################################### 
+            # print("Total Records:", total_records)
+            logger.info(f'IEEE - {total_records} records found')
 
             # Check if there are any articles found
             if 'articles' in data:
                 articles = data['articles']
                 for article in articles:
+                    publication = Article()
+                    publication.source = 'IEEE'
                     # Extract article information from the JSON response
-                    title = article.get('title', '')
+                    publication.name = article.get('title', '')
                     description = article.get('abstract', '')
-                    short_description = utils.remove_html_tags(description)
-                    publication_date = article.get('publication_date', '')
-                    url = article.get('html_url', '')
+                    publication.abstract = utils.remove_html_tags(description)
+                    publication.description = utils.remove_html_tags(description)
+                    publication.datePublished = article.get('publication_date', '')
+                    publication.url = article.get('html_url', '')
+                    languages = article.get("inLanguage", None)
+                    if languages:
+                        for language in languages:
+                            publication.inLanguage.append(language)
+ 
+                    for author_data in article.get('authors', {}).get('authors', []):
+                        author = Person()
+                        author.type = "Person"
+                        author.name = author_data.get("full_name", "")
+                        author.identifier = author_data.get("id", "")
+                        publication.author.append(author)
 
-                    authors_list = ''
-                    if 'authors' in article:
-                        authors = article['authors']['authors']
-                        # Concatenate authors' names with a comma separator
-                        authors_list = ', '.join([author.get('full_name', '') for author in authors])
 
-                    # Create an Article object and add it to the results list
-                    results.append(
-                        Article(
-                            title=title,
-                            url=url,
-                            authors=authors_list,
-                            description=short_description,
-                            date=publication_date,
-                        )
-                    )
+                    results['publications'].append(publication)
 
             else:
                 print("No results found for the search term:", search_term)
