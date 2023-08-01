@@ -154,6 +154,28 @@ class Dataset(CreativeWork):
                     setattr(self, field.name, field.default)
 
 
+#The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
+@dataclass
+class Project(Organization): 
+    dateStart: str = ""
+    dateEnd: str = ""
+    dateLastModified : str = ""
+    abstract: str = ""
+    inLanguage: List[str] = field(default_factory=list)
+    availableLanguages: List[str] = field(default_factory=list)
+    objective: str = ""
+    status: str = ""
+
+
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
+
+
 @dataclass
 class Zenodo:
     resource_type: str
@@ -270,13 +292,13 @@ class Gesis:
     authors: str
 
 
-@dataclass
-class Cordis:
-    id: str
-    url: str
-    date: str 
-    title: str
-    description: str
+# @dataclass
+# class Cordis:
+#     id: str
+#     url: str
+#     date: str 
+#     title: str
+#     description: str
 
 
 @dataclass
