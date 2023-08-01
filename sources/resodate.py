@@ -69,9 +69,5 @@ def search(search_term: str, results):
                     
                     results['publications'].append(publication)
 
-                    
-
-
-
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

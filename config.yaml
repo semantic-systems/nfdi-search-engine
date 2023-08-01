@@ -1,3 +1,5 @@
 request_header_user_agent: nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)
 search_url_resodate: https://resodate.org/resources/api/search/oer_data/_search?pretty&size=100&q=
 search_url_oersi: https://oersi.org/resources/api/search/oer_data/_search?pretty&q=
+search_url_openalex_authors: https://api.openalex.org/authors?search=
+search_url_orcid: https://pub.orcid.org/v3.0/expanded-search/?start=0&rows=100&q=
