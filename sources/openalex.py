@@ -68,7 +68,7 @@ def find_works(search_key, results):
                     continue
                 publication = Article()
                 publication.source = 'OpenAlex'
-                publication.name = work["display_name"]
+                publication.name = utils.remove_html_tags(work["display_name"])
                 publication.url = work["doi"]
                 # publication.image = hit_source.get("image", "")
                 publication.description = ''
