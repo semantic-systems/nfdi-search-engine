@@ -33,13 +33,13 @@ def search(search_term, results):
                 publication.image = ''
                 publication.description = description
                 publication.abstract = ''
-                keywords = data['metadata']['keywords']
-                if keywords == list:
+                keywords = data['metadata'].get('keywords', [])
+                if isinstance(keywords, list):
                     for keyword in keywords:
                         for key in keyword.split(","):
                             publication.keywords.append(key)
-                if keywords == dict:
-                    for keyword in keywords['buckets']:
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
                         for items in keyword:
                             publication.keywords.append(items['key'])
                 else:
