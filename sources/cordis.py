@@ -102,7 +102,7 @@ def search(search_term, results):
            
     
 
-        logger.info(f'Got {len(resources.identifier)} records from Cordis') 
+        logger.info(f'Got {len(results)} records from Cordis') 
 
     else:
         # Log an error message when the response is not successful
