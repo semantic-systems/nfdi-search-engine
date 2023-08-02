@@ -1,6 +1,55 @@
 import requests
 import logging
-from objects import Person
+from objects import Person, Author
+import utils
+
+logger = logging.getLogger('nfdi_search_engine')
+
+@utils.timeit
+def search(search_term: str, results):
+
+    try:
+                
+        base_url = utils.config["search_url_orcid"]
+        url = base_url + '"' + search_term.replace(' ', '+') + '"'
+        
+        headers = {'Accept': 'application/json',
+                   'Content-Type': 'application/json',
+                   'User-Agent': utils.config["request_header_user_agent"]
+                   }
+
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            search_result = response.json()
+
+            records_found = search_result['num-found']
+            logger.info(f'ORCID - {records_found} records found')
+
+            if records_found > 0:
+                authors = search_result.get('expanded-result', None)
+                if authors:
+                    for author in authors:
+                
+                        authorObj = Author()
+                        authorObj.source = 'ORCID'
+                        given_names = author.get('given-names', '')
+                        family_names = author.get('family-names', '')
+                        authorObj.name = given_names + " " + family_names
+                        authorObj.orcid = author.get('orcid-id', '')
+
+                        last_known_institution = author.get('institution-name', {})
+                        if last_known_institution:
+                            authorObj.affiliation = last_known_institution[-1]
+                        else:
+                            authorObj.affiliation = ''                    
+                        authorObj.works_count = ''
+                        authorObj.cited_by_count = ''
+
+                        results['researchers'].append(authorObj)
+
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
 
 def get_orcid_access_token():
     # Function to obtain the ORCID access token using client credentials
@@ -28,12 +77,8 @@ def get_orcid_access_token():
         print("Failed to obtain access token:", response.text)
         return None
     
-
-logger = logging.getLogger('nfdi_search_engine')
-
-
 # Function to search for public information from ORCID
-def search(search_term, results):
+def old_search(search_term, results):
     # It also can be used for retrieving further information, logging in, edite records etc
     access_token = '45d5a287-de76-4a62-8ab9-1ffc046e7cde' 
     headers = {
