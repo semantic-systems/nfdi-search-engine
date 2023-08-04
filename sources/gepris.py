@@ -49,24 +49,27 @@ def search(search_term, results):
                     resources.name = title
                     term = entry.find("div", class_="two_columns").find("span", class_="value2").text.strip()
                     resources.dateLastModified = term
-                    applicant_leader = entry.find("div", class_="details").find("span", class_="value").text.strip()
-                    resources.applicant =  applicant_leader
-                   
-                    
-                    
                     project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
                     resources.url = project_url
-                    
-                    # results.append(
-                    #     Gepris(
-                    #         url=project_url,
-                    #         title=title,
-                    #         description=project_description,
-                    #         date=term,
-                    #         applicant_or_leader=applicant_leader
-                    #     )
-                    # )
+                    applicants_element = entry.find("div", class_="details").find("span", class_="value")
+                    applicant_names = applicants_element.text.strip()
+                    #check if it's more than one applicant 
+                    if "," in applicant_names:
+                        # If there are comma-separated names, split them and add each one to the resources.author list
+                        applicant_names_list = applicant_names.split(',')
+                        for applicant_name in applicant_names_list:
+                            author = Person()
+                            author.type = "Person"
+                            author.name = applicant_name.strip()
+                            resources.author.append(author)
+                    else:
+                        # If there is a single applicant, add it to the resources.author list
+                        author = Person()
+                        author.type = "Person"
+                        author.name = applicant_names
+                        resources.author.append(author)
 
+                    
                     results['resources'].append(resources)
 
                 except KeyError:

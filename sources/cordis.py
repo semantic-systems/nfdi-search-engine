@@ -79,6 +79,7 @@ def search(search_term, results):
 
                 else:
                     # Handle the case when `hit` is not a dictionary
+                    resources = Project()
                     resources.identifier = ''
                     resources.name = ''
                     resources.url = ''
@@ -102,7 +103,7 @@ def search(search_term, results):
            
     
 
-        logger.info(f'Got {len(resources.identifier)} records from Cordis') 
+        logger.info(f'Got {len(results)} records from Cordis') 
 
     else:
         # Log an error message when the response is not successful
