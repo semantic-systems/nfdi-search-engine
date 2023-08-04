@@ -166,8 +166,6 @@ class Project(Organization):
     objective: str = ""
     status: str = ""
 
-
-
     def __post_init__(self):
         # Loop through the fields
             for field in fields(self):
