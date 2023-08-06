@@ -1,0 +1,317 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Publication Details {% endblock title %}
+
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}" />
+
+{% endblock stylesheets %}
+
+{% block content %}
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+
+        <div class="row pb-4">
+            <div class="col text-start">
+                <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
+            </div>
+        </div>
+        <div class="row justify-content-start align-items-center border-bottom pb-4">
+            <div class="col-sm-1">
+                <img class="rounded-circle img-fluid"
+                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
+            </div>
+            <div class="col-md-auto">
+                <h3>Alberto Corona</h3>
+                <p class="ps-2 pe-3 bi-geo-alt-fill">Lima, Peru</p>
+            </div>
+            <div class="col align-self-start">
+                <i class="bi bi-bookmark align-self-end fs-4"></i>
+                <i class="bi bi-share align-self-end fs-4"></i>
+            </div>
+        </div>
+
+        <div class="row pt-4">
+
+            <div class="col-3 px-2 justify-content-start">
+                <div class="d-flex p-2">
+                    <h5>ABOUT</h5>
+                </div>
+                <div class="d-flex p-2 fs-6 pb-4">
+                    An accomplished IT / Digital engineer with rich experience,
+                    seeking progressive growth in leadership and excellence.
+                    Currently, I am in the position of Network Administrator Manager
+                    for the USA and Argentina. Enduser experience, supporting global and
+                    local business strategies that deliver tangible business results.
+                </div>
+
+                <div class="d-flex p-2 pb-4 justify-content-start">
+                    <div class="summary-block p-1">
+                        <i class="bi bi-book fs-4"></i>
+                        <div class="fs-7 my-1">Publications</div>
+                        <div class="fs-5 fw-bold">32</div>
+                    </div>
+                    <div class="summary-block p-1 ms-2">
+                        <i class="bi bi-chat-quote fs-4"></i>
+                        <div class="fs-7 my-1">Citations</div>
+                        <div class="fs-5 fw-bold">17</div>
+                    </div>
+                    <div class="summary-block p-1 ms-2">
+                        <i class="bi bi-eye fs-4"></i>
+                        <div class="fs-7 my-1">Views</div>
+                        <div class="fs-5 fw-bold">493</div>
+                    </div>
+                    <div class="summary-block p-1 ms-2">
+                        <i class="bi bi-bookmark fs-4"></i>
+                        <div class="fs-7 my-1">Saved</div>
+                        <div class="fs-5 fw-bold">4</div>
+                    </div>
+                </div>
+
+                <div class="card m-2" style="border-radius: 10px; border: 2px solid #c9c9c9;">
+                    <div class="card-body">
+                        <span class="badge bg-pill">Computer Science</span>
+                        <span class="badge bg-pill">Artificial intelligence</span>
+                        <span class="badge bg-pill">Information retrieval Engineering Math</span>
+                        <span class="badge bg-pill">Question answering</span>
+                        <span class="badge bg-pill">Biology</span>
+                        <span class="badge bg-pill">WWW</span>
+                        <span class="badge bg-pill">Biology</span>
+                        <span class="badge bg-pill">Economics</span>
+                        <span class="badge bg-pill">Philosophy</span>
+                        <span class="badge bg-pill">Semantic Web</span>
+                        <span class="badge bg-pill">Operating</span>
+                        <span class="badge bg-pill">Machine learning</span>
+                        <span class="badge bg-pill">Linguistics</span>
+                    </div>
+                </div>
+
+                <div class="d-flex px-2 pt-4">
+                    <h5>CONTACT & PROFILES</h5>
+                </div>
+                <div class="contacts p-2">
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1"  tabindex="-1"
+                           role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-envelope"></i>alberto@corona.com</a>
+                    </div>
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-globe"></i>www.alberto-corona.com</a>
+                    </div>
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                            role="button" aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
+                                            src="{{ url_for('static', filename='images/sources/orcid-id.png') }}"
+                                            >orcid.org/0000-0002-0191-7211</a>
+                    </div>
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                            role="button" aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
+                                            src="{{ url_for('static', filename='images/sources/openalex-small.png') }}"
+                                            >openalex.org/A1905735547</a>
+                    </div>
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-twitter"></i>@albertocorona</a>
+                    </div>
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-linkedin"></i>Alberto Corona</a>
+                    </div>
+                    <div class="d-flex p-1 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-facebook"></i>Alberto Corona</a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-9 px-4">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col mt-4">
+                            <div class="row">
+                                <div class="col tabs-section">
+                                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link active position-relative" id="employment-tab"
+                                                data-bs-toggle="tab" data-bs-target="#employment" type="button" role="tab"
+                                                aria-controls="employment" aria-selected="true">
+                                                Employment
+                                                <span
+                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                                    {{4}}
+                                                    <span class="visually-hidden">employment</span>
+                                                </span>
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link position-relative" id="education-tab" data-bs-toggle="tab"
+                                                data-bs-target="#education" type="button" role="tab"
+                                                aria-controls="education" aria-selected="false">
+                                                Education & Qualifications
+                                                <span
+                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                                    {{1}}
+                                                    <span class="visually-hidden">education</span>
+                                                </span>
+                                            </button>
+                                        </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link position-relative" id="works-tab" data-bs-toggle="tab"
+                                                data-bs-target="#works" type="button" role="tab" aria-controls="works"
+                                                aria-selected="false">
+                                                Works
+                                                <span
+                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                                    {{12}}
+                                                    <span class="visually-hidden">works</span>
+                                                </span>
+                                            </button>
+                                        </li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="tab-content" id="myTabContent">
+                                <div class="tab-pane fade show active" id="employment" role="tabpanel"
+                                    aria-labelledby="employment-tab">
+                                    <div class="p-2 border-bottom">
+                                        <h4>Junior Professor (Computer Science)</h4>
+                                        <p>University Hamburg · Hamburg, DE · Employment<br>
+                                        <span style="color:#c9c9c9;">May 2021 - Present · 2 years</span></p>
+                                    </div>
+                                    <div class="p-2 pt-4 border-bottom">
+                                        <h4>Lead Research Engineer (Enterprise Information Systems / Conversational AI)</h4>
+                                        <p>Fraunhofer IAIS · Dresden, DE · Employment<br>
+                                        <span style="color:#c9c9c9;">April 2019 - May 2021 · 2 years</span></p>
+                                    </div>
+                                    <div class="p-2 pt-4 border-bottom">
+                                        <h4>Senior Researcher (Data Science)</h4>
+                                        <p>Paderborn University · Paderborn, DE · Employment<br>
+                                        <span style="color:#c9c9c9;">May 2017 - March 2019 · 2 years</span></p>
+                                    </div>
+                                    <div class="p-2 pt-4">
+                                        <h4>Ph.D. Student (Computer Science)</h4>
+                                        <p>Leipzig University · Leipzig, DE · Employment<br>
+                                        <span style="color:#c9c9c9;">January 2015 - April 2017 · 2 years</span></p>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
+                                    <div class="p-2">
+                                        <h4>Dr. rer. nat. (AKSW)</h4>
+                                        <p>Leipzig University · Leipzig, DE · Education<br>
+                                        <span style="color:#c9c9c9;">January 2013 - May 2017 · 2 years</span></p>
+                                    </div>
+                                </div>
+                                <div class="tab-pane fade" id="works" role="tabpanel" aria-labelledby="works-tab">
+
+                                <div class="tab-pane fade show active" id="publications" role="tabpanel"
+                            aria-labelledby="publications-tab">
+<table id="tbl-publications" class="datatable display" style="width:100%">
+    <thead>
+        <tr>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for i in range(11) %}
+        <tr>
+            <td>
+                <div class="card mb-2 p-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-11 fs-6">
+                                <div class="row mb-2">
+                                    <div class="col-lg-12 fs-5">
+                                        <a class="text-secondary fw-bold" href='/publication-details' target='_blank'>
+                                            Tree-KGQA: An Unsupervised Approach for Question Answering Over Knowledge Graphs</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12 my-2 authors">
+                                        <a href="#"
+                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>Md Rashad Al Hasan Rony</a>
+                                        <a href="#"
+                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>Debenjan Chaudhuri </a>
+                                        <a href="#"
+                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>Alberto Corona</a>
+                                        <a href="#"
+                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>Jens Lehmann</a>
+                                    </div>
+                                </div>
+                                <div class="row pt-3">
+                                    <div class="col-lg-9 text-start">
+                                        <span class="badge bg-pill">2022</span>
+                                        <span class="badge bg-pill">Journal article</span>
+                                        <span class="badge bg-pill">DOI: 10.1109/ACCESS.2022.3173355 T</span>
+                                        <span class="badge bg-pill">Tag</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-1">
+                                <div class="row fs-5">
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                class="bi bi-bookmark"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
+                                                class="bi bi-share"></i></a></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+    $(document).ready(function () {
+
+        var dataTable = $('.datatable').DataTable({});
+        dataTable.on('page.dt', function () {
+            $('html, body').scrollTop(100)
+            $('html, body').stop().animate({
+                scrollTop: $(".dataTables_wrapper").offset().top
+            }, 'slow');
+
+            $('thead tr th:first-child').focus().blur();
+        });
+
+    });
+
+
+
+</script>
+
+
+{% endblock javascripts %}

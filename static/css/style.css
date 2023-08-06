@@ -278,3 +278,19 @@ li.list-group-item::before {
     color: #c9c9c9
         /* content: counter(section, lower-roman) ". "; */
 }
+
+/***********************************************/
+/* Publication Details styles */
+/***********************************************/
+
+.contact-box {
+    border: 2px solid #c9c9c9;
+    width: 100%;
+    min-height: 40px;
+    border-radius: 10px;
+    text-align: left;
+}
+
+.contacts a:hover {
+    background-color: #c9c9c9;
+}
