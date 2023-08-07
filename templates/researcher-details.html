@@ -20,17 +20,18 @@
             </div>
         </div>
         <div class="row justify-content-start align-items-center border-bottom pb-4">
-            <div class="col-sm-1">
-                <img class="rounded-circle img-fluid"
-                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
+            <div class="col-sm-1 ps-2">
+                <i class="bi bi-person-circle" style="font-size:6rem;"></i>
             </div>
             <div class="col-md-auto">
                 <h3>Alberto Corona</h3>
-                <p class="ps-2 pe-3 bi-geo-alt-fill">Lima, Peru</p>
+                <p><i  class="px-1 bi-geo-alt-fill"></i>Lima, Peru</p>
             </div>
             <div class="col align-self-start">
-                <i class="bi bi-bookmark align-self-end fs-4"></i>
-                <i class="bi bi-share align-self-end fs-4"></i>
+                <a href="#" class="btn p-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="bi-bookmark align-self-end fs-4"></i></a>
+                <a href="#" class="btn p-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
             </div>
         </div>
 
@@ -94,7 +95,7 @@
                 </div>
                 <div class="contacts p-2">
                     <div class="d-flex p-1 bd-highlight">
-                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1"  tabindex="-1"
+                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-envelope"></i>alberto@corona.com</a>
                     </div>
                     <div class="d-flex p-1 bd-highlight">
@@ -131,44 +132,29 @@
             <div class="col-9 px-4">
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col mt-4">
+                        <div class="col">
                             <div class="row">
                                 <div class="col tabs-section">
-                                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                    <ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link active position-relative" id="employment-tab"
                                                 data-bs-toggle="tab" data-bs-target="#employment" type="button" role="tab"
                                                 aria-controls="employment" aria-selected="true">
-                                                Employment
-                                                <span
-                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                                    {{4}}
-                                                    <span class="visually-hidden">employment</span>
-                                                </span>
+                                                Employment [4]
                                             </button>
                                         </li>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link position-relative" id="education-tab" data-bs-toggle="tab"
                                                 data-bs-target="#education" type="button" role="tab"
                                                 aria-controls="education" aria-selected="false">
-                                                Education & Qualifications
-                                                <span
-                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                                    {{1}}
-                                                    <span class="visually-hidden">education</span>
-                                                </span>
+                                                Education & Qualifications [1]
                                             </button>
                                         </li>
                                         <li class="nav-item" role="presentation">
                                             <button class="nav-link position-relative" id="works-tab" data-bs-toggle="tab"
                                                 data-bs-target="#works" type="button" role="tab" aria-controls="works"
                                                 aria-selected="false">
-                                                Works
-                                                <span
-                                                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                                    {{12}}
-                                                    <span class="visually-hidden">works</span>
-                                                </span>
+                                                Works [12]
                                             </button>
                                         </li>
                                     </ul>
