@@ -9,7 +9,7 @@ import threading
 from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee #eulg
 # import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
-
+import merger
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -72,8 +72,10 @@ def search_results():
         logger.info(f'Got {len(results["organizations"])} organizations')
         logger.info(f'Got {len(results["events"])} events')
         logger.info(f'Got {len(results["fundings"])} fundings')
-        logger.info(f'Got {len(results["others"])} others')       
-        
+        logger.info(f'Got {len(results["others"])} others')
+        deduplicated_search_result = merger.deduplicate_search_results(results)
+        results['publications'] = deduplicated_search_result
+
         return render_template('results.html', results=results, search_term=search_term)
 
 
