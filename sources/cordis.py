@@ -79,6 +79,7 @@ def search(search_term, results):
 
                 else:
                     # Handle the case when `hit` is not a dictionary
+                    resources = Project()
                     resources.identifier = ''
                     resources.name = ''
                     resources.url = ''

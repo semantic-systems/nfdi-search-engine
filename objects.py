@@ -165,6 +165,7 @@ class Project(Organization):
     availableLanguages: List[str] = field(default_factory=list)
     objective: str = ""
     status: str = ""
+    author: List[Union[Organization, Person]] = field(default_factory=list)
 
     def __post_init__(self):
         # Loop through the fields

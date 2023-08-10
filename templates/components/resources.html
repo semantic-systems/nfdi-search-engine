@@ -54,6 +54,10 @@
                                         <span class="badge bg-pill">{{resources.datePublished}}</span>
                                     </div>
                                     {% endif %}
+                                    {% if resources.source == 'GEPRIS' %}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">{{resources.dateLastModified}}</span>
+                                    </div>
                                     {% if resources.source == 'CODALAB' %}
                                     <div class="col-lg-3 text-end">
                                         <span class="badge bg-pill">{{resources.dateCreated}}</span>
