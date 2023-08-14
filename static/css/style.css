@@ -294,3 +294,11 @@ li.list-group-item::before {
 .contacts a:hover {
     background-color: #c9c9c9;
 }
+
+.banner {
+    width: 100vw;
+    height: 135px;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+ }
