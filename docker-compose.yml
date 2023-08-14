@@ -2,6 +2,10 @@ services:
     search-engine:
         build: .
         ports:
-            - 6000:5002
+            - 6000:8000
         restart: unless-stopped
-
+        networks:
+            - nfdi-search-engine_default
+networks:
+    nfdi-search-engine_default:
+        external: true

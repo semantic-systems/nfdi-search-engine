@@ -1,0 +1,78 @@
+<table id="tbl-researchers" class="datatable display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Researchers</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for researcher in results.researchers %}
+        <tr>
+            <td>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-2">
+                                <img class="rounded-circle img-fluid"
+                                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
+                            </div>
+                            <div class="col-md-9 fs-6">
+                                <div class="row">
+                                    <div class="col-md-6 fs-5">
+                                        <a class="text-secondary fw-bold" href='/researcher-details' target='_blank'>
+                                            {{researcher.name}}</a>
+                                    </div>
+                                    <div class="col-md-6 fs-6">
+                                        <a class="text-secondary fw-bold" href='{{researcher.orcid}}' target='_blank'>
+                                            ORCID: {{ researcher.orcid|replace('https://orcid.org/', '') }}</a>
+                                    </div>
+                                </div>
+                                <div class="row px-2 pt-3">
+                                    <div class="p-2 mt-2 d-flex justify-content-between rounded text-dark"
+                                        style="background-color:rgb(218, 247, 237) ;">
+                                        <!-- <div class="d-flex flex-column">
+                                            <span class="">Designation</span>
+                                            <span class="fw-bold">Professor</span>
+                                        </div> -->
+                                        <div class="d-flex flex-column">
+                                            <span class="">Last Known Institution</span>
+                                            <span class="fw-bold">{{ researcher.affiliation }}</span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="">Works Count</span>
+                                            <span class="fw-bold">{{researcher.works_count}}</span>
+                                        </div>
+                                        <div class="d-flex flex-column">
+                                            <span class="">Citations Count</span>
+                                            <span class="fw-bold">{{researcher.cited_by_count}}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row px-2 pt-3">
+                                    <div class="col-lg-9 text-start">
+                                        <span class="badge bg-pill">{{researcher.source}}</span>
+                                    </div>
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="row fs-5">
+                                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                    class="bi bi-bookmark"></i></a></div> -->
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
+                                                class="bi bi-share"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Download"><i
+                                                class="bi bi-download"></i></a></div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

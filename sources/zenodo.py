@@ -1,7 +1,6 @@
 import requests
-
 import utils
-from objects import Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson
+from objects import Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Person
 import logging
 import os
 
@@ -16,18 +15,55 @@ def search(search_term, results):
 
     logger.debug(f'Zenodo response status code: {response.status_code}')
     logger.debug(f'Zenodo response headers: {response.headers}')
-
     for data in response.json()['hits']['hits']:
         if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
             # resource = _make_zenodo_uri(data)
             # resource_type = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
-            zenedo_resource_type = 'zenodo:' + data['metadata']['resource_type']['type']
+            # zenodo_resource_type = 'zenodo:' + data['metadata']['resource_type']['type']
             resource_type = data['metadata']['resource_type']['type']
-            authors_list = '; '.join([authors["name"] for authors in data['metadata']['creators']])
+            # authors_list = '; '.join([authors["name"] for authors in data['metadata']['creators']]
             description_txt = data["metadata"]["description"]
             description = utils.remove_html_tags(description_txt)
             if resource_type == 'publication':
+                publication = Article()
+                publication.source = 'Zenodo'
+                publication.name = data['metadata']['title']
+                publication.url = data["links"]["doi"]
+                publication.image = ''
+                publication.description = description
+                publication.abstract = ''
+                keywords = data['metadata'].get('keywords', [])
+                if isinstance(keywords, list):
+                    for keyword in keywords:
+                        for key in keyword.split(","):
+                            publication.keywords.append(key)
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
+                        for items in keyword:
+                            publication.keywords.append(items['key'])
+                else:
+                    publication.keywords.append('')
+                language = ''
+                if 'language' in data['metadata']:
+                    language = data['metadata']['language']
+                publication.inLanguage.append(language)
+                publication.datePublished = data['metadata']['publication_date']
+                publication.license = data['metadata']['license']['id']
+                for authors in data['metadata']['creators']:
+                    author = Person()
+                    author.name = authors["name"]
+                    author.type = 'Person'
+                    author.affiliation = ''
+                    if 'affiliation' in authors:
+                        author.affiliation = authors['affiliation']
+                    author.identifier = ''
+                    if 'orcid' in authors:
+                        author.identifier = authors['orcid']
+                    publication.author.append(author)
+
+                results['publications'].append(publication)
+                '''
                 results.append(
                     Article(
                         title=data['metadata']['title'],
@@ -112,7 +148,7 @@ def search(search_term, results):
             else:
                 results.append(
                     Zenodo(
-                        resource_type=zenedo_resource_type,
+                        resource_type=zenodo_resource_type,
                         url=data["links"]["doi"],
                         date=data['metadata']['publication_date'],
                         title=data['metadata']['title'],
@@ -120,5 +156,6 @@ def search(search_term, results):
                         author=authors_list
                     )
                 )
+             '''
 
     logger.info(f'Got {len(results)} records from Zenodo')

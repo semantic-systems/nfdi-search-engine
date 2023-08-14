@@ -15,7 +15,7 @@ handlers = console
 
 [logger_nfdi_search_engine]
 level = DEBUG
-handlers = console
+handlers = console, file
 qualname = nfdi_search_engine
 propagate = 0
 

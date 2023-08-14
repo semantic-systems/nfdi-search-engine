@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>
+        NFDI4DS | UHH-SEMS - {% block title %}{% endblock %}
+    </title>
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap5.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+
+    <!-- Font Awesome -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome-all.min.css') }}" /> -->
+    <!-- Google Fonts -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/font-google-roboto.css') }}" /> -->
+    <!-- MDB -->
+    <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/mdb.min.css') }}" /> -->
+
+    <!-- Specific Page CSS goes HERE -->
+    {% block stylesheets %}{% endblock stylesheets %}
+
+</head>
+
+<body>
+
+    <!-- #Main ============================ -->
+    <div class="page-container">
+
+        {% include 'includes/header.html' %}
+
+        {% block content %}{% endblock content %}
+
+        <div style="flex-grow:1"></div>
+
+        {% include 'includes/footer.html' %}
+
+    </div>
+
+    {% include 'includes/scripts.html' %}
+
+    <!-- Specific Page JS goes HERE -->
+    {% block javascripts %}{% endblock javascripts %}
+
+</body>
