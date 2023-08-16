@@ -1,0 +1,104 @@
+<table id="tbl-fundings" class="datatable display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Fundings</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for fundings in results.fundings %}
+        <tr>
+            <td>
+                <div class="card mb-2 p-3">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-11 fs-6">
+                                <div class="row mb-2">
+                                    <div class="col-lg-12 fs-5">
+                                        <a class="text-secondary fw-bold" href='/fundings-details' target='_blank'>
+                                            {{fundings.name}}</a>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12 my-2 authors">
+                                        {% for author in fundings.author %}
+                                        {% if author.type == 'Person' %}
+                                        <a href="{{author.identifier}}"
+                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            tabindex="-1" role="button" aria-disabled="true"><i
+                                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                                        {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <p class="card-text">{{fundings.description|truncate(500)}}</p>
+                                    </div>
+                                </div>
+                                <div class="row pt-3">
+                                    <div class="col-lg-9 text-start">
+                                        <span class="badge bg-pill">{{fundings.source}}</span>
+                                        {% for language in fundings.inLanguage %}
+                                        <span class="badge bg-pill">{{language|upper}}</span>
+                                        {% endfor %}
+                                        <span class="badge bg-pill">{{ fundings.encodingFormat|upper }}</span>
+                                        <span class="badge bg-pill">{{fundings.license}}</span>
+                                    </div>
+                                    {% if fundings.source == 'CORDIS' %}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">From: {{fundings.dateStart}} To {{fundings.dateEnd}}</span>
+                                    </div>
+                                    {% endif %}
+                                    <!-- {% if fundings.source == 'GESIS' %}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">{{fundings.datePublished}}</span>
+                                    </div>
+                                    {% endif %} -->
+                                    <!-- {% if fundings.source == 'GEPRIS' %}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">{{fundings.dateLastModified}}</span>
+                                    </div>
+                                    {% endif %} -->
+                                </div>
+                            </div>
+                            <div class="col-lg-1">
+                                <div class="row fs-5">
+                                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                class="bi bi-bookmark"></i></a></div> -->
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
+                                                class="bi bi-share"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Preview"
+                                            data-bs-toggle="modal" data-bs-target="#full_size_image_dialog"><i
+                                                class="bi bi-eye"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank'
+                                            href="{{fundings.encoding_contentUrl}}" title="Download"><i
+                                                class="bi bi-download"></i></a></div>
+
+                                </div>
+                            </div>
+
+                            <div id="full_size_image_dialog" class="modal">
+                                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5>
+                                                {{fundings.name}}
+                                            </h5>
+                                        </div>
+                                        <div class="modal-body">
+                                            <img src="{{fundings.image}}"
+                                                class="figure-img img-fluid border border-dark">
+                                            <figcaption>
+                                            </figcaption>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
