@@ -5,10 +5,9 @@
   height: 100px;
 }
 .tabs-section > .nav-tabs {
-  position: absolute;
+  position: relative;
   left: 0px;
   top: 0px;
-  min-width: 3500px;
   margin-top: 0px;
   cursor: auto;
   border: none;
@@ -25,7 +24,7 @@
 }
 .tabs-section > .nav-tabs li[role=presentation] button[role=tab] {
   margin: 0;
-  padding: 2px 10px 2px 10px;
+  padding: 2px 10px 2px 0px;
   font-size: 1.2rem;
   font-weight: 700;
   text-transform: none;
