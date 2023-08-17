@@ -14,7 +14,8 @@
                             <div class="col-lg-11 fs-6">
                                 <div class="row mb-2">
                                     <div class="col-lg-12 fs-5">
-                                        <a class="text-secondary fw-bold" href='/publication-details' target='_blank'>
+                                        <a class="text-secondary fw-bold publication_name" href='/publication-details'
+                                            target='_blank'>
                                             {{publication.name}}</a>
                                     </div>
                                 </div>
@@ -53,19 +54,134 @@
                                 <div class="row fs-5">
                                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
                                                 class="bi bi-bookmark"></i></a></div> -->
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
+                                    <div class="col-lg-12 text-end mb-3"><a href="#" title="Share" id="share_modal_link"
+                                            data-bs-toggle="modal" data-bs-target="#share_modal_dialog"><i
                                                 class="bi bi-share"></i></a></div>
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Preview"
-                                            data-bs-toggle="modal" data-bs-target="#full_size_image_dialog"><i
-                                                class="bi bi-eye"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a href="#" title="Preview"
+                                            id="preview_modal_link" data-bs-toggle="modal"
+                                            data-bs-target="#preview_modal_dialog"><i class="bi bi-eye"></i></a></div>
                                     <div class="col-lg-12 text-end mb-3"><a target='_blank'
                                             href="{{publication.encoding_contentUrl}}" title="Download"><i
                                                 class="bi bi-download"></i></a></div>
-
                                 </div>
                             </div>
 
-                            <div id="full_size_image_dialog" class="modal">
+                            <div class="modal fade" id="share_modal_dialog" tabindex="-1" role="dialog"
+                                aria-labelledby="shareModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content col-12">
+                                        <div class="modal-header">
+                                            <h5 class="fw-bolder">Share</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div class="d-flex flex-wrap">
+                                                <!-- <div class="smd">
+                                                    <a href="#" base-href="https://" class="disabled"
+                                                        aria-disabled="true">
+                                                        <i class="img-thumbnail bi bi-discord "
+                                                            style="color: #738ADB;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Discord</p>
+                                                    </a>
+                                                </div> -->
+                                                <div class="smd">
+                                                    <a id="sharelink_facebook" href="#"
+                                                        base-href="https://www.facebook.com/sharer/sharer.php?u=[[url]]"
+                                                        target=_blank>
+                                                        <i class="img-thumbnail bi bi-facebook "
+                                                            style="color: #1091F3;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Facebook</p>
+                                                    </a>
+                                                </div>
+                                                <!-- <div class="smd">
+                                                    <a href="#" class="disabled" aria-disabled="true">
+                                                        <i class="img-thumbnail bi bi-instagram "
+                                                            style="color: #FF5700;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Instagram</p>
+                                                    </a>
+                                                </div> -->
+                                                <div class="smd">
+                                                    <a id="sharelink_linkedin" href="#"
+                                                        base-href="https://www.linkedin.com/shareArticle?mini=true&url=[[url]]&title=[[title]]"
+                                                        target=_blank>
+                                                        <i class="img-thumbnail bi bi-linkedin "
+                                                            style="color: #0a66c2;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Linkedin</p>
+                                                    </a>
+                                                </div>
+                                                <div class="smd">
+                                                    <a id="sharelink_pinterest" href="#"
+                                                        base-href="https://pinterest.com/pin/create/button/?url=[[url]]&media=[[url]]&description=[[title]]"
+                                                        target=_blank>
+                                                        <i class="img-thumbnail bi bi-pinterest"
+                                                            style="color: #E60023;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Pinterest</p>
+                                                    </a>
+                                                </div>
+                                                <div class="smd">
+                                                    <a id="sharelink_reddit" href="#"
+                                                        base-href="https://www.reddit.com/submit?url=[[url]]&title=[[title]]"
+                                                        target=_blank>
+                                                        <i class="img-thumbnail bi bi-reddit"
+                                                            style="color: #FF4500;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Reddit</p>
+                                                    </a>
+                                                </div>
+                                                <!-- <div class="smd">
+                                                    <a href="#" class="disabled" aria-disabled="true">
+                                                        <i class="img-thumbnail bi bi-slack "
+                                                            style="color: orange;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Slack</p>
+                                                    </a>
+                                                </div> -->
+                                                <!-- <div class="smd">
+                                                    <a href="#" class="disabled" aria-disabled="true">
+                                                        <i class="img-thumbnail bi bi-telegram "
+                                                            style="color: #4c6ef5;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Telegram</p>
+                                                    </a>
+                                                </div> -->
+                                                <div class="smd">
+                                                    <a id="sharelink_twitter" href="#"
+                                                        base-href="https://twitter.com/intent/tweet?text=[[title]]&url=[[url]]"
+                                                        target=_blank>
+                                                        <i class="img-thumbnail bi bi-twitter"
+                                                            style="color:#4c6ef5;background-color: aliceblue"></i>
+                                                        <p class="pt-2">Twitter</p>
+                                                    </a>
+                                                </div>
+                                                <div class="smd">
+                                                    <a id="sharelink_whatsapp" href="#"
+                                                        base-href="https://api.whatsapp.com/send?text=[[url]]"
+                                                        class="disabled" aria-disabled="true">
+                                                        <i class="img-thumbnail bi bi-whatsapp "
+                                                            style="color: #00E676;background-color: aliceblue;"></i>
+                                                        <p class="pt-2">Whatsapp</p>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer text-start">
+                                            <div class="input-group mb-3">
+                                                <div class="input-group-prepend">
+                                                    <span class="input-group-text fw-bold">Link</span>
+                                                </div>
+                                                <input type="url" class="form-control" aria-label="URL"
+                                                    placeholder="https://" id="txtShareLink"
+                                                    aria-describedby="inputGroup-sizing-default" disabled
+                                                    aria-disabled="true">
+                                                <div class="input-group-append">
+                                                    <span class="input-group-text" id="btnShareLinkCopy" role="button">
+                                                        <i class="bi bi-clipboard"></i></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="preview_modal_dialog" class="modal">
                                 <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
                                     <div class="modal-content">
                                         <div class="modal-header">
@@ -82,6 +198,7 @@
                                     </div>
                                 </div>
                             </div>
+
                         </div>
                     </div>
                 </div>
