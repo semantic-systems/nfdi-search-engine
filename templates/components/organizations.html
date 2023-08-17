@@ -1,0 +1,70 @@
+<table id="tbl-organizations" class="datatable display" style="width:100%">
+    <thead>
+        <tr>
+            <th>Organizations</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for organization in results.organizations %}
+        <tr>
+            <td>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <!-- <div class="col-md-2">
+                                <img class="rounded-circle img-fluid"
+                                    src="https://st4.depositphotos.com/5226485/27394/v/1600/depositphotos_273949566-stock-illustration-creative-engineer-worker-gear-logo.jpg">
+                            </div> -->
+                            <div class="col-md-9 fs-6">
+                                <div class="row">
+                                    <div class="col-md-6 fs-5">
+                                        <a class="text-secondary fw-bold" href='#' target='#'>
+                                            {{organization.name}}</a>
+                                    </div>
+                                    <!-- <div class="col-md-6 fs-6">
+                                        <a class="text-secondary fw-bold" href='{{organization.identifier}}' target='_blank'>
+                                            ORCID: {{ organization.orcid|replace('https://orcid.org/', '') }}</a>
+                                    </div> -->
+                                </div>
+                                <div class="row px-2 pt-3">
+                                    <div class="p-2 mt-2 d-flex justify-content-between rounded text-dark"
+                                        style="background-color:rgb(218, 247, 237) ;">
+                                        <!-- <div class="d-flex flex-column">
+                                            <span class="">Designation</span>
+                                            <span class="fw-bold">Professor</span>
+                                        </div> -->
+                                        <div class="d-flex flex-column">
+                                            <span class="">Organization Address:</span>
+                                            <span class="fw-bold">{{ organization.address }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row px-2 pt-3">
+                                    <div class="col-lg-9 text-start">
+                                        <span class="badge bg-pill">{{organization.source}}</span>
+                                    </div>
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-1">
+                                <div class="row fs-5">
+                                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                    class="bi bi-bookmark"></i></a></div> -->
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
+                                                class="bi bi-share"></i></a></div>
+                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Download"><i
+                                                class="bi bi-download"></i></a></div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

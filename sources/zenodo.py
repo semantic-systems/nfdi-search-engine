@@ -21,25 +21,25 @@ def search(search_term, results):
             # resource = _make_zenodo_uri(data)
             # resource_type = URIRef('zenodo:' + data['metadata']['resource_type']['type'])
             # zenodo_resource_type = 'zenodo:' + data['metadata']['resource_type']['type']
-            resource_type = data['metadata']['resource_type']['type']
+            resource_type = data.get('metadata', {}).get('resource_type', {}).get('type')
             # authors_list = '; '.join([authors["name"] for authors in data['metadata']['creators']]
-            description_txt = data["metadata"]["description"]
+            description_txt = data.get('metadata', {}).get('description')
             description = utils.remove_html_tags(description_txt)
             if resource_type == 'publication':
                 publication = Article()
                 publication.source = 'Zenodo'
-                publication.name = data['metadata']['title']
-                publication.url = data["links"]["doi"]
+                publication.name = data.get('metadata', {}).get('title', None)
+                publication.url = data.get('links', {}).get('doi', None)
                 publication.image = ''
                 publication.description = description
                 publication.abstract = ''
-                keywords = data['metadata']['keywords']
-                if keywords == list:
+                keywords = data['metadata'].get('keywords', [])
+                if isinstance(keywords, list):
                     for keyword in keywords:
                         for key in keyword.split(","):
                             publication.keywords.append(key)
-                if keywords == dict:
-                    for keyword in keywords['buckets']:
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
                         for items in keyword:
                             publication.keywords.append(items['key'])
                 else:
@@ -48,8 +48,8 @@ def search(search_term, results):
                 if 'language' in data['metadata']:
                     language = data['metadata']['language']
                 publication.inLanguage.append(language)
-                publication.datePublished = data['metadata']['publication_date']
-                publication.license = data['metadata']['license']['id']
+                publication.datePublished = data.get('metadata', {}).get('publication_date')
+                publication.license = data.get('metadata', {}).get('license', {}).get('id')
                 for authors in data['metadata']['creators']:
                     author = Person()
                     author.name = authors["name"]
