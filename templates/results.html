@@ -174,10 +174,10 @@
                         var notification = alertify.notify('Link copied', 'success', 5);
                     })
                     .catch((error) => {
-                        var notification = alertify.notify('Copy operation failed 1' + error, 'error', 5);
+                        var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
                     });
             } else {
-                var notification = alertify.notify('Copy operation failed 2', 'error', 5);
+                var notification = alertify.notify('Copy operation failed', 'error', 5);
             }
         });
 
