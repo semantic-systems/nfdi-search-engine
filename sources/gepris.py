@@ -44,45 +44,45 @@ def search(search_term, results):
             
             for entry in entries:
                 try:
-                    resources = Project()
-                    resources.source = 'GEPRIS'
+                    fundings = Project()
+                    fundings.source = 'GEPRIS'
                     project_link = entry.find("a")["href"]
                     project_description = ''.join(entry.find("div", class_="beschreibung").find_all(string=True, recursive=False)).strip()
-                    resources.description = project_description
-                    resources.abstract = project_description
+                    fundings.description = project_description
+                    fundings.abstract = project_description
                     title = entry.find("h2").text.strip()
-                    resources.name = title
+                    fundings.name = title
                     term = entry.find("div", class_="two_columns").find("span", class_="value2").text.strip()
-                    resources.dateLastModified = term
+                    fundings.dateLastModified = term
                     project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
-                    resources.url = project_url
+                    fundings.url = project_url
                     applicants_element = entry.find("div", class_="details").find("span", class_="value")
                     applicant_names = applicants_element.text.strip()
-                    #check if it's more than one applicant 
+                    #check if there is more than one applicant 
                     if "," in applicant_names:
-                        # If there are comma-separated names, split them and add each one to the resources.author list
+                        # If there are comma-separated names, split them and add each one to the fundings.author list
                         applicant_names_list = applicant_names.split(',')
                         for applicant_name in applicant_names_list:
                             author = Person()
                             author.type = "Person"
                             author.name = applicant_name.strip()
-                            resources.author.append(author)
+                            fundings.author.append(author)
                     else:
-                        # If there is a single applicant, add it to the resources.author list
+                        # If there is a single applicant, add it to the fundings.author list
                         author = Person()
                         author.type = "Person"
                         author.name = applicant_names
-                        resources.author.append(author)
+                        fundings.author.append(author)
 
                     
-                    results['resources'].append(resources)
+                    results['fundings'].append(fundings)
 
                 except KeyError:
                     logger.warning("Key 'href' not found in 'a' tag. Skipping project.")
                 except AttributeError:
                     logger.warning("Unable to find project details. Skipping project.")
         
-        logger.info(f'Got {len(results)} records from Gepris')
+        # logger.info(f'Got {len(results)} records from Gepris')
     
     except requests.exceptions.RequestException as e:
         logger.error(f'Error occurred while making a request to Gepris: {e}')
