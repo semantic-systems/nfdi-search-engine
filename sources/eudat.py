@@ -33,12 +33,13 @@ def search(search_string: str, results):
             result_id = hit["id"]
             url = result_url_start + result_id
             metadata = hit["metadata"]
-            # doi = metadata.get("DOI", "")
+            doi = metadata.get("DOI", "")
             # epic_pid = metadata.get("ePIC_PID", "")
             language = metadata.get("language", "")
-            license_identifier = metadata.get("license", {}).get("license", "")
-            title = metadata.get("titles", {})[0].get("title", "")
-            description = metadata.get("descriptions", {})[0].get("description", "")
+            license_identifier = metadata.get("license", {}).get("license", "") if metadata.get("license") else ""
+            title = metadata.get("titles", {})[0].get("title", "") if metadata.get("titles") else ""
+            description = metadata.get("descriptions", {})[0].get("description", "") if metadata.get(
+                "descriptions") else ""
             publication_state = metadata.get("publication_state", "")
             publication_date = metadata.get("publication_date", "")
             version = metadata.get("version", "")
@@ -61,7 +62,7 @@ def search(search_string: str, results):
                     alternate_identifiers[a_id_type] = a_id
             """
             resource_types = []
-            for resource in metadata.get("resource_types", {}):
+            for resource in metadata.get("resource_types", ""):
                 resource_types.append(resource["resource_type_general"])
             category = resource_types[0] if len(resource_types) == 1 else "CreativeWork"
 
@@ -75,8 +76,10 @@ def search(search_string: str, results):
                     dataset.url = url
                     dataset.license = license_identifier
                     dataset.inLanguage = language
+                    dataset.identifier = doi
                     for item in authors:
                         person = Person()
+                        person.type = 'Person'
                         person.source = 'Eudat'
                         person.name = item
                         dataset.author.append(person)
@@ -85,16 +88,18 @@ def search(search_string: str, results):
                     results['resources'].append(dataset)
 
             match category:
-                case "Text":
+                case "Text" | "Report" | "Preprint" | "PeerReview" | "JournalArticle" | "Journal" | "Dissertation" | "ConferenceProceeding" | "BookChapter" | "Book":
                     article = Article()
                     article.source = 'Eudat'
                     article.name = title
                     article.description = description
                     article.dateCreated = publication_date
                     article.url = url
+                    article.identifier = doi
                     article.license = license_identifier
                     for item in authors:
                         person = Author()
+                        person.type = 'Person'
                         person.source = 'Eudat'
                         person.name = item
                         article.author.append(person)
@@ -109,9 +114,11 @@ def search(search_string: str, results):
                     work.description = description
                     work.dateCreated = publication_date
                     work.url = url
+                    work.identifier = doi
                     work.license = license_identifier
                     for item in authors:
                         person = Person()
+                        person.type = 'Person'
                         person.source = 'Eudat'
                         person.name = item
                         work.author.append(person)
