@@ -2,6 +2,8 @@ import requests
 import logging
 from objects import Article, Author
 from string import Template
+from datetime import datetime
+from dateutil import parser
 
 logger = logging.getLogger('nfdi_search_engine')
 
@@ -67,7 +69,9 @@ GROUP BY ?item ?label ?date
                 publication.source = 'Wikidata'
                 publication.url = result['item'].get('value', "")
                 publication.name = result['label'].get('value', "")
-                publication.datePublished = result.get('date', {}).get('value', "")
+                date_obj = parser.parse(result.get('date', {}).get('value', ""))
+                date = datetime.strftime(date_obj, '%Y-%m-%d')
+                publication.datePublished = date  # result.get('date', {}).get('value', "")
                 if result['authorsLabel'].get("value"):
                     authors_list = result['authorsLabel'].get("value", "").rstrip(",").split(",")
                     for item in authors_list:
