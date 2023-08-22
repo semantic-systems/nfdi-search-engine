@@ -10,7 +10,6 @@ from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, g
 # import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
 
-
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
@@ -28,6 +27,7 @@ def index():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
 
 @app.route('/results', methods=['POST', 'GET'])
 def search_results():
@@ -49,13 +49,12 @@ def search_results():
             'events': [],
             'fundings': [],
             'others': []
-        }      
+        }
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, codalab]
-        # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
+        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, codalab, wikidata]
 
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -65,15 +64,15 @@ def search_results():
         for t in threads:
             t.join()
             # print(t.is_alive())
-        
+
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
         logger.info(f'Got {len(results["resources"])} resources')
         logger.info(f'Got {len(results["organizations"])} organizations')
         logger.info(f'Got {len(results["events"])} events')
         logger.info(f'Got {len(results["fundings"])} fundings')
-        logger.info(f'Got {len(results["others"])} others')       
-        
+        logger.info(f'Got {len(results["others"])} others')
+
         return render_template('results.html', results=results, search_term=search_term)
 
 
@@ -89,6 +88,7 @@ def chatbox():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
 
 @app.route('/publication-details')
 def publication_details():
@@ -154,9 +154,7 @@ def details():
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=5002, debug=True)
 
-
-
-#region OLD CODE
+# region OLD CODE
 
 # @app.route('/index-old')
 # def index_new():
@@ -247,24 +245,11 @@ if __name__ == "__main__":
 #                 data[object_mappings[result_type]].append(result)
 #             else:
 #                 logger.warning(f"Type {result_type} of result not yet handled")   
-       
-        
+
+
 #         # Remove items without results
 #         data = dict((k, result) for k, result in data.items() if result)
 #         return render_template('result.html', data=data, search_term=search_term)
 
 
-#endregion
-
-
-
-
-
-
-
-
-
-
-
-
-
+# endregion
