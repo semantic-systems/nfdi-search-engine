@@ -105,8 +105,22 @@ def publication_details():
 
 
 @app.route('/resource-details')
-def resources_details():
+def resource_details():
     response = make_response(render_template('resource-details.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
+
+
+@app.route('/organization-details')
+def organization_details():
+    response = make_response(render_template('organization-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:

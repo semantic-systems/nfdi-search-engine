@@ -167,6 +167,7 @@ class Project(Organization):
     status: str = ""
     author: List[Union[Organization, Person]] = field(default_factory=list)
 
+
     def __post_init__(self):
         # Loop through the fields
             for field in fields(self):
