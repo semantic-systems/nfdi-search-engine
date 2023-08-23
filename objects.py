@@ -143,8 +143,8 @@ class Article(CreativeWork):
 
 @dataclass
 class Dataset(CreativeWork): 
-    distribution: str = "" # can be DataDownload
-    issn: str = "" #it can be the unique ID of dataset
+    distribution: str = ""
+    issn: str = "" 
 
     def __post_init__(self):
         # Loop through the fields
