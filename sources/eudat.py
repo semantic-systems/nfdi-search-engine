@@ -18,7 +18,7 @@ def search(search_string: str, results):
           """
     api_url = 'https://b2share.eudat.eu/api/records/'
     result_url_start = 'https://b2share.eudat.eu/records/'
-    response = requests.get(api_url, params={'q': search_string, 'sort': 'mostrecent'})
+    response = requests.get(api_url, params={'q': search_string, 'size': 100, 'sort': 'mostrecent'})
     data = response.json()
 
     logger.debug(f'Eudat response status code: {response.status_code}')
@@ -66,121 +66,67 @@ def search(search_string: str, results):
                 resource_types.append(resource["resource_type_general"])
             category = resource_types[0] if len(resource_types) == 1 else "CreativeWork"
 
-            match category:
-                case "Dataset":
-                    dataset = Dataset()
-                    dataset.source = 'Eudat'
-                    dataset.name = title
-                    dataset.description = description
-                    dataset.dateCreated = publication_date
-                    dataset.url = url
-                    dataset.license = license_identifier
-                    dataset.inLanguage = language
-                    dataset.identifier = doi
-                    for item in authors:
-                        person = Person()
-                        person.type = 'Person'
-                        person.source = 'Eudat'
-                        person.name = item
-                        dataset.author.append(person)
-                    dataset.version = version
-                    dataset.creativeWorkStatus = publication_state
-                    results['resources'].append(dataset)
+            if category == "Dataset":
+                dataset = Dataset()
+                dataset.source = 'Eudat'
+                dataset.name = title
+                dataset.description = description
+                dataset.datePublished = publication_date
+                dataset.url = url
+                dataset.license = license_identifier
+                dataset.inLanguage = language
+                dataset.identifier = doi
+                for item in authors:
+                    person = Person()
+                    person.type = 'Person'
+                    person.source = 'Eudat'
+                    person.name = item
+                    dataset.author.append(person)
+                dataset.version = version
+                dataset.creativeWorkStatus = publication_state
+                results['resources'].append(dataset)
 
-            match category:
-                case "Text" | "Report" | "Preprint" | "PeerReview" | "JournalArticle" | "Journal" | "Dissertation" | "ConferenceProceeding" | "BookChapter" | "Book":
-                    article = Article()
-                    article.source = 'Eudat'
-                    article.name = title
-                    article.description = description
-                    article.dateCreated = publication_date
-                    article.url = url
-                    article.identifier = doi
-                    article.license = license_identifier
-                    for item in authors:
-                        person = Author()
-                        person.type = 'Person'
-                        person.source = 'Eudat'
-                        person.name = item
-                        article.author.append(person)
-                    article.version = version
-                    article.creativeWorkStatus = publication_state
-                    results['publications'].append(article)
+            elif category in ["Text", "Report", "Preprint", "PeerReview", "JournalArticle", "Journal", "Dissertation",
+                              "ConferenceProceeding", "BookChapter", "Book"]:
+                article = Article()
+                article.source = 'Eudat'
+                article.name = title
+                article.description = description
+                article.datePublished = publication_date
+                article.inLanguage = language
+                article.url = url
+                article.identifier = doi
+                article.license = license_identifier
+                for item in authors:
+                    person = Author()
+                    person.type = 'Person'
+                    person.source = 'Eudat'
+                    person.name = item
+                    article.author.append(person)
+                article.version = version
+                article.creativeWorkStatus = publication_state
+                results['publications'].append(article)
 
-                case _:
-                    work = CreativeWork()
-                    work.source = 'Eudat'
-                    work.name = title
-                    work.description = description
-                    work.dateCreated = publication_date
-                    work.url = url
-                    work.identifier = doi
-                    work.license = license_identifier
-                    for item in authors:
-                        person = Person()
-                        person.type = 'Person'
-                        person.source = 'Eudat'
-                        person.name = item
-                        work.author.append(person)
-                    work.version = version
-                    work.creativeWorkStatus = publication_state
-                    work.genre = category
-                    results['others'].append(work)
+            else:
+                work = CreativeWork()
+                work.source = 'Eudat'
+                work.name = title
+                work.description = description
+                work.datePublished = publication_date
+                work.inLanguage = language
+                work.url = url
+                work.identifier = doi
+                work.license = license_identifier
+                for item in authors:
+                    person = Person()
+                    person.type = 'Person'
+                    person.source = 'Eudat'
+                    person.name = item
+                    work.author.append(person)
+                work.version = version
+                work.creativeWorkStatus = publication_state
+                work.genre = category
+                results['others'].append(work)
 
-    """
-                    case "Collection" | "Sound" | "Text":
-                        results.append(category(
-                            name=title,
-                            description=description,
-                            license=license_identifier,
-                            creativeWorkStatus=publication_state,
-                            publication_date=publication_date,
-                           # author:list = list()
-                           # for item in authors:
-                           #     person = Person()
-                           #     person.name = item,
-                           #     author.append(Person),
-                            authors=", ".join(authors),
-                            url=url
-                        ))
-
-                    case "Image" | "Video":
-                        results.append(category(
-                            title=title,
-                            date=publication_date,
-                            authors=", ".join(authors),
-                            url=url
-                        ))
-
-                    case "Event":
-                        results.append(category(
-                            title=title,
-                            description=description,
-                            start_date=publication_date,
-                            # end_date="" ,
-                            # authors=", ".join(authors),
-                            url=url
-                        ))
-
-                    case "Service":
-                        results.append(category(
-                            title=title,
-                            description=description,
-                            #date=publication_date,
-                            provider=", ".join(authors),
-                            url=url
-                        ))
-                    case "Software":
-                        results.append(category(
-                            title=title,
-                            description=description,
-                            date=publication_date,
-                            authors=", ".join(authors),
-                            url=url,
-                            version=version
-                    ))
-    """
-
-    logger.info(f"Got {len(results)} records from Eudat")
-
+    # logger.info(f"Got {len(results)} records from Eudat")
     return results
