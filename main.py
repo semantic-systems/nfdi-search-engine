@@ -138,6 +138,30 @@ def organization_details():
 
     return response
 
+@app.route('/event-details')
+def event_details():
+    response = make_response(render_template('event-details.html'))
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
+
+@app.route('/fundings-details')
+def fundings_details():
+    response = make_response(render_template('fundings-details.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
 
 @app.route('/details', methods=['POST', 'GET'])
 def details():
