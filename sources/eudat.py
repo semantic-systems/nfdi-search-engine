@@ -35,7 +35,7 @@ def search(search_string: str, results):
             metadata = hit["metadata"]
             doi = metadata.get("DOI", "")
             # epic_pid = metadata.get("ePIC_PID", "")
-            language = metadata.get("language", "")
+            language = [metadata.get("language", "")]
             license_identifier = metadata.get("license", {}).get("license", "") if metadata.get("license") else ""
             title = metadata.get("titles", {})[0].get("title", "") if metadata.get("titles") else ""
             description = metadata.get("descriptions", {})[0].get("description", "") if metadata.get(
