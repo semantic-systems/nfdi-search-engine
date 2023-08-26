@@ -44,11 +44,6 @@
                                         <span class="badge bg-pill">{{ resources.encodingFormat|upper }}</span>
                                         <span class="badge bg-pill">{{resources.license}}</span>
                                     </div>
-                                    {% if resources.source == 'CORDIS' %}
-                                    <div class="col-lg-3 text-end">
-                                        <span class="badge bg-pill">From: {{resources.dateStart}} To {{resources.dateEnd}}</span>
-                                    </div>
-                                    {% endif %}
                                     {% if resources.source == 'GESIS' %}
                                     <div class="col-lg-3 text-end">
                                         <span class="badge bg-pill">{{resources.datePublished}}</span>
@@ -57,6 +52,11 @@
                                     {% if resources.source == 'GEPRIS' %}
                                     <div class="col-lg-3 text-end">
                                         <span class="badge bg-pill">{{resources.dateLastModified}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if resources.source == 'CODALAB' %}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">{{resources.dateCreated}}</span>
                                     </div>
                                     {% endif %}
                                 </div>
