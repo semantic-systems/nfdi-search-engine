@@ -93,7 +93,7 @@ def chatbox():
 
 @app.route('/publication-details')
 def publication_details():
-    response = make_response(render_template('publication-details.html'))
+    response = make_response(render_template('publication-detailsORIGINAL.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -138,9 +138,10 @@ def organization_details():
 
     return response
 
-@app.route('/event-details')
-def event_details():
-    response = make_response(render_template('event-details.html'))
+@app.route('/events-details')
+def events_details():
+    response = make_response(render_template('events-details.html'))
+
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
         if request.cookies.get('session') is None:
@@ -153,7 +154,6 @@ def event_details():
 @app.route('/fundings-details')
 def fundings_details():
     response = make_response(render_template('fundings-details.html'))
-
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
         if request.cookies.get('session') is None:
