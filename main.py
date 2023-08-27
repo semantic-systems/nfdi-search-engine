@@ -93,7 +93,7 @@ def chatbox():
 
 @app.route('/publication-details')
 def publication_details():
-    response = make_response(render_template('publication-detailsORIGINAL.html'))
+    response = make_response(render_template('publication-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
