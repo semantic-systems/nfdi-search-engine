@@ -40,7 +40,6 @@ def openaire_product_search(search_string, results):
             hits = []  # Set hits as an empty list if the 'get' operation fails due to AttributeError
 
         for hit in hits:
-            print(hit)
             pro_result = hit.get('metadata', {}).get('oaf:entity', {}).get('oaf:result', {})
             result_type = pro_result.get('resulttype', {}).get('@classid', 'other')
             # check result type to create an Object of the right Class
@@ -73,8 +72,8 @@ def openaire_product_search(search_string, results):
                 product.description = ''
 
             # Language can be set or "und" = Undetermined
-            product.inLanguage = '' if pro_result.get('language', {}).get('@classid', '') == 'und' else pro_result.get(
-                'language', {}).get('@classid', '')
+            product.inLanguage = [] if pro_result.get('language', {}).get('@classid', '') == 'und' else [pro_result.get(
+                'language', {}).get('@classid', '')]
 
             # pid can be dict or list
             if type(pro_result.get('pid')) is dict:
