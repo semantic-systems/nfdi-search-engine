@@ -93,6 +93,19 @@ def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
     return soup.text.strip()
 
+import csv
+def convert_publications_to_csv(publications):
+    with open('entity-resolution/training-data-publications.csv', 'w', newline='', encoding="utf-8") as csv_file:
+        wr = csv.writer(csv_file, delimiter=',')
+        wr.writerow(["Title", "Authors", "Abstract", "Source", "DatePublished"])
+        for publication in publications:            
+            wr.writerow(list([publication.name, 
+                             "; ".join([author.name for author in publication.author]),                             
+                             publication.description,
+                             publication.source,
+                             publication.datePublished]
+                             ))  
+
 
 #region DECORATORS
 
