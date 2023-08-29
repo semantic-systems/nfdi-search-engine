@@ -6,8 +6,7 @@ import uuid
 from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response
 import threading
-from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, \
-    codalab, eudat, openaire  # eulg
+from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, codalab, eudat  # eulg
 # import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
 
@@ -55,10 +54,9 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, codalab,
-                   wikidata, openaire]
+        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, codalab, wikidata]
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
-
+        
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -108,7 +106,7 @@ def publication_details():
 
 
 @app.route('/resource-details')
-def resources_details():
+def resource_details():
     response = make_response(render_template('resource-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
@@ -119,7 +117,51 @@ def resources_details():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+  
 
+
+@app.route('/researcher-details')
+def researcher_details():
+    response = make_response(render_template('researcher-details.html'))
+    
+    
+@app.route('/organization-details')
+def organization_details():
+    response = make_response(render_template('organization-details.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
+
+@app.route('/events-details')
+def events_details():
+    response = make_response(render_template('events-details.html'))
+
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
+
+@app.route('/fundings-details')
+def fundings_details():
+    response = make_response(render_template('fundings-details.html'))
+    # Set search-session cookie to the session cookie value of the first visit
+    if request.cookies.get('search-session') is None:
+        if request.cookies.get('session') is None:
+            response.set_cookie('search-session', str(uuid.uuid4()))
+        else:
+            response.set_cookie('search-session', request.cookies['session'])
+
+    return response
 
 @app.route('/details', methods=['POST', 'GET'])
 def details():

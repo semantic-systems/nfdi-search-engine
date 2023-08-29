@@ -1,0 +1,218 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Events Details {% endblock title %}
+
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+
+        <div class="row pb-4">
+            <div class="col text-start">
+                <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
+            </div>
+        </div>
+        <div class="row border-bottom pb-4">
+            <div class="col-7 text-start">
+                <h3>Events</h3>
+                <div class="py-2">
+                    <span class="badge bg-pill">Event</span>
+                    <span class="badge bg-pill">Conference</span>
+                    <span class="badge bg-pill">Workshop</span>
+                    <span class="badge bg-pill">Hackathon</span>
+                    <span class="badge bg-pill">Talks</span>
+                </div>
+            </div>
+
+            <!-- <div class="row border-bottom mt-4"></div> -->
+        </div>
+
+        <div class="row pt-4">
+
+            <div class="col-2 px-2 authors">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>FILTERS</h5>
+                </div>
+
+                <div class=" d-flex p-2 bd-highlight pt-4 border-dark border-bottom mb-2">
+                    <h5>Subject</h5><div class="text-right"><i class="px-1 bi-chevron-compact-down"></i></div>
+                </div>
+                <div class=" d-flex p-2 bd-highlight pt-4 border-dark border-bottom my-2">
+                    <h5>Date</h5><i class="px-1 bi-chevron-compact-down"></i>
+                </div>
+                <div class=" d-flex p-2 bd-highlight pt-4 border-dark my-2">
+                    <h5>Location</h5><i class="px-1 bi-chevron-compact-up"></i></div>
+                     <div class="d-flex bd-highlight">
+                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-pin-map"></i>ASIA</a></div>
+                <div class="d-flex bd-highlight">
+                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-pin-map"></i>AFRICA</a></div>
+                <div class="d-flex bd-highlight">
+                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-pin-map"></i>EUROPE</a></div>
+                <div class="d-flex bd-highlight">
+                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-pin-map"></i>AUSTRALIA</a></div>
+                <div class="d-flex bd-highlight">
+                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-pin-map"></i>NORTH-AMERICA</a></div>
+                <div class="d-flex bd-highlight">
+                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-pin-map"></i>SOUTH-AMERICA</a></div>
+                <div class="border-bottom border-dark my-3"></div>
+                <div class="d-flex p-2 bd-highlight">
+                                                <a href="#" class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1" tabindex="-1"
+                        role="button" aria-disabled="true"><i class="px-1 bi-archive"></i>ARCHIVE</a>
+                </div>
+
+            </div>
+            <div class="col-5 px-8">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>UPCOMING EVENTS</h5></div>
+
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right" style="width:auto">
+                <div class="card-body">
+                    <div class="d-flex bd-highlight">
+                        <a class="text-dark fw-bold" href='#' target='_blank' style="text-decoration: none">XChange Frankfurt</a>
+                    </div>
+                    <div class="d-flex p-2 bd-highlight fs-6">
+                        <br>Date: 07 Nov 2023 - 09 Nov 2023
+                        <br>Location: Frankfurt am Main, Germany<br>
+                        <br>www.xchange-frankfurt.de<br>
+                    </div>
+                    <div class=py-7">
+                        <span class="badge bg-pill">Computer Science</span>
+                        <span class="badge bg-pill">Europe</span>
+                        <span class="badge bg-pill">Conference</span>
+                    </div>
+                </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right" style="width: auto">
+                <div class="card-body">
+                    <div class="d-flex bd-highlight">
+                        <a class="text-dark fw-bold" href='#' target='_blank' style="text-decoration: none">XChange Frankfurt</a>
+                    </div>
+                    <div class="d-flex p-2 bd-highlight fs-6">
+                        <br>Date: 07 Nov 2023 - 09 Nov 2023
+                        <br>Location: Frankfurt am Main, Germany<br>
+                        <br>www.xchange-frankfurt.de<br>
+                    </div>
+                    <div class=py-7">
+                        <span class="badge bg-pill">Computer Science</span>
+                        <span class="badge bg-pill">Europe</span>
+                        <span class="badge bg-pill">Conference</span>
+
+                            </div>
+                </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right" style="width: auto">
+                <div class="card-body">
+                    <div class="d-flex bd-highlight">
+                        <a class="text-dark fw-bold" href='#' target='_blank' style="text-decoration: none">XChange Frankfurt</a>
+                    </div>
+                    <div class="d-flex p-2 bd-highlight fs-6">
+                        <br>Date: 07 Nov 2023 - 09 Nov 2023
+                        <br>Location: Frankfurt am Main, Germany<br>
+                        <br>www.xchange-frankfurt.de<br>
+                    </div>
+                    <div class=py-7">
+                        <span class="badge bg-pill">Computer Science</span>
+                        <span class="badge bg-pill">Europe</span>
+                        <span class="badge bg-pill">Conference</span>
+
+                            </div>
+                </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right" style="width: auto">
+                <div class="card-body">
+                    <div class="d-flex bd-highlight">
+                        <a class="text-dark fw-bold" href='#' target='_blank' style="text-decoration: none">XChange Frankfurt</a>
+                    </div>
+                    <div class="d-flex p-2 bd-highlight fs-6">
+                        <br>Date: 07 Nov 2023 - 09 Nov 2023
+                        <br>Location: Frankfurt am Main, Germany<br>
+                        <br>www.xchange-frankfurt.de<br>
+                    </div>
+                    <div class=py-7">
+                        <span class="badge bg-pill">Computer Science</span>
+                        <span class="badge bg-pill">Europe</span>
+                        <span class="badge bg-pill">Conference</span>
+
+                            </div>
+                </div>
+                </div>
+
+
+            </div>
+            <div class="col-auto">
+                <div class="card p-0 shadow-bottom-right" style="border-radius:2.0rem;">
+                    <div class="card-body p-0">
+                        <a href="#" class="btn" tabindex="-1"
+                           role="button" aria-disabled="true"><i class="bi-bookmark fs-5"></i></a><br>
+                        <a href="#" class="btn" tabindex="-1"
+                           role="button" aria-disabled="true"><i class="bi-download  fs-5"></i></a><br>
+                        <a href="#" class="btn" tabindex="-1"
+                           role="button" aria-disabled="true"><i class="bi-flag fs-5"></i></a><br>
+                        <a href="#" class="btn" tabindex="-1"
+                           role="button" aria-disabled="true"><i class="bi-share fs-5"></i></a><br>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 ps-5">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>BOOKMARKED</h5>
+                </div>
+                    <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                        <a class="text-dark fw-bold" style="text-decoration: none" href='#' target='_blank'>Atomic Physics 2023 <i class="bi-bookmark-fill align-self-end"></i></a>
+                    </div>
+                    <div class="d-flex p-2 bd-highlight fs-6">
+                        <br>Date: 27 Nov 2023 - 01 Dec 2023
+                        <br>Location: Dresden, Germany<br>
+                        <br>www.atomic-physics.de<br>
+                    </div>
+                        <span class="badge bg-pill">Atomic Physics</span>
+                        <span class="badge bg-pill">Europe</span>
+                        <span class="badge bg-pill">Conference</span>
+
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+    </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+    $(document).ready(function () {
+
+
+    });
+
+
+
+</script>
+
+
+{% endblock javascripts %}

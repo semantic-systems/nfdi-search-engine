@@ -1,0 +1,176 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Organization Details {% endblock title %}
+
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+    .a-dir{
+        float:right;
+    }
+</style>
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+
+        <div class="row pb-4">
+            <div class="col text-start">
+                <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
+            </div>
+        </div>
+        <div class="row border-bottom pb-4">
+            <div class="col-7 text-start col-7-specific">
+                <h3>DAAD</h3>
+                <div class="py-2">
+                    <span class="badge bg-pill">Area Served</span>
+                    <span class="badge bg-pill">Grant</span>
+                    <span class="badge bg-pill">Event</span>
+                    <span class="badge bg-pill">Contact Point</span>
+                </div>
+                <div class="fs-7 py-2">
+                    <span class="pe-4">
+                        <span class="fw-bold">Global Location Number:</span>
+                        <span>GEO57743</span>
+                    </span>
+                    <span class="pe-4">
+                        <span class="fw-bold">Award:</span>
+                        <span>15</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-5 d-flex justify-content-end">
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-download fs-4"></i>
+                    <div class="fs-7 my-1">Downloads</div>
+                    <div class="fs-5 fw-bold">500</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-bookmarks fs-4"></i>
+                    <div class="fs-7 my-1">Saved</div>
+                    <div class="fs-5 fw-bold">220</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-eye fs-4"></i>
+                    <div class="fs-7 my-1">Views</div>
+                    <div class="fs-5 fw-bold">5K+</div>
+                </div>
+            </div>
+        </div>
+        <div class="row pt-4">
+            <div class="col-6 px-4">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>ADDRESS</h5>
+                </div>
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+                    <div class="pe-4" tyle="float: left;">
+                        <div><span class="fw-bold">Street:</span> Kennedyallee 50</div>
+                        <div><span class="fw-bold">City:</span> 2D-53175 Bonn</div>
+                        <div><span class="fw-bold">Country:</span> Germany</div>
+                    </div>
+                    <div class="map-imag">
+                        <img height="250" width="380" src="static/images/organization_details.png">
+                    </div>
+                </div>
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>SUB ORGANIZATIONS</h5>
+                </div>
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+                    <div class="card mb-2 p-2 rounded-extra">
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    DAAD Berlin office</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    DAAD Außenstelle London</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between fs-7 pt-3 a-dir" >
+                                <span class="">
+                                    <a class="text-decoration-none fw-bold" href='#' target='_blank'>
+                                        SHOW MORE </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-4 ps-5">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>SUGGESTED ORGANIZATIONS</h5>
+                </div>
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+                    <div class="card mb-2 p-2 rounded-extra">
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    Alexander von Humboldt Foundation</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    Association of German Foundations</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    Boehringer Ingelheim Fonds</a>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex bd-highlight">
+                                <a class="text-dark fw-bold" href='#' target='_blank'>
+                                    Deutsche Bank</a>
+                            </div>
+                            <div class="d-flex justify-content-between fs-7 pt-3 a-dir">
+                                <span class="badge bg-pill"></span>
+                                <span class="">
+                                    <a class="text-decoration-none fw-bold" href='#' target='_blank'>
+                                        SHOW MORE </a>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class=" d-flex p-2 bd-highlight pt-4">
+                    <h5>FAIR Assessment</h5>
+                </div>
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+                </div>
+                <div class="d-flex p-2 bd-highlight pt-4">
+                    <h5>Other...</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+    $(document).ready(function () {
+
+
+    });
+
+
+
+</script>
+
+
+{% endblock javascripts %}

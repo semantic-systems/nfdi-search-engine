@@ -4,9 +4,7 @@
 
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
-
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}" />
-
 {% endblock stylesheets %}
 
 {% block content %}
@@ -89,6 +87,7 @@
                                             <span class="visually-hidden">fundings</span>
                                         </span>
                                     </button>
+                                    </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link position-relative" id="others-tab" data-bs-toggle="tab"
                                         data-bs-target="#others" type="button" role="tab" aria-controls="others"
@@ -125,8 +124,10 @@
                             aria-labelledby="organizations-tab">
                             {% include 'components/organizations.html' %}
                         </div>
-                        <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">...</div>
-                        <div class="tab-pane fade" id="fundings" role="tabpanel" aria-labelledby="fundings-tab">...
+                        <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                            {% include 'components/events.html' %}</div>
+                        <div class="tab-pane fade" id="fundings" role="tabpanel" aria-labelledby="fundings-tab">
+                            {% include 'components/fundings.html' %}
                         </div>
                         <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
                     </div>
@@ -166,7 +167,45 @@
             }
         });
 
+        $('#btnShareLinkCopy').on('click', function (e) {
+
+            var txtShareLink = document.getElementById('txtShareLink');
+            txtShareLink.select();
+            if (navigator.clipboard) {
+                alert(txtShareLink.value)
+                navigator.clipboard.writeText(txtShareLink.value)
+                    .then(() => {
+                        var notification = alertify.notify('Link copied', 'success', 5);
+                    })
+                    .catch((error) => {
+                        var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+                    });
+            } else {
+                var notification = alertify.notify('Copy operation failed', 'error', 5);
+            }
+        });
+
+        $('#share_modal_link').on('click', function (e) {
+            // alert('pressed')
+            publication = $(this).closest("tr").find('.publication_name')
+            url = window.location.origin + $(publication).attr('href')
+            title = $(publication).text().trim()
+            $('#txtShareLink').val(url)
+
+            $('.smd a').each(function (i, obj) {
+                $(this).attr('href', $(this).attr('base-href').replace('[[url]]', encodeURIComponent(url)))
+                $(this).attr('href', $(this).attr('href').replace('[[title]]', encodeURIComponent(title)))
+            });
+        });
+
+        $('#share_modal_dialog').on('shown.bs.modal', function (e) {
+            // do something...
+        })
+
+
     });
+
+
 
 
 

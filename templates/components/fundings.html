@@ -1,11 +1,11 @@
-<table id="tbl-resources" class="datatable display" style="width:100%">
+<table id="tbl-fundings" class="datatable display" style="width:100%">
     <thead>
         <tr>
-            <th>Resources</th>
+            <th>Fundings</th>
         </tr>
     </thead>
     <tbody>
-        {% for resources in results.resources %}
+        {% for fundings in results.fundings %}
         <tr>
             <td>
                 <div class="card mb-2 p-3">
@@ -14,13 +14,13 @@
                             <div class="col-lg-11 fs-6">
                                 <div class="row mb-2">
                                     <div class="col-lg-12 fs-5">
-                                        <a class="text-secondary fw-bold" href='/resource-details' target='_blank'>
-                                            {{resources.name}}</a>
+                                        <a class="text-secondary fw-bold" href='/fundings-details' target='_blank'>
+                                            {{fundings.name}}</a>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-12 my-2 authors">
-                                        {% for author in resources.author %}
+                                        {% for author in fundings.author %}
                                         {% if author.type == 'Person' %}
                                         <a href="{{author.identifier}}"
                                             class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
@@ -32,31 +32,31 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-lg-12">
-                                        <p class="card-text">{{resources.description|truncate(500)}}</p>
+                                        <p class="card-text">{{fundings.description|truncate(500)}}</p>
                                     </div>
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-lg-9 text-start">
-                                        <span class="badge bg-pill">{{resources.source}}</span>
-                                        {% for language in resources.inLanguage %}
+                                        <span class="badge bg-pill">{{fundings.source}}</span>
+                                        {% for language in fundings.inLanguage %}
                                         <span class="badge bg-pill">{{language|upper}}</span>
                                         {% endfor %}
-                                        <span class="badge bg-pill">{{ resources.encodingFormat|upper }}</span>
-                                        <span class="badge bg-pill">{{resources.license}}</span>
+                                        <span class="badge bg-pill">{{ fundings.encodingFormat|upper }}</span>
+                                        <span class="badge bg-pill">{{fundings.license}}</span>
                                     </div>
-                                    {% if resources.source == 'GESIS' %}
+                                    {% if fundings.source == 'CORDIS' %}
                                     <div class="col-lg-3 text-end">
-                                        <span class="badge bg-pill">{{resources.datePublished}}</span>
-                                    </div>
-                                    {% endif %}
-                                    {% if resources.source == 'GEPRIS' %}
-                                    <div class="col-lg-3 text-end">
-                                        <span class="badge bg-pill">{{resources.dateLastModified}}</span>
+                                        <span class="badge bg-pill">From: {{fundings.dateStart}} To {{fundings.dateEnd}}</span>
                                     </div>
                                     {% endif %}
-                                    {% if resources.source == 'CODALAB' %}
+                                    <!-- {% if fundings.source == 'GESIS' %}
                                     <div class="col-lg-3 text-end">
-                                        <span class="badge bg-pill">{{resources.dateCreated}}</span>
+                                        <span class="badge bg-pill">{{fundings.datePublished}}</span>
+                                    </div>
+                                    {% endif %} -->
+                                    {% if fundings.source == 'GEPRIS' %}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">{{fundings.dateLastModified}}</span>
                                     </div>
                                     {% endif %}
                                 </div>
@@ -71,7 +71,7 @@
                                             data-bs-toggle="modal" data-bs-target="#full_size_image_dialog"><i
                                                 class="bi bi-eye"></i></a></div>
                                     <div class="col-lg-12 text-end mb-3"><a target='_blank'
-                                            href="{{resources.encoding_contentUrl}}" title="Download"><i
+                                            href="{{fundings.encoding_contentUrl}}" title="Download"><i
                                                 class="bi bi-download"></i></a></div>
 
                                 </div>
@@ -82,11 +82,11 @@
                                     <div class="modal-content">
                                         <div class="modal-header">
                                             <h5>
-                                                {{resources.name}}
+                                                {{fundings.name}}
                                             </h5>
                                         </div>
                                         <div class="modal-body">
-                                            <img src="{{resources.image}}"
+                                            <img src="{{fundings.image}}"
                                                 class="figure-img img-fluid border border-dark">
                                             <figcaption>
                                             </figcaption>
