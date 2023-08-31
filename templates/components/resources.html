@@ -59,6 +59,11 @@
                                         <span class="badge bg-pill">{{resources.dateCreated}}</span>
                                     </div>
                                     {% endif %}
+                                    {% if resources.source == 'elg:corpus' or resources.source == 'elg:software/service'%}
+                                    <div class="col-lg-3 text-end">
+                                        <span class="badge bg-pill">{{resources.datePublished}}</span>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
                             <div class="col-lg-1">
