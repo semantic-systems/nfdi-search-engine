@@ -144,7 +144,7 @@ class Article(CreativeWork):
 @dataclass
 class Dataset(CreativeWork): 
     distribution: str = ""
-    issn: str = "" 
+    issn: str = ""
 
     def __post_init__(self):
         # Loop through the fields
@@ -166,6 +166,9 @@ class Project(Organization):
     objective: str = ""
     status: str = ""
     author: List[Union[Organization, Person]] = field(default_factory=list)
+    funder: List[Union[
+        Organization, Person]] = field(
+        default_factory=list)  # Organization | Person # we can use pipe operator for Union in Python >= 3.10
 
 
     def __post_init__(self):
