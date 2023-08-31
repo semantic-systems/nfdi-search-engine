@@ -20,6 +20,41 @@ def search(search_term, results):
                     url = 'https://live.european-language-grid.eu/catalogue/corpus/' + str(result.id)
                 if result.resource_type == 'Lexical/Conceptual resource':
                     url = 'https://live.european-language-grid.eu/catalogue/lcr/' + str(result.id)
+
+                dataset = Dataset()
+                dataset.source = 'elg:corpus'
+                dataset.name = result.resource_name
+                dataset.url = url
+                dataset.datePublished = str(result.creation_date)
+                dataset.description = description
+                keywords = result.keywords
+                if isinstance(keywords, list):
+                    for keyword in keywords:
+                        for key in keyword.split(","):
+                            dataset.keywords.append(key)
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
+                        for items in keyword:
+                            dataset.keywords.append(items['key'])
+                else:
+                    dataset.keywords.append('')
+
+                languages = result.languages
+                if isinstance(languages, list):
+                    for language in languages:
+                        for key in language.split(","):
+                            dataset.inLanguage.append(key)
+                elif isinstance(languages, dict):
+                    for language in languages.get('buckets', []):
+                        for items in language:
+                            dataset.inLanguage.append(items['key'])
+                else:
+                    dataset.inLanguage.append('')
+
+                dataset.license = ', '.join(str(licence) for licence in result.licences)
+                dataset.countryOfOrigin = result.country_of_registration
+                results['resources'].append(dataset)
+                '''
                 results.append(
                     Dataset(
                         title=result.resource_name,
@@ -29,10 +64,45 @@ def search(search_term, results):
                         date=result.creation_date
                     )
                 )
+                '''
             elif result.resource_type == "Tool/Service":
+                software = Software()
                 url = "https://live.european-language-grid.eu/catalogue/tool-service/" + str(result.id)
                 description = result.description
                 description = utils.remove_html_tags(description)
+                software.source = 'elg:software/service'
+                software.name = result.resource_name
+                software.url = url
+                software.description = description
+                software.datePublished = str(result.creation_date)
+                software.countryOfOrigin = result.country_of_registration
+                keywords = result.keywords
+                if isinstance(keywords, list):
+                    for keyword in keywords:
+                        for key in keyword.split(","):
+                            software.keywords.append(key)
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
+                        for items in keyword:
+                            software.keywords.append(items['key'])
+                else:
+                    software.keywords.append('')
+
+                languages = result.languages
+                if isinstance(languages, list):
+                    for language in languages:
+                        for key in language.split(","):
+                            software.inLanguage.append(key)
+                elif isinstance(languages, dict):
+                    for language in languages.get('buckets', []):
+                        for items in language:
+                            software.inLanguage.append(items['key'])
+                else:
+                    software.inLanguage.append('')
+
+                software.license = ', '.join(str(licence) for licence in result.licences)
+                results['resources'].append(software)
+                '''
                 results.append(
                     Software(
                         url=url,
@@ -43,4 +113,5 @@ def search(search_term, results):
                         version=', '.join(str(licence) for licence in result.licences)
                     )
                 )
+                '''
                 # languages=', '.join(str(language) for language in result.languages)
