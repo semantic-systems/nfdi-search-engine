@@ -11,11 +11,17 @@ logger = logging.getLogger('nfdi_search_engine')
 def search(search_term, results):
     response = requests.get('https://zenodo.org/api/records',
                             params={'q': search_term,
+                                    'size':100,
                                     'access_token': 'rtldW8mT6PgLkj6fUL46nu02YQaUGYfGT8FjuoJMTK4gdwizDLyt6foRVaGL'})
 
     logger.debug(f'Zenodo response status code: {response.status_code}')
     logger.debug(f'Zenodo response headers: {response.headers}')
    
+    data = response.json()
+    hits = data.get('hits', {}).get('hits', [])
+    total_hits = data.get('hits', {}).get('total', '')
+    logger.info(f'ZENODO - {total_hits} hits/records found')
+
     for data in response.json()['hits']['hits']:
         if 'conceptdoi' in data:
             # TODO Align and extend with schema.org concepts
@@ -225,5 +231,122 @@ def search(search_term, results):
 
                 results['resources'].append(software)
 
-            
-    logger.info(f'Got {len(results)} records from Zenodo')
+            elif resource_type == 'lesson':
+                lesson = LearningResource()
+                lesson.source = 'Zenodo'
+                lesson.name = data.get('metadata', {}).get('title', None)
+                lesson.url = data.get('links', {}).get('doi', None)
+                lesson.description = description
+                lesson.datePublished = data.get('metadata', {}).get('publication_date')
+                lesson.license = data.get('metadata', {}).get('license', {}).get('id')
+
+                for authors in data['metadata']['creators']:
+                    author = Person()
+                    author.name = authors["name"]
+                    author.type = 'Person'
+                    author.affiliation = ''
+                    if 'affiliation' in authors:
+                        author.affiliation = authors['affiliation']
+                    author.identifier = ''
+                    if 'orcid' in authors:
+                        author.identifier = authors['orcid']
+                    lesson.author.append(author)
+
+                language = ''
+                if 'language' in data['metadata']:
+                    language = data['metadata']['language']
+                lesson.inLanguage.append(language)
+
+                keywords = data['metadata'].get('keywords', [])
+                if isinstance(keywords, list):
+                    for keyword in keywords:
+                        for key in keyword.split(","):
+                            lesson.keywords.append(key)
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
+                        for items in keyword:
+                            lesson.keywords.append(items['key'])
+                else:
+                    lesson.keywords.append('')
+
+                results['resources'].append(lesson)
+
+            elif resource_type == 'video':
+                video = VideoObject()
+                video.source = 'Zenodo'
+                video.name = data.get('metadata', {}).get('title', None)
+                video.url = data.get('links', {}).get('doi', None)
+                video.description = description
+                video.datePublished = data.get('metadata', {}).get('publication_date')
+                video.license = data.get('metadata', {}).get('license', {}).get('id')
+
+                for authors in data['metadata']['creators']:
+                    author = Person()
+                    author.name = authors["name"]
+                    author.type = 'Person'
+                    author.affiliation = ''
+                    if 'affiliation' in authors:
+                        author.affiliation = authors['affiliation']
+                    author.identifier = ''
+                    if 'orcid' in authors:
+                        author.identifier = authors['orcid']
+                    video.author.append(author)
+
+                language = ''
+                if 'language' in data['metadata']:
+                    language = data['metadata']['language']
+                video.inLanguage.append(language)
+
+                keywords = data['metadata'].get('keywords', [])
+                if isinstance(keywords, list):
+                    for keyword in keywords:
+                        for key in keyword.split(","):
+                            video.keywords.append(key)
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
+                        for items in keyword:
+                            video.keywords.append(items['key'])
+                else:
+                    video.keywords.append('')
+
+                results['resources'].append(video)
+
+            elif resource_type == 'image':
+                image = ImageObject()
+                image.source = 'Zenodo'
+                image.name = data.get('metadata', {}).get('title', None)
+                image.url = data.get('links', {}).get('doi', None)
+                image.description = description
+                image.datePublished = data.get('metadata', {}).get('publication_date')
+                image.license = data.get('metadata', {}).get('license', {}).get('id')
+
+                for authors in data['metadata']['creators']:
+                    author = Person()
+                    author.name = authors["name"]
+                    author.type = 'Person'
+                    author.affiliation = ''
+                    if 'affiliation' in authors:
+                        author.affiliation = authors['affiliation']
+                    author.identifier = ''
+                    if 'orcid' in authors:
+                        author.identifier = authors['orcid']
+                    image.author.append(author)
+
+                language = ''
+                if 'language' in data['metadata']:
+                    language = data['metadata']['language']
+                image.inLanguage.append(language)
+
+                keywords = data['metadata'].get('keywords', [])
+                if isinstance(keywords, list):
+                    for keyword in keywords:
+                        for key in keyword.split(","):
+                            image.keywords.append(key)
+                elif isinstance(keywords, dict):
+                    for keyword in keywords.get('buckets', []):
+                        for items in keyword:
+                            image.keywords.append(items['key'])
+                else:
+                    image.keywords.append('')
+
+                results['resources'].append(image)
