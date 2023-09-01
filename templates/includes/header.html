@@ -10,7 +10,7 @@
             <div>
                 <div class="d-inline-block">
                     {% if search_term %}
-                    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET">
+                    <form name="searchbox" class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET" onsubmit="return emptySearch()">
                         <!-- <input type="search" class="form-control" placeholder="Search..." aria-label="Search"> -->
                         <div>
                             <div class="searchbox">
@@ -21,6 +21,7 @@
                                 <input class="form-control" aria-label="Search for Article, Researcher"
                                     autocomplete="off" inputmode="search" placeholder="Search for Article, Researcher"
                                     type="search" name="txtSearchTerm" value="{{search_term}}" />
+                                <div class="text-secondary" id="emptySearch" style="padding-left: 50px;"></div>
                             </div>
                         </div>
                     </form>
