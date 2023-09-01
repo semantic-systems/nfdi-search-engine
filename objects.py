@@ -86,8 +86,6 @@ class Author(Person):
                 setattr(self, field.name, field.default)
 
 
-
-
 @dataclass
 class CreativeWork(thing):
     abstract: str = ""
@@ -116,6 +114,7 @@ class CreativeWork(thing):
     thumbnail: str = "" #ImageObject
     thumbnailUrl: str = "" #url
     version: str = ""   
+
 
     def __post_init__(self):
     # Loop through the fields
@@ -178,6 +177,92 @@ class Project(Organization):
                 if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
                     setattr(self, field.name, field.default)
 
+
+@dataclass
+class LearningResource(CreativeWork): 
+    assesses: str = ""  #The item being described is intended to assess the competency or learning outcome defined by the referenced term.
+    competencyRequired: str = ""
+    educationalAlignment:str = ""
+    educationalLevel:str = ""
+    educationalUse:str = ""
+    learningResourceType:str = ""
+    teaches:str = ""   #The item being described is intended to help a person learn the competency or learning outcome defined by the referenced term.
+
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
+
+
+@dataclass
+class MediaObject(CreativeWork): 
+    associatedArticle: str = ""
+    bitrate: str = ""
+    contentSize: str = ""
+    contentUrl: str = ""
+    duration: str = ""
+    embedUrl: str = ""
+    encodesCreativeWork: str = ""
+    encodingFormat: str = ""
+    endTime: str = ""
+    height: str = ""
+    ineligibleRegion: str = ""
+    playerType: str = ""
+    productionCompany: str = ""
+    regionsAllowed: str = ""
+    requiresSubscription: str = ""
+    sha256: str = ""
+    startTime: str = ""
+    uploadDate: str = ""
+    width: str = ""
+    
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
+
+
+@dataclass
+class VideoObject(MediaObject): 
+    actor: str = ""
+    caption: str = ""
+    director: str = ""
+    embeddedTextCaption: str = ""
+    musicBy: str = ""
+    transcript: str = ""
+    videoFrameSize: str = ""
+    videoQuality: str = ""
+
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
+
+
+@dataclass
+class ImageObject(MediaObject): 
+    caption: str = ""
+    embeddedTextCaption: str = ""
+    exifData: str = ""  #exif data for this object
+    representativeOfPage: str = ""   #Indicates whether this image is representative of the content of the page
+
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
+                  
 
 @dataclass
 class Zenodo:
