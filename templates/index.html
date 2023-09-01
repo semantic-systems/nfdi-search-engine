@@ -12,7 +12,7 @@
     <div id='mainContent' class="container">
 
         <div class="bsearch">
-            <form action="/results" method="GET">
+            <form name="searchbox" action="/results" method="GET" onsubmit="return emptySearch()">
                 <div class="">
                     <h2 class="text-center text-dark fs-1 fw-bold mb-4">Welcome to NFDI4DS Gateway</h2>
                     <div class="row mb-4">
@@ -32,9 +32,10 @@
                         </svg>
                         <input aria-label="Search for Articles and Researchers" autocomplete="off" inputmode="search"
                             placeholder="Search" type="search" name="txtSearchTerm" />
+                        <div class="text-secondary" id="emptySearch" style="padding-left: 50px;"></div>
                     </div>
                     <!--sample search terms-->
-                    <div class="d-flex justify-content-center mt-2">
+                    <div class="d-flex justify-content-center mt-4">
                         <span class="m-2">Search Tips:</span>
                         <a href="/results?txtSearchTerm=Ricardo+Usbeck" class="btn btn-success btn-sm m-2"
                             role="button">Ricardo Usbeck</a>
@@ -235,6 +236,14 @@
 {% block javascripts %}
 
 <script>
+
+    function emptySearch() {
+        var search = document.forms["searchbox"]["txtSearchTerm"].value;
+        if (search == "" || search == null || !/\S/.test(search)) {
+            document.getElementById("emptySearch").innerHTML = "\u2B11" + "Please enter a search term";
+            return false;
+        }
+    }
 
 </script>
 

@@ -44,7 +44,7 @@
                                         <span class="badge bg-pill">{{ resources.encodingFormat|upper }}</span>
                                         <span class="badge bg-pill">{{resources.license}}</span>
                                     </div>
-                                    {% if resources.source == 'GESIS' %}
+                                    {% if resources.source == 'GESIS' or resources.source == 'Zenodo' %}
                                     <div class="col-lg-3 text-end">
                                         <span class="badge bg-pill">{{resources.datePublished}}</span>
                                     </div>
