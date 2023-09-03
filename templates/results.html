@@ -149,7 +149,7 @@
 
     $(document).ready(function () {
 
-        var dataTable = $('.datatable').DataTable({});
+        var dataTable = $('.datatable').DataTable({ dom: '<"top"flp<"clear">>rt<"bottom"ip<"clear">>' });
         dataTable.on('page.dt', function () {
             $('html, body').scrollTop(100)
             $('html, body').stop().animate({
