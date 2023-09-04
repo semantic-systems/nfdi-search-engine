@@ -8,7 +8,7 @@ def search(search_term, results):
     resource_items = ["Corpus", "Tool/Service", "Lexical/Conceptual resource"]  # "Language description"]
     for resource_item in resource_items:
         elg_results = catalog.search(
-            resource=resource_item,     # languages = ["English","German"], # string or list if multiple languages
+            resource=resource_item,  # languages = ["English","German"], # string or list if multiple languages
             search=search_term,
             limit=100,
         )
@@ -16,6 +16,7 @@ def search(search_term, results):
             description = result.description
             description = utils.remove_html_tags(description)
             if result.resource_type == 'Corpus' or result.resource_type == 'Lexical/Conceptual resource':
+                url = ''
                 if result.resource_type == 'Corpus':
                     url = 'https://live.european-language-grid.eu/catalogue/corpus/' + str(result.id)
                 if result.resource_type == 'Lexical/Conceptual resource':
