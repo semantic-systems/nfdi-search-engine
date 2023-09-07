@@ -19,7 +19,6 @@ def search(search_term, results):
             if result.licences:
                 first_license = result.licences[0]
 
-            print("first license: " + first_license)
             description = utils.remove_html_tags(description)
             if result.resource_type == 'Corpus' or result.resource_type == 'Lexical/Conceptual resource':
                 url = ''
