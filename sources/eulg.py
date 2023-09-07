@@ -14,6 +14,12 @@ def search(search_term, results):
         )
         for result in elg_results:
             description = result.description
+
+            first_license: str = ''
+            if result.licences:
+                first_license = result.licences[0]
+
+            print("first license: " + first_license)
             description = utils.remove_html_tags(description)
             if result.resource_type == 'Corpus' or result.resource_type == 'Lexical/Conceptual resource':
                 url = ''
@@ -52,7 +58,8 @@ def search(search_term, results):
                 else:
                     dataset.inLanguage.append('')
 
-                dataset.license = ', '.join(str(licence) for licence in result.licences)
+                # dataset.license = ', '.join(str(licence) for licence in result.licences)
+                dataset.license = first_license
                 dataset.countryOfOrigin = result.country_of_registration
                 results['resources'].append(dataset)
                 '''
@@ -101,7 +108,8 @@ def search(search_term, results):
                 else:
                     software.inLanguage.append('')
 
-                software.license = ', '.join(str(licence) for licence in result.licences)
+                # software.license = ', '.join(str(licence) for licence in result.licences)
+                software.license = first_license
                 results['resources'].append(software)
                 '''
                 results.append(
