@@ -1,4 +1,5 @@
 import logging
+import importlib
 import logging.config
 import os
 import uuid
@@ -6,14 +7,25 @@ import uuid
 from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response
 import threading
-from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, codalab, \
-    eudat, openaire  # eulg
+# from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, codalab, \
+#    eudat, openaire  # eulg
 # import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
+
+package = 'sources'
+sources = ['resodate', 'oersi', 'openalex', 'orcid', 'dblp', 'zenodo', 'gesis', 'ieee', 'cordis', 'gepris', 'eudat',
+           'codalab', 'wikidata', 'openaire', 'lala']
+modules = []
+for source in sources:
+    try:
+        source = importlib.import_module(package + '.' + source)
+        modules.append(source)
+    except ImportError:
+        print("Error importing", source, ".")
 
 
 @app.route('/')
@@ -42,6 +54,9 @@ def search_results():
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
 
+        # Get selected APIs from Frontend. To be done.
+        search_apis = request.args.get('searchAPIs')
+
         results = {
             'publications': [],
             'researchers': [],
@@ -55,12 +70,21 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, codalab,
-                   wikidata, openaire]
+        # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, codalab,
+        #               wikidata, openaire]
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
-        for source in sources:
-            t = threading.Thread(target=source.search, args=(search_term, results,))
+        # this is only for testing. In production the list comes from the Frontend.
+        search_apis = ['wikidata', 'openalex', 'openaire']
+
+        # Check that selected APIs from Frontend are in the list of configured modules
+        search_sources: list = []
+        for module in modules:
+            if module.__name__.split(".")[1] in search_apis:
+                search_sources.append(module)
+
+        for item in search_sources:
+            t = threading.Thread(target=item.search, args=(search_term, results,))
             t.start()
             threads.append(t)
 
