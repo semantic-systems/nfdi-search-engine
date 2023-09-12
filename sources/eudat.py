@@ -1,10 +1,11 @@
 import requests
 from objects import Dataset, Person, Author, Article, CreativeWork
 import logging
+import utils
 
 logger = logging.getLogger('nfdi_search_engine')
 
-
+@utils.timeit
 def search(search_string: str, results):
     """ Obtain the results from Eudat request and handles them accordingly.
 
@@ -18,7 +19,7 @@ def search(search_string: str, results):
           """
     api_url = 'https://b2share.eudat.eu/api/records/'
     result_url_start = 'https://b2share.eudat.eu/records/'
-    response = requests.get(api_url, params={'q': search_string, 'size': 100, 'sort': 'mostrecent'})
+    response = requests.get(api_url, params={'q': search_string, 'size': 100, 'sort': 'mostrecent'}, timeout=int(utils.config["request_timeout"]))
     data = response.json()
 
     logger.debug(f'Eudat response status code: {response.status_code}')

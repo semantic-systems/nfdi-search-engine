@@ -19,7 +19,7 @@ def search(search_term: str, results):
                    'User-Agent': utils.config["request_header_user_agent"]
                    }
 
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))
 
         if response.status_code == 200:
             search_result = response.json()
@@ -69,5 +69,8 @@ def search(search_term: str, results):
                     
                     results['publications'].append(publication)
 
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

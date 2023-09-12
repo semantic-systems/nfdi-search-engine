@@ -4,10 +4,11 @@ from objects import Article, Author
 from string import Template
 from datetime import datetime
 from dateutil import parser
+import utils
 
 logger = logging.getLogger('nfdi_search_engine')
 
-
+@utils.timeit
 def search(search_string: str, results):
     """ Obtain the results from Wikidata request and handles them accordingly.
 
@@ -57,7 +58,7 @@ GROUP BY ?item ?label ?date
 
     response = requests.get(url,
                             params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, headers=headers)
+                                    }, headers=headers, timeout=int(utils.config["request_timeout"]))
     logger.debug(f'Wikidata article search response status code: {response.status_code}')
     logger.debug(f'Wikidata article search response headers: {response.headers}')
 
@@ -134,7 +135,7 @@ GROUP by ?item ?itemLabel ?orcid ?nationalityLabel ?givenNameLabel ?familyNameLa
 
     response = requests.get(url,
                             params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, headers=headers)
+                                    }, headers=headers, timeout=int(utils.config["request_timeout"]))
     logger.debug(f'Wikidata person search response status code: {response.status_code}')
     logger.debug(f'Wikidata person search response headers: {response.headers}')
 

@@ -2,7 +2,7 @@ from objects import Dataset, Software
 import utils
 from elg import Catalog
 
-
+@utils.timeit
 def search(search_term, results):
     catalog = Catalog()
     resource_items = ["Corpus", "Tool/Service", "Lexical/Conceptual resource"]  # "Language description"]
