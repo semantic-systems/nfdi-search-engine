@@ -24,7 +24,9 @@ def search(search_term, results):
 
     try:
         # Send GET request to the search URL
-        response = requests.get(search_url, headers=headers)
+        # response = requests.get(search_url, headers=headers)
+        response = requests.get(search_url, timeout=4)
+
 
         # Logging the response details
         logger.debug(f'Ieee response status code: {response.status_code}')
@@ -89,5 +91,7 @@ def search(search_term, results):
         print("Key not found:", str(ke))
     except ValueError as ve:
         print("Invalid JSON response:", str(ve))
-    except Exception as ex:
-        print("An unexpected error occurred:", str(ex))
+    # except Exception as ex:
+    #     print("An unexpected error occurred:", str(ex))
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')

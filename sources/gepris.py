@@ -19,7 +19,8 @@ def search(search_term, results):
     url = f"{base_url}?context=projekt&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
     
     try:
-        response = requests.get(url)
+        # response = requests.get(url)
+        response = requests.get(url, timeout=3)
         response.raise_for_status()  # Raise an exception for non-2xx status codes
 
         logger.debug(f'Gepris response status code: {response.status_code}')
@@ -34,6 +35,7 @@ def search(search_term, results):
         if result:
             url = f"{base_url}?context=projekt&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
             response = requests.get(url)
+            response = requests.get(url, timeout=3)
             response.raise_for_status()
             
         soup = BeautifulSoup(response.content, 'html.parser')
@@ -83,11 +85,13 @@ def search(search_term, results):
                     logger.warning("Unable to find project details. Skipping project.")
         
         # logger.info(f'Got {len(results)} records from Gepris')
-    
-    except requests.exceptions.RequestException as e:
-        logger.error(f'Error occurred while making a request to Gepris: {e}')
-    except Exception as e:
-        logger.error(f'An error occurred during the search: {e}')
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+    # except requests.exceptions.RequestException as e:
+    #     logger.error(f'Error occurred while making a request to Gepris: {e}')
+    # except Exception as e:
+    #     logger.error(f'An error occurred during the search: {e}')
+
 
 
 def find_author(search_term, results):
@@ -97,6 +101,7 @@ def find_author(search_term, results):
     
     try:
         response = requests.get(url)
+        # response = requests.get(url, timeout=3)
         response.raise_for_status()  # Raise an exception for non-2xx status codes
 
         logger.debug(f'Gepris response status code: {response.status_code}')
@@ -145,6 +150,8 @@ def find_author(search_term, results):
         logger.error(f'Error occurred while making a request to Gepris authors: {e}')
     except Exception as e:
         logger.error(f'An error occurred during the search: {e}')
+    # except requests.exceptions.Timeout as ex:
+    #     logger.error(f'Timed out Exception: {str(ex)}')
 
 
 def find_organization(search_term, results):

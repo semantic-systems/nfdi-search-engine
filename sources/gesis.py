@@ -15,7 +15,8 @@ def search(search_term, results):
 
     try:
         # Send a GET request to the API URL
-        response = requests.get(api_url)
+        # response = requests.get(api_url)
+        response = requests.get(api_url, timeout=3)
         response.raise_for_status()  # Raise an exception for non-successful response status codes
 
         logger.debug(f'Gesis response status code: {response.status_code}')
@@ -85,5 +86,5 @@ def search(search_term, results):
     except ValueError as ve:
         # Handle errors that occur while parsing the response JSON
         logger.error(f"Error occurred while parsing the response JSON: {ve}")
-
-    # logger.info(f'Got {len(results)} records from Gesis')
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
