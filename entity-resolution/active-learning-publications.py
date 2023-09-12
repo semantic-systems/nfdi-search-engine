@@ -36,7 +36,7 @@ if __name__ == '__main__':
     output_file = 'entity-resolution/training-data-publications-output.csv'
     settings_file = 'entity-resolution/publications-settings.json'
     training_file = 'entity-resolution/publications-training.json'
-
+    
     print('importing data ...')
     data_d = readData(input_file)
 

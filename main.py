@@ -67,7 +67,7 @@ def search_results():
             t.join()
             # print(t.is_alive())
 
-        # utils.convert_publications_to_csv(results["publications"])
+        utils.convert_publications_to_csv(results["publications"])
 
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
