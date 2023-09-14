@@ -317,7 +317,7 @@ li.list-group-item::before {
 
 .banner {
     width: 100vw;
-    height: 135px;
+    height: 10vw;
     background-position: center;
     background-repeat: no-repeat;
     background-size: cover;
