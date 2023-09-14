@@ -8,15 +8,16 @@
         NFDI4DS | UHH-SEMS - {% block title %}{% endblock %}
     </title>
 
-    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}" />
+    <link rel="shortcut icon" href="{{ url_for('static', filename='images/favicon.ico') }}"/>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}" />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap5.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-icons.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dataTables.bootstrap5.min.css') }}"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-multiselect.css') }}"/>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/alertify.min.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/alertify.min.css') }}"/>
 
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}"/>
 
     <!-- Font Awesome -->
     <!-- <link rel="stylesheet" href="{{ url_for('static', filename='css/font-awesome-all.min.css') }}" /> -->
@@ -32,22 +33,22 @@
 
 <body>
 
-    <!-- #Main ============================ -->
-    <div class="page-container">
+<!-- #Main ============================ -->
+<div class="page-container">
 
-        {% include 'includes/header.html' %}
+    {% include 'includes/header.html' %}
 
-        {% block content %}{% endblock content %}
+    {% block content %}{% endblock content %}
 
-        <div style="flex-grow:1"></div>
+    <div style="flex-grow:1"></div>
 
-        {% include 'includes/footer.html' %}
+    {% include 'includes/footer.html' %}
 
-    </div>
+</div>
 
-    {% include 'includes/scripts.html' %}
+{% include 'includes/scripts.html' %}
 
-    <!-- Specific Page JS goes HERE -->
-    {% block javascripts %}{% endblock javascripts %}
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}{% endblock javascripts %}
 
 </body>

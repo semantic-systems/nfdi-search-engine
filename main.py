@@ -3,22 +3,20 @@ import importlib
 import logging.config
 import os
 import uuid
-# from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
-from objects import Article, Organization, Person, Dataset, Project
+import yaml
 from flask import Flask, render_template, request, make_response
 import threading
-# from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, codalab, \
-#    eudat, openaire  # eulg
-# import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
 
+with open('config.yaml', 'r') as file:
+    nfdi4ds_config = yaml.safe_load(file)
+
 package = 'sources'
-sources = ['resodate', 'oersi', 'openalex', 'orcid', 'dblp', 'zenodo', 'gesis', 'ieee', 'cordis', 'gepris', 'eudat',
-           'codalab', 'wikidata', 'openaire', 'lala']
+sources = nfdi4ds_config['SEARCH_APIS']
 modules = []
 for source in sources:
     try:
@@ -30,7 +28,7 @@ for source in sources:
 
 @app.route('/')
 def index():
-    response = make_response(render_template('index.html'))
+    response = make_response(render_template('index.html', sources=sources))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -53,9 +51,11 @@ def search_results():
 
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
-
-        # Get selected APIs from Frontend. To be done.
-        search_apis = request.args.get('searchAPIs')
+        selected_apis = request.args.getlist('selectedApi[]')
+        selected_all = request.args.get('select-all')
+        print(selected_apis)
+        print(selected_all)
+        search_apis = sources if selected_all == "all" else selected_apis
 
         results = {
             'publications': [],
@@ -75,7 +75,7 @@ def search_results():
         # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
 
         # this is only for testing. In production the list comes from the Frontend.
-        search_apis = ['wikidata', 'openalex', 'openaire']
+        # search_apis = ['wikidata', 'openalex', 'openaire', 'resodate', 'orcid']
 
         # Check that selected APIs from Frontend are in the list of configured modules
         search_sources: list = []

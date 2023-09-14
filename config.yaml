@@ -4,3 +4,24 @@ search_url_oersi: https://oersi.org/resources/api/search/oer_data/_search?pretty
 search_url_openalex_authors: https://api.openalex.org/authors?search=
 search_url_orcid: https://pub.orcid.org/v3.0/expanded-search/?start=0&rows=100&q=
 search_url_dblp: https://dblp.org/search?q=
+
+# Register Search_APIs. The name has to be the module name (without file extension)
+SEARCH_APIS:
+  - codalab
+  - cordis
+  - dblp
+  - eudat
+  - eulg
+  - gepris
+  - gesis
+  - ieee
+  - oersi
+  - openaire
+  - openalex
+  - orcid
+  - resodate
+  - wikidata
+  - zenodo
+
+
+...
