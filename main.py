@@ -53,8 +53,6 @@ def search_results():
         search_term = request.args.get('txtSearchTerm')
         selected_apis = request.args.getlist('selectedApi[]')
         selected_all = request.args.get('select-all')
-        print(selected_apis)
-        print(selected_all)
         search_apis = sources if selected_all == "all" else selected_apis
 
         results = {
@@ -67,15 +65,6 @@ def search_results():
             'others': []
         }
         threads = []
-
-        # add all the sources here in this list; for simplicity we should use the exact module name
-        # ensure the main method which execute the search is named "search" in the module 
-        # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, codalab,
-        #               wikidata, openaire]
-        # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
-
-        # this is only for testing. In production the list comes from the Frontend.
-        # search_apis = ['wikidata', 'openalex', 'openaire', 'resodate', 'orcid']
 
         # Check that selected APIs from Frontend are in the list of configured modules
         search_sources: list = []
