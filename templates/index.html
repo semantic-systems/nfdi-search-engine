@@ -12,7 +12,7 @@
         <div id='mainContent' class="container">
 
             <div class="bsearch">
-                <form name="searchbox" action="/results" method="GET" onsubmit="return emptySearch()">
+                <form name="searchbox" action="/results" method="GET"> <!--- onsubmit="return emptySearch()">--->
                     <div class="">
                         <h2 class="text-center text-dark fs-1 fw-bold mb-4">Welcome to NFDI4DS Gateway</h2>
                         <div class="row mb-4">
@@ -33,14 +33,14 @@
                             </svg>
                             <input aria-label="Search for Articles and Researchers" autocomplete="off"
                                    inputmode="search"
-                                   placeholder="Search" type="search" name="txtSearchTerm"/>
+                                   placeholder="Search" type="search" required name="txtSearchTerm"/>
                             <div class="text-secondary" id="emptySearch" style="padding-left: 50px;"></div>
                         </div>
                         <div class="d-flex justify-content-center mt-4">
                             <span class="m-1 me-3">Search APIs:</span>
-                            <select id="selectApis" multiple="multiple" name="selectedApi[]">
+                            <select id="selectApis" multiple="multiple" name="selectedApi" required>
                                 {% for source in sources %}
-                                    <option value={{ source }} selected="selected">{{ source }}</option>
+                                    <option value="{{ source }}" selected="selected">{{ source }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -252,19 +252,19 @@
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
+    <!---
+        <script>
 
-    <script>
-
-        function emptySearch() {
-            var search = document.forms["searchbox"]["txtSearchTerm"].value;
-            if (search == "" || search == null || !/\S/.test(search)) {
-                document.getElementById("emptySearch").innerHTML = "\u2B11" + "Please enter a search term";
-                return false;
+            function emptySearch() {
+                var search = document.forms["searchbox"]["txtSearchTerm"].value;
+                if (search == "" || search == null || !/\S/.test(search)) {
+                    document.getElementById("emptySearch").innerHTML = "\u2B11" + "Please enter a search term";
+                    return false;
+                }
             }
-        }
 
-    </script>
-
+        </script>
+    --->
     <script type="text/javascript">
         $(document).ready(function () {
             $("#selectApis").multiselect({

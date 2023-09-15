@@ -51,7 +51,7 @@ def search_results():
 
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
-        selected_apis = request.args.getlist('selectedApi[]')
+        selected_apis = request.args.getlist('selectedApi')
         selected_all = request.args.get('select-all')
         search_apis = sources if selected_all == "all" else selected_apis
 
