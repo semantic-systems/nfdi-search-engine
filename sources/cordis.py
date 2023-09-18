@@ -9,10 +9,11 @@ logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
 def search(search_term, results):
-    max_project_number = 50
-    api_url = f'https://cordis.europa.eu/search/?q=%27{search_term}%27%20AND%20contenttype=%27project%27&p=1&num={max_project_number}&srt=/project/contentUpdateDate:decreasing&format=json'
-    # response = requests.get(api_url)
     try:
+
+        max_project_number = 50
+        api_url = f'https://cordis.europa.eu/search/?q=%27{search_term}%27%20AND%20contenttype=%27project%27&p=1&num={max_project_number}&srt=/project/contentUpdateDate:decreasing&format=json'
+        # response = requests.get(api_url)
         response = requests.get(api_url, timeout=3)
         # response = timeout(requests.get, args=(api_url,), kwargs={'timeout': 10})
         
@@ -113,3 +114,6 @@ def search(search_term, results):
             logger.error(f'Cordis response status code: {response.status_code}. Unable to fetch data from the API.')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
