@@ -10,12 +10,13 @@ logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
 def search(search_term, results):
-    # API URL with the search term
-    api_url = f'http://193.175.238.35:8089/dc/_search?q={search_term}&size=100'
-
     try:
+
+        # API URL with the search term
+        api_url = f'http://193.175.238.35:8089/dc/_search?q={search_term}&size=100'
         # Send a GET request to the API URL
-        response = requests.get(api_url)
+        # response = requests.get(api_url)
+        response = requests.get(api_url, timeout=3)
         response.raise_for_status()  # Raise an exception for non-successful response status codes
 
         logger.debug(f'Gesis response status code: {response.status_code}')
@@ -79,11 +80,12 @@ def search(search_term, results):
             except IndexError as e:
                 # Handle the case when an index is out of range
                 logger.warning(f"Index out of range: {e}. Skipping this hit.")
-    except requests.exceptions.RequestException as e:
-        # Handle any errors that occur while making the API request
-        logger.error(f"Error occurred while making the API request: {e}")
-    except ValueError as ve:
-        # Handle errors that occur while parsing the response JSON
-        logger.error(f"Error occurred while parsing the response JSON: {ve}")
-
-    # logger.info(f'Got {len(results)} records from Gesis')
+    # except requests.exceptions.RequestException as e:
+    #     # Handle any errors that occur while making the API request
+    #     logger.error(f"Error occurred while making the API request: {e}")
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
+    
