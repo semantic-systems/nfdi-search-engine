@@ -7,7 +7,7 @@ import os
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
-
+@utils.timeit
 def search(search_term, results):
     response = requests.get('https://zenodo.org/api/records',
                             params={'q': search_term,
