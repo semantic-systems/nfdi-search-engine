@@ -9,6 +9,8 @@ logger = logging.getLogger('nfdi_search_engine')
 @utils.timeit
 def search(search_term: str, results):
     try:
+
+        raise requests.exceptions.Timeout('Just checking timed out exception')
                 
         base_url = utils.config["search_url_oersi"]
         url = base_url + '"' + search_term.replace(' ', '+') + '"'
@@ -70,6 +72,7 @@ def search(search_term: str, results):
     
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OERSI')
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

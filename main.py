@@ -47,7 +47,8 @@ def search_results():
             'organizations': [],
             'events': [],
             'fundings': [],
-            'others': []
+            'others': [],
+            'timedout_sources': []
         }
         threads = []
 
@@ -71,6 +72,7 @@ def search_results():
         logger.info(f'Got {len(results["events"])} events')
         logger.info(f'Got {len(results["fundings"])} fundings')
         logger.info(f'Got {len(results["others"])} others')
+        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
 
         return render_template('results.html', results=results, search_term=search_term)
 
