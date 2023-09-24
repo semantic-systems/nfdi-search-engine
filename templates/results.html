@@ -147,8 +147,9 @@
 <script>
 
     $(document).ready(function () {
-
-        var dataTable = $('.datatable').DataTable({});
+        var dataTable = $('.datatable').DataTable({ dom: "<'row'<'col-1'f><'col-11'p>>" +
+            "<'row'<'col-12'tr>>" +
+            "<'row'<'col-3 col-lg-3 col-xl-4'l><'col-2 pb-2 col-lg-3 col-xl-3'i><'col-7 col-lg-6 col-xl-5'p>>" });
         dataTable.on('page.dt', function () {
             $('html, body').scrollTop(100)
             $('html, body').stop().animate({
