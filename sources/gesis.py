@@ -82,9 +82,7 @@ def search(search_term, results):
             except IndexError as e:
                 # Handle the case when an index is out of range
                 logger.warning(f"Index out of range: {e}. Skipping this hit.")
-    # except requests.exceptions.RequestException as e:
-    #     # Handle any errors that occur while making the API request
-    #     logger.error(f"Error occurred while making the API request: {e}")
+    
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
         results['timedout_sources'].append('GESIS')
