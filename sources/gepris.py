@@ -91,6 +91,7 @@ def search(search_term, results):
         # logger.info(f'Got {len(results)} records from Gepris')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GEPRIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -157,6 +158,7 @@ def find_author(search_term, results):
         #     logger.error(f'Timed out Exception: {str(ex)}')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GEPRIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -224,6 +226,7 @@ def find_organization(search_term, results):
             logger.error(f'An error occurred during the search: {e}')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GEPRIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

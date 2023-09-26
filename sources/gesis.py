@@ -87,6 +87,7 @@ def search(search_term, results):
     #     logger.error(f"Error occurred while making the API request: {e}")
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GESIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

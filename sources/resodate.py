@@ -9,10 +9,7 @@ logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
 def search(search_term: str, results):
-    try:
-
-        raise requests.exceptions.Timeout('Just checking timed out exception')
-                
+    try:        
         base_url = utils.config["search_url_resodate"]
         url = base_url + '"' + search_term.replace(' ', '+') + '"'
         

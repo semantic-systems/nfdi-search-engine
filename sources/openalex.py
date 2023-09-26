@@ -53,6 +53,7 @@ def find_authors(search_key, results):
 
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OPENALEX')
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -127,6 +128,7 @@ def find_works(search_key, results):
 
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OPENALEX')
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

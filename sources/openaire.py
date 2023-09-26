@@ -111,6 +111,7 @@ def openaire_product_search(search_string, results):
 
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OPENAIRE')
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -169,6 +170,7 @@ def openaire_project_search(search_string, results):
 
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OPENAIRE')
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

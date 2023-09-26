@@ -120,6 +120,7 @@ def search(search_term: str, results):
     
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('DBLP')
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

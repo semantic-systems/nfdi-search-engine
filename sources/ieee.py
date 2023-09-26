@@ -97,6 +97,7 @@ def search(search_term, results):
         #     print("An unexpected error occurred:", str(ex))
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('IEEE')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
