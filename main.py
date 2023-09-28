@@ -72,6 +72,8 @@ def search_results():
         logger.info(f'Got {len(results["events"])} events')
         logger.info(f'Got {len(results["fundings"])} fundings')
         logger.info(f'Got {len(results["others"])} others')
+
+        results["timedout_sources"] = list(set(results["timedout_sources"]))
         logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
 
         return render_template('results.html', results=results, search_term=search_term)
