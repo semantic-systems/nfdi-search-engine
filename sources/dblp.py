@@ -41,7 +41,7 @@ def search(search_term: str, results):
                    'Content-Type': 'application/json',
                    'User-Agent': utils.config["request_header_user_agent"]
                    }
-        response = requests.get(url, headers=headers)        
+        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))        
 
         logger.debug(f'DBLP response status code: {response.status_code}')
         logger.debug(f'DBLP response headers: {response.headers}')
@@ -117,5 +117,10 @@ def search(search_term: str, results):
         # return results
         # g.parse(data=json.dumps(data), format='json-ld')
         # logger.info(f"Graph g has {len(g)} statements after querying DBLP.")
+    
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('DBLP')
+    
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

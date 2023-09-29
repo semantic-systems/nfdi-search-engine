@@ -25,7 +25,7 @@ def find_authors(search_key, results):
                     'Content-Type': 'application/json',
                     'User-Agent': utils.config["request_header_user_agent"]
                     }    
-        response = requests.get(base_url + search_key, headers=headers)
+        response = requests.get(base_url + search_key, headers=headers, timeout=int(utils.config["request_timeout"]))
 
         if response.status_code == 200:
             search_result = response.json()
@@ -51,79 +51,91 @@ def find_authors(search_key, results):
 
                     results['researchers'].append(authorObj)
 
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OPENALEX')
+    
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
 
 def find_works(search_key, results):
-    api_url = "https://api.openalex.org/works?search="
-    api_response = requests.get(api_url + search_key)
-    if api_response.status_code != 404:
-        api_data = api_response.json()
-        for work in api_data['results']:
-            if 'id' in work:
-                if work["display_name"] is None \
-                        or work["id"] is None \
-                        or work["doi"] is None \
-                        or work["publication_date"] is None:
-                    continue
-                publication = Article()
-                publication.source = 'OpenAlex'
-                publication.name = utils.remove_html_tags(work["display_name"])
-                publication.url = work["doi"]
-                # publication.image = hit_source.get("image", "")
-                publication.description = ''
-                if not work["abstract_inverted_index"] is None:
-                    publication.description = generate_string_from_keys(work["abstract_inverted_index"]) # Generate the string using keys from the dictionary
-                publication.abstract = ''
-                keywords = work["concepts"]
-                if keywords:
-                    for keyword in keywords:
-                        publication.keywords.append(keyword["display_name"])
 
-                publication.inLanguage.append(str(work["language"]))
-                publication.datePublished = str(work["publication_date"])
-                publication.license = ''
-                if not work["primary_location"]["license"] is None:
-                    publication.license = work["primary_location"]["license"]
+    try:        
+        api_url = "https://api.openalex.org/works?search="
+        api_response = requests.get(api_url + search_key, timeout=int(utils.config["request_timeout"]))
+        if api_response.status_code != 404:
+            api_data = api_response.json()
+            for work in api_data['results']:
+                if 'id' in work:
+                    if work["display_name"] is None \
+                            or work["id"] is None \
+                            or work["doi"] is None \
+                            or work["publication_date"] is None:
+                        continue
+                    publication = Article()
+                    publication.source = 'OpenAlex'
+                    publication.name = utils.remove_html_tags(work["display_name"])
+                    publication.url = work["doi"]
+                    # publication.image = hit_source.get("image", "")
+                    publication.description = ''
+                    if not work["abstract_inverted_index"] is None:
+                        publication.description = generate_string_from_keys(work["abstract_inverted_index"]) # Generate the string using keys from the dictionary
+                    publication.abstract = ''
+                    keywords = work["concepts"]
+                    if keywords:
+                        for keyword in keywords:
+                            publication.keywords.append(keyword["display_name"])
 
-                if len(work["authorships"]) == 1:
-                    author = Person()
-                    author.name = work["authorships"][0]["author"]["display_name"]
-                    author.type = 'Person'
-                    author.identifier = work["id"]
-                    publication.author.append(author)
-                else:
-                    # authorship = ', '.join(
-                    #   current_author["author"]["display_name"] for current_author in work["authorships"])
-                    for current_author in work["authorships"]:
+                    publication.inLanguage.append(str(work["language"]))
+                    publication.datePublished = str(work["publication_date"])
+                    publication.license = ''
+                    if not work["primary_location"]["license"] is None:
+                        publication.license = work["primary_location"]["license"]
+
+                    if len(work["authorships"]) == 1:
                         author = Person()
-                        author.name = current_author["author"]["display_name"]
+                        author.name = work["authorships"][0]["author"]["display_name"]
                         author.type = 'Person'
-                        author.identifier = current_author["author"]["orcid"]
+                        author.identifier = work["id"]
                         publication.author.append(author)
+                    else:
+                        # authorship = ', '.join(
+                        #   current_author["author"]["display_name"] for current_author in work["authorships"])
+                        for current_author in work["authorships"]:
+                            author = Person()
+                            author.name = current_author["author"]["display_name"]
+                            author.type = 'Person'
+                            author.identifier = current_author["author"]["orcid"]
+                            publication.author.append(author)
 
-                publication.encoding_contentUrl = ''
-                publication.encodingFormat = ''
+                    publication.encoding_contentUrl = ''
+                    publication.encodingFormat = ''
 
-                results['publications'].append(publication)
-                ''''
-                results.append(
-                    Article(
-                        title=work["display_name"],
-                        url=work["id"],
-                        authors=author,
-                        description='',
-                        date=str(work["publication_year"])
+                    results['publications'].append(publication)
+                    ''''
+                    results.append(
+                        Article(
+                            title=work["display_name"],
+                            url=work["id"],
+                            authors=author,
+                            description='',
+                            date=str(work["publication_year"])
+                        )
                     )
-                )
-                '''
+                    '''
 
-    # logger.info(f'Got {len(results)} publication records from OpenAlex')
+        # logger.info(f'Got {len(results)} publication records from OpenAlex')
 
-
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('OPENALEX')
+    
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
+        
 def find_institute(search_key, results):
     institute_api_url = "https://api.openalex.org/institutions?search="
-    api_response = requests.get(institute_api_url + search_key)
+    api_response = requests.get(institute_api_url + search_key, timeout=int(utils.config["request_timeout"]))
     if api_response.status_code != 404:
         api_data = api_response.json()
         for institute in api_data["results"]:
@@ -154,7 +166,7 @@ def find_institute(search_key, results):
 
 def find_funder(search_key, results):
     funder_api_url = "https://api.openalex.org/funders?search="
-    api_response = requests.get(funder_api_url + search_key)
+    api_response = requests.get(funder_api_url + search_key, timeout=int(utils.config["request_timeout"]))
     if api_response.status_code == 404:
         return
     api_data = api_response.json()
@@ -174,7 +186,7 @@ def find_funder(search_key, results):
 
 def find_publisher(search_key, results):
     publisher_api_url = "https://api.openalex.org/publishers?search="
-    api_response = requests.get(publisher_api_url + search_key)
+    api_response = requests.get(publisher_api_url + search_key, timeout=int(utils.config["request_timeout"]))
     if api_response.status_code == 404:
         return
     api_data = api_response.json()
