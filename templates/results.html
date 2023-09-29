@@ -158,7 +158,12 @@
             var notification = alertify.notify('Following sources got timed out:' + timedout_sources, 'error', 10);
         }
 
-        var dataTable = $('.datatable').DataTable({});
+        // var dataTable = $('.datatable').DataTable({});
+        var dataTable = $('.datatable').DataTable({
+            dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
+        });
         dataTable.on('page.dt', function () {
             $('html, body').scrollTop(100)
             $('html, body').stop().animate({
