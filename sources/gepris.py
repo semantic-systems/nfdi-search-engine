@@ -2,7 +2,7 @@ import requests
 from objects import Gepris
 import logging
 from bs4 import BeautifulSoup
-from objects import Project, Person, Organization
+from objects import Project, Person, Organization, Place
 import utils
 
 logger = logging.getLogger('nfdi_search_engine')
@@ -195,8 +195,10 @@ def find_organization(search_term, results):
 
                             orgObj = Organization()
                             orgObj.source = 'GEPRIS'
-                            orgObj.identifier = organization.find("a")["href"]
-                            orgObj.url = f'https://gepris.dfg.de{orgObj.identifier}'
+                            id_link = organization.find("a")["href"]
+                            id = id_link.split("/")[-1]
+                            orgObj.identifier = id
+                            orgObj.url = f'https://gepris.dfg.de/gepris/institution/{id}'
                             orgObj.name = organization.find("h2").text.strip()
                             # Find the organizations address and retrieve text after <br> tag
                             sub_organization = organization.find("div", class_="subInstitution")
@@ -224,3 +226,94 @@ def find_organization(search_term, results):
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+
+
+def org_details(organization_id, organization_name):
+    try:       
+        orgObj = Place()
+        # URL for fetching organization details
+        url_address_details = f'https://gepris.dfg.de/gepris/institution/{organization_id}?context=institution&task=showDetail&id={organization_id}'
+        
+        # Send an HTTP GET request to retrieve the organization details
+        response = requests.get(url_address_details)
+        response.raise_for_status()  # Raise an exception for HTTP errors
+        
+        if response.status_code == 200:
+            # Parse the HTML response content
+            soup = BeautifulSoup(response.content, 'html.parser')
+            address_data = soup.find("div", id="address_data")
+
+            if address_data:
+                orgObj.source = 'GEPRIS'
+                orgObj.name = organization_name
+                address_span = address_data.find("span", class_="value")
+                
+                if address_span:
+                    # Extract and format the organization's address
+                    orgObj.address = '\n'.join([line.strip() for line in address_span.stripped_strings])
+                    orgObj.identifier = organization_id
+
+                    # Example usage:
+                    # address = 'Vogt-Kölln-Straße 30 22527 Hamburg'
+                    try:
+                        coordinates = geocode_address(orgObj.address)
+                        if coordinates:
+                            latitude, longitude = coordinates
+                            orgObj.latitude = latitude
+                            orgObj.longitude = longitude
+                            print(f'Latitude: {latitude}, Longitude: {longitude}')
+                        else:
+                            print('Address not found.')
+                    except Exception as e:
+                        print(f'An error occurred: {e}')
+
+                    # print("org ID is =", organization_id)
+                    # print("org Address is =", orgObj.address)
+                else:
+                    orgObj.address = ""
+            else:
+                # Log an error message if address details are not found
+                logger.error("Address details not found.") 
+        else:
+            # Log an error message for unexpected HTTP status codes
+            logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
+        
+        return orgObj
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        # when timeout excepton is true "GEPRIS" will be returned
+        return 'GEPRIS'
+        
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
+
+
+import requests
+
+def geocode_address(address):
+    try:
+        # Make a GET request to the Nominatim API
+        url = f'https://nominatim.openstreetmap.org/search?format=json&q={address}'
+        response = requests.get(url)
+
+        # Check if the request was successful
+        if response.status_code == 200:
+            data = response.json()
+            
+            # Check if the response contains results
+            if data:
+                # Extract latitude and longitude from the first result
+                latitude = data[0]['lat']
+                longitude = data[0]['lon']
+                return latitude, longitude  # Return the latitude and longitude
+            else:
+                return None  # Address not found
+        else:
+            raise Exception(f'Error: {response.status_code}')
+    except requests.exceptions.RequestException as req_err:
+        # Handle errors related to the HTTP request (e.g., network issues)
+        raise Exception(f'An error occurred during the HTTP request: {req_err}')
+    except Exception as ex:
+        # Handle any other unexpected errors
+        raise Exception(f'An unexpected error occurred: {ex}')
+

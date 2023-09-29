@@ -274,7 +274,57 @@ class ImageObject(MediaObject):
                 # If there is a default and the value of the field is none we can assign a value
                 if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
                     setattr(self, field.name, field.default)
-                  
+
+
+@dataclass
+class Place(thing): 
+    additionalProperty: str = ""
+    address: str = ""
+    aggregateRating: str = ""
+    amenityFeature: str = ""
+    branchCode: str = ""
+    containedInPlace: str = ""	
+    containsPlace	: str = ""
+    event: str = ""
+    faxNumber: str = ""
+    geo: str = ""
+    geoContains: str = ""
+    geoCoveredBy: str = ""
+    geoCovers: str = ""
+    geoCrosses: str = ""
+    geoDisjoint: str = ""
+    geoEquals: str = ""
+    geoIntersects: str = ""
+    geoOverlaps: str = ""
+    geoTouches: str = ""
+    geoWithin: str = ""
+    globalLocationNumber: str = ""	
+    hasDriveThroughService: str = ""
+    hasMap: str = ""
+    isAccessibleForFree: str = ""	
+    isicV4: str = ""
+    keywords: str = ""
+    latitude: str = ""
+    logo: str = ""
+    longitude: str = ""
+    maximumAttendeeCapacity: str = ""	
+    openingHoursSpecification: str = ""
+    photo: str = ""
+    publicAccess: str = ""
+    review: str = ""
+    slogan: str = ""
+    smokingAllowed: str = ""
+    specialOpeningHoursSpecification: str = ""
+    telephone: str = ""
+    tourBookingPage: str = ""
+
+
+    def __post_init__(self):
+        # Loop through the fields
+            for field in fields(self):
+                # If there is a default and the value of the field is none we can assign a value
+                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                    setattr(self, field.name, field.default)
 
 
 @dataclass
