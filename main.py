@@ -6,9 +6,7 @@ import uuid
 from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response
 import threading
-from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, codalab, \
-    eudat, openaire, eulg
-# import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
+from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, eudat, openaire, eulg
 import details_page
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
@@ -49,15 +47,14 @@ def search_results():
             'organizations': [],
             'events': [],
             'fundings': [],
-            'others': []
+            'others': [],
+            'timedout_sources': []
         }
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, codalab,
-                   wikidata, openaire, eulg]
-        # sources = [dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris]
+        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
 
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -75,6 +72,9 @@ def search_results():
         logger.info(f'Got {len(results["events"])} events')
         logger.info(f'Got {len(results["fundings"])} fundings')
         logger.info(f'Got {len(results["others"])} others')
+
+        results["timedout_sources"] = list(set(results["timedout_sources"]))
+        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
 
         return render_template('results.html', results=results, search_term=search_term)
 
