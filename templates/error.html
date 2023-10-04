@@ -1,0 +1,60 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Error {% endblock title %}
+
+<!-- Specific CSS for the error page goes here -->
+{% block stylesheets %}
+<style>
+    /* Add your custom error page styles here */
+    .error-container {
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .error-icon {
+        font-size: 100px;
+        color: #FF5733; /* Error color */
+    }
+
+    .error-message {
+        font-size: 24px;
+        margin-top: 20px;
+    }
+
+    .error-description {
+        font-size: 18px;
+        margin-top: 10px;
+    }
+
+    .error-button {
+        margin-top: 30px;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+        <div class="row justify-content-center">
+            <div class="col-8 error-container">
+                <div class="error-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h2 class="text-dark fs-1 fw-bold error-message">Oops! Something Went Wrong</h2>
+                <p class="text-secondary error-description">We're sorry, but an error occurred while processing your request.</p>
+                <!-- additional error-specific information or instructions can be added here. -->
+                <p class="text-secondary error-description">Please try again later or contact support if the problem persists.</p>
+                <a href="/" class="btn btn-primary error-button">Go Back to Home</a>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+<script>
+    // You can add JavaScript specific to the error page here.
+</script>
+{% endblock javascripts %}

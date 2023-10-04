@@ -151,7 +151,7 @@ def organization_details():
                 response.set_cookie('search-session', str(uuid.uuid4()))
             else:
                 response.set_cookie('search-session', request.cookies['session'])"""
-        print ("ORG ID:", organization_id)
+
         # Call the org_details function from the gepris module to fetch organization details by id
         organization_details = org_details(organization_id, organization_name)
 
@@ -160,7 +160,7 @@ def organization_details():
             return render_template('organization-details.html', organization=organization_details)
         else:
             # Handle the case where organization details are not found (e.g., return a 404 page)
-            return render_template(error_message='Organization details not found.')
+            return render_template('error.html',error_message='Organization details not found.')
 
     except Exception as e:
         # Handle exceptions appropriately (e.g., return an error page)
