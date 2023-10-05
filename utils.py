@@ -106,6 +106,67 @@ def convert_publications_to_csv(publications):
                              publication.datePublished]
                              ))  
 
+import dedupe
+def perform_entity_resolution_publications(publications):
+
+    data_publications = {}
+    for idx, publication in enumerate(publications):
+        row_publication = {
+            'Title': None,
+            'Authors': None,
+            'Abstract': None,
+            'Source': None,
+            'DatePublished': None
+        }
+        if publication.name != '':
+            row_publication['Title'] = publication.name
+        publication_authors = "; ".join([author.name for author in publication.author])
+        if publication_authors != '':
+            row_publication['Authors'] = publication_authors
+        if publication.description != '':
+            row_publication['Abstract'] = publication.description
+        if publication.source != '':
+            row_publication['Source'] = publication.source
+        if publication.datePublished != '':
+            row_publication['DatePublished'] = publication.datePublished
+
+        data_publications[idx] = row_publication
+
+    settings_file = config['settings_file_publications']
+    if os.path.exists(settings_file):
+        print('reading from', settings_file)
+        with open(settings_file, 'rb') as sf:
+            deduper = dedupe.StaticDedupe(sf, num_cores=2)
+    else:
+        print('Setting file not found: ', settings_file)
+
+    clustered_dupes = deduper.partition(data_publications, 0.5)
+    indices_to_drop = []
+    for cluster_id, (records, scores) in enumerate(clustered_dupes):
+        if len(records) > 1:
+            publication = Article()            
+            for record_id in records:
+                publication.source.append(publications[record_id].source)
+                if publication.name is None or publication.name == "":
+                    publication.name = publications[record_id].name
+                if publication.author is None or len(publication.author) == 0:
+                    publication.author = publications[record_id].author
+                if publication.description is None or publication.description == "":
+                    publication.description = publications[record_id].description
+                if publication.datePublished is None or publication.datePublished == "":
+                    publication.datePublished = publications[record_id].datePublished
+                if publication.inLanguage is None or len(publication.inLanguage) == 0:
+                    publication.inLanguage = publications[record_id].inLanguage
+                if publication.license is None or publication.license == "":
+                    publication.license = publications[record_id].license
+                indices_to_drop.append(record_id)
+            publications.append(publication)
+    
+    for index in sorted(indices_to_drop, reverse=True):
+        del publications[index]
+    
+    return publications
+
 
 
 

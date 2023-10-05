@@ -38,7 +38,13 @@
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-lg-9 text-start">
+                                        {% if publication.source is string %}
                                         <span class="badge bg-pill">{{publication.source}}</span>
+                                        {% else %}
+                                        {% for source in publication.source %}
+                                        <span class="badge bg-pill">{{source}}</span>
+                                        {% endfor %}
+                                        {% endif %}
                                         {% for language in publication.inLanguage %}
                                         <span class="badge bg-pill">{{language|upper}}</span>
                                         {% endfor %}

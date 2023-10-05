@@ -10,7 +10,7 @@ class thing:
     url: str = ""
     image: str = "" #url of the image
     identifier: str = ""
-    source: str = ""
+    source: List[str] = field(default_factory=list)
 
     def __post_init__(self):
     # Loop through the fields

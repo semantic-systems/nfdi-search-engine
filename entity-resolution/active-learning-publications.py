@@ -118,7 +118,7 @@ if __name__ == '__main__':
                 "Cluster ID": cluster_id,
                 "confidence_score": score
             }
-
+    
     with open(output_file, 'w', encoding="utf-8", newline='') as f_output, open(input_file, encoding="utf-8") as f_input:
 
         reader = csv.DictReader(f_input)
