@@ -2,7 +2,7 @@
     <div class="container">
         <div class="d-flex justify-content-between">
             <div>
-                <a href="/" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none">
+                <a href="/" class="d-flex align-items-center me-2 me-lg-0 text-dark text-decoration-none">
                     <img src="{{ url_for('static', filename='images/logo_NFDI4DS.svg') }}" width="100" height="60"
                         role="img" aria-label="NFDI4DS Search Engine" />
                 </a>
@@ -10,7 +10,7 @@
             <div>
                 <div class="d-inline-block">
                     {% if search_term %}
-                    <form class="col-12 col-lg-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET">
+                    <form name="searchbox" class="col-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET" onsubmit="return emptySearch()">
                         <!-- <input type="search" class="form-control" placeholder="Search..." aria-label="Search"> -->
                         <div>
                             <div class="searchbox">
@@ -21,6 +21,7 @@
                                 <input class="form-control" aria-label="Search for Article, Researcher"
                                     autocomplete="off" inputmode="search" placeholder="Search for Article, Researcher"
                                     type="search" name="txtSearchTerm" value="{{search_term}}" />
+                                <div class="text-secondary" id="emptySearch" style="padding-left: 50px;"></div>
                             </div>
                         </div>
                     </form>
@@ -31,7 +32,7 @@
                 </div>
                 <div class="d-inline-block">
                     <!-- NFDI4DS Button-->
-                    <div class="col-12 col-lg-auto mb-3 px-2 pt-2 mb-lg-0 me-lg-3 nfdi4ds-banner" data-variant="button"
+                    <div class="col-auto mb-3 px-2 pt-2 mb-lg-0 me-lg-3 nfdi4ds-banner" data-variant="button"
                         data-button-color="light" data-menu-color="light"></div>
                     <script>
                         (function (w, d, s, o, f, js, fjs) {

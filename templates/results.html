@@ -9,6 +9,9 @@
 
 {% block content %}
 
+
+<meta id="timedout_sources_data" data-timedoutsources="{{ results['timedout_sources'] }}">
+
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
@@ -87,7 +90,7 @@
                                             <span class="visually-hidden">fundings</span>
                                         </span>
                                     </button>
-                                    </li>
+                                </li>
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link position-relative" id="others-tab" data-bs-toggle="tab"
                                         data-bs-target="#others" type="button" role="tab" aria-controls="others"
@@ -102,8 +105,7 @@
                             </ul>
                         </div>
                         <div class="col-auto text-end">
-                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse" id="chatbox-link"
-                                style="display: none;">
+                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse" id="chatbox-link">
                                 <img style="height: 48px; width: 48px;"
                                     src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar"
                                     title="Chat with me" /></a>
@@ -149,7 +151,19 @@
 
     $(document).ready(function () {
 
-        var dataTable = $('.datatable').DataTable({});
+
+        //alert the user about the timed out sources
+        var timedout_sources = $('#timedout_sources_data').data("timedoutsources").toString();
+        if (timedout_sources != '') {
+            var notification = alertify.notify('Following sources got timed out:' + timedout_sources, 'error', 10);
+        }
+
+        // var dataTable = $('.datatable').DataTable({});
+        var dataTable = $('.datatable').DataTable({
+            dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
+        });
         dataTable.on('page.dt', function () {
             $('html, body').scrollTop(100)
             $('html, body').stop().animate({
@@ -204,6 +218,16 @@
 
 
     });
+
+    function emptySearch() {
+        var search = document.forms["searchbox"]["txtSearchTerm"].value;
+        if (search == "" || search == null || !/\S/.test(search)) {
+            document.getElementById("emptySearch").innerHTML = "\u2B11" + "Please enter a search term";
+            return false;
+        }
+    }
+
+
 
 
 

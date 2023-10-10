@@ -10,18 +10,19 @@ logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
 def search(search_term, results):
-    api_endpoint = "https://worksheets.codalab.org/rest/bundles"
-    limit_per_page = 10
-    params = {
-        "keywords": search_term,
-        "include_display_metadata": 1,
-        "include": "owner",
-        ".limit": limit_per_page
-    }
-
     try:
+
+        url = "https://worksheets.codalab.org/rest/bundles"
+        limit_per_page = 10
+        params = {
+            "keywords": search_term,
+            "include_display_metadata": 1,
+            "include": "owner",
+            ".limit": limit_per_page
+        }
         # Send an HTTP GET request to the API
-        response = requests.get(api_endpoint, params=params)
+        # response = requests.get(api_endpoint, params=params)
+        response = requests.get(url, timeout=3)
 
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
@@ -120,6 +121,9 @@ def search(search_term, results):
         else:
         # Log an error message when the response is not successful
             logger.error(f'Codalab response status code: {response.status_code}. Unable to fetch data from the API.')
-    except requests.exceptions.RequestException as e:
-        # Handle any errors that occur while making the API request
-        logger.error(f"Error occurred while making the API request to Codalab: {e}")
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('CODALAB')
+        
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')

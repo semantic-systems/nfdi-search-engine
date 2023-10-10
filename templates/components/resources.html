@@ -11,15 +11,15 @@
                 <div class="card mb-2 p-3">
                     <div class="card-body">
                         <div class="row">
-                            <div class="col-lg-11 fs-6">
+                            <div class="col-11 fs-6">
                                 <div class="row mb-2">
-                                    <div class="col-lg-12 fs-5">
+                                    <div class="col-12 fs-5">
                                         <a class="text-secondary fw-bold" href='/resource-details' target='_blank'>
                                             {{resources.name}}</a>
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-lg-12 my-2 authors">
+                                    <div class="col-12 my-2 authors">
                                         {% for author in resources.author %}
                                         {% if author.type == 'Person' %}
                                         <a href="{{author.identifier}}"
@@ -31,12 +31,12 @@
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-lg-12">
+                                    <div class="col-12">
                                         <p class="card-text">{{resources.description|truncate(500)}}</p>
                                     </div>
                                 </div>
                                 <div class="row pt-3">
-                                    <div class="col-lg-9 text-start">
+                                    <div class="col-9 text-start">
                                         <span class="badge bg-pill">{{resources.source}}</span>
                                         {% for language in resources.inLanguage %}
                                         <span class="badge bg-pill">{{language|upper}}</span>
@@ -45,32 +45,37 @@
                                         <span class="badge bg-pill">{{resources.license}}</span>
                                     </div>
                                     {% if resources.source == 'GESIS' or resources.source == 'Zenodo' %}
-                                    <div class="col-lg-3 text-end">
+                                    <div class="col-3 text-end">
                                         <span class="badge bg-pill">{{resources.datePublished}}</span>
                                     </div>
                                     {% endif %}
                                     {% if resources.source == 'GEPRIS' %}
-                                    <div class="col-lg-3 text-end">
+                                    <div class="col-3 text-end">
                                         <span class="badge bg-pill">{{resources.dateLastModified}}</span>
                                     </div>
                                     {% endif %}
                                     {% if resources.source == 'CODALAB' %}
-                                    <div class="col-lg-3 text-end">
+                                    <div class="col-3 text-end">
                                         <span class="badge bg-pill">{{resources.dateCreated}}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if resources.source == 'elg:corpus' or resources.source == 'elg:software/service'%}
+                                    <div class="col-3 text-end">
+                                        <span class="badge bg-pill">{{resources.datePublished}}</span>
                                     </div>
                                     {% endif %}
                                 </div>
                             </div>
-                            <div class="col-lg-1">
+                            <div class="col-1">
                                 <div class="row fs-5">
                                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
                                                 class="bi bi-bookmark"></i></a></div> -->
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
+                                    <div class="text-end mb-3"><a target='_blank' href="#" title="Share"><i
                                                 class="bi bi-share"></i></a></div>
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Preview"
+                                    <div class="text-end mb-3"><a target='_blank' href="#" title="Preview"
                                             data-bs-toggle="modal" data-bs-target="#full_size_image_dialog"><i
                                                 class="bi bi-eye"></i></a></div>
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank'
+                                    <div class="text-end mb-3"><a target='_blank'
                                             href="{{resources.encoding_contentUrl}}" title="Download"><i
                                                 class="bi bi-download"></i></a></div>
 

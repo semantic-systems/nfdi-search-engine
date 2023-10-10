@@ -143,7 +143,7 @@ class Article(CreativeWork):
 @dataclass
 class Dataset(CreativeWork): 
     distribution: str = ""
-    issn: str = "" 
+    issn: str = ""
 
     def __post_init__(self):
         # Loop through the fields
@@ -165,6 +165,9 @@ class Project(Organization):
     objective: str = ""
     status: str = ""
     author: List[Union[Organization, Person]] = field(default_factory=list)
+    funder: List[Union[
+        Organization, Person]] = field(
+        default_factory=list)  # Organization | Person # we can use pipe operator for Union in Python >= 3.10
 
 
     def __post_init__(self):
@@ -176,6 +179,18 @@ class Project(Organization):
 
 
 @dataclass
+class Software(CreativeWork):
+    distribution: str = ""
+    issn: str = ""
+
+    def __post_init__(self):
+        # Loop through the fields
+        for field in fields(self):
+            # If there is a default and the value of the field is none we can assign a value
+            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+                setattr(self, field.name, field.default)
+
+
 class LearningResource(CreativeWork): 
     assesses: str = ""  #The item being described is intended to assess the competency or learning outcome defined by the referenced term.
     competencyRequired: str = ""
@@ -261,6 +276,7 @@ class ImageObject(MediaObject):
                     setattr(self, field.name, field.default)
                   
 
+
 @dataclass
 class Zenodo:
     resource_type: str
@@ -310,6 +326,7 @@ class Poster:
 #     date: str
 
 
+'''
 @dataclass
 class Software:
     title: str
@@ -318,6 +335,7 @@ class Software:
     authors: str
     description: str
     version: str
+'''
 
 
 @dataclass
