@@ -8,23 +8,27 @@ logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
 def search(search_term, results):
-    # API key and 
-    api_key = '4nm2vdr778weget78v9ubgdb'
-    # maximum number of records to retrieve, it's changable
-    max_records = 1000
-
-    headers = {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-        'User-Agent': 'nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)'
-    }
-
-    # search URL with the provided search term, API key, and max records
-    search_url = f'http://ieeexploreapi.ieee.org/api/v1/search/articles?querytext={search_term}&apikey={api_key}&max_records={max_records}'
-
     try:
+        
+        # API key and 
+        api_key = '4nm2vdr778weget78v9ubgdb'
+        # maximum number of records to retrieve, it's changable
+        max_records = 100
+
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'User-Agent': 'nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)'
+        }
+
+        # search URL with the provided search term, API key, and max records
+        search_url = f'http://ieeexploreapi.ieee.org/api/v1/search/articles?querytext={search_term}&apikey={api_key}&max_records={max_records}'
+
+
         # Send GET request to the search URL
-        response = requests.get(search_url, headers=headers)
+        # response = requests.get(search_url, headers=headers)
+        response = requests.get(search_url, timeout=3)
+
 
         # Logging the response details
         logger.debug(f'Ieee response status code: {response.status_code}')
@@ -64,7 +68,7 @@ def search(search_term, results):
                     if languages:
                         for language in languages:
                             publication.inLanguage.append(language)
- 
+
                     for author_data in article.get('authors', {}).get('authors', []):
                         author = Person()
                         author.type = "Person"
@@ -83,11 +87,15 @@ def search(search_term, results):
         # Logging the number of records retrieved from Ieee
         # logger.info(f'Got {len(results)} records from Ieee')
 
+        
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('IEEE')
     except requests.exceptions.RequestException as e:
-        print("An error occurred during the request:", str(e))
+        logger.error("An error occurred during the request:", str(e))
     except KeyError as ke:
-        print("Key not found:", str(ke))
+        logger.error("Key not found:", str(ke))
     except ValueError as ve:
-        print("Invalid JSON response:", str(ve))
+        logger.error("Invalid JSON response:", str(ve))            
     except Exception as ex:
-        print("An unexpected error occurred:", str(ex))
+        logger.error(f'Exception: {str(ex)}')
