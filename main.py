@@ -153,18 +153,19 @@ def organization_details():
                 response.set_cookie('search-session', request.cookies['session'])"""
 
         # Call the org_details function from the gepris module to fetch organization details by id
-        organization_details = org_details(organization_id, organization_name)
+        organization, sub_organization = org_details(organization_id, organization_name)
 
-        if organization_details:
+        if organization and sub_organization:
             # Render the organization-details.html template
-            return render_template('organization-details.html', organization=organization_details)
+            return render_template('organization-details.html', organization = organization, sub_organization = sub_organization)
         else:
             # Handle the case where organization details are not found (e.g., return a 404 page)
             return render_template('error.html',error_message='Organization details not found.')
-
+        
+    except ValueError as ve:
+        return render_template('error.html', error_message= str(ve))
     except Exception as e:
-        # Handle exceptions appropriately (e.g., return an error page)
-        return render_template('error.html', error_message=str(e))
+        return render_template('error.html',  error_message='An error occurred: ' + str(e))
 
 
 @app.route('/events-details')

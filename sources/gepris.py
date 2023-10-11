@@ -230,7 +230,7 @@ def find_organization(search_term, results):
 
 def org_details(organization_id, organization_name):
     try:       
-        orgObj = Place()
+        organization = Place()
         # URL for fetching organization details
         url_address_details = f'https://gepris.dfg.de/gepris/institution/{organization_id}?context=institution&task=showDetail&id={organization_id}'
         
@@ -244,33 +244,44 @@ def org_details(organization_id, organization_name):
             address_data = soup.find("div", id="address_data")
 
             if address_data:
-                orgObj.source = 'GEPRIS'
-                orgObj.name = organization_name
+                organization.source = 'GEPRIS'
+                organization.name = organization_name
                 address_span = address_data.find("span", class_="value")
                 
                 if address_span:
                     # Extract and format the organization's address
-                    orgObj.address = '\n'.join([line.strip() for line in address_span.stripped_strings])
-                    orgObj.identifier = organization_id
+                    organization.address = '\n'.join([line.strip() for line in address_span.stripped_strings])
+                    organization.identifier = organization_id
 
                     # Example usage:
                     # address = 'Vogt-Kölln-Straße 30 22527 Hamburg'
                     try:
-                        coordinates = geocode_address(orgObj.address)
+                        coordinates = geocode_address(organization.address)
                         if coordinates:
                             latitude, longitude = coordinates
-                            orgObj.latitude = latitude
-                            orgObj.longitude = longitude
-                            print(f'Latitude: {latitude}, Longitude: {longitude}')
+                            organization.latitude = latitude
+                            organization.longitude = longitude
                         else:
-                            print('Address not found.')
+                            logger.error('Latitude and Longitude are not available.')
                     except Exception as e:
-                        print(f'An error occurred: {e}')
-
-                    # print("org ID is =", organization_id)
-                    # print("org Address is =", orgObj.address)
+                        logger.error(f'An error occurred: {e}')
                 else:
-                    orgObj.address = ""
+                    organization.address = ""
+
+                # an empty list to hold the sub_organizations
+                sub_organizations_list = []
+                sub_organizations = soup.find("div", id="untergeordneteInstitutionen")
+
+                if sub_organizations:
+                    for sub_organization in sub_organizations.find_all("li"):
+                        sub_org = Organization()
+                        sub_org.source = 'GEPRIS'
+                        sub_org.identifier = sub_organization.get("id")
+                        sub_org.url = 'https://gepris.dfg.de/gepris/institution/' + sub_org.identifier
+                        sub_org.name = sub_organization.find("a").text.strip()
+                        sub_organizations_list.append(sub_org)    
+                else:
+                    logger.error("Sub organizations not available.")
             else:
                 # Log an error message if address details are not found
                 logger.error("Address details not found.") 
@@ -278,7 +289,7 @@ def org_details(organization_id, organization_name):
             # Log an error message for unexpected HTTP status codes
             logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
         
-        return orgObj
+        return organization, sub_organizations_list
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
         # when timeout excepton is true "GEPRIS" will be returned
@@ -287,8 +298,6 @@ def org_details(organization_id, organization_name):
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
 
-
-import requests
 
 def geocode_address(address):
     try:
@@ -316,4 +325,3 @@ def geocode_address(address):
     except Exception as ex:
         # Handle any other unexpected errors
         raise Exception(f'An unexpected error occurred: {ex}')
-
