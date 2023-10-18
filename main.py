@@ -81,7 +81,7 @@ def search_results():
         results["timedout_sources"] = list(set(results["timedout_sources"]))
         logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
 
-        return render_template('results.html', results=results, search_term=search_term)
+        return render_template('results2.html', results=results, search_term=search_term)
 
 
 @app.route('/chatbox')

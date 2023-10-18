@@ -1,0 +1,350 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Search Results {% endblock title %}
+
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scrollable-tabs.css') }}" />
+{% endblock stylesheets %}
+
+{% block content %}
+
+
+<meta id="timedout_sources_data" data-timedoutsources="{{ results['timedout_sources'] }}">
+
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col mt-4">
+                    <div class="row">
+                        <div class="col tab-scroller">
+                            <i class="tab-scroller-arrow left-arrow d-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                                </svg>
+                            </i>
+                            <i class="tab-scroller-arrow right-arrow d-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                    class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                    <path fill-rule="evenodd"
+                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                                </svg>
+                            </i>
+                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link active position-relative" id="publications-tab"
+                                        data-bs-toggle="tab" data-bs-target="#publications" type="button" role="tab"
+                                        aria-controls="publications" aria-selected="true"><i
+                                            class="px-1 bi-journal-album"></i>Publications
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.publications|count}}
+                                            <span class="visually-hidden">publications</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link position-relative" id="researchers-tab" data-bs-toggle="tab"
+                                        data-bs-target="#researchers" type="button" role="tab"
+                                        aria-controls="researchers" aria-selected="false"><i
+                                            class="px-1 bi-people-fill"></i>Researchers
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.researchers|count}}
+                                            <span class="visually-hidden">researchers</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link position-relative" id="resources-tab" data-bs-toggle="tab"
+                                        data-bs-target="#resources" type="button" role="tab" aria-controls="resources"
+                                        aria-selected="false"><i class="px-1 bi-database-fill-gear"></i>Resources
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.resources|count}}
+                                            <span class="visually-hidden">resources</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link position-relative" id="organizations-tab"
+                                        data-bs-toggle="tab" data-bs-target="#organizations" type="button" role="tab"
+                                        aria-controls="organizations" aria-selected="false"><i
+                                            class="px-1 bi-bank"></i>Organizations
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.organizations|count}}
+                                            <span class="visually-hidden">organizations</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link position-relative" id="events-tab" data-bs-toggle="tab"
+                                        data-bs-target="#events" type="button" role="tab" aria-controls="events"
+                                        aria-selected="false"><i class="px-1 bi-calendar3"></i>Events
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.events|count}}
+                                            <span class="visually-hidden">events</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link position-relative" id="fundings-tab" data-bs-toggle="tab"
+                                        data-bs-target="#fundings" type="button" role="tab" aria-controls="fundings"
+                                        aria-selected="false"><i class="px-1 bi-currency-exchange"></i>Fundings
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.fundings|count}}
+                                            <span class="visually-hidden">fundings</span>
+                                        </span>
+                                    </button>
+                                </li>
+                                <li class="nav-item" role="presentation">
+                                    <button class="nav-link position-relative" id="others-tab" data-bs-toggle="tab"
+                                        data-bs-target="#others" type="button" role="tab" aria-controls="others"
+                                        aria-selected="false"><i class="px-1 bi-file-code-fill"></i>Others
+                                        <span
+                                            class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
+                                            {{results.researchers|count}}
+                                            <span class="visually-hidden">Others</span>
+                                        </span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                        <div class="col-auto text-end" style="justify-content: center; align-items: center;">
+                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse" id="chatbox-link">
+                                <img style="height: 3rem; width: 3rem;"
+                                    src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar"
+                                    title="Chat with me" /></a>
+                        </div>
+                    </div>
+                    <div class="tab-content mt-5" id="myTabContent">
+                        <div class="tab-pane fade show active" id="publications" role="tabpanel"
+                            aria-labelledby="publications-tab">
+                            {% include 'components/publications.html' %}
+                        </div>
+                        <div class="tab-pane fade" id="researchers" role="tabpanel" aria-labelledby="researchers-tab">
+                            {% include 'components/researchers.html' %}
+                        </div>
+                        <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+                            {% include 'components/resources.html' %}
+                        </div>
+                        <div class="tab-pane fade" id="organizations" role="tabpanel"
+                            aria-labelledby="organizations-tab">
+                            {% include 'components/organizations.html' %}
+                        </div>
+                        <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
+                            {% include 'components/events.html' %}</div>
+                        <div class="tab-pane fade" id="fundings" role="tabpanel" aria-labelledby="fundings-tab">
+                            {% include 'components/fundings.html' %}
+                        </div>
+                        <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
+                    </div>
+                </div>
+                <div class="col-auto px-0 mt-4">
+                    {% include 'components/chatbox.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+    function reinitialize_tabs() {
+        //  selector
+        document.querySelectorAll(".tab-scroller").forEach((el) => {
+            let scrollTabInner = el.querySelector(".nav")
+            let scrollTabItem = el.querySelectorAll(".nav-item")
+            let leftArrow = el.querySelector(".left-arrow")
+            let rightArrow = el.querySelector(".right-arrow")
+            //scrollable tab width
+            let scrollTabWidth = el.offsetWidth
+
+            //all tab items width
+            let scrollTabItemsWidth = () => {
+                let itemsWidth = 0;
+                scrollTabItem.forEach(el => {
+                    let itemWidth = el.offsetWidth;
+                    itemsWidth += itemWidth;
+                });
+                return itemsWidth
+            }
+
+            //hidden tab item width
+            let widthOfHiddenItems = scrollTabItemsWidth() - scrollTabWidth;
+            let rightValue = 0;
+            let tabMovementPerClick = 100;
+
+            console.log('scrollTabWidth:' + scrollTabWidth)
+            console.log('scrollTabItemsWidth:' + scrollTabItemsWidth())
+            console.log('widthOfHiddenItems:' + widthOfHiddenItems)
+            console.log('rightValue:' + rightValue)
+
+
+            if (scrollTabItemsWidth() > scrollTabWidth) {
+                rightArrow.classList.remove("d-none")
+            }
+            else {
+                rightArrow.classList.add("d-none")
+                leftArrow.classList.add("d-none")
+            }
+
+            //right arrow click functionality
+            rightArrow.addEventListener("click", () => {
+                console.log('right arrow just clicked: rightValue:' + rightValue)
+                rightValue += tabMovementPerClick;
+                if (rightValue > widthOfHiddenItems) {
+                    rightArrow.classList.add("d-none")
+                    leftArrow.classList.remove("d-none")
+                    scrollTabInner.style.cssText = `right: ${widthOfHiddenItems + 70}px;`
+                } else {
+                    rightArrow.classList.remove("d-none")
+                    leftArrow.classList.remove("d-none")
+                    scrollTabInner.style.cssText = `right: ${rightValue}px;`
+                }
+
+                // if (rightValue > widthOfHiddenItems) {
+                //     rightArrow.classList.add("d-none")
+                //     leftArrow.classList.remove("d-none")
+                //     scrollTabInner.style.cssText = `right: ${widthOfHiddenItems + 70}px;`
+                // } else {
+                //     rightArrow.classList.remove("d-none")
+                //     leftArrow.classList.remove("d-none")
+                //     rightValue += tabMovementPerClick;
+                //     scrollTabInner.style.cssText = `right: ${rightValue}px;`
+                // }
+
+                console.log('After click: rightValue:' + rightValue)
+            })
+
+            //left arrow click functionality
+            leftArrow.addEventListener("click", () => {
+                console.log('left arrow just clicked: rightValue:' + rightValue)
+                rightValue -= tabMovementPerClick;
+                if (rightValue <= 0) {
+                    leftArrow.classList.add("d-none")
+                    rightArrow.classList.remove("d-none")
+                    scrollTabInner.style.cssText = `right: 0px;`
+                } else {
+                    rightArrow.classList.remove("d-none")
+                    leftArrow.classList.remove("d-none")
+                    scrollTabInner.style.cssText = `right: ${rightValue}px;`
+                }
+
+                // rightValue -= tabMovementPerClick;
+                // scrollTabInner.style.cssText = `right: ${rightValue}px;`
+                // rightArrow.classList.remove("d-none")
+                // if (rightValue <= 0) {
+                //     leftArrow.classList.add("d-none")
+                //     rightArrow.classList.remove("d-none")
+                //     scrollTabInner.style.cssText = `right: 0px;`
+                // }
+
+                console.log('After click: rightValue:' + rightValue)
+            })
+        })
+    }
+
+    document.addEventListener("DOMContentLoaded", reinitialize_tabs);
+    window.addEventListener("resize", reinitialize_tabs);
+
+    $(document).ready(function () {
+
+        //alert the user about the timed out sources
+        var timedout_sources = $('#timedout_sources_data').data("timedoutsources").toString();
+        if (timedout_sources != '') {
+            var notification = alertify.notify('Following sources got timed out:' + timedout_sources, 'error', 10);
+        }
+
+        // var dataTable = $('.datatable').DataTable({});
+        var dataTable = $('.datatable').DataTable({
+            dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
+        });
+        dataTable.on('page.dt', function () {
+            $('html, body').scrollTop(100)
+            $('html, body').stop().animate({
+                scrollTop: $(".dataTables_wrapper").offset().top
+            }, 'slow');
+
+            $('thead tr th:first-child').focus().blur();
+        });
+
+        $('#chatbox').on('show.bs.collapse hidden.bs.collapse', function (e) {
+            if (e.type == 'show') {
+                $('#chatbox-link').hide()
+            } else {
+                $('#chatbox-link').show()
+            }
+            reinitialize_tabs()
+        });
+
+        $('#btnShareLinkCopy').on('click', function (e) {
+
+            var txtShareLink = document.getElementById('txtShareLink');
+            txtShareLink.select();
+            if (navigator.clipboard) {
+                alert(txtShareLink.value)
+                navigator.clipboard.writeText(txtShareLink.value)
+                    .then(() => {
+                        var notification = alertify.notify('Link copied', 'success', 5);
+                    })
+                    .catch((error) => {
+                        var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+                    });
+            } else {
+                var notification = alertify.notify('Copy operation failed', 'error', 5);
+            }
+        });
+
+        $('#share_modal_link').on('click', function (e) {
+            // alert('pressed')
+            publication = $(this).closest("tr").find('.publication_name')
+            url = window.location.origin + $(publication).attr('href')
+            title = $(publication).text().trim()
+            $('#txtShareLink').val(url)
+
+            $('.smd a').each(function (i, obj) {
+                $(this).attr('href', $(this).attr('base-href').replace('[[url]]', encodeURIComponent(url)))
+                $(this).attr('href', $(this).attr('href').replace('[[title]]', encodeURIComponent(title)))
+            });
+        });
+
+        $('#share_modal_dialog').on('shown.bs.modal', function (e) {
+            // do something...
+        })
+
+
+    });
+
+    function emptySearch() {
+        var search = document.forms["searchbox"]["txtSearchTerm"].value;
+        if (search == "" || search == null || !/\S/.test(search)) {
+            document.getElementById("emptySearch").innerHTML = "\u2B11" + "Please enter a search term";
+            return false;
+        }
+    }
+
+
+
+
+
+
+
+</script>
+
+
+{% endblock javascripts %}

@@ -13,7 +13,7 @@
                         <div class="row">
                             <div class="col-11 fs-6">
                                 <div class="row mb-2">
-                                    <div class="col-12 fs-5">
+                                    <div class="col-12 fs-6">
                                         <a class="text-secondary fw-bold publication_name" href='/publication-details'
                                             target='_blank'>
                                             {{publication.name}}</a>
@@ -45,11 +45,6 @@
                                         <span class="badge bg-pill">{{source}}</span>
                                         {% endfor %}
                                         {% endif %}
-                                        {% for language in publication.inLanguage %}
-                                        <span class="badge bg-pill">{{language|upper}}</span>
-                                        {% endfor %}
-                                        <span class="badge bg-pill">{{ publication.encodingFormat|upper }}</span>
-                                        <span class="badge bg-pill">{{publication.license}}</span>
                                     </div>
                                     <div class="col-3 text-end">
                                         <span class="badge bg-pill">{{publication.datePublished}}</span>
@@ -63,9 +58,9 @@
                                     <div class="text-end mb-3"><a href="#" title="Share" id="share_modal_link"
                                             data-bs-toggle="modal" data-bs-target="#share_modal_dialog"><i
                                                 class="bi bi-share"></i></a></div>
-                                    <div class="text-end mb-3"><a href="#" title="Preview"
-                                            id="preview_modal_link" data-bs-toggle="modal"
-                                            data-bs-target="#preview_modal_dialog"><i class="bi bi-eye"></i></a></div>
+                                    <div class="text-end mb-3"><a href="#" title="Preview" id="preview_modal_link"
+                                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"><i
+                                                class="bi bi-eye"></i></a></div>
                                     <div class="text-end mb-3"><a target='_blank'
                                             href="{{publication.encoding_contentUrl}}" title="Download"><i
                                                 class="bi bi-download"></i></a></div>

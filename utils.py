@@ -8,6 +8,28 @@ import yaml
 with open("config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
+
+
+#region DECORATORS
+
+from functools import wraps
+from time import time
+import inspect
+import os
+
+def timeit(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        ts = time()
+        result = f(*args, **kwargs)
+        te = time()
+        filename = os.path.basename(inspect.getfile(f))
+        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
+        return result
+    return decorated_function
+
+#endregion
+
 def extract_metadata(text):
     """
     Extract all metadata present in the page and return a dictionary of metadata lists.
@@ -28,7 +50,6 @@ def extract_metadata(text):
                                          'opengraph'])
     return metadata
 
-
 def is_author_in(name, authors):
     """
     Verifies if the author is already in the results
@@ -46,7 +67,6 @@ def is_author_in(name, authors):
         if author.name == name:
             return author
     return None
-
 
 def is_article_in(title, articles):
     """
@@ -66,7 +86,6 @@ def is_article_in(title, articles):
             return article
     return None
 
-
 def read_wikipedia(title):
     wikipedia.set_lang("en")
     try:
@@ -75,23 +94,17 @@ def read_wikipedia(title):
         return ""
     return summary_text
 
-
-# def remove_html_tags(text):
-#     soup = BeautifulSoup(text, "html.parser")
-#     cleaned_text = soup.text
-#     cleaned_text.strip()
-#     sentences = cleaned_text.split('.')
-#     if len(sentences) <= 5:
-#         return cleaned_text
-#     else:
-#         first_n_sentences: str = '. '.join(
-#                 sentence for sentence in sentences[0:4])
-#         return first_n_sentences
-
-
 def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
     return soup.text.strip()
+
+def get_first_item_from_list(list):
+    return next(iter(list), None)
+
+def get_majority_vote_from_dict(dict):
+    sorted_dict = sorted(dict, key=dict.get, reverse=True)
+    return next(iter(sorted_dict), None)
+
 
 import csv
 def convert_publications_to_csv(publications):
@@ -106,7 +119,9 @@ def convert_publications_to_csv(publications):
                              publication.datePublished]
                              ))  
 
+from collections import defaultdict
 import dedupe
+@timeit
 def perform_entity_resolution_publications(publications):
 
     data_publications = {}
@@ -144,50 +159,64 @@ def perform_entity_resolution_publications(publications):
     indices_to_drop = []
     for cluster_id, (records, scores) in enumerate(clustered_dupes):
         if len(records) > 1:
-            publication = Article()            
+            # merge all the instances in this cluster into one
+
+            # sources, names, authors, descriptions, published_dates, inlanguages, licenses  = (defaultdict(int) for i in range(7)) 
+            sources, names, authors, descriptions, published_dates = (defaultdict(int) for i in range(5)) 
             for record_id in records:
-                publication.source.append(publications[record_id].source)
-                if publication.name is None or publication.name == "":
-                    publication.name = publications[record_id].name
-                if publication.author is None or len(publication.author) == 0:
-                    publication.author = publications[record_id].author
-                if publication.description is None or publication.description == "":
-                    publication.description = publications[record_id].description
-                if publication.datePublished is None or publication.datePublished == "":
-                    publication.datePublished = publications[record_id].datePublished
-                if publication.inLanguage is None or len(publication.inLanguage) == 0:
-                    publication.inLanguage = publications[record_id].inLanguage
-                if publication.license is None or publication.license == "":
-                    publication.license = publications[record_id].license
+                sources[str(publications[record_id].source)] += 1
+                if publications[record_id].name != "":
+                    names[publications[record_id].name] += 1
+                if len(publications[record_id].author) > 0:
+                    authors[str(publications[record_id].author)] += 1
+                if publications[record_id].description != "":
+                    descriptions[publications[record_id].description] += 1
+                if publications[record_id].datePublished != "":
+                    published_dates[publications[record_id].datePublished] += 1
+                # if len(publications[record_id].inLanguage) > 0:
+                #     inlanguages[str(publications[record_id].inLanguage)] += 1
+                # if publications[record_id].license != "":
+                #     licenses[publications[record_id].license] += 1
                 indices_to_drop.append(record_id)
+
+            publication = Article()  
+            for src in sources.keys():
+                publication.source.append(src)
+            publication.name = "MERGED - " + get_majority_vote_from_dict(names)
+            publication.author = get_majority_vote_from_dict(authors)
+            publication.description = get_majority_vote_from_dict(descriptions)
+            publication.datePublished = get_majority_vote_from_dict(published_dates)
+            
+            # publication.name = "MERGED - " + get_first_item_from_list(sorted(names, key=names.get, reverse=True))
+            # publication.author = get_first_item_from_list(sorted(authors, key=authors.get, reverse=True))
+            # publication.description = get_first_item_from_list(sorted(descriptions, key=descriptions.get, reverse=True))
+            # publication.datePublished = get_first_item_from_list(sorted(published_dates, key=published_dates.get, reverse=True))
+            # publication.inLanguage = get_first_item_from_list(sorted(inlanguages, key=inlanguages.get, reverse=True))
+            # publication.license = get_first_item_from_list(sorted(licenses, key=licenses.get, reverse=True))
+
             publications.append(publication)
+
+            # publication = Article()            
+            # for record_id in records:
+            #     publication.source.append(publications[record_id].source)
+            #     if publication.name is None or publication.name == "":
+            #         publication.name = publications[record_id].name
+            #     if publication.author is None or len(publication.author) == 0:
+            #         publication.author = publications[record_id].author
+            #     if publication.description is None or publication.description == "":
+            #         publication.description = publications[record_id].description
+            #     if publication.datePublished is None or publication.datePublished == "":
+            #         publication.datePublished = publications[record_id].datePublished
+            #     if publication.inLanguage is None or len(publication.inLanguage) == 0:
+            #         publication.inLanguage = publications[record_id].inLanguage
+            #     if publication.license is None or publication.license == "":
+            #         publication.license = publications[record_id].license
+            #     indices_to_drop.append(record_id)
+            # publications.append(publication)
     
-    for index in sorted(indices_to_drop, reverse=True):
-        del publications[index]
+    # for index in sorted(indices_to_drop, reverse=True):
+    #     del publications[index]
     
     return publications
 
 
-
-
-
-
-#region DECORATORS
-
-from functools import wraps
-from time import time
-import inspect
-import os
-
-def timeit(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        ts = time()
-        result = f(*args, **kwargs)
-        te = time()
-        filename = os.path.basename(inspect.getfile(f))
-        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
-        return result
-    return decorated_function
-
-#endregion
