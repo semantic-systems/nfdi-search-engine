@@ -14,7 +14,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    background-color: #ffffff;
+    background-color: #dedede;
     border: 1px solid #222222;
     border-radius: 2rem;
 }
@@ -35,13 +35,7 @@
     position: relative;
     padding-left: 35px;
     flex-wrap: nowrap;
-    /* left: 0px; */
-    /* top: 0px; */
-    /* min-width: 3500px; */
-    /* margin-top: 0px; */
-    /* cursor: auto; */
     border: none;
-    /* z-index: 1; */
 }
 
 .tab-scroller>.nav-tabs li[role=presentation] {

@@ -162,6 +162,9 @@
 
 <script>
 
+    // tab navigation control original code snippet
+    // https://stackoverflow.com/a/74135798
+
     function reinitialize_tabs() {
         //  selector
         document.querySelectorAll(".tab-scroller").forEach((el) => {
@@ -187,11 +190,10 @@
             let rightValue = 0;
             let tabMovementPerClick = 100;
 
-            console.log('scrollTabWidth:' + scrollTabWidth)
-            console.log('scrollTabItemsWidth:' + scrollTabItemsWidth())
-            console.log('widthOfHiddenItems:' + widthOfHiddenItems)
-            console.log('rightValue:' + rightValue)
-
+            // console.log('scrollTabWidth:' + scrollTabWidth)
+            // console.log('scrollTabItemsWidth:' + scrollTabItemsWidth())
+            // console.log('widthOfHiddenItems:' + widthOfHiddenItems)
+            // console.log('rightValue:' + rightValue)
 
             if (scrollTabItemsWidth() > scrollTabWidth) {
                 rightArrow.classList.remove("d-none")
@@ -203,7 +205,7 @@
 
             //right arrow click functionality
             rightArrow.addEventListener("click", () => {
-                console.log('right arrow just clicked: rightValue:' + rightValue)
+                // console.log('right arrow just clicked: rightValue:' + rightValue)
                 rightValue += tabMovementPerClick;
                 if (rightValue > widthOfHiddenItems) {
                     rightArrow.classList.add("d-none")
@@ -215,23 +217,12 @@
                     scrollTabInner.style.cssText = `right: ${rightValue}px;`
                 }
 
-                // if (rightValue > widthOfHiddenItems) {
-                //     rightArrow.classList.add("d-none")
-                //     leftArrow.classList.remove("d-none")
-                //     scrollTabInner.style.cssText = `right: ${widthOfHiddenItems + 70}px;`
-                // } else {
-                //     rightArrow.classList.remove("d-none")
-                //     leftArrow.classList.remove("d-none")
-                //     rightValue += tabMovementPerClick;
-                //     scrollTabInner.style.cssText = `right: ${rightValue}px;`
-                // }
-
-                console.log('After click: rightValue:' + rightValue)
+                // console.log('After click: rightValue:' + rightValue)
             })
 
             //left arrow click functionality
             leftArrow.addEventListener("click", () => {
-                console.log('left arrow just clicked: rightValue:' + rightValue)
+                // console.log('left arrow just clicked: rightValue:' + rightValue)
                 rightValue -= tabMovementPerClick;
                 if (rightValue <= 0) {
                     leftArrow.classList.add("d-none")
@@ -243,16 +234,7 @@
                     scrollTabInner.style.cssText = `right: ${rightValue}px;`
                 }
 
-                // rightValue -= tabMovementPerClick;
-                // scrollTabInner.style.cssText = `right: ${rightValue}px;`
-                // rightArrow.classList.remove("d-none")
-                // if (rightValue <= 0) {
-                //     leftArrow.classList.add("d-none")
-                //     rightArrow.classList.remove("d-none")
-                //     scrollTabInner.style.cssText = `right: 0px;`
-                // }
-
-                console.log('After click: rightValue:' + rightValue)
+                // console.log('After click: rightValue:' + rightValue)
             })
         })
     }
