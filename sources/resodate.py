@@ -54,11 +54,11 @@ def search(search_term: str, results):
 
                     for creator in hit_source.get("creator", []):
                         if creator['type'] == 'Person':
-                            author = Person()
-                            author.type = creator['type']
-                            author.name = creator.get("name", "")
-                            author.identifier = creator.get("id", "") 
-                            publication.author.append(author)  
+                            person = Person()
+                            person.type = creator['type']
+                            person.name = creator.get("name", "")
+                            person.identifier = creator.get("id", "") 
+                            publication.author.append(person)  
 
                     encodings = hit_source.get("encoding", None)
                     if encodings:

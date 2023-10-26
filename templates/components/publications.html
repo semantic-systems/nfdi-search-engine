@@ -21,13 +21,19 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-12 my-2 authors">
+                                        {% set author_count = namespace(value=0) %}
                                         {% for author in publication.author %}
+                                        {% if author_count.value == 5 %}
+                                        <a href="#" class="tag_more_authors">and {{ (publication.author|count) - 5 }}
+                                            more</a>
+                                        {% endif %}
                                         {% if author.type == 'Person' %}
                                         <a href="{{author.identifier}}"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
                                             tabindex="-1" role="button" aria-disabled="true"><i
                                                 class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
                                         {% endif %}
+                                        {% set author_count.value = author_count.value + 1 %}
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -38,16 +44,17 @@
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-9 text-start">
-                                        {% if publication.source is string %}
-                                        <span class="badge bg-pill">{{publication.source}}</span>
-                                        {% else %}
+                                        <span class="badge bg-pill bg-success">{{publication.identifier}}</span>
                                         {% for source in publication.source %}
-                                        <span class="badge bg-pill">{{source}}</span>
+                                        <a id="source_link" href="{{source.url}}" target=_blank>
+                                            <span class="badge bg-pill">{{source.name}}#{{source.identifier}}</span>
+                                        </a>
                                         {% endfor %}
-                                        {% endif %}
+                                        <span class="badge bg-pill bg-secondary">{{publication.originalSource}}</span>
                                     </div>
                                     <div class="col-3 text-end">
-                                        <span class="badge bg-pill">{{publication.datePublished}}</span>
+                                        <span
+                                            class="badge bg-pill">{{publication.publication}}-{{publication.datePublished}}</span>
                                     </div>
                                 </div>
                             </div>

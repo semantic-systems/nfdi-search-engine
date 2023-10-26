@@ -6,7 +6,8 @@ import uuid
 from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response
 import threading
-from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, eudat, openaire, eulg
+from sources import zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, eudat, openaire, eulg
+from sources import dblp_publications, openalex_publications
 import details_page
 import utils
 
@@ -55,8 +56,8 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
-        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
-
+        # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
+        sources = [dblp_publications, openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -68,7 +69,7 @@ def search_results():
 
         # utils.convert_publications_to_csv(results["publications"])
 
-        results["publications"] = utils.perform_entity_resolution_publications(results["publications"])
+        # results["publications"] = utils.perform_entity_resolution_publications(results["publications"])
 
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
@@ -81,7 +82,7 @@ def search_results():
         results["timedout_sources"] = list(set(results["timedout_sources"]))
         logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
 
-        return render_template('results2.html', results=results, search_term=search_term)
+        return render_template('results.html', results=results, search_term=search_term)
 
 
 @app.route('/chatbox')

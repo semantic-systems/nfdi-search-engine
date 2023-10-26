@@ -4,7 +4,7 @@
 
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/scrollable-tabs.css') }}" />
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}" />
 {% endblock stylesheets %}
 
 {% block content %}
@@ -19,22 +19,9 @@
             <div class="row">
                 <div class="col mt-4">
                     <div class="row">
-                        <div class="col tab-scroller">
-                            <i class="tab-scroller-arrow left-arrow d-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                    class="bi bi-chevron-left" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd"
-                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
-                                </svg>
-                            </i>
-                            <i class="tab-scroller-arrow right-arrow d-none">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-                                    class="bi bi-chevron-right" viewBox="0 0 16 16">
-                                    <path fill-rule="evenodd"
-                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
-                                </svg>
-                            </i>
-                            <ul class="nav nav-tabs" id="myTab" role="tablist">
+                        <div class="col tabs-section">
+                            <ul class="nav nav-tabs nav-paginator" data-paginator-item-count="4"
+                                data-paginator-buttons-class="nav-link" id="myTab" role="tablist">
                                 <li class="nav-item" role="presentation">
                                     <button class="nav-link active position-relative" id="publications-tab"
                                         data-bs-toggle="tab" data-bs-target="#publications" type="button" role="tab"
@@ -111,20 +98,20 @@
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
                                             {{results.researchers|count}}
-                                            <span class="visually-hidden">Others</span>
+                                            <span class="visually-hidden">researchers</span>
                                         </span>
                                     </button>
                                 </li>
                             </ul>
                         </div>
-                        <div class="col-auto text-end" style="justify-content: center; align-items: center;">
+                        <div class="col-auto text-end">
                             <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse" id="chatbox-link">
-                                <img style="height: 3rem; width: 3rem;"
+                                <img style="height: 48px; width: 48px;"
                                     src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar"
                                     title="Chat with me" /></a>
                         </div>
                     </div>
-                    <div class="tab-content mt-5" id="myTabContent">
+                    <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="publications" role="tabpanel"
                             aria-labelledby="publications-tab">
                             {% include 'components/publications.html' %}
@@ -162,87 +149,8 @@
 
 <script>
 
-    // tab navigation control original code snippet
-    // https://stackoverflow.com/a/74135798
-
-    function reinitialize_tabs() {
-        //  selector
-        document.querySelectorAll(".tab-scroller").forEach((el) => {
-            let scrollTabInner = el.querySelector(".nav")
-            let scrollTabItem = el.querySelectorAll(".nav-item")
-            let leftArrow = el.querySelector(".left-arrow")
-            let rightArrow = el.querySelector(".right-arrow")
-            //scrollable tab width
-            let scrollTabWidth = el.offsetWidth
-
-            //all tab items width
-            let scrollTabItemsWidth = () => {
-                let itemsWidth = 0;
-                scrollTabItem.forEach(el => {
-                    let itemWidth = el.offsetWidth;
-                    itemsWidth += itemWidth;
-                });
-                return itemsWidth
-            }
-
-            //hidden tab item width
-            let widthOfHiddenItems = scrollTabItemsWidth() - scrollTabWidth;
-            let rightValue = 0;
-            let tabMovementPerClick = 100;
-
-            // console.log('scrollTabWidth:' + scrollTabWidth)
-            // console.log('scrollTabItemsWidth:' + scrollTabItemsWidth())
-            // console.log('widthOfHiddenItems:' + widthOfHiddenItems)
-            // console.log('rightValue:' + rightValue)
-
-            if (scrollTabItemsWidth() > scrollTabWidth) {
-                rightArrow.classList.remove("d-none")
-            }
-            else {
-                rightArrow.classList.add("d-none")
-                leftArrow.classList.add("d-none")
-            }
-
-            //right arrow click functionality
-            rightArrow.addEventListener("click", () => {
-                // console.log('right arrow just clicked: rightValue:' + rightValue)
-                rightValue += tabMovementPerClick;
-                if (rightValue > widthOfHiddenItems) {
-                    rightArrow.classList.add("d-none")
-                    leftArrow.classList.remove("d-none")
-                    scrollTabInner.style.cssText = `right: ${widthOfHiddenItems + 70}px;`
-                } else {
-                    rightArrow.classList.remove("d-none")
-                    leftArrow.classList.remove("d-none")
-                    scrollTabInner.style.cssText = `right: ${rightValue}px;`
-                }
-
-                // console.log('After click: rightValue:' + rightValue)
-            })
-
-            //left arrow click functionality
-            leftArrow.addEventListener("click", () => {
-                // console.log('left arrow just clicked: rightValue:' + rightValue)
-                rightValue -= tabMovementPerClick;
-                if (rightValue <= 0) {
-                    leftArrow.classList.add("d-none")
-                    rightArrow.classList.remove("d-none")
-                    scrollTabInner.style.cssText = `right: 0px;`
-                } else {
-                    rightArrow.classList.remove("d-none")
-                    leftArrow.classList.remove("d-none")
-                    scrollTabInner.style.cssText = `right: ${rightValue}px;`
-                }
-
-                // console.log('After click: rightValue:' + rightValue)
-            })
-        })
-    }
-
-    document.addEventListener("DOMContentLoaded", reinitialize_tabs);
-    window.addEventListener("resize", reinitialize_tabs);
-
     $(document).ready(function () {
+
 
         //alert the user about the timed out sources
         var timedout_sources = $('#timedout_sources_data').data("timedoutsources").toString();
@@ -271,7 +179,6 @@
             } else {
                 $('#chatbox-link').show()
             }
-            reinitialize_tabs()
         });
 
         $('#btnShareLinkCopy').on('click', function (e) {

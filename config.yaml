@@ -1,10 +1,14 @@
 request_header_user_agent: nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)
 request_timeout: 3
+search_url_dblp_publications: https://dblp.org/search/publ/api?format=json&h=100&q=
+search_url_openalex_publications: https://api.openalex.org/works?page=1&per-page=100&search=
+
 search_url_resodate: https://resodate.org/resources/api/search/oer_data/_search?pretty&size=100&q=
 search_url_oersi: https://oersi.org/resources/api/search/oer_data/_search?pretty&q=
 search_url_openalex_authors: https://api.openalex.org/authors?search=
 search_url_orcid: https://pub.orcid.org/v3.0/expanded-search/?start=0&rows=100&q=
 search_url_dblp: https://dblp.org/search?q=
+
 search_url_gesis: http://193.175.238.35:8089/dc/_search?size=100&q=
 search_url_gepris: https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=
 

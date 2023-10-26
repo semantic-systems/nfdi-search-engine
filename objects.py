@@ -9,15 +9,16 @@ class thing:
     description: str = ""
     url: str = ""
     image: str = "" #url of the image
-    identifier: str = ""
-    source: List[str] = field(default_factory=list)
+    identifier: str = "" #doi or pid will be stored as identifier    
+    originalSource: str = ""
+    source: list() = field(default_factory=list) # this list will have "thing" objects
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    # def __post_init__(self):
+    # # Loop through the fields
+    #     for field in fields(self):
+    #         # If there is a default and the value of the field is none we can assign a value
+    #         if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+    #             setattr(self, field.name, field.default)
 
 @dataclass
 class Organization(thing):
@@ -31,12 +32,12 @@ class Organization(thing):
     foundingDate: str = ""
     keywords: List[str] = field(default_factory=list)
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    # def __post_init__(self):
+    # # Loop through the fields
+    #     for field in fields(self):
+    #         # If there is a default and the value of the field is none we can assign a value
+    #         if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+    #             setattr(self, field.name, field.default)
 
 @dataclass
 class Person(thing):
@@ -61,29 +62,31 @@ class Person(thing):
     worksFor: Organization = None  #this should be a list
     
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    # def __post_init__(self):
+    # # Loop through the fields
+    #     for field in fields(self):
+    #         # If there is a default and the value of the field is none we can assign a value
+    #         if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+    #             setattr(self, field.name, field.default)
 
-Organization.founder = List[Person]
+
+Organization.founder = List[Person]  
 # Organization.funder = Union[Organization(), Person()]
 Organization.parentOrganization = Organization()
 
+
 @dataclass
 class Author(Person):
-    orcid: str = ""
+    # orcid: str = "" # we should not have this attribute; orcid should be kept in 
     works_count: str = ""
     cited_by_count: str = ""
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    # def __post_init__(self):
+    # # Loop through the fields
+    #     for field in fields(self):
+    #         # If there is a default and the value of the field is none we can assign a value
+    #         if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+    #             setattr(self, field.name, field.default)
 
 
 @dataclass
@@ -116,12 +119,14 @@ class CreativeWork(thing):
     version: str = ""   
 
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    # def __post_init__(self):
+    # # Loop through the fields
+    #     for field in fields(self):
+    #         # If there is a default and the value of the field is none we can assign a value
+    #         if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+    #             setattr(self, field.name, field.default)
+
+
 
 
 @dataclass
@@ -132,12 +137,12 @@ class Article(CreativeWork):
     pagination: str = ""
     wordCount: str = ""
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    # def __post_init__(self):
+    # # Loop through the fields
+    #     for field in fields(self):
+    #         # If there is a default and the value of the field is none we can assign a value
+    #         if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
+    #             setattr(self, field.name, field.default)
 
 
 @dataclass
@@ -275,8 +280,6 @@ class ImageObject(MediaObject):
                 if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
                     setattr(self, field.name, field.default)
                   
-
-
 @dataclass
 class Zenodo:
     resource_type: str
@@ -317,13 +320,13 @@ class Poster:
     date: str
 
 
-# @dataclass
-# class Dataset:
-#     title: str
-#     url: str
-#     authors: str
-#     description: str
-#     date: str
+@dataclass
+class Dataset:
+    title: str
+    url: str
+    authors: str
+    description: str
+    date: str
 
 
 '''
@@ -395,13 +398,13 @@ class Gesis:
     authors: str
 
 
-# @dataclass
-# class Cordis:
-#     id: str
-#     url: str
-#     date: str 
-#     title: str
-#     description: str
+@dataclass
+class Cordis:
+    id: str
+    url: str
+    date: str 
+    title: str
+    description: str
 
 
 @dataclass
