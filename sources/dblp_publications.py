@@ -1,5 +1,5 @@
 import requests
-from objects import thing, Person, Article
+from objects import thing, Article, Author
 import logging
 import utils
 from sources import data_retriever
@@ -38,7 +38,7 @@ def search(search_term: str, results):
         hits = search_result['result']['hits']
         total_hits = hits['@total']
 
-        logger.info(f'DBLP Publications - {total_hits} hits found')
+        logger.info(f'{source} - {total_hits} hits found')  
 
         if int(total_hits) > 0:
             hits = hits['hit']         
@@ -57,25 +57,23 @@ def search(search_term: str, results):
 
                     authors = info.get("authors", {}).get("author", [])                        
                     for author in authors:
-                        person = Person()
-                        person.type = 'Person'
-                        person.name = author.get("text", "")
-                        person.identifier = author.get("@pid", "") 
-                        publication.author.append(person)    
+                        _author = Author()
+                        _author.type = 'Person'
+                        _author.name = author.get("text", "")
+                        _author.identifier = author.get("@pid", "") #ideally this pid should be stored somewhere else
+                        publication.author.append(_author)    
 
-                    # getattr(publication, "source").clear()
                     _source = thing()
                     _source.name = 'DBLP'
                     _source.identifier = hit.get("@id", "")
-                    _source.url = info.get("url", "") 
-                    # getattr(publication, "source").append(_source)                          
+                    _source.url = info.get("url", "")                         
                     publication.source.append(_source)
 
                     results['publications'].append(publication)  
     
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('DBLP - Publications')
+        results['timedout_sources'].append(source)
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
