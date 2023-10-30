@@ -118,33 +118,19 @@
             </div>
             <div class="col-4 ps-5">
                 <div class="d-flex p-2 bd-highlight">
-                    <h5>SUGGESTED ORGANIZATIONS</h5>
+                    <h5>SUB PROJECTS</h5>
                 </div>
                 <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
                     <div class="card mb-2 p-2 rounded-extra">
+                        {% for sub_proj in sub_project %}
                         <div class="card-body">
                             <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Alexander von Humboldt Foundation</a>
+                                <a class="text-dark fw-bold" href='{{ sub_proj.url }}' target='_blank'>
+                                    {{ sub_proj.name }}</a>
                             </div>
                         </div>
+                        {% endfor %}
                         <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Association of German Foundations</a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Boehringer Ingelheim Fonds</a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Deutsche Bank</a>
-                            </div>
                             <div class="d-flex justify-content-between fs-7 pt-3 a-dir">
                                 <span class="badge bg-pill"></span>
                                 <span class="">

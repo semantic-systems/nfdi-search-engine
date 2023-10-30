@@ -268,7 +268,7 @@ def org_details(organization_id, organization_name):
                 else:
                     organization.address = ""
 
-                # an empty list to hold the sub_organizations
+                # an empty list for sub_organizations
                 sub_organizations_list = []
                 sub_organizations = soup.find("div", id="untergeordneteInstitutionen")
 
@@ -282,6 +282,22 @@ def org_details(organization_id, organization_name):
                         sub_organizations_list.append(sub_org)    
                 else:
                     logger.error("Sub organizations not available.")
+
+                # an empty list for sub_projects
+                sub_projects_list = []
+                sub_project = soup.find("div", id="beteiligungen-main")
+                if sub_project:
+                    for sub_proj in sub_project.find_all("a", class_=["intern", "hrefWithNewLine"]):
+                        sub_project = Project()
+                        if "intern" in sub_proj.get("class", []) and "hrefWithNewLine" in sub_proj.get("class", []):
+                            sub_project_link_id = sub_proj["href"]
+                            sub_project.identifier = sub_project_link_id.split("/")[-1]
+                            sub_project.url = 'https://gepris.dfg.de/gepris/projekt/' + sub_project.identifier
+                            sub_project.name = sub_proj.text.strip()
+                            sub_projects_list.append(sub_project)
+                            
+                else:
+                    logger.error("Sub projects not available.")
             else:
                 # Log an error message if address details are not found
                 logger.error("Address details not found.") 
@@ -289,7 +305,7 @@ def org_details(organization_id, organization_name):
             # Log an error message for unexpected HTTP status codes
             logger.error(f"Failed to retrieve data. Status code: {response.status_code}")
         
-        return organization, sub_organizations_list
+        return organization, sub_organizations_list, sub_projects_list
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
         # when timeout excepton is true "GEPRIS" will be returned
