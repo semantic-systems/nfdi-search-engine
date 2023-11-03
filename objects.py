@@ -280,6 +280,7 @@ class ImageObject(MediaObject):
 class Place(thing): 
     additionalProperty: str = ""
     address: str = ""
+    addressType: str = ""
     aggregateRating: str = ""
     amenityFeature: str = ""
     branchCode: str = ""
@@ -305,11 +306,13 @@ class Place(thing):
     isicV4: str = ""
     keywords: str = ""
     latitude: str = ""
+    licence: str = ""
     logo: str = ""
     longitude: str = ""
     maximumAttendeeCapacity: str = ""	
     openingHoursSpecification: str = ""
     photo: str = ""
+    placType: str = ""
     publicAccess: str = ""
     review: str = ""
     slogan: str = ""
@@ -317,6 +320,8 @@ class Place(thing):
     specialOpeningHoursSpecification: str = ""
     telephone: str = ""
     tourBookingPage: str = ""
+    
+
 
 
     def __post_init__(self):

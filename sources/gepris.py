@@ -258,9 +258,14 @@ def org_details(organization_id, organization_name):
                     try:
                         coordinates = geocode_address(organization.address)
                         if coordinates:
-                            latitude, longitude = coordinates
+                            latitude, longitude, place_id, place_rank, place_type, address_type, licence = coordinates
                             organization.latitude = latitude
                             organization.longitude = longitude
+                            organization.identifier = place_id
+                            organization.aggregateRating = place_rank
+                            organization.placType = place_type
+                            organization.addressType = address_type
+                            organization.licence = licence
                         else:
                             logger.error('Latitude and Longitude are not available.')
                     except Exception as e:
@@ -327,10 +332,17 @@ def geocode_address(address):
             
             # Check if the response contains results
             if data:
-                # Extract latitude and longitude from the first result
-                latitude = data[0]['lat']
-                longitude = data[0]['lon']
-                return latitude, longitude  # Return the latitude and longitude
+                #Extract attributes from the first result
+                first_result = data[0]
+                latitude = first_result.get('lat', 'none')
+                longitude = first_result.get('lon', 'none')
+                place_id = first_result.get('place_id', 'none')
+                place_rank = first_result.get('place_rank','none')
+                place_type = first_result.get('type', 'none')
+                address_type = first_result.get('addresstype', 'none')
+                licence = first_result.get('licence', 'none')
+
+                return latitude, longitude, place_id, place_rank, place_type, address_type, licence  # Return the attributes
             else:
                 return None  # Address not found
         else:

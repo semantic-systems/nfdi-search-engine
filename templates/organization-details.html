@@ -45,26 +45,25 @@
                 <h3 id="org_name">{{organization.name}}</h3>
                 <div class="py-2">
                     <span class="badge bg-pill">{{organization.source}}</span>
-                    <span class="badge bg-pill">Grant</span>
-                    <span class="badge bg-pill">Event</span>
-                    <span class="badge bg-pill">Contact Point</span>
+                    <span class="badge bg-pill">{{organization.licence}}</span>
+                   
                 </div>
                 <div class="fs-7 py-2">
                     <span class="pe-4">
-                        <span class="fw-bold">Global Location Number:</span>
-                        <span>GEO57743</span>
+                        <span class="fw-bold">Organization Number:</span>
+                        <span>{{organization.identifier}}</span>
                     </span>
                     <span class="pe-4">
-                        <span class="fw-bold">Award:</span>
-                        <span>15</span>
+                        <span class="fw-bold">Organization Type:</span>
+                        <span>{{organization.placType}}</span>
                     </span>
                 </div>
             </div>
             <div class="col-5 d-flex justify-content-end">
                 <div class="summary-block p-2 ms-3">
-                    <i class="bi bi-eye fs-4"></i>
-                    <div class="fs-7 my-1">Views</div>
-                    <div class="fs-5 fw-bold">5K+</div>
+                    <i class="bi bi-trophy fs-4"></i>
+                    <div class="fs-7 my-1">Ranking</div>
+                    <div class="fs-5 fw-bold">{{organization.aggregateRating}}</div>
                 </div>
             </div>
         </div>
@@ -77,8 +76,13 @@
                     <div class="pe-4" style="float: left;">
                         <div id="organizationId"></div>
                         <div id="address-details">
-                            <div class="fw-bold" name="title">Location Details:</div>
+                            <div class="fw-bold" name="title">Address Details:</div>
                             <div id="address-content">{{organization.address}}</div>
+                        </div>
+                        &nbsp;
+                        <div id="address-details">
+                            <div class="fw-bold" name="title">Address Type:</div>
+                            <div id="address-content">{{organization.addressType}}</div>
                         </div>
                         <!-- <div><span class="fw-bold">City:</span> 2D-53175 Bonn</div>
                         <div><span class="fw-bold">Country:</span> Germany</div> -->
