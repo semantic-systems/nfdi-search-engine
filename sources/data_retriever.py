@@ -1,6 +1,7 @@
 import requests
 import logging
 import utils
+import urllib.parse
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -8,7 +9,13 @@ logger = logging.getLogger('nfdi_search_engine')
 def retrieve_data(source: str, base_url: str, search_term: str, results):
     
     try:
+
+        search_term = urllib.parse.quote_plus(string=search_term, safe='()')
         url = base_url + search_term
+
+        #encode the url
+        # url = urllib.parse.quote_plus(string=url, safe=';/?:@&=+$,')
+        # url = urllib.parse.quote_plus(string=url)
 
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',
@@ -38,3 +45,5 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+
+

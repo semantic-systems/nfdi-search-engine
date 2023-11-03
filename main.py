@@ -6,8 +6,8 @@ import uuid
 from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response
 import threading
-from sources import zenodo, openalex, resodate, oersi, wikidata, cordis, gesis, orcid, gepris, ieee, eudat, openaire, eulg
-from sources import dblp_publications, openalex_publications, zenodo
+from sources import cordis, gesis, orcid, gepris, ieee, eudat, openaire, eulg
+from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi
 import details_page
 import utils
 
@@ -57,8 +57,8 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
-        sources = [dblp_publications, openalex_publications, zenodo]
-        # sources = [zenodo]
+        # sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate]
+        sources = [oersi]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
