@@ -6,6 +6,8 @@ search_url_zenodo: https://zenodo.org/api/records?size=100&q=
 search_url_wikidata: https://query.wikidata.org/sparql?format=json&query=
 search_url_resodate: https://resodate.org/resources/api/search/oer_data/_search?pretty&size=100&q=
 search_url_oersi: https://oersi.org/resources/api/search/oer_data/_search?pretty&size=100&q=
+search_url_ieee: http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={api_key}&max_records=100&querytext=
+search_url_eudat: https://b2share.eudat.eu/api/records/?page=1&size=100&sort=bestmatch&q=
 
 
 search_url_openalex_authors: https://api.openalex.org/authors?search=
