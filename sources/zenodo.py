@@ -29,24 +29,26 @@ def search(search_term, results):
             for hit in hits:
                 
                 metadata = hit.get('metadata', {})
-                resource_type = metadata.get('resource_type', {}).get('type')
+                resource_type = metadata.get('resource_type', {}).get('type','OTHER').upper()
 
-                if resource_type.upper() == 'PUBLICATION':
+                if resource_type == 'PUBLICATION':
                     digitalObj = Article() 
-                elif resource_type.upper() in ['PRESENTATION', 'POSTER']:
+                elif resource_type in ['PRESENTATION', 'POSTER']:
                     digitalObj = CreativeWork() 
-                elif resource_type.upper() == 'DATASET':
+                elif resource_type == 'DATASET':
                     digitalObj = Dataset() 
-                elif resource_type.upper() == 'VIDEO':
+                elif resource_type == 'VIDEO':
                     digitalObj = VideoObject() 
-                elif resource_type.upper() == 'IMAGE':
+                elif resource_type == 'IMAGE':
                     digitalObj = ImageObject() 
-                elif resource_type.upper() == 'LESSON':
+                elif resource_type == 'LESSON':
                     digitalObj = LearningResource() 
-                elif resource_type.upper() == 'OTHER':
+                elif resource_type == 'SOFTWARE':
+                    digitalObj = SoftwareApplication() 
+                elif resource_type == 'OTHER':
                     digitalObj = CreativeWork() 
                 else:
-                    print('This resource type is still not defined:', resource_type.upper())
+                    print('This resource type is still not defined:', resource_type)
                     digitalObj = CreativeWork()
                     
                 digitalObj.identifier = hit.get('doi', '')

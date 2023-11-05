@@ -112,6 +112,8 @@ def read_wikipedia(title):
     return summary_text
 
 def remove_html_tags(text):
+    # print("---"*30)
+    # print(text)
     soup = BeautifulSoup(text, "html.parser")
     return soup.text.strip()
 
