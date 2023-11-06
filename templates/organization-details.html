@@ -39,7 +39,6 @@
         </div>
         <div class="row border-bottom pb-4">
             <div class="col-7 text-start col-7-specific">
-                <!-- <h3>ID: {{organization.identifier}}</h3> -->
                 <input type="hidden" id="latitude" name="hiddenField1" value="{{ organization.latitude }}">
                 <input type="hidden" id="longitude" name="hiddenField2" value="{{ organization.longitude }}">
                 <h3 id="org_name">{{organization.name}}</h3>
@@ -84,8 +83,6 @@
                             <div class="fw-bold" name="title">Address Type:</div>
                             <div id="address-content">{{organization.addressType}}</div>
                         </div>
-                        <!-- <div><span class="fw-bold">City:</span> 2D-53175 Bonn</div>
-                        <div><span class="fw-bold">Country:</span> Germany</div> -->
                     </div>            
                     <!-- Map Container -->
                     <div id="map-container">
@@ -98,53 +95,73 @@
                 <div class="d-flex p-2 bd-highlight">
                     <h5>SUB ORGANIZATIONS</h5>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="subOrganization">
                     <div class="card mb-2 p-2 rounded-extra">
-                        {% for sub_org in sub_organization %}
-                        <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='{{ sub_org.url }}' target='_blank'>
-                                    {{ sub_org.name }}
-                                </a>
-                            </div>
+                        <div class="card-bodies">
+                            {% for sub_org in sub_organization %}
+                                <div class="card-body sub-org">
+                                    <div class="d-flex bd-highlight">
+                                        <a class="text-dark fw-bold" href='{{ sub_org.url }}' target='_blank'>
+                                            {{ sub_org.name }}
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
-                        {% endfor %}
                         <div class="card-body">
-                            <div class="d-flex justify-content-between fs-7 pt-3 a-dir" >
-                                <span class="">
-                                    <a class="text-decoration-none fw-bold" href='#' target='_blank'>
-                                        SHOW MORE </a>
+                            <div class="d-flex justify-content-between fs-7 pt-3 a-dir">
+                                <span class="show-more">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showMoreOrganization">
+                                        SHOW MORE
+                                    </a>
+                                </span>
+                                <span class="show-less">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showLessOrganization">
+                                        SHOW LESS
+                                    </a>
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
+
             <div class="col-4 ps-5">
                 <div class="d-flex p-2 bd-highlight">
                     <h5>SUB PROJECTS</h5>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="subProject">
                     <div class="card mb-2 p-2 rounded-extra">
                         {% for sub_proj in sub_project %}
-                        <div class="card-body">
+                        <div class="card-body sub-project">
                             <div class="d-flex bd-highlight">
                                 <a class="text-dark fw-bold" href='{{ sub_proj.url }}' target='_blank'>
-                                    {{ sub_proj.name }}</a>
+                                    {{ sub_proj.name }}
+                                </a>
                             </div>
                         </div>
                         {% endfor %}
                         <div class="card-body">
                             <div class="d-flex justify-content-between fs-7 pt-3 a-dir">
                                 <span class="badge bg-pill"></span>
-                                <span class="">
-                                    <a class="text-decoration-none fw-bold" href='#' target='_blank'>
-                                        SHOW MORE </a>
+                                <span class="show-more">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showMoreProject">
+                                        SHOW MORE
+                                    </a>
+                                </span>
+                                <span class="show-less">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showLessProject">
+                                        SHOW LESS
+                                    </a>
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class=" d-flex p-2 bd-highlight pt-4">
                     <h5>FAIR Assessment</h5>
                 </div>
@@ -154,6 +171,7 @@
                     <h5>Other...</h5>
                 </div>
             </div>
+
         </div>
     </div>
 </main>
@@ -220,6 +238,98 @@
     // Append the link to Map External Link Container in  HTML
     var linkContainer = document.getElementById('map-external-link-container');
     linkContainer.appendChild(openStreetMapLink);
+
+    // Show more or less organizations
+    document.addEventListener("DOMContentLoaded", function () {
+    const subOrgElements = document.querySelectorAll(".sub-org");
+    const showMoreButton = document.getElementById("showMoreOrganization");
+    const showLessButton = document.getElementById("showLessOrganization");
+    const initialVisibleCount = 5;
+    let visibleCount = initialVisibleCount;
+
+    function updateVisibility() {
+        subOrgElements.forEach((element, index) => {
+            if (index < visibleCount) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        });
+
+        if (visibleCount < subOrgElements.length) {
+            showMoreButton.style.display = "block";
+        } else {
+            showMoreButton.style.display = "none";
+        }
+
+        if (visibleCount > initialVisibleCount) {
+            showLessButton.style.display = "block";
+        } else {
+            showLessButton.style.display = "none";
+        }
+    }
+
+    updateVisibility();
+
+    showMoreButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCount = subOrgElements.length;
+        updateVisibility();
+    });
+
+    showLessButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCount = initialVisibleCount;
+        updateVisibility();
+    });
+});
+
+// Show more or less projects
+
+document.addEventListener("DOMContentLoaded", function () {
+    const subProjectElements = document.querySelectorAll(".sub-project");
+    const showMoreButtonProject = document.getElementById("showMoreProject");
+    const showLessButtonProject = document.getElementById("showLessProject");
+    const initialVisibleCountProject = 5;
+    let visibleCountProject = initialVisibleCountProject;
+
+    function updateVisibilityProject() {
+        subProjectElements.forEach((element, index) => {
+            if (index < visibleCountProject) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        });
+
+        if (visibleCountProject < subProjectElements.length) {
+            showMoreButtonProject.style.display = "block";
+        } else {
+            showMoreButtonProject.style.display = "none";
+        }
+
+        if (visibleCountProject > initialVisibleCountProject) {
+            showLessButtonProject.style.display = "block";
+        } else {
+            showLessButtonProject.style.display = "none";
+        }
+    }
+
+    updateVisibilityProject();
+
+    showMoreButtonProject.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCountProject = subProjectElements.length;
+        updateVisibilityProject();
+    });
+
+    showLessButtonProject.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCountProject = initialVisibleCountProject;
+        updateVisibilityProject();
+    });
+});
+
 </script>
 
 {% endblock javascripts %}
