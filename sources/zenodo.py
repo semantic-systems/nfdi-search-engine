@@ -4,6 +4,7 @@ import utils
 from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
 import logging
 from sources import data_retriever
+import traceback
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -18,14 +19,12 @@ def search(search_term, results):
                                                      search_term=search_term,
                                                      results=results)      
 
-        hits = search_result['hits']
-        total_hits = hits['total']
-
-        logger.info(f'{source} - {total_hits} hits found')  
+        total_records_found = search_result.get("hits", {}).get("total", 0)
+        hits = search_result.get("hits", {}).get("hits", [])
+        total_hits = len(hits)
+        logger.info(f'{source} - {total_records_found} records matched; pulled top {total_hits}') 
 
         if int(total_hits) > 0:
-            hits = hits['hits']         
-    
             for hit in hits:
                 
                 metadata = hit.get('metadata', {})
@@ -97,3 +96,4 @@ def search(search_term, results):
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())

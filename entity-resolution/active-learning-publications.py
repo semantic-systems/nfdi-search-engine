@@ -15,16 +15,24 @@ def readData(filename):
         reader = csv.DictReader(f)
         for idx, row in enumerate(reader):
             row = dict((k, v.lower()) for k, v in row.items())
-            if row['Title'] == '':
-                row['Title'] = None
-            if row['Authors'] == '':
-                row['Authors'] = None
-            if row['Abstract'] == '':
-                row['Abstract'] = None
-            if row['Source'] == '':
-                row['Source'] = None
-            if row['DatePublished'] == '':
-                row['DatePublished'] = None
+            if row['identifier'] == '':
+                row['identifier'] = None
+            if row['name'] == '':
+                row['name'] = None
+            if row['url'] == '':
+                row['url'] = None
+            if row['author'] == '':
+                row['author'] = None
+            if row['description'] == '':
+                row['description'] = None
+            if row['datePublished'] == '':
+                row['datePublished'] = None
+            if row['source_name'] == '':
+                row['source_name'] = None
+            if row['source_identifier'] == '':
+                row['source_identifier'] = None
+            if row['source_url'] == '':
+                row['source_url'] = None            
 
             data_d[idx] = row
 
@@ -50,19 +58,40 @@ if __name__ == '__main__':
     else:
         # Define the fields dedupe will pay attention to
         fields = [
-            {'field': 'Title',
-             'variable name': 'Title',
-             'type': 'String'},
-            {'field': 'Authors',
-             'variable name': 'Authors',
+            {'field': 'identifier',
+             'variable name': 'identifier',
              'type': 'String',
              'has missing': True},
-            {'field': 'Abstract',
-             'variable name': 'Abstract',
+            {'field': 'name',
+             'variable name': 'name',
              'type': 'String',
              'has missing': True},
-            {'field': 'DatePublished',
-             'variable name': 'DatePublished',
+            {'field': 'url',
+             'variable name': 'url',
+             'type': 'String',
+             'has missing': True},
+            {'field': 'author',
+             'variable name': 'author',
+             'type': 'String',
+             'has missing': True},
+            {'field': 'description',
+             'variable name': 'description',
+             'type': 'String',
+             'has missing': True},
+            {'field': 'datePublished',
+             'variable name': 'datePublished',
+             'type': 'String',
+             'has missing': True},
+            {'field': 'source_name',
+             'variable name': 'source_name',
+             'type': 'String',
+             'has missing': True},
+            {'field': 'source_identifier',
+             'variable name': 'source_identifier',
+             'type': 'String',
+             'has missing': True},
+            {'field': 'source_url',
+             'variable name': 'source_url',
              'type': 'String',
              'has missing': True},
         ]
@@ -99,7 +128,7 @@ if __name__ == '__main__':
         # Save our weights and predicates to disk.  If the settings file
         # exists, we will skip all the training and learning next time we run
         # this file.
-        with open(settings_file, 'wb', encoding="utf-8", newline='') as sf:
+        with open(settings_file, 'wb') as sf:
             deduper.write_settings(sf)
 
     clustered_dupes = deduper.partition(data_d, 0.5)

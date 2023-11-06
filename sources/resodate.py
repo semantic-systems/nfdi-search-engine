@@ -4,6 +4,7 @@ import json
 import utils
 from objects import thing, Article, Author
 from sources import data_retriever
+import traceback
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -22,7 +23,7 @@ def search(search_term: str, results):
 
         total_hits = search_result['hits']['total']['value']
 
-        logger.info(f'RESODATE - {total_hits} hits found')
+        logger.info(f'{source} - {total_hits} records matched; pulled top {total_hits}') 
 
         if int(total_hits) > 0:
             hits = search_result['hits']['hits']                
@@ -85,3 +86,4 @@ def search(search_term: str, results):
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())

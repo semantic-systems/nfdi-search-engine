@@ -2,6 +2,7 @@ import requests
 import logging
 import utils
 import urllib.parse
+import traceback
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -45,5 +46,6 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())
 
 

@@ -24,7 +24,7 @@ def search(search_term, results):
         hits = response.get("results", {}).get("result",[])
         total_hits = len(hits)
 
-        logger.info(f'{source} - {total_hits} hits pulled; total records found: {total_records_found}')  
+        logger.info(f'{source} - {total_records_found} records matched; pulled top {total_hits}') 
 
         if int(total_hits) > 0:     
     
@@ -32,8 +32,7 @@ def search(search_term, results):
                 
                 metadata = hit.get('metadata', {}).get("oaf:entity", {})
                 resource_type = metadata.get('oaf:result', {}).get('resulttype', {}).get("@classname", "OTHER").upper()
-
-                print("Resource Type:", resource_type)
+                # print("Resource Type:", resource_type)
 
                 if resource_type == 'PUBLICATION':
                     digitalObj = Article() 

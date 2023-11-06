@@ -3,6 +3,7 @@ from objects import thing, Article, Author
 import logging
 import utils
 from sources import data_retriever
+import traceback
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -18,42 +19,21 @@ def search(search_term: str, results):
     source = "OPENALEX Publications"
 
     try:
-
-        # base_url = utils.config["search_url_openalex_publications"]
-        # url = base_url + search_term
-
-        # headers = {'Accept': 'application/json',
-        #            'Content-Type': 'application/json',
-        #            'User-Agent': utils.config["request_header_user_agent"]
-        #            }
-        # response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))        
-
-        # logger.debug(f'OPENALEX PUBL response status code: {response.status_code}')
-        # logger.debug(f'OPENALEX PUBL response headers: {response.headers}')
-
-        # if response.status_code == 200:
-
-        #     search_result = response.json()
-
-        #     #clean the json response; remove all the keys which don't have any value
-        #     search_result = utils.clean_json(search_result)
-
-        
         search_result = data_retriever.retrieve_data(source=source, 
                                                      base_url=utils.config["search_url_openalex_publications"],
                                                      search_term=search_term,
                                                      results=results)
-        total_hits = search_result['meta']['count']
-        logger.info(f'{source} - {total_hits} hits found')           
+        total_records_found = search_result['meta']['count']
+        hits = search_result.get("results", [])
+        total_hits = len(hits)
+        logger.info(f'{source} - {total_records_found} records matched; pulled top {total_hits}') 
 
-        if int(total_hits) > 0:
-            hits = search_result['results']     
+        if int(total_hits) > 0:    
             for hit in hits:
                     
                     publication = Article()   
 
-                    publication.name = hit.get("title", "")     
-                    # print(publication.name)        
+                    publication.name = utils.remove_html_tags(hit.get("title", ""))       
                     publication.url = hit.get("id", "") # not a valid url, openalex is currently working on their web interface.
                     publication.identifier = hit.get("doi", "").replace("https://doi.org/", "")
                     publication.datePublished = hit.get("publication_date", "") 
@@ -91,3 +71,4 @@ def search(search_term: str, results):
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())

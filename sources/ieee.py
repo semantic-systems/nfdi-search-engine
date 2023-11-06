@@ -5,6 +5,7 @@ from objects import thing, Article, Author
 from sources import data_retriever
 from datetime import datetime
 from dateutil import parser
+import traceback
 
 logger = logging.getLogger('nfdi_search_engine')
 
@@ -35,7 +36,7 @@ def search(search_term, results):
         hits = search_result['articles']
         total_hits = len(hits)     
 
-        logger.info(f'{source} - {total_records} hits found; pulled top {total_hits}')  
+        logger.info(f'{source} - {total_records} records matched; pulled top {total_hits}') 
 
         if int(total_hits) > 0:
             for hit in hits:
@@ -73,5 +74,6 @@ def search(search_term, results):
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())
         
     

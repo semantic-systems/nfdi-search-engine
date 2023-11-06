@@ -13,10 +13,13 @@
                         <div class="row">
                             <div class="col-11 fs-6">
                                 <div class="row mb-2">
-                                    <div class="col-12 fs-6">
+                                    <div class="col-9 fs-6">
                                         <a class="text-secondary fw-bold publication_name" href='/publication-details'
                                             target='_blank'>
                                             {{publication.name}}</a>
+                                    </div>
+                                    <div class="col-3 text-end text-wrap text-break">
+                                        <span class="badge bg-pill bg-success">DOI:{{publication.identifier}}</span>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -44,7 +47,6 @@
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-9 text-start">
-                                        <span class="badge bg-pill bg-success">{{publication.identifier}}</span>
                                         {% for source in publication.source %}
                                         <a id="source_link" href="{{source.url}}" target=_blank>
                                             <span class="badge bg-pill">{{source.name}}#{{source.identifier}}</span>
