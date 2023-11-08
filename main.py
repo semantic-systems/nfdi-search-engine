@@ -102,10 +102,12 @@ def chatbox():
     return response
 
 
-@app.route('/publication-details/<doi>', methods=['POST', 'GET'])
+@app.route('/publication-details/<string:doi>', methods=['POST', 'GET'])
 @utils.timeit
 def publication_details(doi):
 
+    doi = request.args.get('doi', '').replace('-.-', '/')
+    print(doi)
     
     response = make_response(render_template('publication-details.html'))
 

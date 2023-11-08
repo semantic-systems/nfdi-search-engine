@@ -5,6 +5,7 @@ import utils
 from objects import thing, Article, Author
 from sources import data_retriever
 import traceback
+import re
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -35,7 +36,7 @@ def search(search_term: str, results):
                 publication = Article()                  
                 publication.name = hit_source.get("name", "")             
                 publication.url = hit_source.get("id", "")  
-                publication.identifier = hit_source.get("id", "").replace("https://doi.org/","") 
+                publication.identifier =re.sub('^.*doi\.org\/', '', hit_source.get("id", "")) 
                 publication.datePublished = hit_source.get("datePublished", "") 
                 publication.license = hit_source.get("license", {}).get("id", "")
                 

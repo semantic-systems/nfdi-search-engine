@@ -19,7 +19,7 @@
                                             {{publication.name}}</span>
                                         {% else %}
                                         <a class="text-secondary fw-bold publication_name"
-                                            href='/publication-details/{{publication.identifier}}'
+                                            href='/publication-details/{{publication.identifier | replace("/", "-.-") }}'
                                             target='_blank'>{{publication.name}}</a>
                                         {% endif %}
                                     </div>

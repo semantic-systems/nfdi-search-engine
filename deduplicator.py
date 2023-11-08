@@ -75,7 +75,7 @@ def perform_entity_resolution_publications(publications):
     if os.path.exists(settings_file):
         print('reading from', settings_file)
         with open(settings_file, 'rb') as sf:
-            deduper = dedupe.StaticDedupe(sf, num_cores=2)
+            deduper = dedupe.StaticDedupe(sf, num_cores=1)
     else:
         print('Setting file not found: ', settings_file)
 
