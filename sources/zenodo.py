@@ -65,8 +65,8 @@ def search(search_term, results):
                 digitalObj.inLanguage.append(language)
 
                 digitalObj.datePublished = metadata.get('publication_date', '')
-                digitalObj.license = metadata.get('license', {}).get('id', '')
-
+                digitalObj.license = metadata.get('license', {}).get('id', '')    
+                
                 
 
                 authors = metadata.get("creators", [])                        
