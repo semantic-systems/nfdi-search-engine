@@ -40,12 +40,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
             logger.error(f'Response status code: {str(response.status_code)}')
             results['timedout_sources'].append(source)
 
-    except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('OPENALEX - Publications')
-    
     except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
-        logger.error(traceback.format_exc())
+        raise ex
 
 

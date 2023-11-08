@@ -51,6 +51,7 @@ def search(search_term, results):
                 publication.publication = hit.get('publisher', '')
                 publication.description = utils.remove_html_tags(hit.get('abstract', ''))
                 publication.abstract = publication.description
+                publication.encoding_contentUrl= hit.get('pdf_url', '')
 
                 authors = hit.get("authors", {}).get("authors", [])                        
                 for author in authors:

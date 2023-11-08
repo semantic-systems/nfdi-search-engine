@@ -67,6 +67,8 @@ def search(search_term, results):
                 digitalObj.datePublished = metadata.get('publication_date', '')
                 digitalObj.license = metadata.get('license', {}).get('id', '')
 
+                
+
                 authors = metadata.get("creators", [])                        
                 for author in authors:
                     _author = Author()
@@ -84,6 +86,12 @@ def search(search_term, results):
 
                 if resource_type.upper() == 'PUBLICATION':
                     digitalObj.abstract = digitalObj.description
+
+                    files = hit.get('files', [])
+                    for file in files:
+                        if file.get("key", "").endswith(".pdf"):
+                            digitalObj.encoding_contentUrl = file.get("links", {}).get("self", "")
+
                     results['publications'].append(digitalObj)
                 elif resource_type.upper() in ['PRESENTATION', 'POSTER', 'DATASET', 'SOFTWARE', 'VIDEO', 'IMAGE', 'LESSON']:                
                     results['resources'].append(digitalObj)                

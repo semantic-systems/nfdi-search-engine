@@ -14,12 +14,18 @@
                             <div class="col-11 fs-6">
                                 <div class="row mb-2">
                                     <div class="col-9 fs-6">
-                                        <a class="text-secondary fw-bold publication_name" href='/publication-details'
-                                            target='_blank'>
-                                            {{publication.name}}</a>
+                                        {% if publication.identifier == '' %}
+                                        <span class="text-secondary fw-bold publication_name">
+                                            {{publication.name}}</span>
+                                        {% else %}
+                                        <a class="text-secondary fw-bold publication_name"
+                                            href='/publication-details/{{publication.identifier}}'
+                                            target='_blank'>{{publication.name}}</a>
+                                        {% endif %}
                                     </div>
-                                    <div class="col-3 text-end text-wrap text-break">
-                                        <span class="badge bg-pill bg-success">DOI:{{publication.identifier}}</span>
+                                    <div class="col-3 text-end ">
+                                        <span
+                                            class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
                                     </div>
                                 </div>
                                 <div class="row">
@@ -49,14 +55,16 @@
                                     <div class="col-9 text-start">
                                         {% for source in publication.source %}
                                         <a id="source_link" href="{{source.url}}" target=_blank>
-                                            <span class="badge bg-pill">{{source.name}}#{{source.identifier}}</span>
+                                            <span
+                                                class="badge bg-pill text-wrap text-break">{{source.name}}#{{source.identifier}}</span>
                                         </a>
                                         {% endfor %}
-                                        <span class="badge bg-pill bg-secondary">{{publication.originalSource}}</span>
+                                        <span
+                                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
                                     </div>
                                     <div class="col-3 text-end">
                                         <span
-                                            class="badge bg-pill">{{publication.publication}}-{{publication.datePublished}}</span>
+                                            class="badge bg-pill text-wrap text-break">{{publication.publication}}-{{publication.datePublished}}</span>
                                     </div>
                                 </div>
                             </div>
@@ -64,19 +72,30 @@
                                 <div class="row fs-5">
                                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
                                                 class="bi bi-bookmark"></i></a></div> -->
+                                    {% if publication.identifier != '' %}
                                     <div class="text-end mb-3"><a href="#" title="Share" id="share_modal_link"
                                             data-bs-toggle="modal" data-bs-target="#share_modal_dialog"><i
                                                 class="bi bi-share"></i></a></div>
+                                    {% endif %}
+                                    {% if publication.image != '' %}
                                     <div class="text-end mb-3"><a href="#" title="Preview" id="preview_modal_link"
-                                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"><i
-                                                class="bi bi-eye"></i></a></div>
-                                    <div class="text-end mb-3"><a target='_blank'
-                                            href="{{publication.encoding_contentUrl}}" title="Download"><i
-                                                class="bi bi-download"></i></a></div>
+                                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
+                                            data-bs-publ-name="{{publication.name}}"
+                                            data-bs-img-src="{{publication.image}}"><i class="bi bi-eye"></i></a>
+                                    </div>
+                                    {% endif %}
+                                    {% if publication.encoding_contentUrl != '' %}
+                                    <div class="text-end mb-3"><a href="#" title="Download" id="download_modal_link"
+                                            data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
+                                            data-bs-publ-name="{{publication.name}}"
+                                            data-bs-embed-src="{{publication.encoding_contentUrl}}"><i
+                                                class="bi bi-download"></i></a>
+                                    </div>
+                                    {% endif %}
                                 </div>
                             </div>
 
-                            <div class="modal fade" id="share_modal_dialog" tabindex="-1" role="dialog"
+                            <div class="modal" id="share_modal_dialog" tabindex="-1" role="dialog"
                                 aria-labelledby="shareModalLabel" aria-hidden="true">
                                 <div class="modal-dialog" role="document">
                                     <div class="modal-content col-12">
@@ -195,15 +214,33 @@
                                 <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
                                     <div class="modal-content">
                                         <div class="modal-header">
-                                            <h5>
-                                                {{publication.name}}
+                                            <h5 class="modal-title">
                                             </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
                                         </div>
-                                        <div class="modal-body">
-                                            <img src="{{publication.image}}"
-                                                class="figure-img img-fluid border border-dark">
+                                        <div class="modal-body text-center">
+                                            <img src="" class="figure-img img-fluid border border-dark">
                                             <figcaption>
                                             </figcaption>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <div id="download_modal_dialog" class="modal">
+                                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">
+                                            </h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                                aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body text-center">
+                                            <iframe src="data:application/pdf;base64,base64encodedpdf" width="1150px"
+                                                height="800px"></iframe>
                                         </div>
                                     </div>
                                 </div>

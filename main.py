@@ -61,7 +61,7 @@ def search_results():
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee, eudat, openaire_products]
-        # sources = [openaire_products]
+        # sources = [zenodo]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -102,8 +102,11 @@ def chatbox():
     return response
 
 
-@app.route('/publication-details')
-def publication_details():
+@app.route('/publication-details/<doi>', methods=['POST', 'GET'])
+@utils.timeit
+def publication_details(doi):
+
+    
     response = make_response(render_template('publication-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
