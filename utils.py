@@ -5,8 +5,10 @@ from bs4 import BeautifulSoup
 
 # read config file
 import yaml
+
 with open("config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
+
 
 def extract_metadata(text):
     """
@@ -94,12 +96,17 @@ def remove_html_tags(text):
     return soup.text.strip()
 
 
-#region DECORATORS
+def remove_line_tags(text):
+    return text.replace('\n', ' ').replace('\t', ' ')
+
+
+# region DECORATORS
 
 from functools import wraps
 from time import time
 import inspect
 import os
+
 
 def timeit(f):
     @wraps(f)
@@ -108,8 +115,9 @@ def timeit(f):
         result = f(*args, **kwargs)
         te = time()
         filename = os.path.basename(inspect.getfile(f))
-        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
+        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te - ts))
         return result
+
     return decorated_function
 
-#endregion
+# endregion
