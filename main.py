@@ -56,8 +56,9 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
 
-        # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
-        sources = [re3data]
+        sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata,
+                   openaire, eulg, re3data]
+
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
