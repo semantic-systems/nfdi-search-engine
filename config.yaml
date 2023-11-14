@@ -1,6 +1,20 @@
 request_header_user_agent: nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)
-search_url_resodate: https://resodate.org/resources/api/search/oer_data/_search?pretty&size=100&q=
-search_url_oersi: https://oersi.org/resources/api/search/oer_data/_search?pretty&q=
+request_timeout: 5
+search_url_dblp_publications: https://dblp.org/search/publ/api?format=json&h=25&q=
+search_url_openalex_publications: https://api.openalex.org/works?page=1&per-page=25&search=
+search_url_zenodo: https://zenodo.org/api/records?size=25&q=
+search_url_wikidata: https://query.wikidata.org/sparql?format=json&query=
+search_url_resodate: https://resodate.org/resources/api/search/oer_data/_search?pretty&size=25&q=
+search_url_oersi: https://oersi.org/resources/api/search/oer_data/_search?pretty&size=25&q=
+search_url_ieee: http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={api_key}&max_records=25&querytext=
+search_url_eudat: https://b2share.eudat.eu/api/records/?page=1&size=25&sort=bestmatch&q=
+search_url_openaire_products: https://api.openaire.eu/search/researchProducts?format=json&size=25&keywords=
+
 search_url_openalex_authors: https://api.openalex.org/authors?search=
-search_url_orcid: https://pub.orcid.org/v3.0/expanded-search/?start=0&rows=100&q=
+search_url_orcid: https://pub.orcid.org/v3.0/expanded-search/?start=0&rows=25&q=
 search_url_dblp: https://dblp.org/search?q=
+
+search_url_gesis: http://193.175.238.35:8089/dc/_search?size=100&q=
+search_url_gepris: https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=
+
+settings_file_publications: static/weights/publications-settings.json

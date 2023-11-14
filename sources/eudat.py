@@ -1,132 +1,121 @@
 import requests
-from objects import Dataset, Person, Author, Article, CreativeWork
+from objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 import logging
+import utils
+from sources import data_retriever
+from datetime import datetime
+from dateutil import parser
+import traceback
 
 logger = logging.getLogger('nfdi_search_engine')
 
+@utils.timeit
+def search(search_term: str, results):
 
-def search(search_string: str, results):
-    """ Obtain the results from Eudat request and handles them accordingly.
+    source = "EUDAT"
 
-          Args:
-              search_string: keyword(s) to search for
-              results: search answer formatted into different data types according to Eudat resource_types
-              and mapped to schema.org types.
+    source_url_direct_access = "https://b2share.eudat.eu/records/"
 
-          Returns:
-                the results Object
-          """
-    api_url = 'https://b2share.eudat.eu/api/records/'
-    result_url_start = 'https://b2share.eudat.eu/records/'
-    response = requests.get(api_url, params={'q': search_string, 'size': 100, 'sort': 'mostrecent'})
-    data = response.json()
+    try:
 
-    logger.debug(f'Eudat response status code: {response.status_code}')
-    logger.debug(f'Eudat response headers: {response.headers}')
+        search_result = data_retriever.retrieve_data(source=source, 
+                                                     base_url=utils.config["search_url_eudat"],
+                                                     search_term=search_term,
+                                                     results=results)
+    
+        hits = search_result['hits']
+        total_hits = hits['total']
 
-    if response.status_code == 200:
-        try:
-            hits = data.get('hits', {}).get('hits', [])
-        except AttributeError:
-            hits = []  # Set hits as an empty list if the 'get' operation fails due to AttributeError
-        for hit in hits:
-            result_id = hit["id"]
-            url = result_url_start + result_id
-            metadata = hit["metadata"]
-            doi = metadata.get("DOI", "")
-            # epic_pid = metadata.get("ePIC_PID", "")
-            language = [metadata.get("language", "")]
-            license_identifier = metadata.get("license", {}).get("license", "") if metadata.get("license") else ""
-            title = metadata.get("titles", {})[0].get("title", "") if metadata.get("titles") else ""
-            description = metadata.get("descriptions", {})[0].get("description", "") if metadata.get(
-                "descriptions") else ""
-            publication_state = metadata.get("publication_state", "")
-            publication_date = metadata.get("publication_date", "")
-            version = metadata.get("version", "")
-            authors = []
-            for creator in metadata.get("creators", {}):
-                authors.append(creator["creator_name"].strip())
-            for contributor in metadata.get("contributors", {}):
-                authors.append(contributor["contributor_name"].strip())
+        logger.info(f'{source} - {total_hits} records matched; pulled top {total_hits}')          
 
-            """
-            It is possible to get different alternate identifiers for the resource. 
-            Like isbn, doi, etc. This may be needed later
-            
-            a_id, a_id_type = "", ""
-            alternate_identifiers = {}
-            if "alternate_identifiers" in metadata:
-                for id in metadata["alternate_identifiers"]:
-                    a_id = id["alternate_identifier"]
-                    a_id_type = id["alternate_identifier_type"]
-                    alternate_identifiers[a_id_type] = a_id
-            """
-            resource_types = []
-            for resource in metadata.get("resource_types", ""):
-                resource_types.append(resource["resource_type_general"])
-            category = resource_types[0] if len(resource_types) == 1 else "CreativeWork"
+        if int(total_hits) > 0:
+            hits = hits.get("hits", [])         
 
-            if category == "Dataset":
-                dataset = Dataset()
-                dataset.source = 'Eudat'
-                dataset.name = title
-                dataset.description = description
-                dataset.datePublished = publication_date
-                dataset.url = url
-                dataset.license = license_identifier
-                dataset.inLanguage = language
-                dataset.identifier = doi
-                for item in authors:
-                    person = Person()
-                    person.type = 'Person'
-                    person.source = 'Eudat'
-                    person.name = item
-                    dataset.author.append(person)
-                dataset.version = version
-                dataset.creativeWorkStatus = publication_state
-                results['resources'].append(dataset)
+            for hit in hits:
 
-            elif category in ["Text", "Report", "Preprint", "PeerReview", "JournalArticle", "Journal", "Dissertation",
-                              "ConferenceProceeding", "BookChapter", "Book"]:
-                article = Article()
-                article.source = 'Eudat'
-                article.name = title
-                article.description = description
-                article.datePublished = publication_date
-                article.inLanguage = language
-                article.url = url
-                article.identifier = doi
-                article.license = license_identifier
-                for item in authors:
-                    person = Author()
-                    person.type = 'Person'
-                    person.source = 'Eudat'
-                    person.name = item
-                    article.author.append(person)
-                article.version = version
-                article.creativeWorkStatus = publication_state
-                results['publications'].append(article)
+                metadata = hit.get('metadata', {})    
+                resource_type = 'OTHER' # resource type is defaulted to 'Other'   
+                resource_types = metadata.get('resource_types', [])
+                if len(resource_types) > 0:
+                    resource_type = resource_types[0].get('resource_type_general', '').upper()
 
-            else:
-                work = CreativeWork()
-                work.source = 'Eudat'
-                work.name = title
-                work.description = description
-                work.datePublished = publication_date
-                work.inLanguage = language
-                work.url = url
-                work.identifier = doi
-                work.license = license_identifier
-                for item in authors:
-                    person = Person()
-                    person.type = 'Person'
-                    person.source = 'Eudat'
-                    person.name = item
-                    work.author.append(person)
-                work.version = version
-                work.creativeWorkStatus = publication_state
-                work.genre = category
-                results['others'].append(work)
+                print('Resource Type:', resource_type.upper())
+                if resource_type == 'DATASET':
+                    digitalObj = Dataset() 
+                elif resource_type in ['TEXT']:
+                    digitalObj = Article()
+                elif resource_type in ['MODEL']:
+                    digitalObj = CreativeWork()
+                elif resource_type in ['AUDIOVISUAL']:
+                    digitalObj = VideoObject()                 
+                elif resource_type == 'OTHER':
+                    digitalObj = CreativeWork() 
+                else:
+                    print('This resource type is still not defined:', resource_type.upper())
+                    digitalObj = CreativeWork()
+                    
+                
+                digitalObj.identifier = metadata.get('DOI', '').replace("https://doi.org/","")
+                digitalObj.name = next(iter(metadata.get('titles', [])), {}).get("title", "")
+                digitalObj.url = hit.get('links', {}).get('self', '')  # this gives the json response
+                
+                
+                digitalObj.description = utils.remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
+                
+                
+                keywords = metadata.get('keywords', [])
+                for keyword in keywords:
+                    digitalObj.keywords.extend(keyword.get("keyword", "").split(","))  #keyword field contains comma seperated keywords  
 
-    # logger.info(f"Got {len(results)} records from Eudat")
-    return results
+                language = next(iter(metadata.get('languages', [])), {}).get("language_identifier", "")
+                digitalObj.inLanguage.append(language)
+
+                digitalObj.datePublished = datetime.strftime(parser.parse(hit.get('created', "")), '%Y-%m-%d')
+                digitalObj.license = metadata.get('license', {}).get('license', '')
+
+                authors = metadata.get("creators", [])                        
+                for author in authors:
+                    _author = Author()
+                    _author.type = 'Person'
+                    _author.name = author.get("creator_name", "")
+
+                    if ";" in _author.name:
+                        authors_names = _author.name.split(";")
+                        for author_name in authors_names:
+                            __author = Author()
+                            __author.type = 'Person'
+                            __author.name = author_name
+                        digitalObj.author.append(__author)  
+                    else:
+                        digitalObj.author.append(_author)  
+
+                _source = thing()
+                _source.name = source
+                _source.identifier = hit.get("id", "")
+                # _source.url = hit.get('links', {}).get('self', '')  # this gives json response
+                _source.url = source_url_direct_access + _source.identifier                    
+                digitalObj.source.append(_source)  
+
+                if resource_type in ['DATASET', 'MODEL', 'AUDIOVISUAL']:
+                    results['resources'].append(digitalObj)    
+                elif resource_type.upper() in ['TEXT']:
+                    digitalObj.abstract = digitalObj.description
+                    results['publications'].append(digitalObj)                
+                else:
+                    results['others'].append(digitalObj)   
+                
+                # resource_types = []
+                # for resource in metadata.get("resource_types", ""):
+                #     resource_types.append(resource["resource_type_general"])
+                # category = resource_types[0] if len(resource_types) == 1 else "CreativeWork"
+
+                # elif category in ["Text", "Report", "Preprint", "PeerReview", "JournalArticle", "Journal", "Dissertation",
+                #                 "ConferenceProceeding", "BookChapter", "Book"]:        
+        
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append(source)
+        
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())
