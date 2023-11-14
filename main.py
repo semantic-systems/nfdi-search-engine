@@ -136,11 +136,9 @@ def researcher_details():
     return response
 
 
-@app.route('/organization-details', methods=['GET'])
-def organization_details():
+@app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+def organization_details(organization_id, organization_name):
     try:
-        organization_id = request.args.get('id')
-        organization_name = request.args.get('name')
 
          # Create a response object
         """ response = make_response()
