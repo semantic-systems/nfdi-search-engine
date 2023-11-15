@@ -22,11 +22,32 @@ class thing:
 @dataclass
 class Organization(thing):
     address: str = ""
+    aggregateRating: str = ""
+    areaServed: str = ""
+    award: str = ""
+    brand: str = ""
+    contactPoint: str = ""
+    dissolutionDate: str = ""
+    event: str = ""
     email: str = ""
+    founder: str = ""
+    funding: str = ""
+    foundingDate: str = ""
+    foundingLocation: str = ""
+    globalLocationNumber: str = ""
+    hasCredential: str = ""
+    leiCode: str = ""
     legalName: str = ""
     location: str = ""
     logo: str = "" # url
+    member: str = ""
+    memberOf: str = ""
+    nonprofitStatus: str = ""
     numberOfEmployees: str = ""
+    parentOrganization: str = ""
+    subOrganization: str = ""
+    taxID: str = ""
+    review: str = ""
     telephone: str = ""
     foundingDate: str = ""
     keywords: List[str] = field(default_factory=list)
@@ -155,19 +176,26 @@ class Dataset(CreativeWork):
 
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
 @dataclass
-class Project(Organization): 
+class Project(Organization):
+    abstract: str = ""
+    acronym: str = ""
+    coordinatorOrganization: str = ""
+    description: str = "" 
     dateStart: str = ""
     dateEnd: str = ""
     dateLastModified : str = ""
-    abstract: str = ""
+    duration: str = ""
     inLanguage: List[str] = field(default_factory=list)
-    availableLanguages: List[str] = field(default_factory=list)
+    availableLanguage: List[str] = field(default_factory=list)
     objective: str = ""
     status: str = ""
     author: List[Union[Organization, Person]] = field(default_factory=list)
     funder: List[Union[
         Organization, Person]] = field(
         default_factory=list)  # Organization | Person # we can use pipe operator for Union in Python >= 3.10
+    totalCost: str =""
+    doi: str = ""
+    
 
 
     def __post_init__(self):

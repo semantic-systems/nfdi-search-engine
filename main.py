@@ -11,6 +11,7 @@ from sources import dblp, zenodo, openalex, resodate, oersi, wikidata, cordis, g
 # import dblp, zenodo, openalex, resodate, wikidata, cordis, gesis, orcid, gepris # , eulg
 import details_page
 from sources.gepris import org_details
+from sources.cordis import project_details_cordis
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -136,12 +137,10 @@ def researcher_details():
     return response
 
 
-@app.route('/organization-details', methods=['GET'])
-def organization_details():
+@app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+def organization_details(organization_id, organization_name):
     try:
-        organization_id = request.args.get('id')
-        organization_name = request.args.get('name')
-
+        
          # Create a response object
         """ response = make_response()
 
@@ -152,7 +151,7 @@ def organization_details():
             else:
                 response.set_cookie('search-session', request.cookies['session'])"""
 
-        # Call the org_details function from the gepris module to fetch organization details by id
+        # Call the org_details function in the gepris module to fetch organization details
         organization, sub_organization, sub_project = org_details(organization_id, organization_name)
 
         if organization or sub_organization or sub_project:
@@ -182,9 +181,10 @@ def events_details():
     return response
 
 
-@app.route('/fundings-details')
-def fundings_details():
-    response = make_response(render_template('fundings-details.html'))
+@app.route('/fundings-details/<string:project_source>/<string:project_id>', methods=['GET'])
+def fundings_details(project_source, project_id):
+
+    """response = make_response(render_template('fundings-details.html'))
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
         if request.cookies.get('session') is None:
@@ -192,7 +192,37 @@ def fundings_details():
         else:
             response.set_cookie('search-session', request.cookies['session'])
 
-    return response
+    return response"""
+    try:
+        
+        if project_source == "CORDIS":
+            # Call the project_details function in the CORDIS module to fetch project details
+            project = project_details_cordis(project_id)
+
+            if project:
+                # Render the fundings-details.html template
+                return render_template('fundings-details.html', project = project)
+            else:
+                # Handle the case where project details are not found (e.g., return a 404 page)
+                return render_template('error.html',error_message='Project details not found.')
+            
+        """elif project_source == "GEPRIS":
+    
+            # Call the project_details function from the GEPRIS module to fetch project details by id
+            project = project_details_gepris(project_id)
+
+            if project:
+                # Render the fundings-details.html template
+                return render_template('fundings-details.html', project = project)
+            else:
+                # Handle the case where project details are not found (e.g., return a 404 page)
+                return render_template('error.html',error_message='Project details not found.')"""
+        
+    except ValueError as ve:
+        return render_template('error.html', error_message= str(ve))
+    except Exception as e:
+        return render_template('error.html',  error_message='An error occurred: ' + str(e))
+
 
 
 @app.route('/details', methods=['POST', 'GET'])
