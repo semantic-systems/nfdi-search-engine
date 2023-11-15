@@ -1,6 +1,6 @@
 import requests
 import utils
-from objects import Dataset, Author, Article, CreativeWork, Organization, Project
+from objects import CreativeWork, Organization
 import logging
 import xmltodict
 
@@ -19,8 +19,7 @@ def re3data_product_search(search_string, results):
     try:
         api_url = 'https://www.re3data.org/api/beta/repositories'
         response = requests.get(api_url,
-                                params={"query": search_string}  # ,  # , "format": "json", "size": 20},
-                                , timeout=int(utils.config["request_timeout"])
+                                params={"query": search_string}, timeout=int(utils.config["request_timeout"])
                                 )
         # Response comes as XML
         data = xmltodict.parse(response.content)
