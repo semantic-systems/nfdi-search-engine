@@ -36,7 +36,8 @@ def re3data_product_search(search_string, results):
 
             for hit in hits:
                 repo_uri = hit.get('link', {}).get('@href', '')
-                if repo_uri != "":
+                try:
+                    # if repo_uri != "":
                     hit_response = requests.get(repo_uri)
                     hit_data = xmltodict.parse(hit_response.content)
                     hit_details = hit_data.get('r3d:re3data', {}).get('r3d:repository', {})
@@ -46,70 +47,75 @@ def re3data_product_search(search_string, results):
                     if repo_id is not None:
                         repository.url = 'https://www.re3data.org/repository/' + repo_id
                     repository.name = hit_details.get('r3d:repositoryName', {}).get('#text', '')
-                    alternate_name = hit_details.get('r3d:additionalName', None)
-                    if type(alternate_name) is dict:
-                        repository.alternateName = alternate_name.get('#text', '')
-                    elif type(alternate_name) is list:
+                    alternate_names = hit_details.get('r3d:additionalName', None)
+                    if isinstance(alternate_names, dict):
+                        repository.alternateName = alternate_names.get('#text', '')
+                    elif isinstance(alternate_names, list):
                         item_list = []
-                        for item in alternate_name:
-                            item_list.append(item.get('#text'))
+                        for alternate_name in alternate_names:
+                            item_list.append(alternate_name.get('#text'))
                         repository.alternateName = ' - '.join(item_list)
                     repository.description = utils.remove_line_tags(
                         hit_details.get('r3d:description', {}).get('#text', ''))
 
-                    # can be string or list:
-                    repository.identifier = hit_details.get('r3d:repositoryIdentifier', '')
+                    # Not showing identifiers on result page
+                    # repository.identifier = hit_details.get('r3d:repositoryIdentifier', '')
+
                     repository.dateCreated = hit_details.get('r3d:startDate', '')
                     repository.datePublished = hit_details.get('r3d:entryDate', '')
                     repository.dateModified = hit_details.get('r3d:lastUpdate''')
                     repository.keywords = hit_details.get('r3d:keyword', '')
                     repository.inLanguage = [hit_details.get('r3d:repositoryLanguage', '')]
-                    licenses = hit_details.get('r3d:dataLicense', None)
-                    if type(licenses) is dict:
-                        repository.license = licenses.get('r3d:dataLicenseURL', '')
-                    elif type(licenses) is list:
-                        license_list = []
-                        for item in licenses:
-                            license_list.append(item.get('r3d:dataLicenseURL', ''))
-                            repository.license = license_list
 
-                    repo_institutions = hit_details.get('r3d:institution', None)
-                    if type(repo_institutions) is dict:
+                    # Not showing licenses on result page
+                    # licenses = hit_details.get('r3d:dataLicense', None)
+                    # if type(licenses) is dict:
+                    #     repository.license = licenses.get('r3d:dataLicenseURL', '')
+                    # elif type(licenses) is list:
+                    #     license_list = []
+                    #     for item in licenses:
+                    #         license_list.append(item.get('r3d:dataLicenseURL', ''))
+                    #         repository.license = license_list
+
+                    institutions = hit_details.get('r3d:institution', None)
+                    if isinstance(institutions, dict):
                         organization = Organization()
-                        organization.name = repo_institutions.get('r3d:institutionName', {}).get('#text', '')
-                        organization.alternateName = repo_institutions.get('r3d:institutionAdditionalName', {}).get(
+                        organization.name = institutions.get('r3d:institutionName', {}).get('#text', '')
+                        organization.alternateName = institutions.get('r3d:institutionAdditionalName', {}).get(
                             '#text', '')
-                        organization.location = repo_institutions.get('r3d:institutionCountry', '')
-                        organization.url = repo_institutions.get('r3d:institutionURL', '')
-                        if 'funding' in repo_institutions.get('r3d:responsibilityType', []):
+                        organization.location = institutions.get('r3d:institutionCountry', '')
+                        organization.url = institutions.get('r3d:institutionURL', '')
+                        if 'funding' in institutions.get('r3d:responsibilityType', []):
                             repository.funder = organization
                         else:
                             repository.sourceOrganization = organization
 
-                    if type(repo_institutions) is list:
+                    elif isinstance(institutions, list):
                         funder_list, sourceOrga_list = [], []
-                        for item in repo_institutions:
-                            print(item)
+                        for institution in institutions:
                             organization = Organization()
-                            organization.name = item.get('r3d:institutionName', {}).get('#text', '')
-                            additional_names = item.get('r3d:institutionAdditionalName', None)
-                            if type(additional_names) is list:
+                            organization.name = institution.get('r3d:institutionName', {}).get('#text', '')
+                            additional_names = institution.get('r3d:institutionAdditionalName', None)
+                            if isinstance(additional_names, list):
                                 name_list = []
-                                for name in additional_names:
-                                    name_list.append(name.get('#text', ''))
-                                organization.alternateName = ",".join(name_list)
-                            elif additional_names is str:
+                                for additional_name in additional_names:
+                                    name_list.append(additional_name.get('#text', ''))
+                                organization.alternateName = ", ".join(name_list)
+                            elif isinstance(additional_names, str):
                                 organization.alternateName = additional_names
-                            organization.location = item.get('r3d:institutionCountry', '')
-                            organization.url = item.get('r3d:institutionURL', '')
-                            if 'funding' in item.get('r3d:responsibilityType', None):
+                            organization.location = institution.get('r3d:institutionCountry', '')
+                            organization.url = institution.get('r3d:institutionURL', '')
+                            if 'funding' in institution.get('r3d:responsibilityType', None):
                                 funder_list.append(organization)
                             else:
                                 sourceOrga_list.append(organization)
                         repository.funder = funder_list
                         repository.sourceOrganization = sourceOrga_list
                     results['resources'].append(repository)
-                    print(repository)
+
+                # Exception if no url to call Details API
+                except Exception as ex:
+                    logger.error(f'Exception: {str(ex)}')
 
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
