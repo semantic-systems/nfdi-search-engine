@@ -11,6 +11,7 @@ from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import cordis, gesis, orcid, gepris, eulg
 
 import details_page
+from sources.gepris import org_details
 import utils
 import deduplicator
 
@@ -149,18 +150,34 @@ def researcher_details():
     return response
 
 
-@app.route('/organization-details')
-def organization_details():
-    response = make_response(render_template('organization-details.html'))
+@app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+def organization_details(organization_id, organization_name):
+    try:
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
+         # Create a response object
+        """ response = make_response()
+
+        # Set search-session cookie to the session cookie value of the first visit
+        if request.cookies.get('search-session') is None:
+            if request.cookies.get('session') is None:
+                response.set_cookie('search-session', str(uuid.uuid4()))
+            else:
+                response.set_cookie('search-session', request.cookies['session'])"""
+
+        # Call the org_details function from the gepris module to fetch organization details by id
+        organization, sub_organization, sub_project = org_details(organization_id, organization_name)
+
+        if organization or sub_organization or sub_project:
+            # Render the organization-details.html template
+            return render_template('organization-details.html', organization = organization, sub_organization = sub_organization, sub_project = sub_project)
         else:
-            response.set_cookie('search-session', request.cookies['session'])
-
-    return response
+            # Handle the case where organization details are not found (e.g., return a 404 page)
+            return render_template('error.html',error_message='Organization details not found.')
+        
+    except ValueError as ve:
+        return render_template('error.html', error_message= str(ve))
+    except Exception as e:
+        return render_template('error.html',  error_message='An error occurred: ' + str(e))
 
 
 @app.route('/events-details')
