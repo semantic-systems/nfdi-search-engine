@@ -164,16 +164,6 @@ class ImageObject(MediaObject):
     embeddedTextCaption: str = ""
     exifData: str = ""  #exif data for this object
     representativeOfPage: str = ""   #Indicates whether this image is representative of the content of the page
-  
-
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
 
 @dataclass
 class Place(thing): 
@@ -219,17 +209,10 @@ class Place(thing):
     specialOpeningHoursSpecification: str = ""
     telephone: str = ""
     tourBookingPage: str = ""
-    
 
-
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
+#################################################################################
+# classes defined below should not be used, as they are not mapped to schema.org
+# ###############################################################################
 
 @dataclass
 class Zenodo:
