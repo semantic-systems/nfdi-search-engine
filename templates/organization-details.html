@@ -8,16 +8,30 @@
     .a-dir{
         float:right;
     }
-</style>
+    #map-container {
+            width: 100%;
+            height: 400px;
+            margin-bottom: 20px;  
+        }
+    #map-external-link-container {
+        text-align: end;
+        font-size: 1rem;
+    }
+    #map {
+            width: 100%;
+            height: 400px;
+        }
+    #address-content {
+        padding-left: 0.5rem;
+    }
 
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
-
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
-
         <div class="row pb-4">
             <div class="col text-start">
                 <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
@@ -25,39 +39,30 @@
         </div>
         <div class="row border-bottom pb-4">
             <div class="col-7 text-start col-7-specific">
-                <h3>DAAD</h3>
+                <input type="hidden" id="latitude" name="hiddenField1" value="{{ organization.latitude }}">
+                <input type="hidden" id="longitude" name="hiddenField2" value="{{ organization.longitude }}">
+                <h3 id="org_name">{{organization.name}}</h3>
                 <div class="py-2">
-                    <span class="badge bg-pill">Area Served</span>
-                    <span class="badge bg-pill">Grant</span>
-                    <span class="badge bg-pill">Event</span>
-                    <span class="badge bg-pill">Contact Point</span>
+                    <span class="badge bg-pill">{{organization.source}}</span>
+                    <span class="badge bg-pill">{{organization.licence}}</span>
+                   
                 </div>
                 <div class="fs-7 py-2">
                     <span class="pe-4">
-                        <span class="fw-bold">Global Location Number:</span>
-                        <span>GEO57743</span>
+                        <span class="fw-bold">Organization Number:</span>
+                        <span>{{organization.identifier}}</span>
                     </span>
                     <span class="pe-4">
-                        <span class="fw-bold">Award:</span>
-                        <span>15</span>
+                        <span class="fw-bold">Organization Type:</span>
+                        <span>{{organization.placType}}</span>
                     </span>
                 </div>
             </div>
             <div class="col-5 d-flex justify-content-end">
                 <div class="summary-block p-2 ms-3">
-                    <i class="bi bi-download fs-4"></i>
-                    <div class="fs-7 my-1">Downloads</div>
-                    <div class="fs-5 fw-bold">500</div>
-                </div>
-                <div class="summary-block p-2 ms-3">
-                    <i class="bi bi-bookmarks fs-4"></i>
-                    <div class="fs-7 my-1">Saved</div>
-                    <div class="fs-5 fw-bold">220</div>
-                </div>
-                <div class="summary-block p-2 ms-3">
-                    <i class="bi bi-eye fs-4"></i>
-                    <div class="fs-7 my-1">Views</div>
-                    <div class="fs-5 fw-bold">5K+</div>
+                    <i class="bi bi-trophy fs-4"></i>
+                    <div class="fs-7 my-1">Ranking</div>
+                    <div class="fs-5 fw-bold">{{organization.aggregateRating}}</div>
                 </div>
             </div>
         </div>
@@ -68,81 +73,95 @@
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="pe-4" style="float: left;">
-                        <div><span class="fw-bold">Street:</span> Kennedyallee 50</div>
-                        <div><span class="fw-bold">City:</span> 2D-53175 Bonn</div>
-                        <div><span class="fw-bold">Country:</span> Germany</div>
-                    </div>
-                    <div class="map-imag">
-                        <img height="250" width="380" src="static/images/organization_details.png">
-                    </div>
+                        <div id="organizationId"></div>
+                        <div id="address-details">
+                            <div class="fw-bold" name="title">Address Details:</div>
+                            <div id="address-content">{{organization.address}}</div>
+                        </div>
+                        &nbsp;
+                        <div id="address-details">
+                            <div class="fw-bold" name="title">Address Type:</div>
+                            <div id="address-content">{{organization.addressType}}</div>
+                        </div>
+                    </div>            
+                    <!-- Map Container -->
+                    <div id="map-container">
+                        <!-- Map External Link Container -->
+                        <div id="map-external-link-container"> </div>
+                        <!-- Map Container used in JS -->
+                        <div id="map"></div>
+                    </div>   
                 </div>
                 <div class="d-flex p-2 bd-highlight">
                     <h5>SUB ORGANIZATIONS</h5>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="subOrganization">
                     <div class="card mb-2 p-2 rounded-extra">
-                        <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    DAAD Berlin office</a>
-                            </div>
+                        <div class="card-bodies">
+                            {% for sub_org in sub_organization %}
+                                <div class="card-body sub-org">
+                                    <div class="d-flex bd-highlight">
+                                        <a class="text-dark fw-bold" href='{{ sub_org.url }}' target='_blank'>
+                                            {{ sub_org.name }}
+                                        </a>
+                                    </div>
+                                </div>
+                            {% endfor %}
                         </div>
                         <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    DAAD Außenstelle London</a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between fs-7 pt-3 a-dir" >
-                                <span class="">
-                                    <a class="text-decoration-none fw-bold" href='#' target='_blank'>
-                                        SHOW MORE </a>
+                            <div class="d-flex justify-content-between fs-7 pt-3 a-dir">
+                                <span class="show-more">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showMoreOrganization">
+                                        SHOW MORE
+                                    </a>
+                                </span>
+                                <span class="show-less">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showLessOrganization">
+                                        SHOW LESS
+                                    </a>
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </div>
+
             <div class="col-4 ps-5">
                 <div class="d-flex p-2 bd-highlight">
-                    <h5>SUGGESTED ORGANIZATIONS</h5>
+                    <h5>SUB PROJECTS</h5>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="subProject">
                     <div class="card mb-2 p-2 rounded-extra">
-                        <div class="card-body">
+                        {% for sub_proj in sub_project %}
+                        <div class="card-body sub-project">
                             <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Alexander von Humboldt Foundation</a>
+                                <a class="text-dark fw-bold" href='{{ sub_proj.url }}' target='_blank'>
+                                    {{ sub_proj.name }}
+                                </a>
                             </div>
                         </div>
+                        {% endfor %}
                         <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Association of German Foundations</a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Boehringer Ingelheim Fonds</a>
-                            </div>
-                        </div>
-                        <div class="card-body">
-                            <div class="d-flex bd-highlight">
-                                <a class="text-dark fw-bold" href='#' target='_blank'>
-                                    Deutsche Bank</a>
-                            </div>
                             <div class="d-flex justify-content-between fs-7 pt-3 a-dir">
                                 <span class="badge bg-pill"></span>
-                                <span class="">
-                                    <a class="text-decoration-none fw-bold" href='#' target='_blank'>
-                                        SHOW MORE </a>
+                                <span class="show-more">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showMoreProject">
+                                        SHOW MORE
+                                    </a>
+                                </span>
+                                <span class="show-less">
+                                    <a class="text-decoration-none fw-bold" href="#" id="showLessProject">
+                                        SHOW LESS
+                                    </a>
                                 </span>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <div class=" d-flex p-2 bd-highlight pt-4">
                     <h5>FAIR Assessment</h5>
                 </div>
@@ -152,6 +171,7 @@
                     <h5>Other...</h5>
                 </div>
             </div>
+
         </div>
     </div>
 </main>
@@ -168,9 +188,148 @@
 
     });
 
+    // Get the values of the HTML elements by their IDs
+    var orgNameElement = document.getElementById('org_name');
+    var latitudeElement = document.getElementById('latitude');
+    var longitudeElement = document.getElementById('longitude');
 
+    // Assign the text and value contents of the elements to variables
+    var orgName = orgNameElement.textContent;
+    var latitude = latitudeElement.value;
+    var longitude = longitudeElement.value;
+
+    // Initialize the map
+    var map = L.map('map').setView([latitude, longitude], 13);
+
+    // Add a tile layer
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    }).addTo(map);
+
+    // Add a marker to the map
+    L.marker([latitude, longitude]).addTo(map)
+        .bindPopup(orgName).openPopup();
+
+    // Add a red circle to the location
+    var circle = L.circle([latitude, longitude], {
+        color: 'red',
+        fillColor: '#f03',
+        fillOpacity: 0.5,
+        radius: 500
+    }).addTo(map);
+
+    // click event to show the latitude and logitude on map
+    var popup = L.popup();
+    function onMapClick(e) {
+        popup
+            .setLatLng(e.latlng)
+            .setContent("You clicked the map at " + e.latlng.toString())
+            .openOn(map);
+    }
+    map.on('click', onMapClick);
+
+    // Create a link dynamically based on latitude and longitude for external map websit
+    var openStreetMapLink = document.createElement('a');
+    openStreetMapLink.href = 'https://www.openstreetmap.org/?mlat=' + latitude + '&mlon=' + longitude + '#map=15/' + latitude + '/' + longitude;
+    openStreetMapLink.target = '_blank';
+    openStreetMapLink.textContent = 'Open in Map';
+
+    // Append the link to Map External Link Container in  HTML
+    var linkContainer = document.getElementById('map-external-link-container');
+    linkContainer.appendChild(openStreetMapLink);
+
+    // Show more or less organizations
+    document.addEventListener("DOMContentLoaded", function () {
+    const subOrgElements = document.querySelectorAll(".sub-org");
+    const showMoreButton = document.getElementById("showMoreOrganization");
+    const showLessButton = document.getElementById("showLessOrganization");
+    const initialVisibleCount = 5;
+    let visibleCount = initialVisibleCount;
+
+    function updateVisibility() {
+        subOrgElements.forEach((element, index) => {
+            if (index < visibleCount) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        });
+
+        if (visibleCount < subOrgElements.length) {
+            showMoreButton.style.display = "block";
+        } else {
+            showMoreButton.style.display = "none";
+        }
+
+        if (visibleCount > initialVisibleCount) {
+            showLessButton.style.display = "block";
+        } else {
+            showLessButton.style.display = "none";
+        }
+    }
+
+    updateVisibility();
+
+    showMoreButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCount = subOrgElements.length;
+        updateVisibility();
+    });
+
+    showLessButton.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCount = initialVisibleCount;
+        updateVisibility();
+    });
+});
+
+// Show more or less projects
+
+document.addEventListener("DOMContentLoaded", function () {
+    const subProjectElements = document.querySelectorAll(".sub-project");
+    const showMoreButtonProject = document.getElementById("showMoreProject");
+    const showLessButtonProject = document.getElementById("showLessProject");
+    const initialVisibleCountProject = 5;
+    let visibleCountProject = initialVisibleCountProject;
+
+    function updateVisibilityProject() {
+        subProjectElements.forEach((element, index) => {
+            if (index < visibleCountProject) {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        });
+
+        if (visibleCountProject < subProjectElements.length) {
+            showMoreButtonProject.style.display = "block";
+        } else {
+            showMoreButtonProject.style.display = "none";
+        }
+
+        if (visibleCountProject > initialVisibleCountProject) {
+            showLessButtonProject.style.display = "block";
+        } else {
+            showLessButtonProject.style.display = "none";
+        }
+    }
+
+    updateVisibilityProject();
+
+    showMoreButtonProject.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCountProject = subProjectElements.length;
+        updateVisibilityProject();
+    });
+
+    showLessButtonProject.addEventListener("click", function (event) {
+        event.preventDefault();
+        visibleCountProject = initialVisibleCountProject;
+        updateVisibilityProject();
+    });
+});
 
 </script>
-
 
 {% endblock javascripts %}

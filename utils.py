@@ -8,90 +8,6 @@ import yaml
 with open("config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
-def extract_metadata(text):
-    """
-    Extract all metadata present in the page and return a dictionary of metadata lists.
-
-        Initially authored by Ricardo Usbeck
-
-    Args:
-
-    Returns:
-        metadata (dict): Dictionary of json-ld, microdata, and opengraph lists.
-        Each of the lists present within the dictionary contains multiple dictionaries.
-    """
-
-    metadata = extruct.extract(text,
-                               uniform=True,
-                               syntaxes=['json-ld',
-                                         'microdata',
-                                         'opengraph'])
-    return metadata
-
-
-def is_author_in(name, authors):
-    """
-    Verifies if the author is already in the results
-    Args:
-        name: name of the author
-        authors: list of the results
-
-    Returns:
-        True if it's already there and False if not
-
-    """
-    for author in authors:
-        if type(author) is not Person:
-            continue
-        if author.name == name:
-            return author
-    return None
-
-
-def is_article_in(title, articles):
-    """
-        Verifies if the paper is already in the results
-        Args:
-            title: name of the paper
-            articles: list of the results
-
-        Returns:
-            True if it's already there and False if not
-
-        """
-    for article in articles:
-        if type(article) is not Article:
-            continue
-        if article.title == title:
-            return article
-    return None
-
-
-def read_wikipedia(title):
-    wikipedia.set_lang("en")
-    try:
-        summary_text = wikipedia.summary(title, 3, redirect=True)
-    except:
-        return ""
-    return summary_text
-
-
-# def remove_html_tags(text):
-#     soup = BeautifulSoup(text, "html.parser")
-#     cleaned_text = soup.text
-#     cleaned_text.strip()
-#     sentences = cleaned_text.split('.')
-#     if len(sentences) <= 5:
-#         return cleaned_text
-#     else:
-#         first_n_sentences: str = '. '.join(
-#                 sentence for sentence in sentences[0:4])
-#         return first_n_sentences
-
-
-def remove_html_tags(text):
-    soup = BeautifulSoup(text, "html.parser")
-    return soup.text.strip()
 
 
 #region DECORATORS
@@ -113,3 +29,91 @@ def timeit(f):
     return decorated_function
 
 #endregion
+
+
+def clean_json(value):
+    """
+    Recursively remove all None values from dictionaries and lists, and returns
+    the result as a new dictionary or list.
+    """
+    if isinstance(value, list):
+        return [clean_json(x) for x in value if x is not None]
+    elif isinstance(value, dict):
+        return {
+            key: clean_json(val)
+            for key, val in value.items()
+            if val is not None
+        }
+    else:
+        return value
+
+def extract_metadata(text):
+    """
+    Extract all metadata present in the page and return a dictionary of metadata lists.
+
+        Initially authored by Ricardo Usbeck
+
+    Args:
+
+    Returns:
+        metadata (dict): Dictionary of json-ld, microdata, and opengraph lists.
+        Each of the lists present within the dictionary contains multiple dictionaries.
+    """
+
+    metadata = extruct.extract(text,
+                               uniform=True,
+                               syntaxes=['json-ld',
+                                         'microdata',
+                                         'opengraph'])
+    return metadata
+
+def is_author_in(name, authors):
+    """
+    Verifies if the author is already in the results
+    Args:
+        name: name of the author
+        authors: list of the results
+
+    Returns:
+        True if it's already there and False if not
+
+    """
+    for author in authors:
+        if type(author) is not Person:
+            continue
+        if author.name == name:
+            return author
+    return None
+
+def is_article_in(title, articles):
+    """
+        Verifies if the paper is already in the results
+        Args:
+            title: name of the paper
+            articles: list of the results
+
+        Returns:
+            True if it's already there and False if not
+
+        """
+    for article in articles:
+        if type(article) is not Article:
+            continue
+        if article.title == title:
+            return article
+    return None
+
+def read_wikipedia(title):
+    wikipedia.set_lang("en")
+    try:
+        summary_text = wikipedia.summary(title, 3, redirect=True)
+    except:
+        return ""
+    return summary_text
+
+def remove_html_tags(text):
+    soup = BeautifulSoup(text, "html.parser")
+    return soup.text.strip()
+
+def remove_line_tags(text):
+    return text.replace('\n', ' ').replace('\t', ' ')

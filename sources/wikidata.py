@@ -22,7 +22,7 @@ def search(search_string: str, results):
     wikidata_person_search(search_string, results)
     wikidata_article_search(search_string, results)
 
-    logger.info(f"Got {len(results)} author and publication records from Wikidata")
+    logger.info(f"Got {len(results['researchers'])} author and {len(results['publications'])} publication records from Wikidata")
     return results
 
 

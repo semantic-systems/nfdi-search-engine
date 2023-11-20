@@ -1,4 +1,4 @@
-from objects import Dataset, Software
+from objects import Dataset, SoftwareApplication
 import utils
 from elg import Catalog
 
@@ -107,7 +107,7 @@ def search(search_term, results):
                     )
                     '''
                 elif result.resource_type == "Tool/Service":
-                    software = Software()
+                    software = SoftwareApplication()
                     url = "https://live.european-language-grid.eu/catalogue/tool-service/" + str(result.id)
                     description = result.description
                     description = utils.remove_html_tags(description)

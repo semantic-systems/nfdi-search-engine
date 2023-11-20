@@ -52,7 +52,12 @@ def openaire_product_search(search_string, results):
                     product = Dataset()
                 else:
                     product = CreativeWork()
+
                 product.source = 'Openaire'
+                collectedfrom = pro_result.get('collectedfrom', None)
+                if collectedfrom:
+                    product.originalSource = collectedfrom.get('@name', None)
+
                 product.genre = result_type
                 date = pro_result.get('dateofacceptance', None)
                 if date:
