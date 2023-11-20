@@ -46,7 +46,7 @@ def clean_json(value):
         }
     else:
         return value
-    
+
 def extract_metadata(text):
     """
     Extract all metadata present in the page and return a dictionary of metadata lists.
@@ -115,3 +115,5 @@ def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")
     return soup.text.strip()
 
+def remove_line_tags(text):
+    return text.replace('\n', ' ').replace('\t', ' ')

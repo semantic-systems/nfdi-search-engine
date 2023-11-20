@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, make_response
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
 from sources import resodate, oersi, ieee, eudat, openaire_products
-from sources import cordis, gesis, orcid, gepris, eulg
+from sources import cordis, gesis, orcid, gepris, eulg, re3data
 
 import details_page
 from sources.gepris import org_details
@@ -61,7 +61,7 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
-        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee, eudat, openaire_products]
+        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee, eudat, openaire_products, re3data]
         # sources = [zenodo]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -109,7 +109,7 @@ def publication_details(doi):
 
     doi = request.args.get('doi', '').replace('-.-', '/')
     print(doi)
-    
+
     response = make_response(render_template('publication-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
