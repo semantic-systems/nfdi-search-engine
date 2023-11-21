@@ -137,3 +137,5 @@ dmypy.json
 
 # logging settings should not be part of the Git repo IMO
 logging.conf
+# configurations for debugging
+launch.json

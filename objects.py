@@ -164,11 +164,64 @@ class ImageObject(MediaObject):
     embeddedTextCaption: str = ""
     exifData: str = ""  #exif data for this object
     representativeOfPage: str = ""   #Indicates whether this image is representative of the content of the page
-  
 
-############################################################
-# from here, its an old code and should be removed
-############################################################
+@dataclass
+class Place(thing): 
+    additionalProperty: str = ""
+    address: str = ""
+    addressType: str = ""
+    aggregateRating: str = ""
+    amenityFeature: str = ""
+    branchCode: str = ""
+    containedInPlace: str = ""	
+    containsPlace	: str = ""
+    event: str = ""
+    faxNumber: str = ""
+    geo: str = ""
+    geoContains: str = ""
+    geoCoveredBy: str = ""
+    geoCovers: str = ""
+    geoCrosses: str = ""
+    geoDisjoint: str = ""
+    geoEquals: str = ""
+    geoIntersects: str = ""
+    geoOverlaps: str = ""
+    geoTouches: str = ""
+    geoWithin: str = ""
+    globalLocationNumber: str = ""	
+    hasDriveThroughService: str = ""
+    hasMap: str = ""
+    isAccessibleForFree: str = ""	
+    isicV4: str = ""
+    keywords: str = ""
+    latitude: str = ""
+    licence: str = ""
+    logo: str = ""
+    longitude: str = ""
+    maximumAttendeeCapacity: str = ""	
+    openingHoursSpecification: str = ""
+    photo: str = ""
+    placType: str = ""
+    publicAccess: str = ""
+    review: str = ""
+    slogan: str = ""
+    smokingAllowed: str = ""
+    specialOpeningHoursSpecification: str = ""
+    telephone: str = ""
+    tourBookingPage: str = ""
+
+#################################################################################
+# classes defined below should not be used, as they are not mapped to schema.org
+# ###############################################################################
+
+@dataclass
+class Zenodo:
+    resource_type: str
+    url: str
+    date: str  # e.g. '2022-07-06'
+    title: str
+    description: str
+    author: str
 
 # @dataclass
 # class Zenodo:
@@ -178,7 +231,6 @@ class ImageObject(MediaObject):
 #     title: str
 #     description: str
 #     author: str
-
 
 @dataclass
 class Institute:
