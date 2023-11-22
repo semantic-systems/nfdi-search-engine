@@ -111,21 +111,26 @@
                         </div>
                     </div>
             </div>
+
             <div class="col-5 px-4">
-            <div class="d-flex p-2 bd-highlight">
-            <h5>PROJECT DESCRIPTION</h5>
-            </div>
-            <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
-                <div class="card-body">
-                    <div class="d-flex bd-highlight">
-                        <a class="text-dark fw-bold link-secondary" href='#' target='_blank'>Objective</a>
-                    </div>
-                    <div class="d-flex p-2 bd-highlight fs-6">
-                        <p>{{project.objective}}</p>
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>PROJECT DESCRIPTION</h5>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <span class="text-dark fw-bold">Objective</span>
+                        </div>
+                        <div class="d-flex p-2 bd-highlight fs-6">
+                            <p id="projectObjective">{{project.objective}}</p>
+                            <span id="readMore" style="display:none;"></span>
+                            <a href="#" id="readMoreLink" onclick="showMore()" style="display:none;"> Read more...</a>
+                            <a href="#" id="showLessLink" onclick="showLess()" style="display:none;"> Show less</a>
+                        </div>
                     </div>
                 </div>
             </div>
-            </div>
+            
             <div class="col-auto">
                 <div class="card p-0 shadow-bottom-right" style="border-radius:2.0rem;">
                     <div class="card-body p-0">
@@ -195,6 +200,35 @@
 
     });
 
+
+    // Read more.... and show less the objectives text of a project
+    document.addEventListener("DOMContentLoaded", function () {
+        var projectObjective = document.getElementById("projectObjective");
+        var originalText = projectObjective.innerText;
+        var maxLength = 1000;
+
+        if (originalText.length > maxLength) {
+            var shortText = originalText.substring(0, maxLength);
+            var longText = originalText.substring(maxLength);
+
+            projectObjective.innerHTML = shortText +
+                '<span id="readMore" style="display:none;">' + longText + '</span>' +
+                '<a href="#" id="readMoreLink" onclick="showMore()"> Read more...</a>' +
+                '<a href="#" id="showLessLink" onclick="showLess()" style="display:none;"> Show less</a>';
+        }
+    });
+
+    function showMore() {
+        document.getElementById("readMore").style.display = "inline";
+        document.getElementById("readMoreLink").style.display = "none";
+        document.getElementById("showLessLink").style.display = "inline";
+    }
+
+    function showLess() {
+        document.getElementById("readMore").style.display = "none";
+        document.getElementById("readMoreLink").style.display = "inline";
+        document.getElementById("showLessLink").style.display = "none";
+    }
 
 
 </script>
