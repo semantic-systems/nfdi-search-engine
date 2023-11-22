@@ -115,6 +115,7 @@ def search(search_term, results):
             logger.error(f'Cordis response status code: {response.status_code}. Unable to fetch data from the API.')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('CORDIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

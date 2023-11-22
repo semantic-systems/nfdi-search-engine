@@ -14,11 +14,11 @@
         <div class="bsearch">
             <form name="searchbox" action="/results" method="GET" onsubmit="return emptySearch()">
                 <div class="">
-                    <h2 class="text-center text-dark fs-1 fw-bold mb-4">Welcome to NFDI4DS Gateway</h2>
+                    <h2 class="text-center text-dark fw-bold mb-4" style="font-size: 3vw;">Welcome to NFDI4DS Gateway</h2>
                     <div class="row mb-4">
                         <div class="col-3"></div>
                         <div class="col-6 text-center">
-                            <h4 class="text-secondary">The vision of NFDI4DS is to support all
+                            <h4 class="text-secondary" style="font-size: 1.7vw;">The vision of NFDI4DS is to support all
                                 steps of the
                                 complex and interdisciplinary research data lifecycle. Here you can explore all NFDI4DS
                                 services.</h4>
@@ -50,75 +50,75 @@
 
         <!--DATA SOURCES-->
         <div class="row mt-5">
-            <h2 class="text-center text-dark fs-1 fw-bold mt-5 mb-2">Data Sources</h2>
+            <h2 class="text-center text-dark fw-bold mt-5 mb-2" style="font-size: 3vw;">Data Sources</h2>
             <div class="col-md-12">
                 <div class="lc-block">
                     <div id="carouselLogosSources" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
-                        <div class="carousel-inner px-5">
+                        <div class="carousel-inner px-5" style="height: 6vw;">
                             <div class="carousel-item active">
-                                <div class="row text-center">
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
+                                <div class="row">
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/DBLP_Logo_320x120.png') }}"
                                             alt="DBLP">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto"
                                             src="{{ url_for('static', filename='images/sources/OpenAlex-logo.png') }}"
                                             alt="OPENALEX">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/orcid.logo.svg') }}"
                                             alt="ORCID">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block h-80 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/Wikidata-logo.png') }}"
                                             alt="WIKIDATA">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto"
                                             src="{{ url_for('static', filename='images/sources/zenodo-logo.png') }}"
                                             alt="ZENODO">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
-                                            src="{{ url_for('static', filename='images/sources/Datacite-Logo.png') }}"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto px-3"
+                                            src="{{ url_for('static', filename='images/sources/DataCite-Logo.png') }}"
                                             alt="DATACITE">
                                     </div>
                                 </div>
                             </div>
                             <div class="carousel-item">
                                 <div class="row">
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 h-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/GEPRIS_Logo.png') }}"
                                             alt="GEPRIS">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block h-60 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block h-70 w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/GESIS-Logo.svg') }}"
                                             alt="GESIS">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block h-80 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block h-100 w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/oersi-logo.svg') }}"
                                             alt="OERSI">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block h-40 px-2 float-start"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block h-30 px-2 float-start"
                                             src="{{ url_for('static', filename='images/sources/resodate-logo.png') }}"
                                             alt="RESODATE">
-                                        <div class="fs-5 float-start">RESODATE</div>
+                                        <div class="float-start" style="font-size: 2vw;">RESODATE</div>
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block h-80 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block h-100 w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/ieee.gif') }}"
                                             alt="IEEE">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mx-auto px-3"
                                             src="{{ url_for('static', filename='images/sources/elg-logo.svg') }}"
                                             alt="European Language Grid">
                                     </div>
@@ -160,40 +160,40 @@
 
         <!--PARTNERS-->
         <div class="row mt-5">
-            <h2 class="text-center text-dark fs-1 fw-bold mt-5 mb-2">Partners</h2>
+            <h2 class="text-center text-dark fw-bold mt-5 mb-2" style="font-size: 3vw;">Partners</h2>
             <div class="col-md-12">
                 <div class="lc-block">
                     <div id="carouselLogosPartners" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
-                        <div class="carousel-inner px-5">
+                        <div class="carousel-inner px-5 style='height: 6vw;'">
                             <div class="carousel-item active">
                                 <div class="row text-center">
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3 mb-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mb-3"
                                             src="{{ url_for('static', filename='images/partners/fokus.png') }}"
                                             alt="Fraunhofer FOKUS">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3 mb-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mb-3"
                                             src="{{ url_for('static', filename='images/partners/luh.svg') }}"
                                             alt="Leibniz University Hannover">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/lzi.jpg') }}"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mb-3"
+                                            src="{{ url_for('static', filename='images/partners/LZI.jpg') }}"
                                             alt="Leibniz Centre for Informatics (LZI)">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3 mb-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mb-3"
                                             src="{{ url_for('static', filename='images/partners/tib.svg') }}"
                                             alt="Leibniz Information Centre for Science and Technology (TIB)">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3 mb-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mb-3"
                                             src="{{ url_for('static', filename='images/partners/Universitaet-Koeln.jpg') }}"
                                             alt="University of Cologne">
                                     </div>
-                                    <div class="col-6 col-lg-2 align-self-center">
-                                        <img class="d-block w-100 px-3 mb-3"
+                                    <div class="col-2 align-self-center">
+                                        <img class="d-block w-100 mb-3"
                                             src="{{ url_for('static', filename='images/partners/gesis.svg') }}"
                                             alt="Leibniz Institute for the Social Sciences (GESIS)">
                                     </div>

@@ -1,7 +1,6 @@
 from typing import Union, List
 import dataclasses
 from dataclasses import dataclass, fields, field
-
 @dataclass
 class thing:
     name: str = ""
@@ -9,15 +8,9 @@ class thing:
     description: str = ""
     url: str = ""
     image: str = "" #url of the image
-    identifier: str = ""
-    source: str = ""
-
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
+    identifier: str = "" #doi or pid will be stored as identifier    
+    originalSource: str = ""
+    source: list() = field(default_factory=list) # this list will have "thing" objects
 
 @dataclass
 class Organization(thing):
@@ -51,14 +44,6 @@ class Organization(thing):
     telephone: str = ""
     foundingDate: str = ""
     keywords: List[str] = field(default_factory=list)
-
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
-
 @dataclass
 class Person(thing):
     additionalName: str = ""
@@ -81,31 +66,16 @@ class Person(thing):
     workLocation: str = ""  #this should be a list
     worksFor: Organization = None  #this should be a list
     
-
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
-
-Organization.founder = List[Person]
+Organization.founder = List[Person]  
 # Organization.funder = Union[Organization(), Person()]
 Organization.parentOrganization = Organization()
 
+
 @dataclass
 class Author(Person):
-    orcid: str = ""
+    # orcid: str = "" # we should not have this attribute; orcid should be kept in 
     works_count: str = ""
     cited_by_count: str = ""
-
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
-
 
 @dataclass
 class CreativeWork(thing):
@@ -135,16 +105,6 @@ class CreativeWork(thing):
     thumbnail: str = "" #ImageObject
     thumbnailUrl: str = "" #url
     version: str = ""   
-
-
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
-
-
 @dataclass
 class Article(CreativeWork):    
     articleBody: str = ""
@@ -153,26 +113,10 @@ class Article(CreativeWork):
     pagination: str = ""
     wordCount: str = ""
 
-    def __post_init__(self):
-    # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
-
-
 @dataclass
 class Dataset(CreativeWork): 
     distribution: str = ""
     issn: str = ""
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
 
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
 @dataclass
@@ -207,18 +151,10 @@ class Project(Organization):
 
 
 @dataclass
-class Software(CreativeWork):
+class SoftwareApplication(CreativeWork):
     distribution: str = ""
     issn: str = ""
-
-    def __post_init__(self):
-        # Loop through the fields
-        for field in fields(self):
-            # If there is a default and the value of the field is none we can assign a value
-            if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                setattr(self, field.name, field.default)
-
-
+@dataclass
 class LearningResource(CreativeWork): 
     assesses: str = ""  #The item being described is intended to assess the competency or learning outcome defined by the referenced term.
     competencyRequired: str = ""
@@ -227,15 +163,6 @@ class LearningResource(CreativeWork):
     educationalUse:str = ""
     learningResourceType:str = ""
     teaches:str = ""   #The item being described is intended to help a person learn the competency or learning outcome defined by the referenced term.
-
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
 
 @dataclass
 class MediaObject(CreativeWork): 
@@ -259,15 +186,6 @@ class MediaObject(CreativeWork):
     uploadDate: str = ""
     width: str = ""
     
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
-
 @dataclass
 class VideoObject(MediaObject): 
     actor: str = ""
@@ -278,31 +196,12 @@ class VideoObject(MediaObject):
     transcript: str = ""
     videoFrameSize: str = ""
     videoQuality: str = ""
-
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
-
 @dataclass
 class ImageObject(MediaObject): 
     caption: str = ""
     embeddedTextCaption: str = ""
     exifData: str = ""  #exif data for this object
     representativeOfPage: str = ""   #Indicates whether this image is representative of the content of the page
-
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
 
 @dataclass
 class Place(thing): 
@@ -348,17 +247,10 @@ class Place(thing):
     specialOpeningHoursSpecification: str = ""
     telephone: str = ""
     tourBookingPage: str = ""
-    
 
-
-
-    def __post_init__(self):
-        # Loop through the fields
-            for field in fields(self):
-                # If there is a default and the value of the field is none we can assign a value
-                if not isinstance(field.default, dataclasses._MISSING_TYPE) and getattr(self, field.name) is None:
-                    setattr(self, field.name, field.default)
-
+#################################################################################
+# classes defined below should not be used, as they are not mapped to schema.org
+# ###############################################################################
 
 @dataclass
 class Zenodo:
@@ -369,6 +261,14 @@ class Zenodo:
     description: str
     author: str
 
+# @dataclass
+# class Zenodo:
+#     resource_type: str
+#     url: str
+#     date: str  # e.g. '2022-07-06'
+#     title: str
+#     description: str
+#     author: str
 
 @dataclass
 class Institute:
@@ -478,13 +378,13 @@ class Gesis:
     authors: str
 
 
-# @dataclass
-# class Cordis:
-#     id: str
-#     url: str
-#     date: str 
-#     title: str
-#     description: str
+@dataclass
+class Cordis:
+    id: str
+    url: str
+    date: str 
+    title: str
+    description: str
 
 
 @dataclass

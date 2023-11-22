@@ -4,10 +4,11 @@ from objects import Article, Author
 from string import Template
 from datetime import datetime
 from dateutil import parser
+import utils
 
 logger = logging.getLogger('nfdi_search_engine')
 
-
+@utils.timeit
 def search(search_string: str, results):
     """ Obtain the results from Wikidata request and handles them accordingly.
 
@@ -21,75 +22,83 @@ def search(search_string: str, results):
     wikidata_person_search(search_string, results)
     wikidata_article_search(search_string, results)
 
-    logger.info(f"Got {len(results)} author and publication records from Wikidata")
+    logger.info(f"Got {len(results['researchers'])} author and {len(results['publications'])} publication records from Wikidata")
     return results
 
 
 def wikidata_article_search(search_string: str, results):
-    url = 'https://query.wikidata.org/sparql'
-    headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
-    query_template = Template('''
- SELECT DISTINCT ?item ?label ?date #(year(?date)as ?dateYear)
-(group_concat(DISTINCT ?authorsName; separator=",") as ?authorsLabel)
-(group_concat(DISTINCT ?authors2; separator=",") as ?authorsString) 
-  WHERE
-  {
-    SERVICE wikibase:mwapi
+  try:
+        
+      url = 'https://query.wikidata.org/sparql'
+      headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
+      query_template = Template('''
+  SELECT DISTINCT ?item ?label ?date #(year(?date)as ?dateYear)
+  (group_concat(DISTINCT ?authorsName; separator=",") as ?authorsLabel)
+  (group_concat(DISTINCT ?authors2; separator=",") as ?authorsString) 
+    WHERE
     {
-      bd:serviceParam wikibase:endpoint "www.wikidata.org";
-                      wikibase:limit "once";
-                      wikibase:api "Generator";
-                      mwapi:generator "search";
-                      mwapi:gsrsearch "$search_string";
-                      mwapi:gsrlimit "150".
-      ?item wikibase:apiOutputItem mwapi:title.
+      SERVICE wikibase:mwapi
+      {
+        bd:serviceParam wikibase:endpoint "www.wikidata.org";
+                        wikibase:limit "once";
+                        wikibase:api "Generator";
+                        mwapi:generator "search";
+                        mwapi:gsrsearch "$search_string";
+                        mwapi:gsrlimit "150".
+        ?item wikibase:apiOutputItem mwapi:title.
+      }
+      ?item rdfs:label ?label. FILTER( LANG(?label)="en" )
+      ?item wdt:P31/wdt:P279* wd:Q11826511.
+      ?item wdt:P577 ?date .
+      ?item wdt:P50 ?authors.
+      ?authors rdfs:label ?authorsName . FILTER( LANG(?authorsName)="en" )
+      optional {?item wdt:P2093 ?authors2.}
     }
-    ?item rdfs:label ?label. FILTER( LANG(?label)="en" )
-    ?item wdt:P31/wdt:P279* wd:Q11826511.
-    ?item wdt:P577 ?date .
-    ?item wdt:P50 ?authors.
-    ?authors rdfs:label ?authorsName . FILTER( LANG(?authorsName)="en" )
-    optional {?item wdt:P2093 ?authors2.}
-  }
-GROUP BY ?item ?label ?date 
-#ORDER BY DESC(?dateYear)
-  ''')
+  GROUP BY ?item ?label ?date 
+  #ORDER BY DESC(?dateYear)
+    ''')
 
-    response = requests.get(url,
-                            params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, headers=headers)
-    logger.debug(f'Wikidata article search response status code: {response.status_code}')
-    logger.debug(f'Wikidata article search response headers: {response.headers}')
+      response = requests.get(url,
+                              params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
+                                      }, headers=headers, timeout=int(utils.config["request_timeout"]))
+      logger.debug(f'Wikidata article search response status code: {response.status_code}')
+      logger.debug(f'Wikidata article search response headers: {response.headers}')
 
-    if response.status_code == 200:
-        data = response.json()
-        if data["results"]["bindings"]:
-            for result in data["results"]["bindings"]:
-                publication = Article()
-                publication.source = 'Wikidata'
-                publication.url = result['item'].get('value', "")
-                publication.name = result['label'].get('value', "")
-                date_obj = parser.parse(result.get('date', {}).get('value', ""))
-                date = datetime.strftime(date_obj, '%Y-%m-%d')
-                publication.datePublished = date  # result.get('date', {}).get('value', "")
-                if result['authorsLabel'].get("value"):
-                    authors_list = result['authorsLabel'].get("value", "").rstrip(",").split(",")
-                    for item in authors_list:
-                        author = Author()
-                        author.name = item
-                        author.type = 'Person'
-                        publication.author.append(author)
-                if result['authorsString'].get("value"):
-                    authors_list = result['authorsString'].get("value", "").rstrip(",").split(",")
-                    for item in authors_list:
-                        author = Author()
-                        author.name = item
-                        author.type = 'Person'
-                        publication.author.append(author)
-                results['publications'].append(publication)
-
+      if response.status_code == 200:
+          data = response.json()
+          if data["results"]["bindings"]:
+              for result in data["results"]["bindings"]:
+                  publication = Article()
+                  publication.source = 'Wikidata'
+                  publication.url = result['item'].get('value', "")
+                  publication.name = result['label'].get('value', "")
+                  date_obj = parser.parse(result.get('date', {}).get('value', ""))
+                  date = datetime.strftime(date_obj, '%Y-%m-%d')
+                  publication.datePublished = date  # result.get('date', {}).get('value', "")
+                  if result['authorsLabel'].get("value"):
+                      authors_list = result['authorsLabel'].get("value", "").rstrip(",").split(",")
+                      for item in authors_list:
+                          author = Author()
+                          author.name = item
+                          author.type = 'Person'
+                          publication.author.append(author)
+                  if result['authorsString'].get("value"):
+                      authors_list = result['authorsString'].get("value", "").rstrip(",").split(",")
+                      for item in authors_list:
+                          author = Author()
+                          author.name = item
+                          author.type = 'Person'
+                          publication.author.append(author)
+                  results['publications'].append(publication)
+  except requests.exceptions.Timeout as ex:
+    logger.error(f'Timed out Exception: {str(ex)}')
+    results['timedout_sources'].append('WIKIDATA')
+        
+  except Exception as ex:
+    logger.error(f'Exception: {str(ex)}')
 
 def wikidata_person_search(search_string: str, results):
+  try:
     url = 'https://query.wikidata.org/sparql'
     headers = {'User-Agent': 'https://nfdi-search.nliwod.org/'}
     query_template = Template('''
@@ -134,7 +143,7 @@ GROUP by ?item ?itemLabel ?orcid ?nationalityLabel ?givenNameLabel ?familyNameLa
 
     response = requests.get(url,
                             params={'format': 'json', 'query': query_template.substitute(search_string=search_string),
-                                    }, headers=headers)
+                                    }, headers=headers, timeout=int(utils.config["request_timeout"]))
     logger.debug(f'Wikidata person search response status code: {response.status_code}')
     logger.debug(f'Wikidata person search response headers: {response.headers}')
 
@@ -153,3 +162,10 @@ GROUP by ?item ?itemLabel ?orcid ?nationalityLabel ?givenNameLabel ?familyNameLa
                 author.orcid = result.get('orcid', {}).get('value', "")
 
                 results['researchers'].append(author)
+
+  except requests.exceptions.Timeout as ex:
+    logger.error(f'Timed out Exception: {str(ex)}')
+    results['timedout_sources'].append('WIKIDATA')
+        
+  except Exception as ex:
+    logger.error(f'Exception: {str(ex)}')

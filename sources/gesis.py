@@ -13,10 +13,12 @@ def search(search_term, results):
     try:
 
         # API URL with the search term
-        api_url = f'http://193.175.238.35:8089/dc/_search?q={search_term}&size=100'
+        base_url = utils.config["search_url_gesis"]
+        # api_url = f'http://193.175.238.35:8089/dc/_search?q={search_term}&size=100'
+        api_url = base_url + search_term
         # Send a GET request to the API URL
         # response = requests.get(api_url)
-        response = requests.get(api_url, timeout=3)
+        response = requests.get(api_url, timeout=int(utils.config["request_timeout"]))
         response.raise_for_status()  # Raise an exception for non-successful response status codes
 
         logger.debug(f'Gesis response status code: {response.status_code}')
@@ -80,11 +82,10 @@ def search(search_term, results):
             except IndexError as e:
                 # Handle the case when an index is out of range
                 logger.warning(f"Index out of range: {e}. Skipping this hit.")
-    # except requests.exceptions.RequestException as e:
-    #     # Handle any errors that occur while making the API request
-    #     logger.error(f"Error occurred while making the API request: {e}")
+    
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GESIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')

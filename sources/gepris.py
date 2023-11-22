@@ -19,7 +19,10 @@ def search(search_term, results):
 
         base_url = 'https://gepris.dfg.de/gepris/OCTOPUS'
         url = f"{base_url}?context=projekt&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
-    
+
+        # base_url = utils.config["search_url_gepris"]
+        # url = base_url + search_term
+
         # response = requests.get(url)
         response = requests.get(url, timeout=3)
         response.raise_for_status()  # Raise an exception for non-2xx status codes
@@ -88,6 +91,7 @@ def search(search_term, results):
         # logger.info(f'Got {len(results)} records from Gepris')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GEPRIS')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -98,63 +102,59 @@ def find_author(search_term, results):
     try:
         base_url = 'https://gepris.dfg.de/gepris/OCTOPUS'
         url = f"{base_url}?context=person&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+            
+        response = requests.get(url, timeout=3)
+        response.raise_for_status()  # Raise an exception for non-2xx status codes
+
+        logger.debug(f'Gepris response status code: {response.status_code}')
+        logger.debug(f'Gepris response headers: {response.headers}')
+    
+        soup = BeautifulSoup(response.content, 'html.parser')
+        result = soup.find("span", id="result-info")
+
+        total_reocrds = result.text
+        logger.info(f'GEPRIS - {total_reocrds} records found')
         
-        try:
-            
-            response = requests.get(url, timeout=3)
-            response.raise_for_status()  # Raise an exception for non-2xx status codes
+        if result:
+            url = f"{base_url}?context=person&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
 
-            logger.debug(f'Gepris response status code: {response.status_code}')
-            logger.debug(f'Gepris response headers: {response.headers}')
+            response = requests.get(url)
+            response.raise_for_status()
+            
+        soup = BeautifulSoup(response.content, 'html.parser')
+        aurhtors_element = soup.find("div", id="liste")
         
-            soup = BeautifulSoup(response.content, 'html.parser')
-            result = soup.find("span", id="result-info")
-
-            total_reocrds = result.text
-            logger.info(f'GEPRIS - {total_reocrds} records found')
+        if aurhtors_element:
+            authors = aurhtors_element.find_all("div", class_=["eintrag_alternate","eintrag"])
             
-            if result:
-                url = f"{base_url}?context=person&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+            for author in authors:
+                try:
+                    authorObj = Person()
+                    authorObj.source = 'GEPRIS'
+                    authorObj.identifier = author.find("a")["href"]
+                    authorObj.url = f'https://gepris.dfg.de{authorObj.identifier}'
+                    author_names = author.find("h2").text.strip()
+                    if "," in author_names:
+                        authorObj.name = author_names.replace(",", " ")
 
-                response = requests.get(url)
-                response.raise_for_status()
-                
-            soup = BeautifulSoup(response.content, 'html.parser')
-            aurhtors_element = soup.find("div", id="liste")
-            
-            if aurhtors_element:
-                authors = aurhtors_element.find_all("div", class_=["eintrag_alternate","eintrag"])
-                
-                for author in authors:
-                    try:
-                        authorObj = Person()
-                        authorObj.source = 'GEPRIS'
-                        authorObj.identifier = author.find("a")["href"]
-                        authorObj.url = f'https://gepris.dfg.de{authorObj.identifier}'
-                        author_names = author.find("h2").text.strip()
-                        if "," in author_names:
-                            authorObj.name = author_names.replace(",", " ")
+                    authorObj.affiliation = ' '.join(author.find("div", class_="beschreibung").find_all(string=True, recursive=False)).strip()
 
-                        authorObj.affiliation = ' '.join(author.find("div", class_="beschreibung").find_all(string=True, recursive=False)).strip()
+                    results['researchers'].append(authorObj)
 
-                        results['researchers'].append(authorObj)
-
-                    except KeyError:
-                        logger.warning("Key 'href' not found in 'a' tag. Skipping project.")
-                    except AttributeError:
-                        logger.warning("Unable to find author for the search term")
+                except KeyError:
+                    logger.warning("Key 'href' not found in 'a' tag. Skipping project.")
+                except AttributeError:
+                    logger.warning("Unable to find author for the search term")
             
             # logger.info(f'Got {len(results)} records from Gepris')
-        
-        except requests.exceptions.RequestException as e:
-            logger.error(f'Error occurred while making a request to Gepris authors: {e}')
-        except Exception as e:
-            logger.error(f'An error occurred during the search: {e}')
-        # except requests.exceptions.Timeout as ex:
-        #     logger.error(f'Timed out Exception: {str(ex)}')
+    
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
-        
+        results['timedout_sources'].append('GEPRIS')
+
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Error occurred while making a request to Gepris authors: {e}')
+           
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
 
@@ -165,25 +165,26 @@ def find_organization(search_term, results):
         base_url = 'https://gepris.dfg.de/gepris/OCTOPUS'
         url = f"{base_url}?context=institution&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
         
-        try:
-            response = requests.get(url, timeout=3)
-            response.raise_for_status()  # Raise an exception for non-2xx status codes
+        response = requests.get(url, timeout=3)
+        response.raise_for_status()  # Raise an exception for non-2xx status codes
 
-            logger.debug(f'Gepris response status code: {response.status_code}')
-            logger.debug(f'Gepris response headers: {response.headers}')
+        logger.debug(f'Gepris response status code: {response.status_code}')
+        logger.debug(f'Gepris response headers: {response.headers}')
+    
+        soup = BeautifulSoup(response.content, 'html.parser')
+        result = soup.find("span", id="result-info")
+
+        total_reocrds = result.text
+        logger.info(f'GEPRIS - {total_reocrds} records found')
         
-            soup = BeautifulSoup(response.content, 'html.parser')
-            result = soup.find("span", id="result-info")
+        # logger.info(f'Got {len(results)} records from Gepris')
 
-            total_reocrds = result.text
-            logger.info(f'GEPRIS - {total_reocrds} records found')
+        if result:
+            url = f"{base_url}?context=institution&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+
+            response = requests.get(url)
+            response.raise_for_status()
             
-            if result:
-                url = f"{base_url}?context=institution&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
-
-                response = requests.get(url)
-                response.raise_for_status()
-                
             soup = BeautifulSoup(response.content, 'html.parser')
             organization_list = soup.find("div", id="liste")
             try:
@@ -215,14 +216,12 @@ def find_organization(search_term, results):
             except AttributeError:
                 logger.warning("Unable to find organization details")
 
-            # logger.info(f'Got {len(results)} records from Gepris')
-        
-        except requests.exceptions.RequestException as e:
-            logger.error(f'Error occurred while making a request to Gepris institutions: {e}')
-        except Exception as e:
-            logger.error(f'An error occurred during the search: {e}')
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
+        results['timedout_sources'].append('GEPRIS')        
+    
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Error occurred while making a request to Gepris institutions: {e}')
         
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
