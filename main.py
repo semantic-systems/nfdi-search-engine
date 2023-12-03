@@ -8,7 +8,7 @@ from flask import Flask, render_template, request, make_response
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
 from sources import resodate, oersi, ieee, eudat, openaire_products
-from sources import cordis, gesis, orcid, gepris, eulg, re3data
+from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
 import details_page
 from sources.gepris import org_details
@@ -32,6 +32,7 @@ def index():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
 
 @app.route('/results', methods=['POST', 'GET'])
 @utils.timeit
@@ -61,7 +62,8 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
-        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee, eudat, openaire_products, re3data]
+        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
+                   eudat, openaire_products, re3data, orkg]
         # sources = [zenodo]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -106,7 +108,6 @@ def chatbox():
 @app.route('/publication-details/<string:doi>', methods=['POST', 'GET'])
 @utils.timeit
 def publication_details(doi):
-
     doi = request.args.get('doi', '').replace('-.-', '/')
     print(doi)
 
@@ -154,7 +155,7 @@ def researcher_details():
 def organization_details(organization_id, organization_name):
     try:
 
-         # Create a response object
+        # Create a response object
         """ response = make_response()
 
         # Set search-session cookie to the session cookie value of the first visit
@@ -169,15 +170,16 @@ def organization_details(organization_id, organization_name):
 
         if organization or sub_organization or sub_project:
             # Render the organization-details.html template
-            return render_template('organization-details.html', organization = organization, sub_organization = sub_organization, sub_project = sub_project)
+            return render_template('organization-details.html', organization=organization,
+                                   sub_organization=sub_organization, sub_project=sub_project)
         else:
             # Handle the case where organization details are not found (e.g., return a 404 page)
-            return render_template('error.html',error_message='Organization details not found.')
-        
+            return render_template('error.html', error_message='Organization details not found.')
+
     except ValueError as ve:
-        return render_template('error.html', error_message= str(ve))
+        return render_template('error.html', error_message=str(ve))
     except Exception as e:
-        return render_template('error.html',  error_message='An error occurred: ' + str(e))
+        return render_template('error.html', error_message='An error occurred: ' + str(e))
 
 
 @app.route('/events-details')
