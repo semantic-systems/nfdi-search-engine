@@ -75,6 +75,9 @@ def search_results():
         # deduplicator.convert_publications_to_csv(results["publications"])
         results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
+        # sort all the results in each category
+        results["publications"] = utils.sort_results_publications(results["publications"])
+
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
         logger.info(f'Got {len(results["resources"])} resources')

@@ -117,3 +117,23 @@ def remove_html_tags(text):
 
 def remove_line_tags(text):
     return text.replace('\n', ' ').replace('\t', ' ')
+
+
+from dateparser import parse
+def parse_date(date_str):
+    try:
+        parsed_date_str = parse(date_str).strftime("%Y-%m-%d")
+        return parsed_date_str
+    except (TypeError, ValueError):
+        print(f"original date str: {date_str}")
+        return ""
+        
+def sort_results_publications(results):
+    def custom_sort_key(obj):    
+        desc = getattr(obj, 'description', '') 
+        pub_date = getattr(obj, 'datePublished', '0000-00-00') 
+        if desc == '':
+            return (0, pub_date)
+        return (1, pub_date)
+
+    return sorted(results, key=custom_sort_key, reverse=True)
