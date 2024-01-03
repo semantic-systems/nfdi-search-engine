@@ -1,5 +1,5 @@
 import extruct
-from objects import Article, Person
+from objects import Article, Person, Author
 import wikipedia
 from bs4 import BeautifulSoup
 
@@ -137,3 +137,13 @@ def sort_results_publications(results):
         return (1, pub_date)
 
     return sorted(results, key=custom_sort_key, reverse=True)
+
+def split_authors(authors_names, seperator, authors_list):
+    authors = authors_names.split(seperator)
+    for author in authors:
+        _author = Author()
+        _author.type = 'Person'
+        _author.name = author
+        authors_list.append(_author)  
+
+    
