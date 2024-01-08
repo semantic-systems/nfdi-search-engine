@@ -118,10 +118,12 @@
                             </ul>
                         </div>
                         <div class="col-auto text-end" style="justify-content: center; align-items: center;">
-                            <a href="#" data-bs-target="#chatbox" data-bs-toggle="collapse" id="chatbox-link">
+                            <a class="btn" data-bs-toggle="offcanvas" href="#offcanvasRight" role="button"
+                                aria-controls="offcanvasRight">
                                 <img style="height: 3rem; width: 3rem;"
                                     src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar"
-                                    title="Chat with me" /></a>
+                                    title="Chat with me" />
+                            </a>
                         </div>
                     </div>
                     <div class="tab-content mt-5" id="myTabContent">
@@ -147,9 +149,22 @@
                         <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">...</div>
                     </div>
                 </div>
-                <div class="col-auto px-0 mt-4">
-                    {% include 'components/chatbox.html' %}
+
+                <div class="offcanvas offcanvas-end chat" tabindex="-1" id="offcanvasRight"
+                    aria-labelledby="offcanvasRightLabel">
+                    <div class="offcanvas-header chat-header">
+                        <img src="{{ url_for('static', filename='images/maven.png') }}" alt="avatar" />
+                        <div class="flex-fill chat-about">
+                            <div class="chat-with">Chat with me</div>
+                        </div>
+                        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body p-0">
+                        {% include 'components/chatbox.html' %}
+                    </div>
                 </div>
+
             </div>
         </div>
     </div>
@@ -252,6 +267,7 @@
 
     $(document).ready(function () {
 
+        console.log('client script initiated - insite DOM ready')
         //alert the user about the timed out sources
         var timedout_sources = $('#timedout_sources_data').data("timedoutsources").toString();
         if (timedout_sources != '') {
@@ -266,7 +282,7 @@
             return false;
         });
 
-        // var dataTable = $('.datatable').DataTable({});
+
         var dataTable = $('.datatable').DataTable({
             dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
                 "<'row'<'col-12'tr>>" +
@@ -281,14 +297,16 @@
             $('thead tr th:first-child').focus().blur();
         });
 
-        $('#chatbox').on('show.bs.collapse hidden.bs.collapse', function (e) {
-            if (e.type == 'show') {
-                $('#chatbox-link').hide()
-            } else {
-                $('#chatbox-link').show()
-            }
-            reinitialize_tabs()
-        });
+        // $('#chatbox').on('show.bs.collapse hidden.bs.collapse', function (e) {
+        //     if (e.type == 'show') {
+        //         $('#chatbox-link').hide()
+        //         // $('#chatbot_column').removeClass('col-auto').addClass("col-sm-4 col-md-4 col-lg-3");
+        //     } else {
+        //         $('#chatbox-link').show()
+        //         // $('#chatbot_column').removeClass("col-sm-4 col-md-4 col-lg-3").addClass('col-auto');
+        //     }
+        //     reinitialize_tabs()
+        // });
 
         $('#btnShareLinkCopy').on('click', function (e) {
 
@@ -336,9 +354,9 @@
             var b = getBinary(event.relatedTarget.getAttribute('data-bs-embed-src'));
             var b64 = base64Encode(b);
             $(this).find('.modal-body iframe').attr("src", "data:application/pdf;base64," + b64);
-
-
         });
+
+        console.log('client script initiated - insite DOM completed')
 
     });
 
