@@ -8,9 +8,10 @@ from flask import Flask, render_template, request, make_response
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
 from sources import resodate, oersi, ieee, eudat, openaire_products
-from sources import cordis, gesis, orcid, gepris, eulg
+from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
 import details_page
+from sources.gepris import org_details
 import utils
 import deduplicator
 
@@ -32,9 +33,12 @@ def index():
 
     return response
 
+
 @app.route('/results', methods=['POST', 'GET'])
 @utils.timeit
 def search_results():
+
+    logger.info('search server call initiated.')
     # The search-session cookie setting can still be None if a user enters the
     # /sources endpoint directly without going to / first!!!
     logger.debug(
@@ -60,7 +64,8 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module 
         # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
-        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee, eudat, openaire_products]
+        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
+                   eudat, openaire_products, re3data, orkg]
         # sources = [zenodo]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -74,6 +79,12 @@ def search_results():
         # deduplicator.convert_publications_to_csv(results["publications"])
         results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
+        # sort all the results in each category
+        results["publications"] = utils.sort_results_publications(results["publications"])
+
+
+        # results["publications"] = results["publications"][:50]
+
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
         logger.info(f'Got {len(results["resources"])} resources')
@@ -83,9 +94,12 @@ def search_results():
         logger.info(f'Got {len(results["others"])} others')
 
         results["timedout_sources"] = list(set(results["timedout_sources"]))
-        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
+        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))       
+        
+        template_response = render_template('results.html', results=results, search_term=search_term)    
+        logger.info('search server call completed - after render call')
 
-        return render_template('results.html', results=results, search_term=search_term)
+        return template_response
 
 
 @app.route('/chatbox')
@@ -105,10 +119,9 @@ def chatbox():
 @app.route('/publication-details/<string:doi>', methods=['POST', 'GET'])
 @utils.timeit
 def publication_details(doi):
-
     doi = request.args.get('doi', '').replace('-.-', '/')
     print(doi)
-    
+
     response = make_response(render_template('publication-details.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
@@ -149,18 +162,35 @@ def researcher_details():
     return response
 
 
-@app.route('/organization-details')
-def organization_details():
-    response = make_response(render_template('organization-details.html'))
+@app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+def organization_details(organization_id, organization_name):
+    try:
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
+        # Create a response object
+        """ response = make_response()
+
+        # Set search-session cookie to the session cookie value of the first visit
+        if request.cookies.get('search-session') is None:
+            if request.cookies.get('session') is None:
+                response.set_cookie('search-session', str(uuid.uuid4()))
+            else:
+                response.set_cookie('search-session', request.cookies['session'])"""
+
+        # Call the org_details function from the gepris module to fetch organization details by id
+        organization, sub_organization, sub_project = org_details(organization_id, organization_name)
+
+        if organization or sub_organization or sub_project:
+            # Render the organization-details.html template
+            return render_template('organization-details.html', organization=organization,
+                                   sub_organization=sub_organization, sub_project=sub_project)
         else:
-            response.set_cookie('search-session', request.cookies['session'])
+            # Handle the case where organization details are not found (e.g., return a 404 page)
+            return render_template('error.html', error_message='Organization details not found.')
 
-    return response
+    except ValueError as ve:
+        return render_template('error.html', error_message=str(ve))
+    except Exception as e:
+        return render_template('error.html', error_message='An error occurred: ' + str(e))
 
 
 @app.route('/events-details')

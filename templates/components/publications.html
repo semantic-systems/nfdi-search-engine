@@ -1,4 +1,4 @@
-<table id="tbl-publications" class="datatable display" style="width:100%">
+<table id="tbl-publications" class="datatable display" style="width:100%" data-ordering="false">
     <thead>
         <tr>
             <th>Publications</th>
@@ -55,8 +55,7 @@
                                     <div class="col-9 text-start">
                                         {% for source in publication.source %}
                                         <a id="source_link" href="{{source.url}}" target=_blank>
-                                            <span
-                                                class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
                                         </a>
                                         {% endfor %}
                                         <span
@@ -64,7 +63,9 @@
                                     </div>
                                     <div class="col-3 text-end">
                                         <span
-                                            class="badge bg-pill text-wrap text-break">{{publication.publication}}{{publication.datePublished}}</span>
+                                            class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
+                                        <span
+                                            class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
                                     </div>
                                 </div>
                             </div>
@@ -239,7 +240,7 @@
                                                 aria-label="Close"></button>
                                         </div>
                                         <div class="modal-body text-center">
-                                            <iframe src="data:application/pdf;base64,base64encodedpdf" width="1150px"
+                                            <iframe src="" width="1150px"
                                                 height="800px"></iframe>
                                         </div>
                                     </div>

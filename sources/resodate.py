@@ -37,7 +37,7 @@ def search(search_term: str, results):
                 publication.name = hit_source.get("name", "")             
                 publication.url = hit_source.get("id", "")  
                 publication.identifier =re.sub('^.*doi\.org\/', '', hit_source.get("id", "")) 
-                publication.datePublished = hit_source.get("datePublished", "") 
+                publication.datePublished = utils.parse_date(hit_source.get("datePublished", "")) 
                 publication.license = hit_source.get("license", {}).get("id", "")
                 
                 publication.description = utils.remove_html_tags(hit_source.get("description", ""))
