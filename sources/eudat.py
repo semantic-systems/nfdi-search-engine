@@ -39,7 +39,7 @@ def search(search_term: str, results):
                 if len(resource_types) > 0:
                     resource_type = resource_types[0].get('resource_type_general', '').upper()
 
-                print('Resource Type:', resource_type.upper())
+                # print('Resource Type:', resource_type.upper())
                 if resource_type == 'DATASET':
                     digitalObj = Dataset() 
                 elif resource_type in ['TEXT']:

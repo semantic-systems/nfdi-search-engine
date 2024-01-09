@@ -126,7 +126,7 @@ a:focus {
     /* ADDED */
     --icon-size: calc(var(--box-height) * 3 / 4);
     --icon-vertical-margin: calc((var(--box-height) - var(--icon-size)) / 2);
-    width: 550px;
+    /* width: 550px; */
 }
 
 .searchbox input[type='search'] {

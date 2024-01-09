@@ -37,6 +37,8 @@ def index():
 @app.route('/results', methods=['POST', 'GET'])
 @utils.timeit
 def search_results():
+
+    logger.info('search server call initiated.')
     # The search-session cookie setting can still be None if a user enters the
     # /sources endpoint directly without going to / first!!!
     logger.debug(
@@ -77,6 +79,12 @@ def search_results():
         # deduplicator.convert_publications_to_csv(results["publications"])
         results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
+        # sort all the results in each category
+        results["publications"] = utils.sort_results_publications(results["publications"])
+
+
+        # results["publications"] = results["publications"][:50]
+
         logger.info(f'Got {len(results["publications"])} publications')
         logger.info(f'Got {len(results["researchers"])} researchers')
         logger.info(f'Got {len(results["resources"])} resources')
@@ -86,9 +94,12 @@ def search_results():
         logger.info(f'Got {len(results["others"])} others')
 
         results["timedout_sources"] = list(set(results["timedout_sources"]))
-        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
+        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))       
+        
+        template_response = render_template('results.html', results=results, search_term=search_term)    
+        logger.info('search server call completed - after render call')
 
-        return render_template('results.html', results=results, search_term=search_term)
+        return template_response
 
 
 @app.route('/chatbox')

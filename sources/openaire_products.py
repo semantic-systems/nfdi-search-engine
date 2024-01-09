@@ -109,7 +109,10 @@ def search(search_term, results):
                     _author.type = 'Person'
                     _author.name = authors.get("$", "")
                     _author.identifier = authors.get("@orcid_pending", "")
-                    digitalObj.author.append(_author) 
+                    if ";" not in _author.name:
+                        digitalObj.author.append(_author) 
+                    else: # author instance is a list however for this record all the authors are combined into one 
+                        utils.split_authors(_author.name, ";", digitalObj.author)
                 if isinstance(authors, list): 
                     for author in authors:
                         _author = Author()
