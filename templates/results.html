@@ -283,19 +283,19 @@
         });
 
 
-        var dataTable = $('.datatable').DataTable({
-            dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
-                "<'row'<'col-12'tr>>" +
-                "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
-        });
-        dataTable.on('page.dt', function () {
-            $('html, body').scrollTop(100)
-            $('html, body').stop().animate({
-                scrollTop: $(".dataTables_wrapper").offset().top
-            }, 'slow');
+        // var dataTable = $('.datatable').DataTable({
+        //     dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
+        //         "<'row'<'col-12'tr>>" +
+        //         "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
+        // });
+        // dataTable.on('page.dt', function () {
+        //     $('html, body').scrollTop(100)
+        //     $('html, body').stop().animate({
+        //         scrollTop: $(".dataTables_wrapper").offset().top
+        //     }, 'slow');
 
-            $('thead tr th:first-child').focus().blur();
-        });
+        //     $('thead tr th:first-child').focus().blur();
+        // });
 
         // $('#chatbox').on('show.bs.collapse hidden.bs.collapse', function (e) {
         //     if (e.type == 'show') {
@@ -308,8 +308,8 @@
         //     reinitialize_tabs()
         // });
 
-        $('#btnShareLinkCopy').on('click', function (e) {
-
+        // $('#btnShareLinkCopy').on('click', function (e) {
+        $('body').on('click', "#btnShareLinkCopy", function (e) {
             var txtShareLink = document.getElementById('txtShareLink');
             txtShareLink.select();
             if (navigator.clipboard) {
@@ -326,7 +326,8 @@
             }
         });
 
-        $('#share_modal_link').on('click', function (e) {
+        // $('#share_modal_link').on('click', function (e) {
+        $('body').on('click', "#share_modal_link", function (e) {
             // alert('pressed')
             publication = $(this).closest("tr").find('.publication_name')
             url = window.location.origin + $(publication).attr('href')
@@ -339,9 +340,9 @@
             });
         });
 
-        $('#share_modal_dialog').on('shown.bs.modal', function (e) {
-            // do something...
-        });
+        // $('#share_modal_dialog').on('shown.bs.modal', function (e) {
+        //     // do something...
+        // });
 
         $("body").on("shown.bs.modal", "#preview_modal_dialog", function (event) {
             $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));

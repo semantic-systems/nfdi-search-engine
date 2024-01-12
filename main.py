@@ -80,18 +80,15 @@ def search_results():
         results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
-        results["publications"] = utils.sort_results_publications(results["publications"])
+        results["publications"] = utils.sort_results_publications(results["publications"])        
 
-
-        # results["publications"] = results["publications"][:50]
-
-        logger.info(f'Got {len(results["publications"])} publications')
-        logger.info(f'Got {len(results["researchers"])} researchers')
-        logger.info(f'Got {len(results["resources"])} resources')
-        logger.info(f'Got {len(results["organizations"])} organizations')
-        logger.info(f'Got {len(results["events"])} events')
-        logger.info(f'Got {len(results["fundings"])} fundings')
-        logger.info(f'Got {len(results["others"])} others')
+        # on the first page load, only push top 20 records in each category
+        top_records_count = 20
+        total_results = {} # the dict to keep the total number of search results 
+        for k, v in results.items():
+            logger.info(f'Got {len(v)} {k}')
+            total_results[k] = len(v)
+            results[k] = v[:top_records_count]
 
         results["timedout_sources"] = list(set(results["timedout_sources"]))
         logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))       
