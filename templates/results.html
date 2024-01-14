@@ -265,6 +265,9 @@
         }
     }
 
+    // A flag to know if a request is sent and the response is not yet received
+    let ajax_request_sent = false;
+
     $(document).ready(function () {
 
         //alert the user about the timed out sources
@@ -351,30 +354,21 @@
         });
 
 
-
-
-
-
-        // A flag to know if a request is sent and the response is not yet received
-        let ajax_request_sent = false;
         $(window).scroll(function () {
 
-            // console.log($(window).scrollTop())
-            // console.log($(document).height())
-            // console.log($(window).height())
+            // console.log($(window).scrollTop(), ($(document).height() - $(window).height() - 500), $(document).height(), $(window).height(), ajax_request_sent)
 
-            // Use the flag in the condition (so if sent and not yet received == false)
-            if (!ajax_request_sent && $(window).scrollTop() <= $(document).height() - $(window).height() - 800) {
+            // Use the flag in the condition (so if sent and not yet received == false)            
+            if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
+                !ajax_request_sent && //no other ajax request is currently being processed
+                $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
 
                 // Set the flag to prevent any concurring request
                 ajax_request_sent = true
 
                 // ajax call get data from server and append to the div
                 console.log('load more via ajax now')
-
-                // load_more_publications()
-
-
+                load_more_publications();
             }
         });
 
@@ -438,10 +432,10 @@
             // },
             success: function (data) {
                 $('#publications').append(data);
-                console.log('publicatoins data updated.')
+                console.log('more publications loaded.')
 
-                // // Unset the flag
-                // ajax_request_sent = false;
+                // Unset the flag
+                ajax_request_sent = false;
             },
             error: function (err) {
                 console.log(err);
