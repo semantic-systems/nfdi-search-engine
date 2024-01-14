@@ -18,3 +18,6 @@ search_url_gesis: http://193.175.238.35:8089/dc/_search?size=100&q=
 search_url_gepris: https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=
 
 settings_file_publications: static/weights/publications-settings.json
+
+number_of_records_to_show_on_page_load: 20
+number_of_records_to_append_on_lazy_load: 10

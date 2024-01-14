@@ -1,113 +1,99 @@
-<table id="tbl-publications" class="datatable display" style="width:100%" data-ordering="false">
-    <thead>
-        <tr>
-            <th>Publications</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for publication in results.publications %}
-        <tr>
-            <td>
-                <div class="card mb-2 p-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-11 fs-6">
-                                <div class="row mb-2">
-                                    <div class="col-9 fs-6">
-                                        {% if publication.identifier == '' %}
-                                        <span class="text-secondary fw-bold publication_name">
-                                            {{publication.name}}</span>
-                                        {% else %}
-                                        <a class="text-secondary fw-bold publication_name"
-                                            href='/publication-details/{{publication.identifier | replace("/", "-.-") }}'
-                                            target='_blank'>{{publication.name}}</a>
-                                        {% endif %}
-                                    </div>
-                                    <div class="col-3 text-end ">
-                                        <span
-                                            class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 my-2 authors">
-                                        {% set author_count = namespace(value=0) %}
-                                        {% for author in publication.author %}
-                                        {% if author_count.value == 5 %}
-                                        <a href="#" class="tag_more_authors">and {{ (publication.author|count) - 5 }}
-                                            more</a>
-                                        {% endif %}
-                                        {% if author.type == 'Person' %}
-                                        <a href="{{author.identifier}}"
-                                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true"><i
-                                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
-                                        {% endif %}
-                                        {% set author_count.value = author_count.value + 1 %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12">
-                                        <p class="card-text">{{publication.description|truncate(500)}}</p>
-                                    </div>
-                                </div>
-                                <div class="row pt-3">
-                                    <div class="col-9 text-start">
-                                        {% for source in publication.source %}
-                                        <a id="source_link" href="{{source.url}}" target=_blank>
-                                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
-                                        </a>
-                                        {% endfor %}
-                                        <span
-                                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
-                                    </div>
-                                    <div class="col-3 text-end">
-                                        <span
-                                            class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
-                                        <span
-                                            class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-1">
-                                <div class="row fs-5">
-                                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+{% for publication in results.publications %}
+<div class="card mb-2 p-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-11 fs-6">
+                <div class="row mb-2">
+                    <div class="col-9 fs-6">
+                        {% if publication.identifier == '' %}
+                        <span class="text-secondary fw-bold publication_name">
+                            {{publication.name}}</span>
+                        {% else %}
+                        <a class="text-secondary fw-bold publication_name"
+                            href='/publication-details/{{publication.identifier | replace("/", "-.-") }}'
+                            target='_blank'>{{publication.name}}</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-3 text-end ">
+                        <span
+                            class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 my-2 authors">
+                        {% set author_count = namespace(value=0) %}
+                        {% for author in publication.author %}
+                        {% if author_count.value == 5 %}
+                        <a href="#" class="tag_more_authors">and {{ (publication.author|count) - 5 }}
+                            more</a>
+                        {% endif %}
+                        {% if author.type == 'Person' %}
+                        <a href="{{author.identifier}}"
+                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                            tabindex="-1" role="button" aria-disabled="true"><i
+                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                        {% endif %}
+                        {% set author_count.value = author_count.value + 1 %}
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p class="card-text">{{publication.description|truncate(500)}}</p>
+                    </div>
+                </div>
+                <div class="row pt-3">
+                    <div class="col-9 text-start">
+                        {% for source in publication.source %}
+                        <a id="source_link" href="{{source.url}}" target=_blank>
+                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                        </a>
+                        {% endfor %}
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
+                    </div>
+                    <div class="col-3 text-end">
+                        <span class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
+                        <span class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="row fs-5">
+                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
                                                 class="bi bi-bookmark"></i></a></div> -->
-                                    {% if publication.identifier != '' %}
-                                    <div class="text-end mb-3"><a href="#" title="Share" id="share_modal_link"
-                                            data-bs-toggle="modal" data-bs-target="#share_modal_dialog"><i
-                                                class="bi bi-share"></i></a></div>
-                                    {% endif %}
-                                    {% if publication.image != '' %}
-                                    <div class="text-end mb-3"><a href="#" title="Preview" id="preview_modal_link"
-                                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
-                                            data-bs-publ-name="{{publication.name}}"
-                                            data-bs-img-src="{{publication.image}}"><i class="bi bi-eye"></i></a>
-                                    </div>
-                                    {% endif %}
-                                    {% if publication.encoding_contentUrl != '' %}
-                                    <div class="text-end mb-3"><a href="#" title="Download" id="download_modal_link"
-                                            data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
-                                            data-bs-publ-name="{{publication.name}}"
-                                            data-bs-embed-src="{{publication.encoding_contentUrl}}"><i
-                                                class="bi bi-download"></i></a>
-                                    </div>
-                                    {% endif %}
-                                </div>
-                            </div>
+                    {% if publication.identifier != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Share" id="share_modal_link" data-bs-toggle="modal"
+                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
+                    {% endif %}
+                    {% if publication.image != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Preview" id="preview_modal_link"
+                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
+                            data-bs-publ-name="{{publication.name}}" data-bs-img-src="{{publication.image}}"><i
+                                class="bi bi-eye"></i></a>
+                    </div>
+                    {% endif %}
+                    {% if publication.encoding_contentUrl != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Download" id="download_modal_link"
+                            data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
+                            data-bs-publ-name="{{publication.name}}"
+                            data-bs-embed-src="{{publication.encoding_contentUrl}}"><i class="bi bi-download"></i></a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
 
-                            <div class="modal" id="share_modal_dialog" tabindex="-1" role="dialog"
-                                aria-labelledby="shareModalLabel" aria-hidden="true">
-                                <div class="modal-dialog" role="document">
-                                    <div class="modal-content col-12">
-                                        <div class="modal-header">
-                                            <h5 class="fw-bolder">Share</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body">
-                                            <div class="d-flex flex-wrap">
-                                                <!-- <div class="smd">
+            <div class="modal" id="share_modal_dialog" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel"
+                aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                    <div class="modal-content col-12">
+                        <div class="modal-header">
+                            <h5 class="fw-bolder">Share</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="d-flex flex-wrap">
+                                <!-- <div class="smd">
                                                     <a href="#" base-href="https://" class="disabled"
                                                         aria-disabled="true">
                                                         <i class="img-thumbnail bi bi-discord "
@@ -115,143 +101,148 @@
                                                         <p class="pt-2">Discord</p>
                                                     </a>
                                                 </div> -->
-                                                <div class="smd">
-                                                    <a id="sharelink_facebook" href="#"
-                                                        base-href="https://www.facebook.com/sharer/sharer.php?u=[[url]]"
-                                                        target=_blank>
-                                                        <i class="img-thumbnail bi bi-facebook "
-                                                            style="color: #1091F3;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Facebook</p>
-                                                    </a>
-                                                </div>
-                                                <!-- <div class="smd">
+                                <div class="smd">
+                                    <a id="sharelink_facebook" href="#"
+                                        base-href="https://www.facebook.com/sharer/sharer.php?u=[[url]]" target=_blank>
+                                        <i class="img-thumbnail bi bi-facebook "
+                                            style="color: #1091F3;background-color: aliceblue;"></i>
+                                        <p class="pt-2">Facebook</p>
+                                    </a>
+                                </div>
+                                <!-- <div class="smd">
                                                     <a href="#" class="disabled" aria-disabled="true">
                                                         <i class="img-thumbnail bi bi-instagram "
                                                             style="color: #FF5700;background-color: aliceblue;"></i>
                                                         <p class="pt-2">Instagram</p>
                                                     </a>
                                                 </div> -->
-                                                <div class="smd">
-                                                    <a id="sharelink_linkedin" href="#"
-                                                        base-href="https://www.linkedin.com/shareArticle?mini=true&url=[[url]]&title=[[title]]"
-                                                        target=_blank>
-                                                        <i class="img-thumbnail bi bi-linkedin "
-                                                            style="color: #0a66c2;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Linkedin</p>
-                                                    </a>
-                                                </div>
-                                                <div class="smd">
-                                                    <a id="sharelink_pinterest" href="#"
-                                                        base-href="https://pinterest.com/pin/create/button/?url=[[url]]&media=[[url]]&description=[[title]]"
-                                                        target=_blank>
-                                                        <i class="img-thumbnail bi bi-pinterest"
-                                                            style="color: #E60023;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Pinterest</p>
-                                                    </a>
-                                                </div>
-                                                <div class="smd">
-                                                    <a id="sharelink_reddit" href="#"
-                                                        base-href="https://www.reddit.com/submit?url=[[url]]&title=[[title]]"
-                                                        target=_blank>
-                                                        <i class="img-thumbnail bi bi-reddit"
-                                                            style="color: #FF4500;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Reddit</p>
-                                                    </a>
-                                                </div>
-                                                <!-- <div class="smd">
+                                <div class="smd">
+                                    <a id="sharelink_linkedin" href="#"
+                                        base-href="https://www.linkedin.com/shareArticle?mini=true&url=[[url]]&title=[[title]]"
+                                        target=_blank>
+                                        <i class="img-thumbnail bi bi-linkedin "
+                                            style="color: #0a66c2;background-color: aliceblue;"></i>
+                                        <p class="pt-2">Linkedin</p>
+                                    </a>
+                                </div>
+                                <div class="smd">
+                                    <a id="sharelink_pinterest" href="#"
+                                        base-href="https://pinterest.com/pin/create/button/?url=[[url]]&media=[[url]]&description=[[title]]"
+                                        target=_blank>
+                                        <i class="img-thumbnail bi bi-pinterest"
+                                            style="color: #E60023;background-color: aliceblue;"></i>
+                                        <p class="pt-2">Pinterest</p>
+                                    </a>
+                                </div>
+                                <div class="smd">
+                                    <a id="sharelink_reddit" href="#"
+                                        base-href="https://www.reddit.com/submit?url=[[url]]&title=[[title]]"
+                                        target=_blank>
+                                        <i class="img-thumbnail bi bi-reddit"
+                                            style="color: #FF4500;background-color: aliceblue;"></i>
+                                        <p class="pt-2">Reddit</p>
+                                    </a>
+                                </div>
+                                <!-- <div class="smd">
                                                     <a href="#" class="disabled" aria-disabled="true">
                                                         <i class="img-thumbnail bi bi-slack "
                                                             style="color: orange;background-color: aliceblue;"></i>
                                                         <p class="pt-2">Slack</p>
                                                     </a>
                                                 </div> -->
-                                                <!-- <div class="smd">
+                                <!-- <div class="smd">
                                                     <a href="#" class="disabled" aria-disabled="true">
                                                         <i class="img-thumbnail bi bi-telegram "
                                                             style="color: #4c6ef5;background-color: aliceblue;"></i>
                                                         <p class="pt-2">Telegram</p>
                                                     </a>
                                                 </div> -->
-                                                <div class="smd">
-                                                    <a id="sharelink_twitter" href="#"
-                                                        base-href="https://twitter.com/intent/tweet?text=[[title]]&url=[[url]]"
-                                                        target=_blank>
-                                                        <i class="img-thumbnail bi bi-twitter"
-                                                            style="color:#4c6ef5;background-color: aliceblue"></i>
-                                                        <p class="pt-2">Twitter</p>
-                                                    </a>
-                                                </div>
-                                                <div class="smd">
-                                                    <a id="sharelink_whatsapp" href="#"
-                                                        base-href="https://api.whatsapp.com/send?text=[[url]]"
-                                                        class="disabled" aria-disabled="true">
-                                                        <i class="img-thumbnail bi bi-whatsapp "
-                                                            style="color: #00E676;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Whatsapp</p>
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="modal-footer text-start">
-                                            <div class="input-group mb-3">
-                                                <div class="input-group-prepend">
-                                                    <span class="input-group-text fw-bold">Link</span>
-                                                </div>
-                                                <input type="url" class="form-control" aria-label="URL"
-                                                    placeholder="https://" id="txtShareLink"
-                                                    aria-describedby="inputGroup-sizing-default" disabled
-                                                    aria-disabled="true">
-                                                <div class="input-group-append">
-                                                    <span class="input-group-text" id="btnShareLinkCopy" role="button">
-                                                        <i class="bi bi-clipboard"></i></span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div class="smd">
+                                    <a id="sharelink_twitter" href="#"
+                                        base-href="https://twitter.com/intent/tweet?text=[[title]]&url=[[url]]"
+                                        target=_blank>
+                                        <i class="img-thumbnail bi bi-twitter"
+                                            style="color:#4c6ef5;background-color: aliceblue"></i>
+                                        <p class="pt-2">Twitter</p>
+                                    </a>
+                                </div>
+                                <div class="smd">
+                                    <a id="sharelink_whatsapp" href="#"
+                                        base-href="https://api.whatsapp.com/send?text=[[url]]" class="disabled"
+                                        aria-disabled="true">
+                                        <i class="img-thumbnail bi bi-whatsapp "
+                                            style="color: #00E676;background-color: aliceblue;"></i>
+                                        <p class="pt-2">Whatsapp</p>
+                                    </a>
                                 </div>
                             </div>
-
-                            <div id="preview_modal_dialog" class="modal">
-                                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <img src="" class="figure-img img-fluid border border-dark">
-                                            <figcaption>
-                                            </figcaption>
-                                        </div>
-                                    </div>
+                        </div>
+                        <div class="modal-footer text-start">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text fw-bold">Link</span>
+                                </div>
+                                <input type="url" class="form-control" aria-label="URL" placeholder="https://"
+                                    id="txtShareLink" aria-describedby="inputGroup-sizing-default" disabled
+                                    aria-disabled="true">
+                                <div class="input-group-append">
+                                    <span class="input-group-text" id="btnShareLinkCopy" role="button">
+                                        <i class="bi bi-clipboard"></i></span>
                                 </div>
                             </div>
-
-
-                            <div id="download_modal_dialog" class="modal">
-                                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">
-                                            </h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                                aria-label="Close"></button>
-                                        </div>
-                                        <div class="modal-body text-center">
-                                            <iframe src="" width="1150px"
-                                                height="800px"></iframe>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                         </div>
                     </div>
                 </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+            </div>
+
+            <div id="preview_modal_dialog" class="modal">
+                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <img src="" class="figure-img img-fluid border border-dark">
+                            <figcaption>
+                            </figcaption>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="download_modal_dialog" class="modal">
+                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title">
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            <iframe src="" width="1150px" height="800px"></iframe>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div id="div_load_more_publications" class="row text-center my-2">
+    <div class="col">
+        {% if session.displayed_search_results.publications
+        < session.total_search_results.publications %} <div>Displaying top {{
+            session.displayed_search_results.publications }} publications out of
+            {{ session.total_search_results.publications }}
+    </div>
+    <br />
+    <button type="button" class="btn btn-secondary" aria-label="Load more publications"
+        id="btn_load_more_publications">Load
+        more publications</button>
+    {% endif %}
+</div>
+</div>
