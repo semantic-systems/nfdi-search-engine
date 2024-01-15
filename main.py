@@ -7,7 +7,7 @@ from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response, session
 from flask_session import Session
 import threading
-from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
+from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, chatbot
 from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
@@ -145,8 +145,10 @@ def load_more_researchers():
 
 
 
-@app.route('/chatbox')
+@app.route('/chatbox', methods=['GET'])
 def chatbox():
+    final_search_result = session['total_search_results']
+    chatbot_response = chatbot.chat()
     response = make_response(render_template('chatbox.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
