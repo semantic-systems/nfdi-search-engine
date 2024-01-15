@@ -63,18 +63,18 @@
                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
                                                 class="bi bi-bookmark"></i></a></div> -->
                     {% if publication.identifier != '' %}
-                    <div class="text-end mb-3"><a href="#" title="Share" id="share_modal_link" data-bs-toggle="modal"
+                    <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
                             data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
                     {% endif %}
                     {% if publication.image != '' %}
-                    <div class="text-end mb-3"><a href="#" title="Preview" id="preview_modal_link"
+                    <div class="text-end mb-3"><a href="#" title="Preview" class="preview_modal_link"
                             data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
                             data-bs-publ-name="{{publication.name}}" data-bs-img-src="{{publication.image}}"><i
                                 class="bi bi-eye"></i></a>
                     </div>
                     {% endif %}
                     {% if publication.encoding_contentUrl != '' %}
-                    <div class="text-end mb-3"><a href="#" title="Download" id="download_modal_link"
+                    <div class="text-end mb-3"><a href="#" title="Download" class="download_modal_link"
                             data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
                             data-bs-publ-name="{{publication.name}}"
                             data-bs-embed-src="{{publication.encoding_contentUrl}}"><i class="bi bi-download"></i></a>

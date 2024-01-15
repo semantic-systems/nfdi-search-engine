@@ -317,8 +317,7 @@
             }
         });
 
-        // $('#share_modal_link').on('click', function (e) {
-        $('body').on('click', "#share_modal_link", function (e) {
+        $('body').on('click', ".share_modal_link", function (e) {
             // alert('pressed')
             publication = $(this).closest("tr").find('.publication_name')
             url = window.location.origin + $(publication).attr('href')
@@ -335,12 +334,12 @@
         //     // do something...
         // });
 
-        $("body").on("shown.bs.modal", "#preview_modal_dialog", function (event) {
+        $("body").on("shown.bs.modal", ".preview_modal_dialog", function (event) {
             $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
             $(this).find('.modal-body img').attr("src", event.relatedTarget.getAttribute('data-bs-img-src'));
         });
 
-        $("body").on("shown.bs.modal", "#download_modal_dialog", function (event) {
+        $("body").on("shown.bs.modal", ".download_modal_dialog", function (event) {
             $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
 
             var b = getBinary(event.relatedTarget.getAttribute('data-bs-embed-src'));
@@ -353,23 +352,47 @@
             load_more_publications()
         });
 
+        $('body').on('click', "#btn_load_more_researchers", function (e) {
+            console.log('load more researchers button clicked')
+            load_more_researchers()
+        });
+
 
         $(window).scroll(function () {
 
             // console.log($(window).scrollTop(), ($(document).height() - $(window).height() - 500), $(document).height(), $(window).height(), ajax_request_sent)
 
-            // Use the flag in the condition (so if sent and not yet received == false)            
-            if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
-                !ajax_request_sent && //no other ajax request is currently being processed
-                $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+            if ($('.nav-item .active').attr('id') == 'publications-tab') {
+                // Use the flag in the condition (so if sent and not yet received == false)            
+                if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
+                    !ajax_request_sent && //no other ajax request is currently being processed
+                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
 
-                // Set the flag to prevent any concurring request
-                ajax_request_sent = true
+                    // Set the flag to prevent any concurring request
+                    ajax_request_sent = true
 
-                // ajax call get data from server and append to the div
-                console.log('load more via ajax now')
-                load_more_publications();
+                    // ajax call get data from server and append to the div
+                    console.log('load more via ajax now')
+                    load_more_publications();
+                }
             }
+
+            if ($('.nav-item .active').attr('id') == 'researchers-tab') {
+                // Use the flag in the condition (so if sent and not yet received == false)            
+                if ($('#btn_load_more_researchers').is(":visible") &&  //load more button is visible
+                    !ajax_request_sent && //no other ajax request is currently being processed
+                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+
+                    // Set the flag to prevent any concurring request
+                    ajax_request_sent = true
+
+                    // ajax call get data from server and append to the div
+                    console.log('load more via ajax now')
+                    load_more_researchers();
+                }
+            }
+
+
         });
 
 
@@ -433,6 +456,35 @@
             success: function (data) {
                 $('#publications').append(data);
                 console.log('more publications loaded.')
+
+                // Unset the flag
+                ajax_request_sent = false;
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function load_more_researchers() {
+
+        $('#div_load_more_researchers').remove()
+        jQuery.ajax({
+            url: '/load-more-researchers',
+            type: "GET",
+            beforeSend: function () {
+                $('#researchers').append("<div class='loader'><div class='sp-3balls'></div></div>");
+            },
+            complete: function () {
+                $('.loader').remove();
+            },
+            // data: {
+            //     action: "pj_load_more",
+            //     pjCount: pjCount
+            // },
+            success: function (data) {
+                $('#researchers').append(data);
+                console.log('more researchers loaded.')
 
                 // Unset the flag
                 ajax_request_sent = false;

@@ -9,6 +9,7 @@ from flask_session import Session
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
 from sources import resodate, oersi, ieee, eudat, openaire_products
+from sources import dblp_researchers
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
 import details_page
@@ -67,11 +68,10 @@ def search_results():
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
-        # ensure the main method which execute the search is named "search" in the module 
-        # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
+        # ensure the main method which execute the search is named "search" in the module         
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, re3data, orkg]
-        # sources = [zenodo]
+                   eudat, openaire_products, dblp_researchers, re3data, orkg]
+        # sources = [dblp_researchers]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -82,7 +82,7 @@ def search_results():
             # print(t.is_alive())
 
         # deduplicator.convert_publications_to_csv(results["publications"])
-        results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
+        # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
         results["publications"] = utils.sort_results_publications(results["publications"])      
@@ -126,7 +126,22 @@ def load_more_publications():
     number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
     results['publications'] = results['publications'][displayed_search_results_publications:displayed_search_results_publications+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['publications'] = displayed_search_results_publications+number_of_records_to_append_on_lazy_load
-    return render_template('components/publications.html', results=results)    
+    return render_template('components/publications.html', results=results)  
+
+@app.route('/load-more-researchers', methods=['GET'])
+def load_more_researchers():
+    print('load more researchers')
+
+    #define a new results dict for researchers to take new researchers from the search results stored in the session
+    results = {}
+    results['researchers'] = session['search-results']['researchers']
+
+    total_search_results_researchers = session['total_search_results']['researchers']
+    displayed_search_results_researchers = session['displayed_search_results']['researchers']
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
+    session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
+    return render_template('components/researchers.html', results=results)     
 
 
 

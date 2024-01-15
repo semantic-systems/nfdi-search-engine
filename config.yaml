@@ -1,7 +1,12 @@
 request_header_user_agent: nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)
 request_timeout: 5
+
 search_url_dblp_publications: https://dblp.org/search/publ/api?format=json&h=25&q=
+search_url_dblp_researchers: https://dblp.org/search/author/api?format=json&h=25&q=
+
 search_url_openalex_publications: https://api.openalex.org/works?page=1&per-page=25&search=
+search_url_openalex_researchers: https://api.openalex.org/authors?page=1&per-page=25&search=
+
 search_url_zenodo: https://zenodo.org/api/records?size=25&q=
 search_url_wikidata: https://query.wikidata.org/sparql?format=json&query=
 search_url_resodate: https://resodate.org/resources/api/search/oer_data/_search?pretty&size=25&q=
@@ -10,7 +15,6 @@ search_url_ieee: http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={ap
 search_url_eudat: https://b2share.eudat.eu/api/records/?page=1&size=25&sort=bestmatch&q=
 search_url_openaire_products: https://api.openaire.eu/search/researchProducts?format=json&size=25&keywords=
 
-search_url_openalex_authors: https://api.openalex.org/authors?search=
 search_url_orcid: https://pub.orcid.org/v3.0/expanded-search/?start=0&rows=25&q=
 search_url_dblp: https://dblp.org/search?q=
 search_url_orkg: https://orkg.org/api/resources/?size=20&q=
