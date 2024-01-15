@@ -18,23 +18,7 @@ def search(search_term: str, results):
         search_result = data_retriever.retrieve_data(source=source, 
                                                      base_url=utils.config["search_url_dblp_publications"],
                                                      search_term=search_term,
-                                                     results=results)
-
-        # base_url = utils.config["search_url_dblp_publications"]
-        # url = base_url + search_term
-
-        # headers = {'Accept': 'application/json',
-        #            'Content-Type': 'application/json',
-        #            'User-Agent': utils.config["request_header_user_agent"]
-        #            }
-        # response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))        
-
-        # logger.debug(f'DBLP PUBL response status code: {response.status_code}')
-        # logger.debug(f'DBLP PUBL response headers: {response.headers}')
-
-        # if response.status_code == 200:
-
-        #     search_result = response.json()
+                                                     results=results)        
 
         hits = search_result['result']['hits']
 

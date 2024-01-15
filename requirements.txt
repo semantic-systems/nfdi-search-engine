@@ -15,3 +15,4 @@ pylbfgs @ git+https://github.com/fzimmermann89/pylbfgs.git@fzimmermann89-cython
 dedupe>=2.0.23
 xmltodict
 dateparser>=1.2.0
+Flask-Session==0.5.0

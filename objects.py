@@ -4,7 +4,7 @@ from dataclasses import dataclass, fields, field
 @dataclass
 class thing:
     name: str = ""
-    alternateName: str = ""
+    alternateName: List[str] = field(default_factory=list)
     description: str = ""
     url: str = ""
     image: str = "" #url of the image
@@ -27,8 +27,8 @@ class Organization(thing):
 class Person(thing):
     additionalName: str = ""
     address: str = "" #this should be a list
-    affiliation: Organization = None  #this should be a list
-    alumniOf: Organization = None  #this should be a list
+    affiliation: List[Organization] = field(default_factory=list)  #this should be a list
+    alumniOf: List[Organization] = field(default_factory=list)  #this should be a list
     birthDate: str = ""
     birthPlace: str = ""
     deathDate: str = ""
