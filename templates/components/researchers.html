@@ -1,78 +1,85 @@
-<table id="tbl-researchers" class="datatable display" style="width:100%">
-    <thead>
-        <tr>
-            <th>Researchers</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for researcher in results.researchers %}
-        <tr>
-            <td>
-                <div class="card">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-2">
-                                <img class="rounded-circle img-fluid"
-                                    src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
-                            </div>
-                            <div class="col-md-9 fs-6">
-                                <div class="row">
-                                    <div class="col-md-6 fs-5">
-                                        <a class="text-secondary fw-bold" href='/researcher-details' target='_blank'>
-                                            {{researcher.name}}</a>
-                                    </div>
-                                    <div class="col-md-6 fs-6">
-                                        <a class="text-secondary fw-bold" href='{{researcher.orcid}}' target='_blank'>
-                                            ORCID: {{ researcher.orcid|replace('https://orcid.org/', '') }}</a>
-                                    </div>
-                                </div>
-                                <div class="row px-2 pt-3">
-                                    <div class="p-2 mt-2 d-flex justify-content-between rounded text-dark"
-                                        style="background-color:rgb(218, 247, 237) ;">
-                                        <!-- <div class="d-flex flex-column">
-                                            <span class="">Designation</span>
-                                            <span class="fw-bold">Professor</span>
-                                        </div> -->
-                                        <div class="d-flex flex-column">
-                                            <span class="">Last Known Institution</span>
-                                            <span class="fw-bold">{{ researcher.affiliation }}</span>
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="">Works Count</span>
-                                            <span class="fw-bold">{{researcher.works_count}}</span>
-                                        </div>
-                                        <div class="d-flex flex-column">
-                                            <span class="">Citations Count</span>
-                                            <span class="fw-bold">{{researcher.cited_by_count}}</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row px-2 pt-3">
-                                    <div class="col-lg-9 text-start">
-                                        <span class="badge bg-pill">{{researcher.source}}</span>
-                                    </div>
-                                    <div class="col-lg-3 text-end">
-                                        <span class="badge bg-pill"></span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-1">
-                                <div class="row fs-5">
-                                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
-                                                    class="bi bi-bookmark"></i></a></div> -->
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
-                                                class="bi bi-share"></i></a></div>
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Download"><i
-                                                class="bi bi-download"></i></a></div>
-
-                                </div>
-                            </div>
-                        </div>
+{% for researcher in results.researchers %}
+<div class="card mb-2">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-sm-4 col-md-2 col-lg-2">
+                <img class="rounded-circle img-fluid" loading="lazy"
+                    src="{{ url_for('static', filename='images/user-profile-sample.jpg') }}">
+            </div>
+            <div class="col-sm-6 col-md-9 col-lg-9 fs-6">
+                <div class="row">
+                    <div class="col-6">
+                        <a class="text-secondary fw-bold" href='/researcher-details' target='_blank'>
+                            {{researcher.name}}</a>
+                    </div>
+                    <div class="col-6">
+                        <a class="text-secondary fw-bold" href='{{researcher.orcid}}' target='_blank'>
+                            ORCID: {{ researcher.orcid|replace('https://orcid.org/', '') }}</a>
                     </div>
                 </div>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                <div class="row px-2 pt-3">
+                    <div class="col-6 d-flex flex-column">
+                        <span class="">Alternate Names</span>
+                        {% for altName in researcher.alternateName %}
+                        <span class="fw-bold">{{ altName }}</span>
+                        {% endfor %}
+                    </div>
+                    <div class="col-6 d-flex flex-column">
+                        <span class="">Affiliations</span>
+                        {% for org in researcher.affiliation %}
+                        <span class="fw-bold">{{ org.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="row px-2 pt-3">
+                    <div class="col-6 d-flex flex-column">
+                        <span class="">Works</span>
+                        <span class="fw-bold">{{researcher.works_count}}</span>
+                    </div>
+                    <div class="col-6 d-flex flex-column">
+                        <span class="">Citations</span>
+                        <span class="fw-bold">{{researcher.cited_by_count}}</span>
+                    </div>
+                </div>
+                <div class="row px-2 pt-3">
+                    <div class="col-9 text-start">
+                        {% for source in researcher.source %}
+                        <a id="source_link" href="{{source.url}}" target=_blank>
+                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    <div class="col-3 text-end">
+                        <span class="badge bg-pill"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-2 col-md-1 col-lg-1 ">
+                <div class="row fs-5">
+                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                    class="bi bi-bookmark"></i></a></div> -->
+                    {% if researcher.identifier != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
+                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div id="div_load_more_researchers" class="row text-center my-2">
+    <div class="col">
+        {% if session.displayed_search_results.researchers
+        < session.total_search_results.researchers %} <div>Displaying top {{
+            session.displayed_search_results.researchers }} researchers out of
+            {{ session.total_search_results.researchers }}
+    </div>
+    <br />
+    <button type="button" class="btn btn-secondary" aria-label="Load more researchers"
+        id="btn_load_more_researchers">Load
+        more researchers</button>
+    {% endif %}
+</div>
+</div>

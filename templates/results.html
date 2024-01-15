@@ -42,7 +42,7 @@
                                             class="px-1 bi-journal-album"></i>Publications
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.publications|count}}
+                                            {{total_results.publications}}
                                             <span class="visually-hidden">publications</span>
                                         </span>
                                     </button>
@@ -54,7 +54,7 @@
                                             class="px-1 bi-people-fill"></i>Researchers
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.researchers|count}}
+                                            {{total_results.researchers}}
                                             <span class="visually-hidden">researchers</span>
                                         </span>
                                     </button>
@@ -65,7 +65,7 @@
                                         aria-selected="false"><i class="px-1 bi-database-fill-gear"></i>Resources
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.resources|count}}
+                                            {{total_results.resources}}
                                             <span class="visually-hidden">resources</span>
                                         </span>
                                     </button>
@@ -77,7 +77,7 @@
                                             class="px-1 bi-bank"></i>Organizations
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.organizations|count}}
+                                            {{total_results.organizations}}
                                             <span class="visually-hidden">organizations</span>
                                         </span>
                                     </button>
@@ -88,7 +88,7 @@
                                         aria-selected="false"><i class="px-1 bi-calendar3"></i>Events
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.events|count}}
+                                            {{total_results.events}}
                                             <span class="visually-hidden">events</span>
                                         </span>
                                     </button>
@@ -99,7 +99,7 @@
                                         aria-selected="false"><i class="px-1 bi-currency-exchange"></i>Fundings
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.fundings|count}}
+                                            {{total_results.fundings}}
                                             <span class="visually-hidden">fundings</span>
                                         </span>
                                     </button>
@@ -110,7 +110,7 @@
                                         aria-selected="false"><i class="px-1 bi-file-code-fill"></i>Others
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{results.others|count}}
+                                            {{total_results.others}}
                                             <span class="visually-hidden">Others</span>
                                         </span>
                                     </button>
@@ -265,9 +265,11 @@
         }
     }
 
+    // A flag to know if a request is sent and the response is not yet received
+    let ajax_request_sent = false;
+
     $(document).ready(function () {
 
-        console.log('client script initiated - insite DOM ready')
         //alert the user about the timed out sources
         var timedout_sources = $('#timedout_sources_data').data("timedoutsources").toString();
         if (timedout_sources != '') {
@@ -283,33 +285,22 @@
         });
 
 
-        var dataTable = $('.datatable').DataTable({
-            dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
-                "<'row'<'col-12'tr>>" +
-                "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
-        });
-        dataTable.on('page.dt', function () {
-            $('html, body').scrollTop(100)
-            $('html, body').stop().animate({
-                scrollTop: $(".dataTables_wrapper").offset().top
-            }, 'slow');
-
-            $('thead tr th:first-child').focus().blur();
-        });
-
-        // $('#chatbox').on('show.bs.collapse hidden.bs.collapse', function (e) {
-        //     if (e.type == 'show') {
-        //         $('#chatbox-link').hide()
-        //         // $('#chatbot_column').removeClass('col-auto').addClass("col-sm-4 col-md-4 col-lg-3");
-        //     } else {
-        //         $('#chatbox-link').show()
-        //         // $('#chatbot_column').removeClass("col-sm-4 col-md-4 col-lg-3").addClass('col-auto');
-        //     }
-        //     reinitialize_tabs()
+        // var dataTable = $('.datatable').DataTable({
+        //     dom: "<'d-flex flex-wrap justify-content-between align-items-center'<f><i><p>>" +
+        //         "<'row'<'col-12'tr>>" +
+        //         "<'d-flex flex-wrap justify-content-between align-items-center'<l><i><p>>"
         // });
+        // dataTable.on('page.dt', function () {
+        //     $('html, body').scrollTop(100)
+        //     $('html, body').stop().animate({
+        //         scrollTop: $(".dataTables_wrapper").offset().top
+        //     }, 'slow');
 
-        $('#btnShareLinkCopy').on('click', function (e) {
+        //     $('thead tr th:first-child').focus().blur();
+        // });        
 
+        // $('#btnShareLinkCopy').on('click', function (e) {
+        $('body').on('click', "#btnShareLinkCopy", function (e) {
             var txtShareLink = document.getElementById('txtShareLink');
             txtShareLink.select();
             if (navigator.clipboard) {
@@ -326,7 +317,7 @@
             }
         });
 
-        $('#share_modal_link').on('click', function (e) {
+        $('body').on('click', ".share_modal_link", function (e) {
             // alert('pressed')
             publication = $(this).closest("tr").find('.publication_name')
             url = window.location.origin + $(publication).attr('href')
@@ -339,16 +330,16 @@
             });
         });
 
-        $('#share_modal_dialog').on('shown.bs.modal', function (e) {
-            // do something...
-        });
+        // $('#share_modal_dialog').on('shown.bs.modal', function (e) {
+        //     // do something...
+        // });
 
-        $("body").on("shown.bs.modal", "#preview_modal_dialog", function (event) {
+        $("body").on("shown.bs.modal", ".preview_modal_dialog", function (event) {
             $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
             $(this).find('.modal-body img').attr("src", event.relatedTarget.getAttribute('data-bs-img-src'));
         });
 
-        $("body").on("shown.bs.modal", "#download_modal_dialog", function (event) {
+        $("body").on("shown.bs.modal", ".download_modal_dialog", function (event) {
             $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
 
             var b = getBinary(event.relatedTarget.getAttribute('data-bs-embed-src'));
@@ -356,9 +347,59 @@
             $(this).find('.modal-body iframe').attr("src", "data:application/pdf;base64," + b64);
         });
 
-        console.log('client script initiated - insite DOM completed')
+        $('body').on('click', "#btn_load_more_publications", function (e) {
+            console.log('load more publications button clicked')
+            load_more_publications()
+        });
+
+        $('body').on('click', "#btn_load_more_researchers", function (e) {
+            console.log('load more researchers button clicked')
+            load_more_researchers()
+        });
+
+
+        $(window).scroll(function () {
+
+            // console.log($(window).scrollTop(), ($(document).height() - $(window).height() - 500), $(document).height(), $(window).height(), ajax_request_sent)
+
+            if ($('.nav-item .active').attr('id') == 'publications-tab') {
+                // Use the flag in the condition (so if sent and not yet received == false)            
+                if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
+                    !ajax_request_sent && //no other ajax request is currently being processed
+                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+
+                    // Set the flag to prevent any concurring request
+                    ajax_request_sent = true
+
+                    // ajax call get data from server and append to the div
+                    console.log('load more via ajax now')
+                    load_more_publications();
+                }
+            }
+
+            if ($('.nav-item .active').attr('id') == 'researchers-tab') {
+                // Use the flag in the condition (so if sent and not yet received == false)            
+                if ($('#btn_load_more_researchers').is(":visible") &&  //load more button is visible
+                    !ajax_request_sent && //no other ajax request is currently being processed
+                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+
+                    // Set the flag to prevent any concurring request
+                    ajax_request_sent = true
+
+                    // ajax call get data from server and append to the div
+                    console.log('load more via ajax now')
+                    load_more_researchers();
+                }
+            }
+
+
+        });
+
+
 
     });
+
+
 
     function base64Encode(str) {
         var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -394,6 +435,64 @@
         xhr.overrideMimeType("text/plain; charset=x-user-defined");
         xhr.send(null);
         return xhr.responseText;
+    }
+
+    function load_more_publications() {
+
+        $('#div_load_more_publications').remove()
+        jQuery.ajax({
+            url: '/load-more-publications',
+            type: "GET",
+            beforeSend: function () {
+                $('#publications').append("<div class='loader'><div class='sp-3balls'></div></div>");
+            },
+            complete: function () {
+                $('.loader').remove();
+            },
+            // data: {
+            //     action: "pj_load_more",
+            //     pjCount: pjCount
+            // },
+            success: function (data) {
+                $('#publications').append(data);
+                console.log('more publications loaded.')
+
+                // Unset the flag
+                ajax_request_sent = false;
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
+    }
+
+    function load_more_researchers() {
+
+        $('#div_load_more_researchers').remove()
+        jQuery.ajax({
+            url: '/load-more-researchers',
+            type: "GET",
+            beforeSend: function () {
+                $('#researchers').append("<div class='loader'><div class='sp-3balls'></div></div>");
+            },
+            complete: function () {
+                $('.loader').remove();
+            },
+            // data: {
+            //     action: "pj_load_more",
+            //     pjCount: pjCount
+            // },
+            success: function (data) {
+                $('#researchers').append(data);
+                console.log('more researchers loaded.')
+
+                // Unset the flag
+                ajax_request_sent = false;
+            },
+            error: function (err) {
+                console.log(err);
+            }
+        });
     }
 
 

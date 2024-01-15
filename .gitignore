@@ -139,3 +139,6 @@ dmypy.json
 logging.conf
 # configurations for debugging
 launch.json
+
+# flask session
+flask_session/

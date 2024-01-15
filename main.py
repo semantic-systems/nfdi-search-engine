@@ -4,21 +4,27 @@ import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from objects import Article, Organization, Person, Dataset, Project
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, session
+from flask_session import Session
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
 from sources import resodate, oersi, ieee, eudat, openaire_products
+from sources import dblp_researchers
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
 import details_page
 from sources.gepris import org_details
 import utils
 import deduplicator
+import copy
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
-
+app.secret_key = 'NfD14D$G@t3w@Y'
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 @app.route('/')
 def index():
@@ -62,11 +68,10 @@ def search_results():
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
-        # ensure the main method which execute the search is named "search" in the module 
-        # sources = [resodate, oersi, openalex, orcid, dblp, zenodo, gesis, ieee, cordis, gepris, eudat, wikidata, openaire, eulg]
+        # ensure the main method which execute the search is named "search" in the module         
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, re3data, orkg]
-        # sources = [zenodo]
+                   eudat, openaire_products, dblp_researchers, re3data, orkg]
+        # sources = [dblp_researchers]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -77,29 +82,67 @@ def search_results():
             # print(t.is_alive())
 
         # deduplicator.convert_publications_to_csv(results["publications"])
-        results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
+        # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
-        results["publications"] = utils.sort_results_publications(results["publications"])
+        results["publications"] = utils.sort_results_publications(results["publications"])      
+
+        #store the search results in the session
+        session['search-results'] = copy.deepcopy(results)
 
 
-        # results["publications"] = results["publications"][:50]
-
-        logger.info(f'Got {len(results["publications"])} publications')
-        logger.info(f'Got {len(results["researchers"])} researchers')
-        logger.info(f'Got {len(results["resources"])} resources')
-        logger.info(f'Got {len(results["organizations"])} organizations')
-        logger.info(f'Got {len(results["events"])} events')
-        logger.info(f'Got {len(results["fundings"])} fundings')
-        logger.info(f'Got {len(results["others"])} others')
+        # on the first page load, only push top 20 records in each category
+        number_of_records_to_show_on_page_load = int(utils.config["number_of_records_to_show_on_page_load"])        
+        total_results = {} # the dict to keep the total number of search results 
+        displayed_results = {} # the dict to keep the total number of search results currently displayed to the user
+        
+        for k, v in results.items():
+            logger.info(f'Got {len(v)} {k}')
+            total_results[k] = len(v)
+            results[k] = v[:number_of_records_to_show_on_page_load]
+            displayed_results[k] = len(results[k])
 
         results["timedout_sources"] = list(set(results["timedout_sources"]))
-        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))       
+        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))  
+
+        session['total_search_results'] = total_results
+        session['displayed_search_results'] = displayed_results 
         
-        template_response = render_template('results.html', results=results, search_term=search_term)    
+        template_response = render_template('results.html', results=results, total_results=total_results, search_term=search_term)    
         logger.info('search server call completed - after render call')
 
         return template_response
+
+@app.route('/load-more-publications', methods=['GET'])
+def load_more_publications():
+    print('load more publications')
+
+    #define a new results dict for publications to take new publications from the search results stored in the session
+    results = {}
+    results['publications'] = session['search-results']['publications']
+
+    total_search_results_publications = session['total_search_results']['publications']
+    displayed_search_results_publications = session['displayed_search_results']['publications']
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    results['publications'] = results['publications'][displayed_search_results_publications:displayed_search_results_publications+number_of_records_to_append_on_lazy_load]
+    session['displayed_search_results']['publications'] = displayed_search_results_publications+number_of_records_to_append_on_lazy_load
+    return render_template('components/publications.html', results=results)  
+
+@app.route('/load-more-researchers', methods=['GET'])
+def load_more_researchers():
+    print('load more researchers')
+
+    #define a new results dict for researchers to take new researchers from the search results stored in the session
+    results = {}
+    results['researchers'] = session['search-results']['researchers']
+
+    total_search_results_researchers = session['total_search_results']['researchers']
+    displayed_search_results_researchers = session['displayed_search_results']['researchers']
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
+    session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
+    return render_template('components/researchers.html', results=results)     
+
 
 
 @app.route('/chatbox')
