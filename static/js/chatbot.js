@@ -26,7 +26,7 @@
     bindEvents: function() {
       this.$button.on('click', this.addMessage.bind(this));
       this.$textarea.on('keyup', this.addMessageEnter.bind(this));
-      this.$sampleQuestions.on('click', 'a', this.askQuestion.bind(this));
+      this.$sampleQuestions.on('click', 'a', this.askSampleQuestion.bind(this));
     },
     render: function() {   
       this.scrollToBottom();
@@ -42,30 +42,33 @@
         this.$textarea.val('');   
         
         //show the spinner now
-        this.$chatHistoryList.append(this.$spinnerBlock.clone().show());
+        this.$chatHistoryList.append(this.$spinnerBlock.clone().show());        
         
-        // responses
-        var templateResponse = Handlebars.compile( $("#message-response-template").html());
-        var contextResponse = { 
-          // response: this.getRandomItem(this.messageResponses),
-          response: 'you have asked me ' + this.messageToSend,
-          time: this.getCurrentTime()
-        };    
+        // // responses
+        // var templateResponse = Handlebars.compile( $("#message-response-template").html());
+        // var contextResponse = { 
+        //   // response: this.getRandomItem(this.messageResponses),          
+        //   // response: 'you have asked me ' + this.messageToSend,
+        //   response: this.getAnswer(),
+        //   time: this.getCurrentTime()
+        // };    
         
-        setTimeout(function() {
-          //remove the spinner block
-          this.$chatHistoryList.find('li').last().remove();
-          this.$chatHistoryList.append(templateResponse(contextResponse));
-          this.scrollToBottom();
-        }.bind(this), 2000);        
+        // setTimeout(function() {
+        //   //remove the spinner block
+        //   this.$chatHistoryList.find('li').last().remove();
+        //   this.$chatHistoryList.append(templateResponse(contextResponse));
+        //   this.scrollToBottom();
+        // }.bind(this), 2000);        
         
       }
       
     },
     
     addMessage: function() {
+      console.log('add message')
       this.messageToSend = this.$textarea.val()
-      this.render();         
+      this.render();  
+      this.getAnswer();       
     },
     addMessageEnter: function(event) {
         // enter was pressed
@@ -85,15 +88,56 @@
     getRandomItem: function(arr) {
       return arr[Math.floor(Math.random()*arr.length)];
     },
-    askQuestion: function(event) {
+    askSampleQuestion: function(event) {
       event.preventDefault();
-      var $target = $(event.target);      
+      var $target = $(event.target); 
+      console.log('ask Question')     
       console.log($target.text())
       this.messageToSend = $target.text();
       this.render();  
+      this.getAnswer();
+    },     
+    getAnswer: function() {
+
+      var _this=this;
+
+      $.ajax({
+        url: '/get-chatbot-answer',
+        type: "GET",
+        // async: false,
+        data: {
+            question: this.messageToSend
+        },
+        beforeSend: function () {
+            // $('#publications').append("<div class='loader'><div class='sp-3balls'></div></div>");
+        },
+        complete: function () {
+            // $('.loader').remove();
+        },              
+        success: function (data) {
+          console.log(data)          
+          // responses
+          var templateResponse = Handlebars.compile( $("#message-response-template").html());
+          var contextResponse = {  
+            response: data,
+            time: _this.getCurrentTime()
+          };    
+
+          _this.$chatHistoryList.find('li').last().remove();
+          _this.$chatHistoryList.append(templateResponse(contextResponse));
+          _this.scrollToBottom();
+
+        },
+        error: function (err) {
+            console.log(err);
+            return err
+        }
+      });
+
     },
 
     
+
   };
   
   chat.init();

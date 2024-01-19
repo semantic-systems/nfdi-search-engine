@@ -12,6 +12,8 @@ from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
+from chatbot import chatbot
+
 import details_page
 from sources.gepris import org_details
 import utils
@@ -144,19 +146,33 @@ def load_more_researchers():
     return render_template('components/researchers.html', results=results)     
 
 
+@app.route('/get-chatbot-answer', methods=['GET'])
+def get_chatbot_answer():
+    print('get chatbot answer')
 
-@app.route('/chatbox')
-def chatbox():
-    response = make_response(render_template('chatbox.html'))
+    question = request.args.get('question')
+    print('User asked:', question)
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
+    context = session['search-results']
+    answer = chatbot.getAnswer(question=question, context=context)
+    
+    return answer
 
-    return response
+
+# @app.route('/chatbot')
+# def chatbot():
+#     response = make_response(render_template('chatbot.html'))
+
+#     # Set search-session cookie to the session cookie value of the first visit
+#     if request.cookies.get('search-session') is None:
+#         if request.cookies.get('session') is None:
+#             response.set_cookie('search-session', str(uuid.uuid4()))
+#         else:
+#             response.set_cookie('search-session', request.cookies['session'])
+
+#     return response
+
+
 
 
 @app.route('/publication-details/<string:doi>', methods=['POST', 'GET'])
