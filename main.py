@@ -19,6 +19,9 @@ from sources.gepris import org_details
 import utils
 import deduplicator
 import copy
+import requests
+import uuid
+import json
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -92,6 +95,23 @@ def search_results():
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)
 
+        # Convert a UUID to a 32-character hexadecimal string
+        search_uuid = uuid.uuid4().hex
+        session['search_uuid'] = search_uuid
+        
+        def send_search_results_to_chatbot(search_uuid: str):
+            print('request is about to start')
+            request_url = f'http://127.0.0.1:5005/save_docs_with_embeddings/{search_uuid}'        
+            response = requests.post(request_url, json=json.dumps(results, default=vars))
+            response.raise_for_status() 
+            print('request completed')
+
+        # create a new daemon thread
+        chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
+        # start the new thread
+        chatbot_thread.start()
+        # sleep(1)
+        
 
         # on the first page load, only push top 20 records in each category
         number_of_records_to_show_on_page_load = int(utils.config["number_of_records_to_show_on_page_load"])        
@@ -153,8 +173,11 @@ def get_chatbot_answer():
     question = request.args.get('question')
     print('User asked:', question)
 
-    context = session['search-results']
-    answer = chatbot.getAnswer(question=question, context=context)
+    # context = session['search-results']
+    # answer = chatbot.getAnswer(question=question, context=context)
+
+    search_uuid = session['search_uuid']
+    answer = chatbot.getAnswer(question=question, search_uuid=search_uuid)
     
     return answer
 
