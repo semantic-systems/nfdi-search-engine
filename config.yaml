@@ -27,4 +27,7 @@ number_of_records_to_show_on_page_load: 20
 number_of_records_to_append_on_lazy_load: 10
 
 # chatbot_url: https://nfdi-chatbot.nliwod.org/chat
-chatbot_url: http://127.0.0.1:5005/chat
+chatbot_server: http://127.0.0.1:5005
+chat_endpoint: /chat
+save_docs_with_embeddings: /save-docs-with-embeddings
+are_embeddings_generated: /are-embeddings-generated

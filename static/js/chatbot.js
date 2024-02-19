@@ -13,6 +13,7 @@
     init: function() {
       this.cacheDOM();
       this.bindEvents();
+      this.is_chatbot_ready();
       this.render();
     },
     cacheDOM: function() {
@@ -21,13 +22,43 @@
       this.$textarea = $('#message-to-send');
       this.$chatHistoryList =  this.$chatHistory.find('ul');
       this.$spinnerBlock = $('#spinner-block');
-      this.$sampleQuestions = $('#sample-questions')
+      this.$sampleQuestions = $('#sample-questions');
+      this.$search_uuid = $('#search_uuid')
     },
     bindEvents: function() {
-      this.$button.on('click', this.addMessage.bind(this));
+      // this.$button.on('click', this.addMessage.bind(this));
+      this.$button.off('click');
       this.$textarea.on('keyup', this.addMessageEnter.bind(this));
       this.$sampleQuestions.on('click', 'a', this.askSampleQuestion.bind(this));
     },
+    is_chatbot_ready: function() {
+      var _this=this;
+      myInterval = setInterval(function() {
+        $.ajax({
+          url: '/are-embeddings-generated',
+          type: "GET",
+          data: {              
+          },
+          beforeSend: function () {
+          },
+          complete: function () {
+          },              
+          success: function (data) {
+            console.log(data)             
+            if(data == 'True'){            
+              _this.$button.text('Send')
+              _this.$button.on('click', _this.addMessage.bind(_this)); //bind the click event   
+              clearInterval(myInterval); //cancel the execution once we know the embeddings have been generated           
+            }
+          },
+          error: function (err) {
+              console.log(err);
+              return err
+          }
+        });        
+      }.bind(_this), 3000);  
+    },
+
     render: function() {   
       this.scrollToBottom();
       if (this.messageToSend.trim() !== '') {     

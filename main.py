@@ -101,7 +101,9 @@ def search_results():
         
         def send_search_results_to_chatbot(search_uuid: str):
             print('request is about to start')
-            request_url = f'http://127.0.0.1:5005/save_docs_with_embeddings/{search_uuid}'        
+            chatbot_server = utils.config['chatbot_server'] 
+            save_docs_with_embeddings = utils.config['save_docs_with_embeddings'] 
+            request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
             response = requests.post(request_url, json=json.dumps(results, default=vars))
             response.raise_for_status() 
             print('request completed')
@@ -164,6 +166,21 @@ def load_more_researchers():
     results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
     return render_template('components/researchers.html', results=results)     
+
+@app.route('/are-embeddings-generated', methods=['GET'])
+def are_embeddings_generated():
+    print('are_embeddings_generated')
+    uuid = session['search_uuid']
+    chatbot_server = utils.config['chatbot_server'] 
+    are_embeddings_generated = utils.config['are_embeddings_generated'] 
+    request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.request("GET", request_url, headers=headers)    
+    json_response = response.json()
+    print('json_response:', json_response)
+    return str(json_response['file_exists'])
 
 
 @app.route('/get-chatbot-answer', methods=['GET'])

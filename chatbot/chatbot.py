@@ -10,7 +10,9 @@ def load_search_results(file_name):
 
 
 def getAnswer(question, search_uuid):
-    url = utils.config['chatbot_url'] 
+    chatbot_server = utils.config['chatbot_server'] 
+    chat_endpoint = utils.config['chat_endpoint'] 
+    request_url = f"{chatbot_server}{chat_endpoint}"
 
     #later remove these two lines
     # question = "You are talking about who?"
@@ -33,7 +35,7 @@ def getAnswer(question, search_uuid):
     headers = {
         'Content-Type': 'application/json'
     }
-    response = requests.request("GET", url, headers=headers, data=payload)    
+    response = requests.request("GET", request_url, headers=headers, data=payload)    
     json_response = response.json()
 
     response_exception = json_response.get('exception', "")

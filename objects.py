@@ -11,6 +11,7 @@ class thing:
     identifier: str = "" #doi or pid will be stored as identifier    
     originalSource: str = ""
     source: list() = field(default_factory=list) # this list will have "thing" objects
+    rankScore: float = 0 #bm25 ranking score for sorting the search results
 
 @dataclass
 class Organization(thing):

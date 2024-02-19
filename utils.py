@@ -138,6 +138,13 @@ def sort_results_publications(results):
 
     return sorted(results, key=custom_sort_key, reverse=True)
 
+# from rank_bm25 import BM25Plus
+# def sort_results_publications(results):
+#     pass
+
+
+
+
 def split_authors(authors_names, seperator, authors_list):
     authors = authors_names.split(seperator)
     for author in authors:
