@@ -18,7 +18,7 @@
     },
     cacheDOM: function() {
       this.$chatHistory = $('.chat-history');
-      this.$button = $('button');
+      this.$button = $('#btn-send-message');
       this.$textarea = $('#message-to-send');
       this.$chatHistoryList =  this.$chatHistory.find('ul');
       this.$spinnerBlock = $('#spinner-block');
