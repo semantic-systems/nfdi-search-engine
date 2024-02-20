@@ -13,6 +13,15 @@ class thing:
     source: list() = field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
 
+    # @classmethod
+    def __str__(self):
+        strValue = ""
+        for field in fields(self):
+            # print(field.type)
+            # concatenate all the property values            
+            strValue += f"{getattr(self, field.name)}###"
+        return strValue
+
 @dataclass
 class Organization(thing):
     address: str = ""

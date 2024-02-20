@@ -59,6 +59,7 @@ def search_results():
 
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
+        session['search-term'] = search_term
 
         results = {
             'publications': [],
@@ -90,8 +91,9 @@ def search_results():
         # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
-        results["publications"] = utils.sort_results_publications(results["publications"])      
-
+        results["publications"] = utils.sort_search_results(search_term, results["publications"])  
+        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
+        
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)
 
@@ -102,7 +104,7 @@ def search_results():
         def send_search_results_to_chatbot(search_uuid: str):
             print('request is about to start')
             chatbot_server = utils.config['chatbot_server'] 
-            save_docs_with_embeddings = utils.config['save_docs_with_embeddings'] 
+            save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings'] 
             request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
             response = requests.post(request_url, json=json.dumps(results, default=vars))
             response.raise_for_status() 
@@ -172,7 +174,7 @@ def are_embeddings_generated():
     print('are_embeddings_generated')
     uuid = session['search_uuid']
     chatbot_server = utils.config['chatbot_server'] 
-    are_embeddings_generated = utils.config['are_embeddings_generated'] 
+    are_embeddings_generated = utils.config['endpoint_are_embeddings_generated'] 
     request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
     headers = {
         'Content-Type': 'application/json'

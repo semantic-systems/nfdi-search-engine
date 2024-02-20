@@ -11,7 +11,7 @@ def load_search_results(file_name):
 
 def getAnswer(question, search_uuid):
     chatbot_server = utils.config['chatbot_server'] 
-    chat_endpoint = utils.config['chat_endpoint'] 
+    chat_endpoint = utils.config['endpoint_chat'] 
     request_url = f"{chatbot_server}{chat_endpoint}"
 
     #later remove these two lines
