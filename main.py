@@ -12,11 +12,16 @@ from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
+from chatbot import chatbot
+
 import details_page
 from sources.gepris import org_details
 import utils
 import deduplicator
 import copy
+import requests
+import uuid
+import json
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -54,6 +59,7 @@ def search_results():
 
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
+        session['search-term'] = search_term
 
         results = {
             'publications': [],
@@ -85,11 +91,31 @@ def search_results():
         # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
-        results["publications"] = utils.sort_results_publications(results["publications"])      
-
+        results["publications"] = utils.sort_search_results(search_term, results["publications"])  
+        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
+        
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)
 
+        # Convert a UUID to a 32-character hexadecimal string
+        search_uuid = uuid.uuid4().hex
+        session['search_uuid'] = search_uuid
+        
+        def send_search_results_to_chatbot(search_uuid: str):
+            print('request is about to start')
+            chatbot_server = utils.config['chatbot_server'] 
+            save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings'] 
+            request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
+            response = requests.post(request_url, json=json.dumps(results, default=vars))
+            response.raise_for_status() 
+            print('request completed')
+
+        # create a new daemon thread
+        chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
+        # start the new thread
+        chatbot_thread.start()
+        # sleep(1)
+        
 
         # on the first page load, only push top 20 records in each category
         number_of_records_to_show_on_page_load = int(utils.config["number_of_records_to_show_on_page_load"])        
@@ -143,20 +169,52 @@ def load_more_researchers():
     session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
     return render_template('components/researchers.html', results=results)     
 
+@app.route('/are-embeddings-generated', methods=['GET'])
+def are_embeddings_generated():
+    print('are_embeddings_generated')
+    uuid = session['search_uuid']
+    chatbot_server = utils.config['chatbot_server'] 
+    are_embeddings_generated = utils.config['endpoint_are_embeddings_generated'] 
+    request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.request("GET", request_url, headers=headers)    
+    json_response = response.json()
+    print('json_response:', json_response)
+    return str(json_response['file_exists'])
 
 
-@app.route('/chatbox')
-def chatbox():
-    response = make_response(render_template('chatbox.html'))
+@app.route('/get-chatbot-answer', methods=['GET'])
+def get_chatbot_answer():
+    print('get chatbot answer')
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
+    question = request.args.get('question')
+    print('User asked:', question)
 
-    return response
+    # context = session['search-results']
+    # answer = chatbot.getAnswer(question=question, context=context)
+
+    search_uuid = session['search_uuid']
+    answer = chatbot.getAnswer(question=question, search_uuid=search_uuid)
+    
+    return answer
+
+
+# @app.route('/chatbot')
+# def chatbot():
+#     response = make_response(render_template('chatbot.html'))
+
+#     # Set search-session cookie to the session cookie value of the first visit
+#     if request.cookies.get('search-session') is None:
+#         if request.cookies.get('session') is None:
+#             response.set_cookie('search-session', str(uuid.uuid4()))
+#         else:
+#             response.set_cookie('search-session', request.cookies['session'])
+
+#     return response
+
+
 
 
 @app.route('/publication-details/<string:doi>', methods=['POST', 'GET'])

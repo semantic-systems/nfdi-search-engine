@@ -1,6 +1,6 @@
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbox.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chatbot.css') }}">
 {% endblock stylesheets %}
 
 {% block content %}
@@ -16,16 +16,19 @@
                     <span class="message-data-time">10:12 AM, Today</span>
                 </div>
                 <div class="message my-message">
-                    I am here to help. You can ask me anything related to these search results. For example:
+                    <!-- I am here to help. You can ask me questions related to these search results.
+                     -->
+                    I am here to answer any questions and I shall ensure to curtail my knowledge only to the search
+                    results shown.
                 </div>
-                <div id="sample-questions" class="list-group pb-3 w-90" style="margin-top: -25px;">
+                <!-- <div id="sample-questions" class="list-group pb-3 w-90" style="margin-top: -25px;">
                     <a href="#" class="list-group-item list-group-item-action list-group-item-success">question
                         1</a>
                     <a href="#" class="list-group-item list-group-item-action list-group-item-success">question
                         2</a>
                     <a href="#" class="list-group-item list-group-item-action list-group-item-success">question
                         3</a>
-                </div>
+                </div> -->
             </li>
 
             <li id="spinner-block" style="display: none;">
@@ -46,7 +49,7 @@
 
     <div class="chat-message clearfix">
         <textarea name="message-to-send" id="message-to-send" placeholder="Type your question" rows="3"></textarea>
-        <button>Send</button>
+        <button id="btn-send-message">Please wait ...</button>
     </div> <!-- end chat-message -->
 
 </div> <!-- end chat -->
@@ -84,5 +87,8 @@
 
 <!-- Specific Page JS goes HERE  -->
 {% block javascripts %}
+
+
+
 
 {% endblock javascripts %}
