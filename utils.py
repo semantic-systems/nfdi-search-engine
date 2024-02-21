@@ -128,15 +128,29 @@ def parse_date(date_str):
         print(f"original date str: {date_str}")
         return ""
         
-def sort_results_publications(results):
-    def custom_sort_key(obj):    
-        desc = getattr(obj, 'description', '') 
-        pub_date = getattr(obj, 'datePublished', '0000-00-00') 
-        if desc == '':
-            return (0, pub_date)
-        return (1, pub_date)
+# def sort_results_publications(results):
+#     def custom_sort_key(obj):    
+#         desc = getattr(obj, 'description', '') 
+#         pub_date = getattr(obj, 'datePublished', '0000-00-00') 
+#         if desc == '':
+#             return (0, pub_date)
+#         return (1, pub_date)
 
-    return sorted(results, key=custom_sort_key, reverse=True)
+#     return sorted(results, key=custom_sort_key, reverse=True)
+
+from rank_bm25 import BM25Plus
+def sort_search_results(search_term, search_results):
+    tokenized_results = [str(result).lower().split(" ") for result in search_results]
+    if len(tokenized_results) > 0:
+        bm25 = BM25Plus(tokenized_results)
+    
+        tokenized_query = search_term.lower().split(" ")
+        doc_scores = bm25.get_scores(tokenized_query)
+        
+        for idx, doc_score in enumerate(doc_scores):
+            search_results[idx].rankScore = doc_score
+
+    return sorted(search_results, key=lambda x: x.rankScore, reverse=True)
 
 def split_authors(authors_names, seperator, authors_list):
     authors = authors_names.split(seperator)

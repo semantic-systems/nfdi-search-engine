@@ -20,7 +20,7 @@
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-12 my-2 authors">
+                    <div class="col-9 my-2 authors">
                         {% set author_count = namespace(value=0) %}
                         {% for author in publication.author %}
                         {% if author_count.value == 5 %}
@@ -35,6 +35,10 @@
                         {% endif %}
                         {% set author_count.value = author_count.value + 1 %}
                         {% endfor %}
+                    </div>
+                    <div class="col-3 text-end ">
+                        <span
+                            class="badge bg-pill bg-success text-wrap text-break">Score:{{publication.rankScore}}</span>
                     </div>
                 </div>
                 <div class="row">
