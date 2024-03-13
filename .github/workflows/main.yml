@@ -12,8 +12,12 @@ jobs:
       - name: 'Check out repo'
         uses: actions/checkout@v3
         with:
-          ref: main      
+          ref: main
+      - name: 'Stop the running NFDI Search Engine'
+        run: docker compose down
+      - name: 'Delete old Docker image'
+        run: docker image rm nfdi-search-engine-search-engine
       - name: 'Copy logging.conf'
         run: cp logging.conf.example logging.conf
       - name: 'Re-build Docker container from current source'
-        run: docker compose up --force-recreate --detach --build
+        run: docker compose up --force-recreate --build --detach
