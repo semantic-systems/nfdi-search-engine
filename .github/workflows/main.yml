@@ -16,4 +16,4 @@ jobs:
       - name: 'Copy logging.conf'
         run: cp logging.conf.example logging.conf
       - name: 'Re-build Docker container from current source'
-        run: docker compose up --force-recreate --pull --build -d
+        run: docker compose up --force-recreate --detach --build --pull
