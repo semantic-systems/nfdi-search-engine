@@ -1,0 +1,7 @@
+<ol class="list-group list-group-numbered">
+    {% for reference in publication.citation %}
+    <li class="list-group-item border-0">
+        {{reference.text}}
+    </li>
+    {% endfor %}
+</ol>

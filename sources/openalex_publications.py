@@ -72,3 +72,52 @@ def search(search_term: str, results):
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
         logger.error(traceback.format_exc())
+
+
+@utils.timeit
+def get_publication(doi: str):
+     
+    source = "OPENALEX Publication"
+
+    try:
+        search_result = data_retriever.retrieve_get_single_object(source=source, 
+                                                     base_url=utils.config["publication_details_openalex_publications"],
+                                                     doi=doi)
+        
+        publication = Article()   
+
+        publication.name = utils.remove_html_tags(search_result.get("title", ""))  
+        publication.url = search_result.get("id", "") # not a valid url, openalex is currently working on their web interface.
+        publication.identifier = search_result.get("doi", "").replace("https://doi.org/", "")
+        publication.datePublished = search_result.get("publication_date", "") 
+        publication.inLanguage.append(search_result.get("language", ""))
+        publication.license = search_result.get("primary_location", {}).get("license", "")
+        publication.publication = search_result.get("primary_location", {}).get("source", {}).get("display_name", "")
+
+        abstract_inverted_index = search_result.get("abstract_inverted_index", {})
+        publication.description = generate_string_from_keys(abstract_inverted_index) # Generate the string using keys from the dictionary
+        publication.abstract = publication.description
+
+        authorships = search_result.get("authorships", [])                        
+        for authorship in authorships:
+
+            author = authorship.get("author", {})
+
+            _author = Author()
+            _author.type = 'Person'
+            _author.name = author.get("display_name", "")
+            _author.identifier = author.get("orcid", "")                            
+            publication.author.append(_author)
+        
+        keywords = search_result.get("keywords", [])                        
+        for keyword in keywords:
+            publication.keywords.append(keyword.get("display_name", "") )            
+        
+        return publication
+
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')        
+    
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())

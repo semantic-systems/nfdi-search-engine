@@ -25,8 +25,7 @@ def search(search_term: str, results):
                                     SERVICE wikibase:mwapi
                                     {
                                     bd:serviceParam wikibase:endpoint "www.wikidata.org";
-                                                    wikibase:api "EntitySearch";
-                                                    
+                                                    wikibase:api "EntitySearch";                                                    
                                                     mwapi:search "$search_string";
                                                     mwapi:language "en";
                                                     mwapi:limit "150".
@@ -44,22 +43,22 @@ def search(search_term: str, results):
                                             ?st ps:P108 ?employer.
                                             ?employer rdfs:label ?employerLabel. FILTER( LANG(?employerLabel)="en" )
                                             ?st pq:P580 ?date.
-                                    MINUS {?st pq:P582 ?enddate.}        
+                                        MINUS {?st pq:P582 ?enddate.}        
                                     }
                                     OPTIONAL {?item wdt:P108 ?employer. 
                                             ?employer rdfs:label ?employerLabel. FILTER( LANG(?employerLabel)="en" )
-                                            }
-                                
+                                    }                                
                                     SERVICE wikibase:label {
-                                    bd:serviceParam wikibase:language "en" .
-                                }
+                                        bd:serviceParam wikibase:language "en" .
+                                    }
                                 }
                                 GROUP by ?item ?itemLabel ?orcid ?nationalityLabel ?givenNameLabel ?familyNameLabel 
                                 
                                     ''')    
 
         query = query_template.substitute(search_string=search_term)
-        query = ' '.join(query.split())
+        query = ' '.join(query.split())       
+
         search_result = data_retriever.retrieve_data(source=source, 
                                                      base_url=utils.config["search_url_wikidata"],
                                                      search_term=query,

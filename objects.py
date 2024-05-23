@@ -71,7 +71,7 @@ class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
     author: List[Union[Organization, Person]] = field(default_factory=list)
-    citation: str = "" # this should actually reference to articles
+    citation: list() = field(default_factory=list) # this list will have "CreativeWork" objects
     countryOfOrigin: str = ""
     creativeWorkStatus: str = ""
     dateCreated: str = ""

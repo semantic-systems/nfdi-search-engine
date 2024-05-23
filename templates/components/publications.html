@@ -10,8 +10,8 @@
                             {{publication.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href='/publication-details/{{publication.identifier | replace("/", "-.-") }}'
-                            target='_blank'>{{publication.name}}</a>
+                            href='/publication-details/{{publication.identifier}}'
+                            target='_self'>{{publication.name}}</a>
                         {% endif %}
                     </div>
                     <div class="col-3 text-end ">
@@ -238,15 +238,13 @@
 
 <div id="div_load_more_publications" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.publications
-        < session.total_search_results.publications %} <div>Displaying top {{
-            session.displayed_search_results.publications }} publications out of
-            {{ session.total_search_results.publications }}
+        {% if session.displayed_search_results.publications < session.total_search_results.publications %} <div>
+            Displaying top {{session.displayed_search_results.publications }} publications out of {{
+            session.total_search_results.publications }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more publications"
-        id="btn_load_more_publications">Load
-        more publications</button>
+        id="btn_load_more_publications">Load more publications</button>
     {% endif %}
 </div>
 </div>
