@@ -76,9 +76,9 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
-        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, dblp_researchers, re3data, orkg]
-        # sources = [wikidata_researchers]
+        # sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
+        #            eudat, openaire_products, dblp_researchers, re3data, orkg]
+        sources = [openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -224,13 +224,30 @@ def get_chatbot_answer():
 #     return response
 
 
+from jinja2.filters import FILTERS
+import json
+def format_digital_obj_url(value):
+    sources_list = []
+    for source in value.source:
+        source_dict = {}
+        source_dict['doi'] = value.identifier
+        source_dict['sname'] = source.name
+        source_dict['sid'] = value.identifier
+        sources_list.append(source_dict)
+    return json.dumps(sources_list)
+FILTERS["format_digital_obj_url"] = format_digital_obj_url
 
-
-
-@app.route('/publication-details/<path:doi>', methods=['GET'])
+@app.route('/publication-details/<path:sources>', methods=['GET'])
 @utils.timeit
-def publication_details(doi):
-    print("DOI:", doi)
+def publication_details(sources):
+
+    from urllib.parse import unquote
+    import ast
+    sources = unquote(sources)
+    sources = ast.literal_eval(sources)
+    
+    for source in sources:
+        doi = source['doi']
     
     publication = openalex_publications.get_publication(doi="https://doi.org/"+doi)
     response = make_response(render_template('publication-details.html', publication=publication))
@@ -241,7 +258,7 @@ def publication_details(doi):
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
-    print("DOI:", doi)
+    print("doi:", doi)    
     
     publication = crossref.get_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))
