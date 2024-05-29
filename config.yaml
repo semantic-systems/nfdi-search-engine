@@ -16,5 +16,5 @@ search_url_dblp: https://dblp.org/search?q=
 
 search_url_gesis: http://193.175.238.35:8089/dc/_search?size=100&q=
 search_url_gepris: https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=
-search_url_piveau: https://nfdimetaportal.fokus.fraunhofer.de/search/search?q=
+search_url_piveau: https://nfdi4dsmetaportal.fokus.fraunhofer.de/api/search/search?q=
 settings_file_publications: static/weights/publications-settings.json
