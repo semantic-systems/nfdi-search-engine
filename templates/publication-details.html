@@ -15,7 +15,7 @@
 
         <div class="row pb-4">
             <div class="col text-start">
-                <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
+                <!-- <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a> -->
             </div>
         </div>
         <div class="row border-bottom pb-4">
@@ -129,7 +129,7 @@
                     <h5>REFERENCES</h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
-
+                    <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
                 </div>
 
                 <div class="p-2 bd-highlight pt-4" id="cited-by">
@@ -180,7 +180,7 @@
                     <h5>RECOMMENDATIONS</h5>
                 </div>
                 <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="recommendations_block">
-
+                    <button type="button" class="btn btn-outline-secondary" id="btn-load-recommendations">Load</button>
                 </div>
 
                 <div class=" d-flex p-2 bd-highlight pt-4">
@@ -217,9 +217,7 @@
     $(document).ready(function () {
 
         load_references = function () {
-
             let doi = document.getElementById('publication_doi').innerHTML
-
             $.ajax({
                 url: '/publication-details-references/' + doi,
                 type: "GET",
@@ -236,20 +234,16 @@
                     $('.loader').remove();
                     $('#references_block').html(data);
                     console.log('references have been loaded.')
-
                 },
                 error: function (err) {
                     console.log(err);
                     return err
                 }
             });
-
         }
 
         load_recommendations = function () {
-
             let doi = document.getElementById('publication_doi').innerHTML
-
             $.ajax({
                 url: '/publication-details-recommendations/' + doi,
                 type: "GET",
@@ -272,12 +266,15 @@
                     return err
                 }
             });
-
         }
 
-        load_references();
-        load_recommendations();
+        $('#btn-load-references').click(function () {
+            load_references();
+        });
 
+        $('#btn-load-recommendations').click(function () {
+            load_recommendations();
+        });
 
     });
 

@@ -41,6 +41,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
         else:
             logger.error(f'Response status code: {str(response.status_code)}')
             results['timedout_sources'].append(source)
+            return response.status_code
 
     except Exception as ex:
         raise ex
@@ -72,6 +73,7 @@ def retrieve_get_single_object(source: str, base_url: str, doi: str):
 
         else:
             logger.error(f'Response status code: {str(response.status_code)}')
+            return response.status_code
 
     except Exception as ex:
         raise ex
