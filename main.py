@@ -7,7 +7,7 @@ from objects import Article, Organization, Person, Dataset, Project
 from flask import Flask, render_template, request, make_response, session
 from flask_session import Session
 import threading
-from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
+from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, openaire
 from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
@@ -76,7 +76,7 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, dblp_researchers, re3data, orkg]
+                   eudat, openaire_products, dblp_researchers, re3data, orkg, gesis, eulg, openaire]
         # sources = [dblp_researchers]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -93,7 +93,7 @@ def search_results():
         # sort all the results in each category
         results["publications"] = utils.sort_search_results(search_term, results["publications"])  
         results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
-        
+        results["resources"] = utils.sort_search_results(search_term, results["resources"])
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)
 
@@ -168,6 +168,21 @@ def load_more_researchers():
     results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
     return render_template('components/researchers.html', results=results)     
+
+@app.route('/load-more-resources', methods=['GET'])
+def load_more_resources():
+    print('load more resources')
+
+    #define a new results dict for resources to take new resources from the search results stored in the session
+    results = {}
+    results['resources'] = session['search-results']['resources']
+
+    total_search_results_resources = session['total_search_results']['resources']
+    displayed_search_results_resources = session['displayed_search_results']['resources']
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    results['resources'] = results['resources'][displayed_search_results_resources:displayed_search_results_resources+number_of_records_to_append_on_lazy_load]
+    session['displayed_search_results']['resources'] = displayed_search_results_resources+number_of_records_to_append_on_lazy_load
+    return render_template('components/resources.html', results=results)     
 
 @app.route('/are-embeddings-generated', methods=['GET'])
 def are_embeddings_generated():

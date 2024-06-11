@@ -107,3 +107,18 @@
         {% endfor %}
     </tbody>
 </table>
+
+<div id="div_load_more_resources" class="row text-center my-2">
+    <div class="col">
+        {% if session.displayed_search_results.resources
+        < session.total_search_results.resources %} <div>Displaying top {{
+            session.displayed_search_results.resources }} resources out of
+            {{ session.total_search_results.resources }}
+    </div>
+    <br />
+    <button type="button" class="btn btn-secondary" aria-label="Load more resources"
+        id="btn_load_more_resources">Load
+        more resources</button>
+    {% endif %}
+</div>
+</div>

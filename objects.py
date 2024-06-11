@@ -73,6 +73,8 @@ class CreativeWork(thing):
     author: List[Union[Organization, Person]] = field(default_factory=list)
     citation: str = "" # this should actually reference to articles
     countryOfOrigin: str = ""
+    conditionsOfAccess: str = ""
+    contributor: List[Union[Organization, Person]] = field(default_factory=list)
     creativeWorkStatus: str = ""
     dateCreated: str = ""
     dateModified: str = ""
@@ -93,7 +95,8 @@ class CreativeWork(thing):
     text: str = ""
     thumbnail: str = "" #ImageObject
     thumbnailUrl: str = "" #url
-    version: str = ""   
+    version: str = "" 
+      
 @dataclass
 class Article(CreativeWork):    
     articleBody: str = ""

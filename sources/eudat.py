@@ -94,7 +94,7 @@ def search(search_term: str, results):
                 _source.identifier = hit.get("id", "")
                 # _source.url = hit.get('links', {}).get('self', '')  # this gives json response
                 _source.url = source_url_direct_access + _source.identifier                    
-                digitalObj.source.append(_source)  
+                digitalObj.source = "EUDAT" 
 
                 if resource_type in ['DATASET', 'MODEL', 'AUDIOVISUAL']:
                     results['resources'].append(digitalObj)    

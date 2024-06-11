@@ -53,7 +53,7 @@ def search(search_term, results):
                 digitalObj.identifier = hit.get('doi', '')
                 digitalObj.name = hit.get('title', '')
                 digitalObj.url = hit.get('links', {}).get('self', '')  
-                
+                digitalObj.genre = resource_type
                 digitalObj.description = utils.remove_html_tags(metadata.get('description', ''))
                 
                 keywords = metadata.get('keywords', [])
@@ -63,11 +63,14 @@ def search(search_term, results):
                 
                 language = metadata.get('language', '')
                 digitalObj.inLanguage.append(language)
-
+                digitalObj.dateCreated = hit.get('created','')
+                digitalObj.dateModified = hit.get('modified','')
                 digitalObj.datePublished = metadata.get('publication_date', '')
-                digitalObj.license = metadata.get('license', {}).get('id', '')    
+                digitalObj.license = metadata.get('license', {}).get('id', '') 
+                digitalObj.creativeWorkStatus = hit.get('status','')  
                 
-                
+                #views, # resource type
+                digitalObj.conditionsOfAccess = metadata.get('access-rights','')
 
                 authors = metadata.get("creators", [])                        
                 for author in authors:
@@ -78,15 +81,30 @@ def search(search_term, results):
                     _author.affiliation = author.get("affiliation", "")
                     digitalObj.author.append(_author)  
 
+                contributors = metadata.get("contributors", [])                        
+                for contributor in contributors:
+                    _contributor = Author()
+                    _contributor.type = 'Person'
+                    _contributor.name = contributor.get("name", "")
+                    _contributor.identifier = contributor.get("orcid", "")
+                    _contributor.affiliation = contributor.get("affiliation", "")
+                    digitalObj.contributor.append(_contributor)  
+
                 _source = thing()
                 _source.name = source
                 _source.identifier = hit.get("id", "")
                 _source.url = hit.get('links', {}).get('self_html', '')                      
-                digitalObj.source.append(_source)                
+                digitalObj.source = _source       
+                       
 
                 if resource_type.upper() == 'PUBLICATION':
                     digitalObj.abstract = digitalObj.description
-
+                    a, b = hit.get("journal", "").get('pages','').split('-')
+                    digitalObj.pageStart = a
+                    digitalObj.pageEnd = b
+                    digitalObj.pagination = hit.get("journal", "").get('pages','') 
+                    
+                    #############################
                     files = hit.get('files', [])
                     for file in files:
                         if file.get("key", "").endswith(".pdf"):

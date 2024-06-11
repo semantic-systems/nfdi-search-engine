@@ -357,6 +357,12 @@
             load_more_researchers()
         });
 
+        $('body').on('click', "#btn_load_more_resources", function (e) {
+            console.log('load more resources button clicked')
+            load_more_resources()
+        });
+
+
 
         $(window).scroll(function () {
 
@@ -391,6 +397,22 @@
                     load_more_researchers();
                 }
             }
+
+            if ($('.nav-item .active').attr('id') == 'resources-tab') {
+                // Use the flag in the condition (so if sent and not yet received == false)            
+                if ($('#btn_load_more_resources').is(":visible") &&  //load more button is visible
+                    !ajax_request_sent && //no other ajax request is currently being processed
+                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+
+                    // Set the flag to prevent any concurring request
+                    ajax_request_sent = true
+
+                    // ajax call get data from server and append to the div
+                    console.log('load more via ajax now')
+                    load_more_resources();
+                }
+            }
+
 
 
         });
@@ -493,6 +515,35 @@
                 console.log(err);
             }
         });
+    }
+
+    function load_more_resources() {
+
+    $('#div_load_more_resources').remove()
+    jQuery.ajax({
+        url: '/load-more-resources',
+        type: "GET",
+        beforeSend: function () {
+            $('#resources').append("<div class='loader'><div class='sp-3balls'></div></div>");
+        },
+        complete: function () {
+            $('.loader').remove();
+        },
+        // data: {
+        //     action: "pj_load_more",
+        //     pjCount: pjCount
+        // },
+        success: function (data) {
+            $('#resources').append(data);
+            console.log('more resources loaded.')
+
+            // Unset the flag
+            ajax_request_sent = false;
+        },
+        error: function (err) {
+            console.log(err);
+        }
+    });
     }
 
 

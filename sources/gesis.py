@@ -54,14 +54,12 @@ def search(search_term, results):
                 resources.datePublished = date_published
                 # publisher = dc_fields['publisher']['all'][0] if 'publisher' in dc_fields and 'all' in dc_fields['publisher'] else None
                 # resources.publisher=publisher
+                
+                rights = dc_fields['rights']['all'][0] if 'rights' in dc_fields and 'all' in dc_fields['rights'] else None
+                resources.license = rights
 
-                # rights = dc_fields['rights']['all'][0] if 'rights' in dc_fields and 'all' in dc_fields['rights'] else None
-                # resources.license = rights
-
-                languages = dc_fields['language']['all'] if 'language' in dc_fields and 'all' in dc_fields['language'] else ''
-                if languages:
-                    for language in languages:
-                        resources.inLanguage.append(language)
+                languages = dc_fields.get('language', {}).get('all', [])
+                resources.inLanguage.extend(languages)
                 
                 id = hit['_id']
                 id = id.replace('.', '-')
