@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Union, List, Dict
 import dataclasses
 from dataclasses import dataclass, fields, field
 @dataclass
@@ -67,6 +67,17 @@ class Author(Person):
     cited_by_count: str = ""
 
 @dataclass
+class Statistics(thing):
+    downloads: str = ""
+    unique_downloads: str = ""
+    views: str = ""
+    unique_views: str = ""
+    version_downloads: str = ""
+    version_unique_downloads: str = ""
+    version_unique_views: str = ""
+    version_views: str = ""
+
+@dataclass
 class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
@@ -79,7 +90,7 @@ class CreativeWork(thing):
     dateCreated: str = ""
     dateModified: str = ""
     datePublished: str = ""
-    encoding_contentUrl: str = "" 
+    encoding_contentUrl: Dict[str, str] = field(default_factory=dict)
     encodingFormat: str = ""
     funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
     funding: str = "" # we can change this to Grant
@@ -95,8 +106,20 @@ class CreativeWork(thing):
     text: str = ""
     thumbnail: str = "" #ImageObject
     thumbnailUrl: str = "" #url
-    version: str = "" 
-      
+    version: str = ""
+    stats: Statistics = None
+    cites: List[Union[str, str]] = field(default_factory=list)
+    isPartOf: List[Union[str, str]] = field(default_factory=list)
+    isSupplementTo : List[Union[str, str]] = field(default_factory=list)
+    isSourceOf : List[Union[str, str]] = field(default_factory=list)
+    isCitedBy : List[Union[str, str]] = field(default_factory=list)
+    hasPart: List[Union[str, str]] = field(default_factory=list)
+    isSupplementedBy: List[Union[str, str]] = field(default_factory=list)
+    isPreviousVersionOf: List[Union[str, str]] = field(default_factory=list)
+    isDerivedFrom: List[Union[str, str]] = field(default_factory=list)
+    documents: List[Union[str, str]] = field(default_factory=list)
+
+    
 @dataclass
 class Article(CreativeWork):    
     articleBody: str = ""
@@ -104,6 +127,9 @@ class Article(CreativeWork):
     pageStart: str = ""
     pagination: str = ""
     wordCount: str = ""
+    issue: str = ""
+    Journal: str = ""
+    JournalVolume: str = ""
 
 @dataclass
 class Dataset(CreativeWork): 
@@ -129,6 +155,7 @@ class Project(Organization):
 class SoftwareApplication(CreativeWork):
     distribution: str = ""
     issn: str = ""
+    softwareVersion: str = ""
 @dataclass
 class LearningResource(CreativeWork): 
     assesses: str = ""  #The item being described is intended to assess the competency or learning outcome defined by the referenced term.

@@ -20,12 +20,13 @@
                                 </div>
                                 <div class="row">
                                     <div class="col-12 my-2 authors">
-                                        {% for author in resources.author %}
+                                        {% for author in resources.author  %}
                                         {% if author.type == 'Person' %}
                                         <a href="{{author.identifier}}"
                                             class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true"><i
-                                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                                            tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}
+                                        </a>
                                         {% endif %}
                                         {% endfor %}
                                     </div>
@@ -37,34 +38,33 @@
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-9 text-start">
-                                        <span class="badge bg-pill">{{resources.source}}</span>
-                                        {% for language in resources.inLanguage %}
-                                        <span class="badge bg-pill">{{language|upper}}</span>
+                                        {% for source in resources.source %}
+                                            <span class="badge bg-pill">{{ source.name }}</span>
+                                            {% for language in source.inLanguage %}
+                                                <span class="badge bg-pill">{{ language|upper }}</span>
+                                            {% endfor %}
                                         {% endfor %}
+                                        <span class="badge bg-pill">{{ resources.license }}</span>
                                         <span class="badge bg-pill">{{ resources.encodingFormat|upper }}</span>
-                                        <span class="badge bg-pill">{{resources.license}}</span>
+                                        <br>
+                                        {% for keyword in resources.keywords %}
+                                            <span class="badge bg-pill">{{ keyword }}</span>
+                                        {% endfor %}
                                     </div>
-                                    {% if resources.source == 'GESIS' or resources.source == 'Zenodo' %}
+                                
                                     <div class="col-3 text-end">
-                                        <span class="badge bg-pill">{{resources.datePublished}}</span>
+                                        {% if resources.source == 'GESIS' or resources.source[0].name == 'Zenodo' %}
+                                            <span class="badge bg-pill">{{ resources.datePublished }}</span>
+                                        {% elif resources.source == 'GEPRIS' %}
+                                            <span class="badge bg-pill">{{ resources.dateLastModified }}</span>
+                                        {% elif resources.source == 'CODALAB' %}
+                                            <span class="badge bg-pill">{{ resources.dateCreated }}</span>
+                                        {% elif resources.source == 'elg:corpus' or resources.source == 'elg:software/service' %}
+                                            <span class="badge bg-pill">{{ resources.datePublished }}</span>
+                                        {% endif %}
                                     </div>
-                                    {% endif %}
-                                    {% if resources.source == 'GEPRIS' %}
-                                    <div class="col-3 text-end">
-                                        <span class="badge bg-pill">{{resources.dateLastModified}}</span>
-                                    </div>
-                                    {% endif %}
-                                    {% if resources.source == 'CODALAB' %}
-                                    <div class="col-3 text-end">
-                                        <span class="badge bg-pill">{{resources.dateCreated}}</span>
-                                    </div>
-                                    {% endif %}
-                                    {% if resources.source == 'elg:corpus' or resources.source == 'elg:software/service'%}
-                                    <div class="col-3 text-end">
-                                        <span class="badge bg-pill">{{resources.datePublished}}</span>
-                                    </div>
-                                    {% endif %}
                                 </div>
+                                
                             </div>
                             <div class="col-1">
                                 <div class="row fs-5">

@@ -1,7 +1,7 @@
 import requests
 import utils
 # from objects import Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Person, LearningResource, CreativeWork, VideoObject, ImageObject
-from objects import thing, Article, Statistics, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
+from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource, Statistics
 import logging
 from sources import data_retriever
 import traceback
@@ -58,60 +58,25 @@ def search(search_term, results):
                 
                 keywords = metadata.get('keywords', [])
                 if isinstance(keywords, list):
+                    # for keyword in keywords:
+                    #     digitalObj.keywords.append(keyword)    
                     for keyword in keywords:
-                        digitalObj.keywords.append(keyword)               
+                        terms = [term.strip() for term in keyword.split(",")]
+                        digitalObj.keywords.extend(terms)          
                 
                 language = metadata.get('language', '')
                 digitalObj.inLanguage.append(language)
                 digitalObj.dateCreated = hit.get('created','')
-                digitalObj.dateModified = hit.get('modified','')        
+                digitalObj.dateModified = hit.get('modified','')
                 digitalObj.datePublished = metadata.get('publication_date', '')
-                digitalObj.license = metadata.get('license', {}).get('id', '')    
-                digitalObj.creativeWorkStatus = hit.get('status','') 
-                digitalObj.funder = metadata.get('grants', [{}])[0].get('funder', {}).get('name', '')
+                digitalObj.license = metadata.get('license', {}).get('id', '') 
+                digitalObj.creativeWorkStatus = hit.get('status','')  
+                digitalObj.funder = metadata.get('grants', {}).get('funder', '').get('name','')
+                
+                #views, # resource type
                 digitalObj.conditionsOfAccess = metadata.get('access-rights','')
                 if(digitalObj.conditionsOfAccess == ''):
                     digitalObj.conditionsOfAccess = metadata.get('access_right','')
-
-                relation_map = {
-                    'iscitedby': 'isCitedBy',
-                    'issupplementto': 'isSupplementTo',
-                    'ispartof': 'isPartOf',
-                    'cites': 'cites',
-                    'issourceof': 'isSourceOf',
-                    'isderivedfrom': 'isDerivedFrom',
-                    'issupplementedby': 'isSupplementedBy',
-                    'ispreviousversionof': 'isPreviousVersionOf',
-                    'documents': 'documents',
-                    'haspart': 'hasPart'
-                }
-
-                related_identifiers = metadata.get('related_identifiers', [])
-
-                for related_identifier in related_identifiers:
-                    relation = related_identifier.get('relation', '').lower()
-                    identifier = related_identifier.get('identifier', '')
-                    
-                    if relation == 'iscitedby':
-                        digitalObj.isCitedBy.append(identifier)
-                    elif relation == 'issupplementto':
-                        digitalObj.isSupplementTo.append(identifier)
-                    elif relation == 'ispartof':
-                        digitalObj.isPartOf.append(identifier)
-                    elif relation == 'cites':
-                        digitalObj.cites.append(identifier)
-                    elif relation == 'issourceof':
-                        digitalObj.isSourceOf.append(identifier)
-                    elif relation == 'isderivedfrom':
-                        digitalObj.isDerivedFrom.append(identifier)
-                    elif relation == 'issupplementedby':
-                        digitalObj.isSupplementedBy.append(identifier)
-                    elif relation == 'ispreviousversionof':
-                        digitalObj.isPreviousVersionOf.append(identifier)
-                    elif relation == 'documents':
-                        digitalObj.documents.append(identifier)
-                    elif relation == 'haspart':
-                        digitalObj.hasPart.append(identifier)
 
                 authors = metadata.get("creators", [])                        
                 for author in authors:
@@ -120,8 +85,8 @@ def search(search_term, results):
                     _author.name = author.get("name", "")
                     _author.identifier = author.get("orcid", "")
                     _author.affiliation = author.get("affiliation", "")
-                    digitalObj.author.append(_author)  
-
+                    digitalObj.author.append(_author) 
+                    
                 Stats = hit.get('stats', '')
                 _stats = Statistics()
                 
@@ -135,7 +100,24 @@ def search(search_term, results):
                 _stats.version_views = Stats.get("version_views", '')
                   
                 digitalObj.stats = _stats 
-                
+                             
+                # relation = metadata.get('related_identifiers', '').get('relation', '').lower()
+                # identifier = metadata.get('related_identifiers', '').get('identifier','').lower()
+                # relation_map = {
+                #     'iscitedby': 'isCitedBy',
+                #     'issupplementto': 'isSupplementTo',
+                #     'ispartof': 'isPartOf',
+                #     'cites': 'cites',
+                #     'issourceof': 'isSourceOf',
+                #     'isderivedfrom': 'isDerivedFrom',
+                #     'issupplementedby': 'isSupplementedBy',
+                #     'ispreviousversionof': 'isPreviousVersionOf',
+                #     'documents': 'documents',
+                #     'haspart': 'hasPart'
+                # }
+                # if relation in relation_map:
+                #     getattr(digitalObj, relation_map[relation]).append(identifier)
+                                    
                 contributors = metadata.get("contributors", [])                        
                 for contributor in contributors:
                     _contributor = Author()
@@ -149,34 +131,27 @@ def search(search_term, results):
                 _source.name = source
                 _source.identifier = hit.get("id", "")
                 _source.url = hit.get('links', {}).get('self_html', '')                      
-                digitalObj.source.append(_source)                
-
+                digitalObj.source.append(_source)       
+                
                 files = hit.get('files', [])
 
                 # if resource_type == "LESSON":
                 for file in files:
                     file_key = file.get("key", "")
                     digitalObj.encoding_contentUrl[file_key] = file.get("links", {}).get("self", "")
-
+            
                 digitalObj.softwareVersion = metadata.get("version", "")
                 if resource_type.upper() == 'PUBLICATION':
                     digitalObj.abstract = digitalObj.description
-                    pages = hit.get("journal", {}).get('pages', '')
-                    if '-' in pages:
-                        a, b = pages.split('-')
-                        digitalObj.pageStart = a.strip()
-                        digitalObj.pageEnd = b.strip()
-                    else:
-                        digitalObj.pageStart = pages
-                        digitalObj.pageEnd = ''
-
-                    digitalObj.pagination = pages
-
-                    journal_info = metadata.get('journal', {})
-                    digitalObj.Journal = journal_info.get('title', '')
-                    digitalObj.JournalVolume = journal_info.get('volume', '')
-                    digitalObj.issue = journal_info.get('issue', '')
-                   
+                    a, b = hit.get("journal", "").get('pages','').split('-')
+                    digitalObj.pageStart = a
+                    digitalObj.pageEnd = b
+                    digitalObj.pagination = hit.get("journal", "").get('pages','') 
+                    digitalObj.Jounral = metadata.get('journal').get('title', '')
+                    digitalObj.JournalVolume = metadata.get('journal').get('volume', '')
+                    digitalObj.issue = metadata.get('journal').get('issue', '')
+                    #############################
+                    
                     results['publications'].append(digitalObj)
                 elif resource_type.upper() in ['PRESENTATION', 'POSTER', 'DATASET', 'SOFTWARE', 'VIDEO', 'IMAGE', 'LESSON']:                
                     results['resources'].append(digitalObj)                
