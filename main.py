@@ -76,9 +76,9 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
-        # sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-        #            eudat, openaire_products, dblp_researchers, re3data, orkg]
-        sources = [openalex_publications]
+        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
+                   eudat, openaire_products, dblp_researchers, re3data, orkg]
+        # sources = [openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
