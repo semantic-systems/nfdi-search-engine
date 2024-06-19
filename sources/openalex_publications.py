@@ -88,7 +88,7 @@ def get_publication(doi: str):
     source = "OPENALEX Publication"
 
     try:
-        search_result = data_retriever.retrieve_get_single_object(source=source, 
+        search_result = data_retriever.retrieve_single_object(source=source, 
                                                      base_url=utils.config["publication_details_openalex_publications"],
                                                      doi=doi)
         

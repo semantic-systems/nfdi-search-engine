@@ -5,3 +5,6 @@
     </li>
     {% endfor %}
 </ol>
+{% if publication.citation|length == 0 %}
+No references found
+{% endif %}

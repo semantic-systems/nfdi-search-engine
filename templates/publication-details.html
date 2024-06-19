@@ -45,22 +45,22 @@
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-download fs-4"></i>
                     <div class="fs-7 my-1">Downloads</div>
-                    <div class="fs-5 fw-bold">927</div>
+                    <div class="fs-5 fw-bold">---</div>
                 </div>
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-bookmarks fs-4"></i>
                     <div class="fs-7 my-1">Saved</div>
-                    <div class="fs-5 fw-bold">42</div>
+                    <div class="fs-5 fw-bold">---</div>
                 </div>
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-chat-quote fs-4"></i>
                     <div class="fs-7 my-1">Cited</div>
-                    <div class="fs-5 fw-bold">3</div>
+                    <div class="fs-5 fw-bold">---</div>
                 </div>
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-eye fs-4"></i>
                     <div class="fs-7 my-1">Views</div>
-                    <div class="fs-5 fw-bold">2.778</div>
+                    <div class="fs-5 fw-bold">---</div>
                 </div>
             </div>
             <!-- <div class="row border-bottom mt-4"></div> -->
@@ -93,16 +93,25 @@
             </div>
             <div class="col-6 px-4">
                 <div class="d-flex p-2 bd-highlight" id="abstract">
-                    <h5>ABSTRACT</h5>
+                    <h5>ABSTRACT <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from OpenAlex"></i></h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     {{publication.abstract}}
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4" id="supplemental-material">
-                    <h5>SUPPLEMENTAL MATERIAL</h5>
+                    <h5>SUPPLEMENTAL MATERIAL <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from xxx"></i></h5>
                 </div>
-                <div class="card shadow-bottom-right rounded-extra solid-border mb-3">
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+                    <div class="fw-lighter fst-italic">
+                        <i class="bi bi-hourglass-split"></i>
+                        Coming soon ....
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                </div>
+                <!-- <div class="card shadow-bottom-right rounded-extra solid-border mb-3">
                     <div class="card-body">
                         <span class="bi-file-earmark-excel-fill pe-2 fs-5"></span>dataset referenced in the paper
                         <div style="float:right;">
@@ -121,48 +130,24 @@
                                     class="bi-download fs-5"></i></a>
                         </div>
                     </div>
-                </div>
-                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
-                </div>
+                </div> -->
                 <div class="d-flex p-2 bd-highlight pt-4" id="references">
-                    <h5>REFERENCES</h5>
+                    <h5>REFERENCES <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from CrossRef"></i></h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
                 </div>
-
-                <div class="p-2 bd-highlight pt-4" id="cited-by">
-                    <h5>CITED BY</h5>
-                    <p>Dawood S and AlKadi K. Acceptability and Effectiveness of COVID-19 Contact
-                        Tracing Applications: A Case Study in Saudi Arabia of the Tawakkalna Application.
-                        Cureus. 10.7759/cureus.35041.<br>
-                        <a href="https://www.cureus.com/articles/130117-acceptability-and-effectiveness-of-covid-19-contacttracing-applications-a-case-study-in-saudi-arabia-of-the-tawakkalna-application"
-                            class="link" target="_blank">
-                            https://www.cureus.com/articles/130117-acceptability-and-effectiveness-of-covid-19-contacttracing-applications-a-case-study-in-saudi-arabia-of-the-tawakkalna-application
-                        </a>
-                    </p>
-                    <p>Park D, Kang J, Song H, Yoon S and Lee J. (2022). Multi-view POI level Cellular
-                        Trajectory Reconstruction for Digital Contact Tracing of Infectious Diseases 2022
-                        IEEE International Conference on Data Mining (ICDM). 10.1109/
-                        ICDM54844.2022.00144. 978-1-6654 5099-7. (1137-1142).
-                        <a href="https://ieeexplore.ieee.org/document/10027641/" class="link" target="_blank">
-                            https://ieeexplore.ieee.org/document/10027641/
-                        </a>
-                    <p>Sun R, Wang W, Xue M, Tyson G, Camtepe S and Ranasinghe D. An Empirical
-                        Assessment of Global COVID-19 Contact Tracing Applications. Proceedings of the
-                        43rd International Conference on Software Engineering. (1085-1097).
-                        <a href="https://doi.org/10.1109/ICSE43902.2021.00101" class="link" target="_blank">
-                            https://doi.org/10.1109/ICSE43902.2021.00101
-                        </a>
-                    </p>
+                <div class="d-flex p-2 bd-highlight pt-4" id="cited-by">
+                    <h5>CITATIONS <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></h5>
                 </div>
-                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-load-citations">Load</button>
                 </div>
             </div>
             <div class="col-auto">
-                <div class="card p-0 shadow-bottom-right" style="border-radius:2.0rem;">
+                <!-- <div class="card p-0 shadow-bottom-right" style="border-radius:2.0rem;">
                     <div class="card-body p-0">
                         <a href="#" class="btn" tabindex="-1" role="button" aria-disabled="true"><i
                                 class="bi-bookmark fs-5"></i></a><br>
@@ -173,11 +158,12 @@
                         <a href="#" class="btn" tabindex="-1" role="button" aria-disabled="true"><i
                                 class="bi-share fs-5"></i></a><br>
                     </div>
-                </div>
+                </div> -->
             </div>
             <div class="col-3 ps-5">
                 <div class="d-flex p-2 bd-highlight">
-                    <h5>RECOMMENDATIONS</h5>
+                    <h5>RECOMMENDATIONS <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></h5>
                 </div>
                 <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="recommendations_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-recommendations">Load</button>
@@ -187,14 +173,22 @@
                     <h5>FAIR Assessment</h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
+                    <div class="fw-lighter fst-italic">
+                        <i class="bi bi-hourglass-split"></i>
+                        Coming soon ....
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4">
                     <h5>Jupyter Lab</h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
+                    <div class="fw-lighter fst-italic">
+                        <i class="bi bi-hourglass-split"></i>
+                        Coming soon ....
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
                 </div>
 
             </div>
@@ -215,6 +209,11 @@
 <script>
 
     $(document).ready(function () {
+
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
 
         load_references = function () {
             let doi = document.getElementById('publication_doi').innerHTML
@@ -268,12 +267,41 @@
             });
         }
 
+        load_citations = function () {
+            let doi = document.getElementById('publication_doi').innerHTML
+            $.ajax({
+                url: '/publication-details-citations/' + doi,
+                type: "GET",
+                data: {
+                },
+                beforeSend: function () {
+                    $('#citations_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
+                },
+                complete: function () {
+                    $('.loader').remove();
+                },
+                success: function (data) {
+                    console.log(data)
+                    $('#citations_block').html(data);
+                    console.log('citations have been loaded.')
+                },
+                error: function (err) {
+                    console.log(err);
+                    return err
+                }
+            });
+        }
+
         $('#btn-load-references').click(function () {
             load_references();
         });
 
         $('#btn-load-recommendations').click(function () {
             load_recommendations();
+        });
+
+        $('#btn-load-citations').click(function () {
+            load_citations();
         });
 
     });

@@ -46,13 +46,12 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
     except Exception as ex:
         raise ex
 
-def retrieve_get_single_object(source: str, base_url: str, doi: str):
+def retrieve_single_object(source: str, base_url: str, doi: str):
     
-    try:
-
-        doi = urllib.parse.quote_plus(string=doi, safe='()')
+    try:        
+        doi = urllib.parse.quote_plus(string=doi, safe='()?&=,')
         url = base_url + doi
-
+        print('url:', url)
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'User-Agent': utils.config["request_header_user_agent"]

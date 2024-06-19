@@ -237,15 +237,22 @@ def format_digital_obj_url(value):
     return json.dumps(sources_list)
 FILTERS["format_digital_obj_url"] = format_digital_obj_url
 
+def format_authors_for_citations(value):
+    authors = ""
+    for author in value:
+        authors += (author.name + " and ")    
+    return authors.rstrip(' and ') + "."
+FILTERS["format_authors_for_citations"] = format_authors_for_citations
+
+from urllib.parse import unquote
+import ast
+
 @app.route('/publication-details/<path:sources>', methods=['GET'])
 @utils.timeit
 def publication_details(sources):
 
-    from urllib.parse import unquote
-    import ast
     sources = unquote(sources)
-    sources = ast.literal_eval(sources)
-    
+    sources = ast.literal_eval(sources)    
     for source in sources:
         doi = source['doi']
     
@@ -269,14 +276,20 @@ def publication_details_references(doi):
 @app.route('/publication-details-recommendations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_recommendations(doi):
-    print("DOI:", doi)
-    
+    print("DOI:", doi)    
     publications = semanticscholar.get_recommendations_for_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
-
     print("response:", response)
     return response
 
+@app.route('/publication-details-citations/<path:doi>', methods=['GET'])
+@utils.timeit
+def publication_details_citations(doi):
+    print("DOI:", doi)    
+    publications = semanticscholar.get_citations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
+    print("response:", response)
+    return response
 
 @app.route('/resource-details')
 def resource_details():
