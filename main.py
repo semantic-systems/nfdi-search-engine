@@ -4,10 +4,10 @@ import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from objects import Article, Organization, Person, Dataset, Project
-from flask import Flask, render_template, request, make_response, session
+from flask import Flask, render_template, request, make_response, session, jsonify
 from flask_session import Session
 import threading
-from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers
+from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers, openalex_researchers
 from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import crossref, semanticscholar
@@ -31,6 +31,17 @@ app.secret_key = 'NfD14D$G@t3w@Y'
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+results = {
+            'publications': [],
+            'researchers': [],
+            'resources': [],
+            'organizations': [],
+            'events': [],
+            'fundings': [],
+            'others': [],
+            'timedout_sources': []
+        }
 
 @app.route('/')
 def index():
@@ -62,22 +73,13 @@ def search_results():
         search_term = request.args.get('txtSearchTerm')
         session['search-term'] = search_term
 
-        results = {
-            'publications': [],
-            'researchers': [],
-            'resources': [],
-            'organizations': [],
-            'events': [],
-            'fundings': [],
-            'others': [],
-            'timedout_sources': []
-        }
+        for k in results.keys(): results[k] = []
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, dblp_researchers, re3data, orkg]
+                   eudat, openaire_products, re3data, orkg, openalex_researchers]
         # sources = [openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -232,7 +234,7 @@ def format_digital_obj_url(value):
         source_dict = {}
         source_dict['doi'] = value.identifier
         source_dict['sname'] = source.name
-        source_dict['sid'] = value.identifier
+        source_dict['sid'] = source.identifier
         sources_list.append(source_dict)
     return json.dumps(sources_list)
 FILTERS["format_digital_obj_url"] = format_digital_obj_url
@@ -305,9 +307,16 @@ def resource_details():
     return response
 
 
-@app.route('/researcher-details')
-def researcher_details():
-    response = make_response(render_template('researcher-details.html'))
+@app.route('/researcher-details/<string:index>', methods=['GET'])
+def researcher_details(index):
+    index = json.loads(index)
+    for result in results['researchers']:
+        if result.source[0].identifier == index[0]['sid']:
+            researcher = result
+            break
+    # logger.info(f'Found researcher {researcher}')
+    researcher = openalex_researchers.get_researcher_details(researcher)
+    response = make_response(render_template('researcher-details.html',researcher=researcher))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -317,6 +326,19 @@ def researcher_details():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
+@app.route('/researcher-banner/<string:index>', methods=['GET'])
+def researcher_banner(index):
+    # logger.info(f'Fetching details for researcher with index {index}')
+    for result in results['researchers']:
+        if result.list_index == index:
+            researcher = result
+            break
+    # logger.info(f'Found researcher {researcher}')
+    researcher = openalex_researchers.get_researcher_banner(researcher)
+    if researcher.banner == "":
+        return jsonify()
+    return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
 
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])

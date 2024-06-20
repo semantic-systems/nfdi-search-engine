@@ -1,6 +1,6 @@
 import requests
 import logging
-from objects import Person, Author
+from objects import Person, Author, thing, Organization
 import utils
 
 logger = logging.getLogger('nfdi_search_engine')
@@ -29,23 +29,25 @@ def search(search_term: str, results):
             if records_found > 0:
                 authors = search_result.get('expanded-result', None)
                 if authors:
+                    index = 0
                     for author in authors:
-                
+
                         authorObj = Author()
-                        authorObj.source = 'ORCID'
+                        # authorObj.source = 'ORCID'
+                        authorObj.source.append(thing(name='ORCID'))
                         given_names = author.get('given-names', '')
                         family_names = author.get('family-names', '')
                         authorObj.name = given_names + " " + family_names
                         authorObj.orcid = author.get('orcid-id', '')
 
-                        last_known_institution = author.get('institution-name', {})
-                        if last_known_institution:
-                            authorObj.affiliation = last_known_institution[-1]
-                        else:
-                            authorObj.affiliation = ''                    
+                        institution = author.get('institution-name', [])
+                        for inst in institution:
+                            authorObj.affiliation.append(Organization(name=inst))                
                         authorObj.works_count = ''
                         authorObj.cited_by_count = ''
 
+                        authorObj.list_index = f'orcid{index}'
+                        index += 1
                         results['researchers'].append(authorObj)
 
     except requests.exceptions.Timeout as ex:

@@ -2,7 +2,7 @@ import requests
 from objects import Gepris
 import logging
 from bs4 import BeautifulSoup
-from objects import Project, Person, Organization, Place
+from objects import Project, Person, Organization, Place, Author, thing
 import utils
 
 logger = logging.getLogger('nfdi_search_engine')
@@ -126,19 +126,21 @@ def find_author(search_term, results):
         
         if aurhtors_element:
             authors = aurhtors_element.find_all("div", class_=["eintrag_alternate","eintrag"])
-            
+            index = 0
             for author in authors:
                 try:
-                    authorObj = Person()
-                    authorObj.source = 'GEPRIS'
-                    authorObj.identifier = author.find("a")["href"]
-                    authorObj.url = f'https://gepris.dfg.de{authorObj.identifier}'
+                    authorObj = Author()
+                    authorObj.source.append(thing(name='GEPRIS', identifier=author.find("a")["href"], url=f'https://gepris.dfg.de{authorObj.identifier}'))
+                    # authorObj.identifier = author.find("a")["href"]
+                    # authorObj.url = f'https://gepris.dfg.de{authorObj.identifier}'
                     author_names = author.find("h2").text.strip()
                     if "," in author_names:
                         authorObj.name = author_names.replace(",", " ")
 
-                    authorObj.affiliation = ' '.join(author.find("div", class_="beschreibung").find_all(string=True, recursive=False)).strip()
-
+                    for inst in author.find("div", class_="beschreibung").find_all(string=True, recursive=False):
+                        authorObj.affiliation.append(Organization(name=inst))
+                    authorObj.list_index = f'gepris{index}'
+                    index += 1
                     results['researchers'].append(authorObj)
 
                 except KeyError:
