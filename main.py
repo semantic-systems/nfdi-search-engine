@@ -75,9 +75,9 @@ def search_results():
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
-        # sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-        #            eudat, openaire_products, dblp_researchers, re3data, orkg, gesis, eulg, openaire]
-        sources = [zenodo]
+        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
+                   eudat, openaire_products, dblp_researchers, re3data, orkg, gesis, eulg, openaire]
+        # sources = [zenodo]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -89,7 +89,6 @@ def search_results():
 
         # deduplicator.convert_publications_to_csv(results["publications"])
         # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
-
         # sort all the results in each category
         results["publications"] = utils.sort_search_results(search_term, results["publications"])  
         results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
