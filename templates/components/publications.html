@@ -1,4 +1,6 @@
-{% from 'share-modal.html' import shareModal %}
+{% from 'partials/common/share-modal.html' import shareModal %}
+{% from 'partials/common/preview-modal.html' import previewModal %}
+{% from 'partials/common/download-modal.html' import downloadModal %}
 {% for publication in results.publications %}
 <div class="card mb-2 p-3">
     <div class="card-body">
@@ -69,62 +71,39 @@
                                                 class="bi bi-bookmark"></i></a></div> -->
                     {% if publication.identifier != '' %}
                     <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
+                            data-bs-target="#share-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-share"></i></a>
+                    </div>
                     {% endif %}
                     {% if publication.image != '' %}
                     <div class="text-end mb-3"><a href="#" title="Preview" class="preview_modal_link"
-                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
-                            data-bs-publ-name="{{publication.name}}" data-bs-img-src="{{publication.image}}"><i
+                            data-bs-toggle="modal"
+                            data-bs-target="#preview-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
                                 class="bi bi-eye"></i></a>
                     </div>
                     {% endif %}
                     {% if publication.encoding_contentUrl != '' %}
                     <div class="text-end mb-3"><a href="#" title="Download" class="download_modal_link"
-                            data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
-                            data-bs-publ-name="{{publication.name}}"
-                            data-bs-embed-src="{{publication.encoding_contentUrl}}"><i class="bi bi-download"></i></a>
+                            data-bs-toggle="modal"
+                            data-bs-target="#download-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-download"></i></a>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            {% with url = '/publication-details/'+ publication | format_digital_obj_url, title = publication.text | trim %}
-                <!-- {{ url }} -->
-                <!-- {{ title }} -->
-                {{ shareModal(url, title) }}
+            {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
+            preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
+            download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
+            url = '/publication-details/'+ publication | format_digital_obj_url,
+            img_src = publication.image,
+            encoding_contentUrl = publication.encoding_contentUrl,
+            title = publication.name | trim
+            %}
+            {{ shareModal(share_modal_id, url, title) }}
+            {{ previewModal(preview_modal_id, title, img_src) }}
+            {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
             {% endwith %}
-
-            <div id="preview_modal_dialog" class="modal">
-                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img src="" class="figure-img img-fluid border border-dark">
-                            <figcaption>
-                            </figcaption>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="download_modal_dialog" class="modal">
-                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <iframe src="" width="1150px" height="800px"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
         </div>
     </div>
@@ -143,3 +122,12 @@
     {% endif %}
 </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('btn_load_more_publications').addEventListener('click', function () {
+            console.log('load more publications button clicked')
+            load_more_publications()
+        });
+    });
+</script>

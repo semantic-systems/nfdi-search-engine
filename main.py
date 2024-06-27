@@ -246,6 +246,12 @@ def format_authors_for_citations(value):
     return authors.rstrip(' and ') + "."
 FILTERS["format_authors_for_citations"] = format_authors_for_citations
 
+import re
+def regex_replace(s, find, replace):
+    """A non-optimal implementation of a regex filter"""
+    return re.sub(find, replace, s)
+FILTERS["regex_replace"] = regex_replace
+
 from urllib.parse import unquote
 import ast
 
