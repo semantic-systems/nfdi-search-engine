@@ -29,7 +29,6 @@ def search(search_term: str, results):
             if records_found > 0:
                 authors = search_result.get('expanded-result', None)
                 if authors:
-                    index = 0
                     for author in authors:
 
                         authorObj = Author()
@@ -46,8 +45,6 @@ def search(search_term: str, results):
                         authorObj.works_count = ''
                         authorObj.cited_by_count = ''
 
-                        authorObj.list_index = f'orcid{index}'
-                        index += 1
                         results['researchers'].append(authorObj)
 
     except requests.exceptions.Timeout as ex:

@@ -29,7 +29,6 @@ def search(search_term: str, results):
 
         if int(total_hits) > 0:
             hits = hits['hit']         
-            index = 0
             for hit in hits:
                     
                 author = Author()
@@ -65,8 +64,6 @@ def search(search_term: str, results):
                 _source.url = info.get("url", "")                         
                 author.source.append(_source)
 
-                author.list_index = f'dblp{index}'
-                index += 1
                 results['researchers'].append(author)                
 
     except requests.exceptions.Timeout as ex:

@@ -108,7 +108,7 @@ class Author(Person):
     about: str = ""
     banner: str = ""
     cited_by_count: str = ""
-    list_index: str = ""
+    url: str = ""
     researchAreas: List[str] = field(default_factory=list)
     works: List[Union[Article, Dataset]] = field(default_factory=list)
 

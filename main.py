@@ -4,7 +4,7 @@ import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from objects import Article, Organization, Person, Dataset, Project
-from flask import Flask, render_template, request, make_response, session, jsonify
+from flask import Flask, render_template, request, make_response, session, jsonify, request
 from flask_session import Session
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers, openalex_researchers
@@ -309,13 +309,13 @@ def resource_details():
 
 @app.route('/researcher-details/<string:index>', methods=['GET'])
 def researcher_details(index):
-    index = json.loads(index)
-    for result in results['researchers']:
-        if result.source[0].identifier == index[0]['sid']:
-            researcher = result
-            break
+    # index = json.loads(index)
+    # for result in results['researchers']:
+    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
+    #         researcher = result
+    #         break
     # logger.info(f'Found researcher {researcher}')
-    researcher = openalex_researchers.get_researcher_details(researcher)
+    researcher = openalex_researchers.get_researcher_details(index)
     response = make_response(render_template('researcher-details.html',researcher=researcher))
 
     # Set search-session cookie to the session cookie value of the first visit

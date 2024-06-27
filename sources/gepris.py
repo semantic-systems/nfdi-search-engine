@@ -126,7 +126,6 @@ def find_author(search_term, results):
         
         if aurhtors_element:
             authors = aurhtors_element.find_all("div", class_=["eintrag_alternate","eintrag"])
-            index = 0
             for author in authors:
                 try:
                     authorObj = Author()
@@ -139,8 +138,6 @@ def find_author(search_term, results):
 
                     for inst in author.find("div", class_="beschreibung").find_all(string=True, recursive=False):
                         authorObj.affiliation.append(Organization(name=inst))
-                    authorObj.list_index = f'gepris{index}'
-                    index += 1
                     results['researchers'].append(authorObj)
 
                 except KeyError:

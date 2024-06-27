@@ -68,8 +68,7 @@ def search(search_term: str, results):
         total_hits = len(hits)
         logger.info(f'{source} - {total_hits} hits found')           
 
-        if int(total_hits) > 0:
-            index = 0               
+        if int(total_hits) > 0:              
             for hit in hits:
                     
                 author = Author()
@@ -88,8 +87,6 @@ def search(search_term: str, results):
                 _source.url = hit.get("item", {}).get("value", "")                       
                 author.source.append(_source)
 
-                author.list_index = f'wikidata{index}'
-                index += 1
                 results['researchers'].append(author)  
         
     except requests.exceptions.Timeout as ex:

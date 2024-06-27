@@ -7,7 +7,7 @@
 {% block stylesheets %}
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}" />
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scrollable-tabs.css') }}" />
 {% endblock stylesheets %}
 
 {% block content %}
@@ -15,11 +15,11 @@
 <main class=''>
     <div id='mainContent' class="container">
 
-        <div class="row pb-4">
+        <!-- <div class="row pb-4">
             <div class="col text-start">
                 <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
             </div>
-        </div>
+        </div> -->
         <div class="row justify-content-start align-items-center border-bottom pb-4 bg-image banner img-fluid" style="background-image:url('https://st.depositphotos.com/2627021/3057/i/600/depositphotos_30577319-stock-photo-peace-blue-sky.jpg')">
             <div class="col-1 ps-2">
                 <i class="bi bi-person-circle" style="font-size:7vw;"></i>
@@ -34,8 +34,7 @@
                 <a href="#" class="btn p-1" tabindex="-1" data-bs-toggle="modal" data-bs-target="#share_modal_dialog"
                             role="button" aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
             </div>
-            
-            {{ shareModal(researcher.source[0].url) }}
+            {{shareModal('/researcher-details/' + researcher.url, researcher.name)}}
         </div>
 
         <div class="row pt-4">
@@ -75,7 +74,7 @@
                 <div class="card m-2" style="border-radius: 10px; border: 2px solid #c9c9c9;">
                     <div class="card-body">
                         {% for topic in researcher.researchAreas %}
-                            <span class="badge bg-pill">{{topic}}</span>
+                            <p class="badge bg-pill" style="display: block; white-space: normal; margin: 0.5vh;">{{topic}}</p>
                         {% endfor %}
                     </div>
                 </div>
@@ -99,10 +98,10 @@
                                             >{{researcher.orcid |replace('https://', '')}}</a>
                     </div> -->
                     <div class="d-flex p-1 bd-highlight">
-                        <a href="{{researcher.source[0].identifier}}" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                        <a href="https://openalex.org/{{researcher.source[0].identifier}}" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
                                             src="{{ url_for('static', filename='images/sources/openalex-small.png') }}"
-                                            >{{researcher.source[0].identifier |replace('https://', '')}}</a>
+                                            >{{researcher.source[0].identifier |replace('https://openalex.org/', '')}}</a>
                     </div>
                     {% if researcher.source  | length > 1 %}
                         <div class="d-flex p-1 bd-highlight">
@@ -127,134 +126,204 @@
                 </div>
             </div>
 
-            <div class="col-9 px-4">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col">
-                            <div class="row">
-                                <div class="col tabs-section">
-                                    <ul class="nav nav-tabs" id="myTab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active position-relative" id="employment-tab"
-                                                data-bs-toggle="tab" data-bs-target="#employment" type="button" role="tab"
-                                                aria-controls="employment" aria-selected="true">
-                                                Employment
-                                            </button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link position-relative" id="works-tab" data-bs-toggle="tab"
-                                                data-bs-target="#works" type="button" role="tab" aria-controls="works"
-                                                aria-selected="false">
-                                                Works
-                                            </button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link position-relative" id="education-tab" data-bs-toggle="tab"
-                                                data-bs-target="#projects" type="button" role="tab"
-                                                aria-controls="projects" aria-selected="false">
-                                                Projects
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="tab-content" id="myTabContent">
-                                <div class="tab-pane fade show active" id="employment" role="tabpanel"
-                                    aria-labelledby="employment-tab">
-                                    {% for institution in researcher.affiliation %}
-                                        <div class="p-2 border-bottom">
-                                            <!-- <h4>Junior Professor (Computer Science)</h4> -->
-                                            <p>{{institution.name}}<br>
-                                            <span style="color:#c9c9c9;">{{institution.keywords[0]}}</span></p>
-                                        </div>
-                                    {% endfor %}
-                                </div>
-                                <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
-                                    <div class="p-2">
-                                        <!-- <h4>Dr. rer. nat. (AKSW)</h4>
-                                        <p>Leipzig University · Leipzig, DE · Education<br>
-                                        <span style="color:#c9c9c9;">January 2013 - May 2017 · 2 years</span></p> -->
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="works" role="tabpanel" aria-labelledby="works-tab">
-
-                                <div class="tab-pane fade show active" id="publications" role="tabpanel"
-                            aria-labelledby="publications-tab">
-<table id="tbl-publications" class="datatable display" style="width:100%">
-    <thead>
-        <tr>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for publication in researcher.works %}
-        <tr>
-            <td>
-                <div class="card mb-2 p-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-lg-11 fs-6">
-                                <div class="row mb-2">
-                                    <div class="col-lg-12 fs-5">
-                                        <a class="text-secondary fw-bold" href='{{publication.url}}' target='_blank'>
-                                            {{publication.name}}</a>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-lg-12 my-2 authors">
-                                        {% set author_count = namespace(value=0) %}
-                                        {% for author in publication.author %}
-                                        {% if author_count.value == 5 %}
-                                        <a href="#" class="tag_more_authors">and {{ (publication.author|count) - 5 }}
-                                            more</a>
-                                        {% endif %}
-                                        {% if author.type == 'Person' %}
-                                        <a href="{{author.identifier}}"
-                                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true"><i
-                                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
-                                        {% endif %}
-                                        {% set author_count.value = author_count.value + 1 %}
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                                <div class="row pt-3">
-                                    <div class="col-lg-9 text-start">
-                                        <span class="badge bg-pill">{{publication.datePublished}}</span>
-                                        <!-- <span class="badge bg-pill">Journal article</span> -->
-                                        <span class="badge bg-pill">DOI: {{publication.identifier}}</span>
-                                        <span class="badge bg-pill">Tag</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-1">
-                                <div class="row fs-5">
-                                    {% if publication.identifier != '' %}
-                                    <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
-                                    {% endif %}
-                                </div>
-                            </div>
-                        </div>
+            <div class="col mt-4">
+                <div class="row">
+                    <div class="col tab-scroller">
+                        <i class="tab-scroller-arrow left-arrow d-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                            </svg>
+                        </i>
+                        <i class="tab-scroller-arrow right-arrow d-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </i>
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link position-relative" id="affilitions-tab"
+                                    data-bs-toggle="tab" data-bs-target="#affiliations" type="button" role="tab"
+                                    aria-controls="affiliations" aria-selected="false"><i
+                                        class="px-1 bi-bank"></i>Affiliations
+                                        <span class="visually-hidden">Affiliations</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active position-relative" id="publications-tab"
+                                    data-bs-toggle="tab" data-bs-target="#publications" type="button" role="tab"
+                                    aria-controls="publications" aria-selected="true"><i
+                                        class="px-1 bi-journal-album"></i>Publications 
+                                        <span class="visually-hidden">Publications</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link position-relative" id="projects-tab" data-bs-toggle="tab"
+                                    data-bs-target="#projects" type="button" role="tab" aria-controls="projects"
+                                    aria-selected="false"><i class="px-1 bi-database-fill-gear"></i>Projects
+                                        <span class="visually-hidden">Projects</span>
+                                </button>
+                            </li>
+                        </ul>
                     </div>
                 </div>
-                {{ shareModal(publication.url) }}
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
+                <div class="tab-content mt-5" id="myTabContent">
+                    <div class="tab-pane fade" id="affiliations" role="tabpanel"
+                        aria-labelledby="affiliations-tab">
+                        {% for institution in researcher.affiliation %}
+                            <div class="p-2 border-bottom">
+                                <!-- <h4>Junior Professor (Computer Science)</h4> -->
+                                <p><span class="text-secondary fw-bold">{{institution.name}}<br></span>
+                                <span>{{institution.keywords[0]}}</span></p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div class="tab-pane fade show active" id="publications" role="tabpanel"
+                        aria-labelledby="publications-tab">
+                        {% for publication in researcher.works %}
+                            <div class="card mb-2 p-3">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-11 fs-6">
+                                            <div class="row mb-2">
+                                                <div class="col-9 fs-6">
+                                                    {% if publication.identifier == '' %}
+                                                    <span class="text-secondary fw-bold publication_name">
+                                                        {{publication.name}}</span>
+                                                    {% else %}
+                                                    <a class="text-secondary fw-bold publication_name"
+                                                        href='/publication-details/{{publication | format_digital_obj_url}}'
+                                                        target='_blank'>{{publication.name}}</a>
+                                                    {% endif %}
+                                                </div>
+                                                <div class="col-3 text-end ">
+                                                    <span
+                                                        class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-9 my-2 authors">
+                                                    {% set author_count = namespace(value=0) %}
+                                                    {% for author in publication.author %}
+                                                    {% if author_count.value == 5 %}
+                                                    <a href="#" class="tag_more_authors">and {{ (publication.author|count) - 5 }}
+                                                        more</a>
+                                                    {% endif %}
+                                                    {% if author.type == 'Person' %}
+                                                    <a href="{{author.identifier}}"
+                                                        class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                                        tabindex="-1" role="button" aria-disabled="true"><i
+                                                            class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                                                    {% endif %}
+                                                    {% set author_count.value = author_count.value + 1 %}
+                                                    {% endfor %}
+                                                </div>
+                                                <div class="col-3 text-end ">
+                                                    <!-- <span
+                                                        class="badge bg-pill bg-success text-wrap text-break">Score:{{publication.rankScore}}</span> -->
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-12">
+                                                    <p class="card-text">{{publication.description|truncate(500)}}</p>
+                                                </div>
+                                            </div>
+                                            <div class="row pt-3">
+                                                <div class="col-9 text-start">
+                                                    {% for source in publication.source %}
+                                                    <a id="source_link" href="{{source.url}}" target=_blank>
+                                                        <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                                                    </a>
+                                                    {% endfor %}
+                                                    <span
+                                                        class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
+                                                </div>
+                                                <div class="col-3 text-end">
+                                                    <span class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
+                                                    <span class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-1">
+                                            <div class="row fs-5">
+                                                <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                                            class="bi bi-bookmark"></i></a></div> -->
+                                                {% if publication.identifier != '' %}
+                                                <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
+                                                        data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
+                                                {% endif %}
+                                                {% if publication.image != '' %}
+                                                <div class="text-end mb-3"><a href="#" title="Preview" class="preview_modal_link"
+                                                        data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
+                                                        data-bs-publ-name="{{publication.name}}" data-bs-img-src="{{publication.image}}"><i
+                                                            class="bi bi-eye"></i></a>
+                                                </div>
+                                                {% endif %}
+                                                {% if publication.encoding_contentUrl != '' %}
+                                                <div class="text-end mb-3"><a href="#" title="Download" class="download_modal_link"
+                                                        data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
+                                                        data-bs-publ-name="{{publication.name}}"
+                                                        data-bs-embed-src="{{publication.encoding_contentUrl}}"><i class="bi bi-download"></i></a>
+                                                </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+
+                                        {% with url = '/publication-details/'+ publication | format_digital_obj_url, title = publication.text | trim %}
+                                            <!-- {{ url }} -->
+                                            <!-- {{ title }} -->
+                                            {{ shareModal(url, title) }}
+                                        {% endwith %}
+
+                                        <div id="preview_modal_dialog" class="modal">
+                                            <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        <img src="" class="figure-img img-fluid border border-dark">
+                                                        <figcaption>
+                                                        </figcaption>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div id="download_modal_dialog" class="modal">
+                                            <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title">
+                                                        </h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body text-center">
+                                                        <iframe src="" width="1150px" height="800px"></iframe>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
+                        <h4>Coming Soon...</h4>
+                        <!-- <p>Leipzig University · Leipzig, DE · Education<br>
+                        <span style="color:#c9c9c9;">January 2013 - May 2017 · 2 years</span></p> -->
                     </div>
                 </div>
             </div>
+
         </div>
-
-
-
     </div>
 </main>
 
@@ -279,17 +348,17 @@
 
     });
 
-    // JavaScript to fetch and update the image after page load
-    document.addEventListener("DOMContentLoaded", function() {
-            fetch('/researcher-banner/{{researcher.list_index}}')  // Endpoint to generate the image
-                .then(response => response.json())
-                .then(data => {
-                    if (data.imageUrl) {
-                        document.querySelector('.banner').style.backgroundImage = `url(${data.imageUrl})`;
-                    }
-                })
-                .catch(error => console.error('Error fetching image:', error));
-        });
+    // JavaScript to fetch and update the banner after page load
+    // document.addEventListener("DOMContentLoaded", function() {
+    //         fetch('/researcher-banner/{{researcher.list_index}}')  // Endpoint to generate the image
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 if (data.imageUrl) {
+    //                     document.querySelector('.banner').style.backgroundImage = `url(${data.imageUrl})`;
+    //                 }
+    //             })
+    //             .catch(error => console.error('Error fetching image:', error));
+    //     });
 
 
 

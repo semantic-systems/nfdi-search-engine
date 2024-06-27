@@ -88,7 +88,11 @@
                 </div>
             </div>
 
-            {{ shareModal(publication.url) }}
+            {% with url = '/publication-details/'+ publication | format_digital_obj_url, title = publication.text | trim %}
+                <!-- {{ url }} -->
+                <!-- {{ title }} -->
+                {{ shareModal(url, title) }}
+            {% endwith %}
 
             <div id="preview_modal_dialog" class="modal">
                 <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">

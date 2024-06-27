@@ -1,4 +1,4 @@
-{% macro shareModal(url) -%}
+{% macro shareModal(url, title) %}
     <div class="modal" id="share_modal_dialog" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel"
         aria-hidden="true">
         <div class="modal-dialog" role="document">
@@ -9,6 +9,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="d-flex flex-wrap">
+                        <p>{{url}}</p>
                         <!-- <div class="smd">
                                             <a href="#" base-href="https://" class="disabled"
                                                 aria-disabled="true">
@@ -110,4 +111,63 @@
             </div>
         </div>
     </div>
-{%- endmacro %}
+
+<script>
+    // $('body').on('click', "#btnShareLinkCopy", function (e) {
+    //         var txtShareLink = document.getElementById('txtShareLink');
+    //         txtShareLink.select();
+    //         if (navigator.clipboard) {
+    //             alert(txtShareLink.value)
+    //             navigator.clipboard.writeText(txtShareLink.value)
+    //                 .then(() => {
+    //                     var notification = alertify.notify('Link copied', 'success', 5);
+    //                 })
+    //                 .catch((error) => {
+    //                     var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+    //                 });
+    //         } else {
+    //             var notification = alertify.notify('Copy operation failed', 'error', 5);
+    //         }
+    //     });
+    document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('btnShareLinkCopy').addEventListener('click', function() {
+                var txtShareLink = document.getElementById('txtShareLink');
+                txtShareLink.select();
+
+                navigator.clipboard.writeText(txtShareLink.value)
+                .then(() => {
+                    var notification = alertify.notify('Link copied', 'success', 5);
+                })
+                .catch((error) => {
+                    var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+                });
+            });
+        });
+
+    // $('body').on('click', ".share_modal_link", function (e) {
+    //     // alert('pressed')
+    //     publication = $(this).closest("tr").find('.publication_name')
+    //     url = window.location.origin + $(publication).attr('href')
+    //     title = $(publication).text().trim()
+    //     $('#txtShareLink').val(url)
+
+    //     $('.smd a').each(function (i, obj) {
+    //         $(this).attr('href', $(this).attr('base-href').replace('[[url]]', encodeURIComponent(url)))
+    //         $(this).attr('href', $(this).attr('href').replace('[[title]]', encodeURIComponent(title)))
+    //     });
+    // });
+
+    document.addEventListener('DOMContentLoaded', function() {
+        var url = window.location.origin + url;
+        var title = title;
+        document.getElementById('txtShareLink').value = url;
+        document.querySelectorAll('.smd a').forEach(function(anchor) {
+            var baseHref = anchor.getAttribute('base-href');
+            var newHref = baseHref.replace('[[url]]', encodeURIComponent(url))
+                                    .replace('[[title]]', encodeURIComponent(title));
+            anchor.setAttribute('href', newHref);
+        });
+    });
+</script>
+
+{% endmacro %}
