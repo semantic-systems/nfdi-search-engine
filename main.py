@@ -4,12 +4,13 @@ import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from objects import Article, Organization, Person, Dataset, Project
-from flask import Flask, render_template, request, make_response, session
+from flask import Flask, render_template, request, make_response, session, jsonify, request
 from flask_session import Session
 import threading
-from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications
+from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers, openalex_researchers
 from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
+from sources import crossref, semanticscholar
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
 
 from chatbot import chatbot
@@ -30,6 +31,17 @@ app.secret_key = 'NfD14D$G@t3w@Y'
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
+
+results = {
+            'publications': [],
+            'researchers': [],
+            'resources': [],
+            'organizations': [],
+            'events': [],
+            'fundings': [],
+            'others': [],
+            'timedout_sources': []
+        }
 
 @app.route('/')
 def index():
@@ -61,23 +73,14 @@ def search_results():
         search_term = request.args.get('txtSearchTerm')
         session['search-term'] = search_term
 
-        results = {
-            'publications': [],
-            'researchers': [],
-            'resources': [],
-            'organizations': [],
-            'events': [],
-            'fundings': [],
-            'others': [],
-            'timedout_sources': []
-        }
+        for k in results.keys(): results[k] = []
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, dblp_researchers, re3data, orkg]
-        # sources = [dblp_researchers]
+                   eudat, openaire_products, re3data, orkg, openalex_researchers]
+        # sources = [openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -97,24 +100,28 @@ def search_results():
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)
 
-        # Convert a UUID to a 32-character hexadecimal string
-        search_uuid = uuid.uuid4().hex
-        session['search_uuid'] = search_uuid
         
-        def send_search_results_to_chatbot(search_uuid: str):
-            print('request is about to start')
-            chatbot_server = utils.config['chatbot_server'] 
-            save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings'] 
-            request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
-            response = requests.post(request_url, json=json.dumps(results, default=vars))
-            response.raise_for_status() 
-            print('request completed')
+        # Chatbot - push search results to chatbot server for embeddings generation
+        if utils.config['chatbot_feature_enable'] == "True":
 
-        # create a new daemon thread
-        chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
-        # start the new thread
-        chatbot_thread.start()
-        # sleep(1)
+            # Convert a UUID to a 32-character hexadecimal string
+            search_uuid = uuid.uuid4().hex
+            session['search_uuid'] = search_uuid
+            
+            def send_search_results_to_chatbot(search_uuid: str):
+                print('request is about to start')
+                chatbot_server = utils.config['chatbot_server'] 
+                save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings'] 
+                request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
+                response = requests.post(request_url, json=json.dumps(results, default=vars))
+                response.raise_for_status() 
+                print('request completed')
+
+            # create a new daemon thread
+            chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
+            # start the new thread
+            chatbot_thread.start()
+            # sleep(1)
         
 
         # on the first page load, only push top 20 records in each category
@@ -171,19 +178,23 @@ def load_more_researchers():
 
 @app.route('/are-embeddings-generated', methods=['GET'])
 def are_embeddings_generated():
-    print('are_embeddings_generated')
-    uuid = session['search_uuid']
-    chatbot_server = utils.config['chatbot_server'] 
-    are_embeddings_generated = utils.config['endpoint_are_embeddings_generated'] 
-    request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    response = requests.request("GET", request_url, headers=headers)    
-    json_response = response.json()
-    print('json_response:', json_response)
-    return str(json_response['file_exists'])
 
+    #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
+    if utils.config['chatbot_feature_enable'] == "True":
+        print('are_embeddings_generated')
+        uuid = session['search_uuid']
+        chatbot_server = utils.config['chatbot_server'] 
+        are_embeddings_generated = utils.config['endpoint_are_embeddings_generated'] 
+        request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
+        headers = {
+            'Content-Type': 'application/json'
+        }
+        response = requests.request("GET", request_url, headers=headers)    
+        json_response = response.json()
+        print('json_response:', json_response)
+        return str(json_response['file_exists'])
+    else:
+        return str(True)
 
 @app.route('/get-chatbot-answer', methods=['GET'])
 def get_chatbot_answer():
@@ -215,25 +226,78 @@ def get_chatbot_answer():
 #     return response
 
 
+from jinja2.filters import FILTERS
+import json
+def format_digital_obj_url(value):
+    sources_list = []
+    for source in value.source:
+        source_dict = {}
+        source_dict['doi'] = value.identifier
+        source_dict['sname'] = source.name
+        source_dict['sid'] = source.identifier
+        sources_list.append(source_dict)
+    return json.dumps(sources_list)
+FILTERS["format_digital_obj_url"] = format_digital_obj_url
 
+def format_authors_for_citations(value):
+    authors = ""
+    for author in value:
+        authors += (author.name + " and ")    
+    return authors.rstrip(' and ') + "."
+FILTERS["format_authors_for_citations"] = format_authors_for_citations
 
-@app.route('/publication-details/<string:doi>', methods=['POST', 'GET'])
+import re
+def regex_replace(s, find, replace):
+    """A non-optimal implementation of a regex filter"""
+    return re.sub(find, replace, s)
+FILTERS["regex_replace"] = regex_replace
+
+from urllib.parse import unquote
+import ast
+
+@app.route('/publication-details/<path:sources>', methods=['GET'])
 @utils.timeit
-def publication_details(doi):
-    doi = request.args.get('doi', '').replace('-.-', '/')
-    print(doi)
+def publication_details(sources):
 
-    response = make_response(render_template('publication-details.html'))
+    sources = unquote(sources)
+    sources = ast.literal_eval(sources)    
+    for source in sources:
+        doi = source['doi']
+    
+    publication = openalex_publications.get_publication(doi="https://doi.org/"+doi)
+    response = make_response(render_template('publication-details.html', publication=publication))
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
-
+    print("response:", response)
     return response
 
+@app.route('/publication-details-references/<path:doi>', methods=['GET'])
+@utils.timeit
+def publication_details_references(doi):
+    print("doi:", doi)    
+    
+    publication = crossref.get_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/references.html', publication=publication))
+
+    print("response:", response)
+    return response
+
+@app.route('/publication-details-recommendations/<path:doi>', methods=['GET'])
+@utils.timeit
+def publication_details_recommendations(doi):
+    print("DOI:", doi)    
+    publications = semanticscholar.get_recommendations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
+    print("response:", response)
+    return response
+
+@app.route('/publication-details-citations/<path:doi>', methods=['GET'])
+@utils.timeit
+def publication_details_citations(doi):
+    print("DOI:", doi)    
+    publications = semanticscholar.get_citations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
+    print("response:", response)
+    return response
 
 @app.route('/resource-details')
 def resource_details():
@@ -249,9 +313,16 @@ def resource_details():
     return response
 
 
-@app.route('/researcher-details')
-def researcher_details():
-    response = make_response(render_template('researcher-details.html'))
+@app.route('/researcher-details/<string:index>', methods=['GET'])
+def researcher_details(index):
+    # index = json.loads(index)
+    # for result in results['researchers']:
+    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
+    #         researcher = result
+    #         break
+    # logger.info(f'Found researcher {researcher}')
+    researcher = openalex_researchers.get_researcher_details(index)
+    response = make_response(render_template('researcher-details.html',researcher=researcher))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -261,6 +332,19 @@ def researcher_details():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
+@app.route('/researcher-banner/<string:index>', methods=['GET'])
+def researcher_banner(index):
+    # logger.info(f'Fetching details for researcher with index {index}')
+    for result in results['researchers']:
+        if result.list_index == index:
+            researcher = result
+            break
+    # logger.info(f'Found researcher {researcher}')
+    researcher = openalex_researchers.get_researcher_banner(researcher)
+    if researcher.banner == "":
+        return jsonify()
+    return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
 
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
