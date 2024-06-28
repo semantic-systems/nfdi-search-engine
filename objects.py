@@ -61,12 +61,6 @@ Organization.parentOrganization = Organization()
 
 
 @dataclass
-class Author(Person):
-    # orcid: str = "" # we should not have this attribute; orcid should be kept in 
-    works_count: str = ""
-    cited_by_count: str = ""
-
-@dataclass
 class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
@@ -106,6 +100,17 @@ class Article(CreativeWork):
 class Dataset(CreativeWork): 
     distribution: str = ""
     issn: str = ""
+
+@dataclass
+class Author(Person):
+    orcid: str = "" # we should not have this attribute; orcid should be kept in 
+    works_count: str = ""
+    about: str = ""
+    banner: str = ""
+    cited_by_count: str = ""
+    url: str = ""
+    researchAreas: List[str] = field(default_factory=list)
+    works: List[Union[Article, Dataset]] = field(default_factory=list)
 
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
 @dataclass

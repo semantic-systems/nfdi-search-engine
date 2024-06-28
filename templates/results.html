@@ -298,66 +298,7 @@
         //     }, 'slow');
 
         //     $('thead tr th:first-child').focus().blur();
-        // });        
-
-        // $('#btnShareLinkCopy').on('click', function (e) {
-        $('body').on('click', "#btnShareLinkCopy", function (e) {
-            var txtShareLink = document.getElementById('txtShareLink');
-            txtShareLink.select();
-            if (navigator.clipboard) {
-                alert(txtShareLink.value)
-                navigator.clipboard.writeText(txtShareLink.value)
-                    .then(() => {
-                        var notification = alertify.notify('Link copied', 'success', 5);
-                    })
-                    .catch((error) => {
-                        var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
-                    });
-            } else {
-                var notification = alertify.notify('Copy operation failed', 'error', 5);
-            }
-        });
-
-        $('body').on('click', ".share_modal_link", function (e) {
-            // alert('pressed')
-            publication = $(this).closest("tr").find('.publication_name')
-            url = window.location.origin + $(publication).attr('href')
-            title = $(publication).text().trim()
-            $('#txtShareLink').val(url)
-
-            $('.smd a').each(function (i, obj) {
-                $(this).attr('href', $(this).attr('base-href').replace('[[url]]', encodeURIComponent(url)))
-                $(this).attr('href', $(this).attr('href').replace('[[title]]', encodeURIComponent(title)))
-            });
-        });
-
-        // $('#share_modal_dialog').on('shown.bs.modal', function (e) {
-        //     // do something...
-        // });
-
-        $("body").on("shown.bs.modal", ".preview_modal_dialog", function (event) {
-            $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
-            $(this).find('.modal-body img').attr("src", event.relatedTarget.getAttribute('data-bs-img-src'));
-        });
-
-        $("body").on("shown.bs.modal", ".download_modal_dialog", function (event) {
-            $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
-
-            var b = getBinary(event.relatedTarget.getAttribute('data-bs-embed-src'));
-            var b64 = base64Encode(b);
-            $(this).find('.modal-body iframe').attr("src", "data:application/pdf;base64," + b64);
-        });
-
-        $('body').on('click', "#btn_load_more_publications", function (e) {
-            console.log('load more publications button clicked')
-            load_more_publications()
-        });
-
-        $('body').on('click', "#btn_load_more_researchers", function (e) {
-            console.log('load more researchers button clicked')
-            load_more_researchers()
-        });
-
+        // });  
 
         $(window).scroll(function () {
 
@@ -399,44 +340,6 @@
 
 
     });
-
-
-
-    function base64Encode(str) {
-        var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
-        var out = "", i = 0, len = str.length, c1, c2, c3;
-        while (i < len) {
-            c1 = str.charCodeAt(i++) & 0xff;
-            if (i == len) {
-                out += CHARS.charAt(c1 >> 2);
-                out += CHARS.charAt((c1 & 0x3) << 4);
-                out += "==";
-                break;
-            }
-            c2 = str.charCodeAt(i++);
-            if (i == len) {
-                out += CHARS.charAt(c1 >> 2);
-                out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-                out += CHARS.charAt((c2 & 0xF) << 2);
-                out += "=";
-                break;
-            }
-            c3 = str.charCodeAt(i++);
-            out += CHARS.charAt(c1 >> 2);
-            out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
-            out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
-            out += CHARS.charAt(c3 & 0x3F);
-        }
-        return out;
-    }
-
-    function getBinary(file) {
-        var xhr = new XMLHttpRequest();
-        xhr.open("GET", file, false);
-        xhr.overrideMimeType("text/plain; charset=x-user-defined");
-        xhr.send(null);
-        return xhr.responseText;
-    }
 
     function load_more_publications() {
 

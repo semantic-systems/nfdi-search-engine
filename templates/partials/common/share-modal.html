@@ -1,0 +1,127 @@
+{% macro shareModal(modal_id, url, title) %}
+<div class="modal" id="{{modal_id}}" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content col-12">
+            <div class="modal-header">
+                <h5 class="fw-bolder">Share</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="d-flex flex-wrap">
+                    <!-- <div class="smd">
+                            <a href="https://" class="disabled"
+                                aria-disabled="true">
+                                <i class="img-thumbnail bi bi-discord "
+                                    style="color: #738ADB;background-color: aliceblue;"></i>
+                                <p class="pt-2">Discord</p>
+                            </a>
+                        </div> -->
+                    <div class="smd">
+                        <a id="sharelink_facebook" href="https://www.facebook.com/sharer/sharer.php?u={{url}}"
+                            target=_blank>
+                            <i class="img-thumbnail bi bi-facebook "
+                                style="color: #1091F3;background-color: aliceblue;"></i>
+                            <p class="pt-2">Facebook</p>
+                        </a>
+                    </div>
+                    <!-- <div class="smd">
+                            <a href="#" class="disabled" aria-disabled="true">
+                                <i class="img-thumbnail bi bi-instagram "
+                                    style="color: #FF5700;background-color: aliceblue;"></i>
+                                <p class="pt-2">Instagram</p>
+                            </a>
+                        </div> -->
+                    <div class="smd">
+                        <a id="sharelink_linkedin"
+                            href="https://www.linkedin.com/shareArticle?mini=true&url={{url}}&title={{title}}"
+                            target=_blank>
+                            <i class="img-thumbnail bi bi-linkedin "
+                                style="color: #0a66c2;background-color: aliceblue;"></i>
+                            <p class="pt-2">Linkedin</p>
+                        </a>
+                    </div>
+                    <div class="smd">
+                        <a id="sharelink_pinterest"
+                            href="https://pinterest.com/pin/create/button/?url={{url}}&media={{url}}&description={{title}}"
+                            target=_blank>
+                            <i class="img-thumbnail bi bi-pinterest"
+                                style="color: #E60023;background-color: aliceblue;"></i>
+                            <p class="pt-2">Pinterest</p>
+                        </a>
+                    </div>
+                    <div class="smd">
+                        <a id="sharelink_reddit" href="https://www.reddit.com/submit?url={{url}}&title={{title}}"
+                            target=_blank>
+                            <i class="img-thumbnail bi bi-reddit"
+                                style="color: #FF4500;background-color: aliceblue;"></i>
+                            <p class="pt-2">Reddit</p>
+                        </a>
+                    </div>
+                    <!-- <div class="smd">
+                            <a href="#" class="disabled" aria-disabled="true">
+                                <i class="img-thumbnail bi bi-slack "
+                                    style="color: orange;background-color: aliceblue;"></i>
+                                <p class="pt-2">Slack</p>
+                            </a>
+                        </div> -->
+                    <!-- <div class="smd">
+                            <a href="#" class="disabled" aria-disabled="true">
+                                <i class="img-thumbnail bi bi-telegram "
+                                    style="color: #4c6ef5;background-color: aliceblue;"></i>
+                                <p class="pt-2">Telegram</p>
+                            </a>
+                        </div> -->
+                    <div class="smd">
+                        <a id="sharelink_twitter" href="https://twitter.com/intent/tweet?text={{title}}&url={{url}}"
+                            target=_blank>
+                            <i class="img-thumbnail bi bi-twitter"
+                                style="color:#4c6ef5;background-color: aliceblue"></i>
+                            <p class="pt-2">Twitter</p>
+                        </a>
+                    </div>
+                    <div class="smd">
+                        <a id="sharelink_whatsapp" href="https://api.whatsapp.com/send?text={{url}}" class="disabled"
+                            aria-disabled="true">
+                            <i class="img-thumbnail bi bi-whatsapp "
+                                style="color: #00E676;background-color: aliceblue;"></i>
+                            <p class="pt-2">Whatsapp</p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer text-start">
+                <div class="input-group mb-3">
+                    <div class="input-group-prepend">
+                        <span class="input-group-text fw-bold">Link</span>
+                    </div>
+                    <input type="url" class="form-control" aria-label="URL" placeholder="{{url}}"
+                        id="txtShareLink-{{modal_id}}" value="{{url}}" aria-describedby="inputGroup-sizing-default"
+                        disabled aria-disabled="true">
+                    <div class="input-group-append">
+                        <span class="input-group-text" id="btnShareLinkCopy-{{modal_id}}" role="button">
+                            <i class="bi bi-clipboard"></i></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('btnShareLinkCopy-{{modal_id}}').addEventListener('click', function () {
+            var txtShareLink = document.getElementById('txtShareLink-{{modal_id}}');
+            txtShareLink.select();
+
+            navigator.clipboard.writeText(txtShareLink.value)
+                .then(() => {
+                    var notification = alertify.notify('Link copied', 'success', 5);
+                })
+                .catch((error) => {
+                    var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+                });
+        });
+    });
+</script>
+
+{% endmacro %}

@@ -1,0 +1,70 @@
+{% macro downloadModal(modal_id, title, encoding_contentUrl) %}
+<div id="{{modal_id}}" class="modal">
+    <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    {{title}}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <iframe src="" width="1150px" height="800px"></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+
+    document.addEventListener('DOMContentLoaded', function () {
+        document.getElementById('{{modal_id}}').addEventListener('shown.bs.modal', function () {
+            var b = getBinary('{{encoding_contentUrl}}');
+            var b64 = base64Encode(b);
+            $(this).find('.modal-body iframe').attr("src", "data:application/pdf;base64," + b64);
+        });
+
+        function base64Encode(str) {
+            var CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+            var out = "", i = 0, len = str.length, c1, c2, c3;
+            while (i < len) {
+                c1 = str.charCodeAt(i++) & 0xff;
+                if (i == len) {
+                    out += CHARS.charAt(c1 >> 2);
+                    out += CHARS.charAt((c1 & 0x3) << 4);
+                    out += "==";
+                    break;
+                }
+                c2 = str.charCodeAt(i++);
+                if (i == len) {
+                    out += CHARS.charAt(c1 >> 2);
+                    out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+                    out += CHARS.charAt((c2 & 0xF) << 2);
+                    out += "=";
+                    break;
+                }
+                c3 = str.charCodeAt(i++);
+                out += CHARS.charAt(c1 >> 2);
+                out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xF0) >> 4));
+                out += CHARS.charAt(((c2 & 0xF) << 2) | ((c3 & 0xC0) >> 6));
+                out += CHARS.charAt(c3 & 0x3F);
+            }
+            return out;
+        }
+
+        function getBinary(file) {
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", file, false);
+            xhr.overrideMimeType("text/plain; charset=x-user-defined");
+            xhr.send(null);
+            return xhr.responseText;
+        }
+
+    });
+
+
+</script>
+
+
+
+
+{% endmacro %}

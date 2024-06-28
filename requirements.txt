@@ -18,3 +18,4 @@ xmltodict
 dateparser>=1.2.0
 Flask-Session==0.5.0
 rank_bm25==0.2.2
+openai==1.35.3
