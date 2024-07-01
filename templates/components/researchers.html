@@ -88,9 +88,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('btn_load_more_researchers').addEventListener('click', function () {
-            console.log('load more researchers button clicked')
-            load_more_researchers()
-        });
+        if (document.getElementById('btn_load_more_researchers')) {
+            document.getElementById('btn_load_more_researchers').addEventListener('click', function () {
+                console.log('load more researchers button clicked')
+                load_more_researchers()
+            });
+        }
     });
 </script>

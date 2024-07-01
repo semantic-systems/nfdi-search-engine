@@ -22,7 +22,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
                     'Content-Type': 'application/json',
                     'User-Agent': utils.config["request_header_user_agent"]
                     }
-        print("url:", url)
+        # print("url:", url)
         
         response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))        
 
@@ -51,7 +51,7 @@ def retrieve_single_object(source: str, base_url: str, doi: str):
     try:        
         doi = urllib.parse.quote_plus(string=doi, safe='()?&=,')
         url = base_url + doi
-        print('url:', url)
+        # print('url:', url)
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'User-Agent': utils.config["request_header_user_agent"]
