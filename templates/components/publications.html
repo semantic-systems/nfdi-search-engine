@@ -125,9 +125,11 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('btn_load_more_publications').addEventListener('click', function () {
-            console.log('load more publications button clicked')
-            load_more_publications()
-        });
+        if (document.getElementById('btn_load_more_publications')) {
+            document.getElementById('btn_load_more_publications').addEventListener('click', function () {
+                console.log('load more publications button clicked')
+                load_more_publications()
+            });
+        }
     });
 </script>

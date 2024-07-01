@@ -98,11 +98,10 @@ def search_results():
         results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
         
         #store the search results in the session
-        session['search-results'] = copy.deepcopy(results)
+        session['search-results'] = copy.deepcopy(results)        
 
-        
         # Chatbot - push search results to chatbot server for embeddings generation
-        if utils.config['chatbot_feature_enable'] == "True":
+        if (utils.config['chatbot_feature_enable']):
 
             # Convert a UUID to a 32-character hexadecimal string
             search_uuid = uuid.uuid4().hex
@@ -180,7 +179,7 @@ def load_more_researchers():
 def are_embeddings_generated():
 
     #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
-    if utils.config['chatbot_feature_enable'] == "True":
+    if (utils.config['chatbot_feature_enable']):
         print('are_embeddings_generated')
         uuid = session['search_uuid']
         chatbot_server = utils.config['chatbot_server'] 
