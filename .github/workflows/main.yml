@@ -19,5 +19,7 @@ jobs:
         run: docker image rm nfdi-search-engine-search-engine
       - name: 'Copy logging.conf'
         run: cp logging.conf.example logging.conf
+      - name: 'Copy env variables from host'
+        run: cp /informatik2/sems/nfdi/nfdi4ds/gateway/.env .env
       - name: 'Re-build Docker container from current source'
         run: docker compose up --force-recreate --build --detach
