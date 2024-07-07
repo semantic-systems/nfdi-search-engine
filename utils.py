@@ -1,3 +1,4 @@
+import os
 import extruct
 from objects import Article, Person, Author
 import wikipedia
@@ -8,6 +9,17 @@ import yaml
 with open("config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
+
+#load environment variables
+from dotenv import find_dotenv, load_dotenv
+_ = load_dotenv(find_dotenv())
+env_config = dict(
+    {
+        "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY", ""),
+        "OPENAI_MODEL_VERSION": os.environ.get("OPENAI_MODEL_VERSION", ""),
+        "OPENAI_TEMPERATURE": os.environ.get("OPENAI_TEMPERATURE",""),
+    }
+)
 
 
 #region DECORATORS

@@ -45,6 +45,10 @@ results = {
 
 @app.route('/')
 def index():
+
+    if (utils.env_config["OPENAI_API_KEY"] == ""):
+        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+
     response = make_response(render_template('index.html'))
 
     # Set search-session cookie to the session cookie value of the first visit
