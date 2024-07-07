@@ -284,27 +284,27 @@ def get_researcher_details(url):
                     researcher.works.append(publication)
                     a+=1
 
-        # ### uncomment to generate about section
-        # logger.info(f'Getting publications {a}')
-        # details = vars(researcher)
-        # # Convert the details into a string format
-        # details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key not in ("works", "source","orcid")))
-        # prompt = f"Generate a 2-3 line 'About' section for a researcher based on the following details:\n{details_str}"
-        # client = OpenAI(
-        #     api_key=utils.config['openai_api_key'],
-        # )
-        # logger.info('sent message to openai')
-        # chat_completion = client.chat.completions.create(
-        #     messages=[
-        #         {
-        #             "role": "user",
-        #             "content": f'{prompt}',
-        #         }
-        #     ],
-        #     model="gpt-3.5-turbo",
-        # )
-        # # about_section = response.choices[0].text.strip()
-        # researcher.about = chat_completion.choices[0].message.content.strip()
+        ### uncomment to generate about section
+        logger.info(f'Getting publications {a}')
+        details = vars(researcher)
+        # Convert the details into a string format
+        details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key not in ("works", "source","orcid")))
+        prompt = f"Generate a 2-3 line 'About' section for a researcher based on the following details:\n{details_str}"
+        client = OpenAI(
+            api_key=utils.env_config["OPENAI_API_KEY"],
+        )
+        logger.info('sent message to openai')
+        chat_completion = client.chat.completions.create(
+            messages=[
+                {
+                    "role": "user",
+                    "content": f'{prompt}',
+                }
+            ],
+            model="gpt-3.5-turbo",
+        )
+        # about_section = response.choices[0].text.strip()
+        researcher.about = chat_completion.choices[0].message.content.strip()
 
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -318,7 +318,7 @@ def get_researcher_banner(researcher: Author):
         details_str = "\n".join(f"{convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key in ("researchAreas")))
         prompt = f"A banner for researcher with following research areas:\n{researcher.about}"
         client = OpenAI(
-                        api_key=utils.config['openai_api_key'],
+                        api_key=utils.env_config["OPENAI_API_KEY"],
                 )
         response = client.images.generate(
         model="dall-e-2",
