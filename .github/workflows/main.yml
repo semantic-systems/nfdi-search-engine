@@ -16,9 +16,7 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  
       - name: 'Stop the running NFDI Search Engine'
-        run: docker compose down
-      - name: 'Delete old Docker image'
-        run: docker image rm nfdi-search-engine-search-engine
+        run: docker compose down      
       - name: 'Copy logging.conf'
         run: cp logging.conf.example logging.conf 
       - name: 'Re-build Docker container from current source'
