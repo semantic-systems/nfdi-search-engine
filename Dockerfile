@@ -10,8 +10,6 @@ RUN pip3 install -r requirements.txt
 
 COPY . .
 
-COPY /informatik2/sems/nfdi/nfdi4ds/gateway/.env ./env
-
 CMD [ "gunicorn", "-w", "4" , "-b", "0.0.0.0", "main:app" ]
 
 EXPOSE 8000/tcp
