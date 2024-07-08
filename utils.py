@@ -16,8 +16,6 @@ _ = load_dotenv(find_dotenv())
 env_config = dict(
     {
         "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY", ""),
-        "OPENAI_MODEL_VERSION": os.environ.get("OPENAI_MODEL_VERSION", ""),
-        "OPENAI_TEMPERATURE": os.environ.get("OPENAI_TEMPERATURE",""),
     }
 )
 
