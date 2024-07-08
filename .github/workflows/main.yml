@@ -8,6 +8,8 @@ on:
 jobs:
   deploy:
     runs-on: self-hosted
+    env:
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
     steps:
       - name: 'Check out repo'
         uses: actions/checkout@v3
@@ -18,8 +20,6 @@ jobs:
       - name: 'Delete old Docker image'
         run: docker image rm nfdi-search-engine-search-engine
       - name: 'Copy logging.conf'
-        run: cp logging.conf.example logging.conf 
-      - name: 'Set environment variables'
-        run: OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }} 
+        run: cp logging.conf.example logging.conf       
       - name: 'Re-build Docker container from current source'
         run: docker compose up --force-recreate --build --detach
