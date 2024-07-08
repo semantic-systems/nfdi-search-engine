@@ -16,6 +16,9 @@ jobs:
       - name: 'Stop the running NFDI Search Engine'
         run: docker compose down
       - name: 'Copy logging.conf'
-        run: cp logging.conf.example logging.conf      
+        run: cp logging.conf.example logging.conf    
+      - name: 'Set environment variables'
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}  
       - name: 'Re-build Docker container from current source'
         run: docker compose up --force-recreate --build --detach
