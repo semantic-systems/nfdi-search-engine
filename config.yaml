@@ -37,3 +37,7 @@ chatbot_server: https://nfdi-chatbot.nliwod.org
 endpoint_chat: /chat
 endpoint_save_docs_with_embeddings: /save-docs-with-embeddings
 endpoint_are_embeddings_generated: /are-embeddings-generated
+
+#open ai
+openai_model_version: gpt-3.5-turbo-0125
+openai_temperature: 2
