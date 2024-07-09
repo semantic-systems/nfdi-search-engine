@@ -273,9 +273,7 @@ def format_digital_obj_url(value):
             source_dict['sname'] = source
         else:
             source_dict['sname'] = source.name
-        source_dict['sid'] = value.identifier
-        source_dict['sname'] = source.name
-        source_dict['sid'] = source.identifier
+            source_dict['sid'] = source.identifier
         sources_list.append(source_dict)
     return json.dumps(sources_list)
 FILTERS["format_digital_obj_url"] = format_digital_obj_url
@@ -353,32 +351,20 @@ def resource_details(sources):
     sources = ast.literal_eval(sources)
     for source in sources:
         doi = source['doi']
-
-    resource = zenodo.get_resource(doi="https://doi.org/"+doi)
+    resource = zenodo.get_resource(doi)
     response = make_response(render_template('resource-details.html', resource=resource))
 
     print("response:", response)
     return response
 
-
 @app.route('/researcher-details/<string:index>', methods=['GET'])
 def researcher_details(index):
-    # index = json.loads(index)
-    # for result in results['researchers']:
-    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
-    #         researcher = result
-    #         break
-    # logger.info(f'Found researcher {researcher}')
-    researcher = openalex_researchers.get_researcher_details(index)
-    response = make_response(render_template('researcher-details.html',researcher=researcher))
-@app.route('/researcher-details/<string:index>', methods=['GET'])
-def researcher_details(index):
-    # index = json.loads(index)
-    # for result in results['researchers']:
-    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
-    #         researcher = result
-    #         break
-    # logger.info(f'Found researcher {researcher}')
+    index = json.loads(index)
+    for result in results['researchers']:
+        if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
+            researcher = result
+            break
+    logger.info(f'Found researcher {researcher}')
     researcher = openalex_researchers.get_researcher_details(index)
     response = make_response(render_template('researcher-details.html',researcher=researcher))
 
@@ -403,20 +389,6 @@ def researcher_banner(index):
     if researcher.banner == "":
         return jsonify()
     return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
-
-@app.route('/researcher-banner/<string:index>', methods=['GET'])
-def researcher_banner(index):
-    # logger.info(f'Fetching details for researcher with index {index}')
-    for result in results['researchers']:
-        if result.list_index == index:
-            researcher = result
-            break
-    # logger.info(f'Found researcher {researcher}')
-    researcher = openalex_researchers.get_researcher_banner(researcher)
-    if researcher.banner == "":
-        return jsonify()
-    return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
-
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
 def organization_details(organization_id, organization_name):

@@ -310,7 +310,7 @@ def get_researcher_details(url):
             ],
             model="gpt-3.5-turbo",
         )
-        # about_section = response.choices[0].text.strip()
+        about_section = response.choices[0].text.strip()
         researcher.about = chat_completion.choices[0].message.content.strip()
 
     except Exception as ex:
@@ -389,7 +389,5 @@ def get_researcher_banner(researcher: Author):
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
         logger.error(traceback.format_exc())
-
-    return researcher
 
     return researcher

@@ -137,11 +137,11 @@ def parse_date(date_str):
     except (TypeError, ValueError):
         print(f"original date str: {date_str}")
         return ""
-        
+
 # def sort_results_publications(results):
-#     def custom_sort_key(obj):    
-#         desc = getattr(obj, 'description', '') 
-#         pub_date = getattr(obj, 'datePublished', '0000-00-00') 
+#     def custom_sort_key(obj):
+#         desc = getattr(obj, 'description', '')
+#         pub_date = getattr(obj, 'datePublished', '0000-00-00')
 #         if desc == '':
 #             return (0, pub_date)
 #         return (1, pub_date)
@@ -153,10 +153,10 @@ def sort_search_results(search_term, search_results):
     tokenized_results = [str(result).lower().split(" ") for result in search_results]
     if len(tokenized_results) > 0:
         bm25 = BM25Plus(tokenized_results)
-    
+
         tokenized_query = search_term.lower().split(" ")
         doc_scores = bm25.get_scores(tokenized_query)
-        
+
         for idx, doc_score in enumerate(doc_scores):
             search_results[idx].rankScore = doc_score
 
@@ -168,6 +168,4 @@ def split_authors(authors_names, seperator, authors_list):
         _author = Author()
         _author.type = 'Person'
         _author.name = author
-        authors_list.append(_author)  
-
-    
+        authors_list.append(_author)
