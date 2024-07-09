@@ -13,21 +13,28 @@
                         <div class="row">
                             <div class="col-11 fs-6">
                                 <div class="row mb-2">
-                                    <div class="col-12 fs-5">
-                                        <a class="text-secondary fw-bold" href='/resource-details' target='_blank'>
-                                            {{resources.name}}</a>
+                                    <div class="col-12 d-flex justify-content-between align-items-center fs-5">
+                                        <a class="text-secondary fw-bold" href='/resource-details/{{resources | format_digital_obj_url}}' target='_blank'>
+                                            {{ resources.name }}
+                                        </a>
+                                        <span class="badge bg-pill bg-success text-wrap text-break">DOI:{{ resources.identifier }}</span>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-12 my-2 authors">
-                                        {% for author in resources.author  %}
+                                        {% set author_count = namespace(value=0) %}
+                                        {% for author in resources.author %}
+                                        {% if author_count.value == 5 %}
+                                        <a href="#" class="tag_more_authors">and {{ (resources.author|count) - 5 }}
+                                            more</a>
+                                        {% endif %}
                                         {% if author.type == 'Person' %}
                                         <a href="{{author.identifier}}"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true">
-                                            <i class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}
-                                        </a>
+                                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                            tabindex="-1" role="button" aria-disabled="true"><i
+                                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
                                         {% endif %}
+                                        {% set author_count.value = author_count.value + 1 %}
                                         {% endfor %}
                                     </div>
                                 </div>
@@ -38,17 +45,33 @@
                                 </div>
                                 <div class="row pt-3">
                                     <div class="col-9 text-start">
-                                        {% for source in resources.source %}
-                                            <span class="badge bg-pill">{{ source.name }}</span>
-                                            {% for language in source.inLanguage %}
-                                                <span class="badge bg-pill">{{ language|upper }}</span>
+                                        {% set found = false %}
+                                        
+                                            {% if resources.source.name %}
+                                                <span class="badge rounded-pill bg-primary">
+                                                    {{ resources.source.name }}
+                                                </span>
+                                                {% set found = true %}
+                                            {% endif %}
+
+                                        {% if not found %}
+                                           
+                                                <span class="badge rounded-pill bg-primary">
+                                                    {{ resources.source }}
+                                                </span>
+                                            
+                                        {% endif %}
+                                        {% if resources.source.inLanguage %}
+                                            {% for language in resources.source.inLanguage %}
+                                                <span class="badge rounded-pill bg-secondary">{{ language|upper }}</span>
                                             {% endfor %}
-                                        {% endfor %}
-                                        <span class="badge bg-pill">{{ resources.license }}</span>
-                                        <span class="badge bg-pill">{{ resources.encodingFormat|upper }}</span>
+                                        {% endif %}
+
+                                        <span class="badge rounded-pill bg-info">{{ resources.license }}</span>
+                                        <span class="badge rounded-pill bg-warning">{{ resources.encodingFormat|upper }}</span>
                                         <br>
                                         {% for keyword in resources.keywords %}
-                                            <span class="badge bg-pill">{{ keyword }}</span>
+                                            <span class="badge rounded-pill bg-light text-dark">{{ keyword }}</span>
                                         {% endfor %}
                                     </div>
                                 

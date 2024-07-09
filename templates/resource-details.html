@@ -1,6 +1,6 @@
 {% extends "layouts/base.html" %}
 
-{% block title %} Resources Details {% endblock title %}
+{% block title %} resource Details {% endblock title %}
 
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
@@ -15,31 +15,31 @@
 
         <div class="row pb-4">
             <div class="col text-start">
-                <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
+                <!-- <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a> -->
             </div>
         </div>
         <div class="row border-bottom pb-4">
             <div class="col-7 text-start">
-                <h3>Women and Politics</h3>
+                <h3>{{resource.name}}</h3>
                 <div class="py-2">
-                    <span class="badge bg-pill">Politics</span>
-                    <span class="badge bg-pill">Social engagement</span>
-                    <span class="badge bg-pill">Politicians</span>
-                    <span class="badge bg-pill">Demography</span>
-                    <span class="badge bg-pill">Social Dataset</span>
+                    <div class="py-2">
+                        {% for keyword in resource.keywords %}
+                        <span class="badge bg-pill">{{keyword}}</span>
+                        {% endfor %}
+                    </div>
                 </div>
                 <div class="fs-7 py-2">
                     <span class="pe-4">
-                        <span class="fw-bold">Study number:</span>
+                        <span class="fw-bold">Version:</span>
                         <span>ZA6719</span>
                     </span>
                     <span class="pe-4">
                         <span class="fw-bold">DOI:</span>
-                        <span>10.4232</span>
+                        <span id="resource_doi">{{resource.identifier}}</span>
                     </span>
                     <span class="pe-4">
                         <span class="fw-bold">Publication Date:</span>
-                        <span>03.10.2019</span>
+                        <span>{{resource.datePublished}}</span>
                     </span>
                 </div>
             </div>
@@ -47,22 +47,22 @@
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-download fs-4"></i>
                     <div class="fs-7 my-1">Downloads</div>
-                    <div class="fs-5 fw-bold">1K+</div>
+                    <div class="fs-5 fw-bold">--</div>
                 </div>
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-bookmarks fs-4"></i>
                     <div class="fs-7 my-1">Saved</div>
-                    <div class="fs-5 fw-bold">420</div>
+                    <div class="fs-5 fw-bold">--</div>
                 </div>
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-chat-quote fs-4"></i>
                     <div class="fs-7 my-1">Cited</div>
-                    <div class="fs-5 fw-bold">300</div>
+                    <div class="fs-5 fw-bold">--</div>
                 </div>
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-eye fs-4"></i>
                     <div class="fs-7 my-1">Views</div>
-                    <div class="fs-5 fw-bold">278</div>
+                    <div class="fs-5 fw-bold">--</div>
                 </div>
             </div>
             <!-- <div class="row border-bottom mt-4"></div> -->
@@ -70,70 +70,65 @@
 
         <div class="row pt-4">
 
-            <div class="col-2 px-2 authors">
-                <div class="d-flex p-2 bd-highlight">
-                    <h5>AUTHORS (5)</h5>
+            <div class="col-2 p-2">
+                <div class="card me-4 shadow-bottom-right rounded-extra solid-border align-items-center">
+                    <div class="card-body">
+                        <a href="#abstract" class="btn">Abstract</a>
+                        <a href="#supplemental-material" class="btn text-start">Supplemental Material</a>
+                        <a href="#references" class="btn">References</a>
+                        <a href="#cited-by" class="btn">Cited by</a>
+                    </div>
                 </div>
                 <div class="d-flex p-2 bd-highlight">
-                    <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1" tabindex="-1"
-                        role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>Author 1</a>
+                    <h5>AUTHORS ({{resource.author|length}})</h5>
                 </div>
-                <div class="d-flex p-2 bd-highlight">
-                    <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1" tabindex="-1"
-                        role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>Author 2</a>
-                </div>
-                <div class="d-flex p-2 bd-highlight">
-                    <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1" tabindex="-1"
-                        role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>Author 3</a>
-                </div>
-                <div class="d-flex p-2 bd-highlight">
-                    <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1" tabindex="-1"
-                        role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>Author 4</a>
-                </div>
-                <div class="d-flex p-2 bd-highlight">
-                    <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1" tabindex="-1"
-                        role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>Author 5</a>
+                <div class="authors-block authors">
+                    {% for author in resource.author %}
+                    <div class="d-flex p-2 bd-highlight">
+                        <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1" tabindex="-1"
+                            role="button" aria-disabled="true"><i
+                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name|truncate(10)}}
+                        </a>
+                    </div>
+                    {% endfor %}
                 </div>
             </div>
             <div class="col-6 px-4">
-                <div class="d-flex p-2 bd-highlight">
-                    <h5>ABSTRACT</h5>
+                <div class="d-flex p-2 bd-highlight" id="abstract">
+                    <h5>ABSTRACT <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="aaahhhhh"></i></h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-                   
-                    The survey focused on women's interest in politics in general and in specific policy areas in particular, 
-                    their expectations of political parties and politicians, and their willingness to become politically or socially involved. 
-                    Of particular interest here was the question of the extent to which there are differences in attitudes, 
-                    experiences and expectations within the group of women. 
-                    Do women academics have other political interests than women with low formal education? 
-                    Or do the expectations that women in West Germany have of politics differ from those of women in East Germany? 
-                    It should also be ascertained whether women perceive female politicians differently from male politicians. 
-                    Are there characteristics that they attribute more to a male politician or more to a female politician? After all, 
-                    the issue of equal rights played a prominent role in the survey. 
-                    The perceived realisation of equal rights for men and women in Germany in general and in selected areas of life was measured.
-
-                    Topics: Political understanding and interest: interest in politics; particularly interesting political topics; 
-                    attitude towards elites (politics and political parties); frequency of discussions on political and social topics with various groups 
-                    (life partner or family, friends and acquaintances, in a public political event, colleagues, sports and hobby clubs, 
-                    on Facebook or in other social networks); political information behaviour (informing people who lack knowledge about a political topic, 
-                    intensive reflection on political issues, dealing with various party positions, 
-                    interest in the person in office of important political offices, own suggestions 
-                    for improvement with regard to living conditions in the place of residence); 
-                    attitude towards political styles: opinion on how parties and politicians deal with each other (should be considerate, 
-                    can be hard to deal with as long as it is content and not personal, 
-                    or occasionally personal attacks on politicians of other parties are fine); political discussion behaviour.
+                  {{ resource.description}}
                 </div>
 
-                <div class="d-flex p-2 bd-highlight pt-4">
-                    <h5>POLITICAL AND SOCIAL ENGAGEMENT</h5>
+                <div class="d-flex p-2 bd-highlight pt-4" id="supplemental-material">
+                    <h5>SUPPLEMENTAL MATERIAL <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from xxx"></i></h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
+                    <div class="fw-lighter fst-italic">
+                        <i class="bi bi-hourglass-split"></i>
+                        Coming soon ....
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
                 </div>
-                <div class="d-flex p-2 bd-highlight pt-4">
-                    <h5>REFERENCES</h5>
+                <div class="d-flex p-2 bd-highlight pt-4" id="references">
+                    <h5>REFERENCES <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from f"></i></h5>
                 </div>
-                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
+                </div>
+                <div class="d-flex p-2 bd-highlight pt-4" id="cited-by">
+                    <h5>CITATIONS <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></h5>
+                </div>
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-load-citations">Load</button>
+                </div>
+            </div>
+                <!-- <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <ol class="list-group list-group-numbered">
                         <li class="list-group-item border-0">
                             <span>Presse- und Informationsamt der Bundesregierung (2019). 
@@ -156,20 +151,24 @@
                             batch mode. Front. Mol. Biosci., 9, 1–10.
                         </li>
                     </ol>
-                </div>
+                </div> -->
 
-                <div class="d-flex p-2 bd-highlight pt-4">
+                <!-- <div class="d-flex p-2 bd-highlight pt-4">
                     <h5>CITED BY</h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
 
-                </div>
+                </div> -->
             </div>
             <div class="col-4 ps-5">
                 <div class="d-flex p-2 bd-highlight">
-                    <h5>RECOMMENDATIONS</h5>
+                    <h5>RECOMMENDATIONS <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></h5>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="recommendations_block">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-load-recommendations">Load</button>
+                </div>
+                <!-- <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
                     <div class="card mb-2 p-2 rounded-extra">
                         <div class="card-body">
                             <div class="d-flex bd-highlight">
@@ -184,8 +183,8 @@
                                 </span>
                             </div>
                         </div>
-                    </div>
-                    <div class="card mb-2 p-2 rounded-extra">
+                    </div> -->
+                    <!-- <div class="card mb-2 p-2 rounded-extra">
                         <div class="card-body">
                             <div class="d-flex bd-highlight">
                                 <a class="text-dark fw-bold" href='#' target='_blank'>
@@ -199,21 +198,29 @@
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </div>
 
                 <div class=" d-flex p-2 bd-highlight pt-4">
                     <h5>FAIR Assessment</h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
+                    <div class="fw-lighter fst-italic">
+                        <i class="bi bi-hourglass-split"></i>
+                        Coming soon ....
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4">
                     <h5>Jupyter Lab</h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
-
+                    <div class="fw-lighter fst-italic">
+                        <i class="bi bi-hourglass-split"></i>
+                        Coming soon ....
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
                 </div>
 
             </div>
@@ -235,10 +242,101 @@
 
     $(document).ready(function () {
 
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
 
     });
 
+    load_references = function () {
+            let doi = document.getElementById('resource_doi').innerHTML
+            $.ajax({
+                url: '/resource-details-references/' + doi,
+                type: "GET",
+                data: {
+                },
+                beforeSend: function () {
+                    $('#references_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
+                },
+                complete: function () {
+                    // $('.loader').remove();
+                },
+                success: function (data) {
+                    console.log(data)
+                    $('.loader').remove();
+                    $('#references_block').html(data);
+                    console.log('references have been loaded.')
+                },
+                error: function (err) {
+                    console.log(err);
+                    return err
+                }
+            });
+        }
 
+        load_recommendations = function () {
+            let doi = document.getElementById('resource_doi').innerHTML
+            $.ajax({
+                url: '/resource-details-recommendations/' + doi,
+                type: "GET",
+                data: {
+                },
+                beforeSend: function () {
+                    $('#recommendations_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
+                },
+                complete: function () {
+                    $('.loader').remove();
+                },
+                success: function (data) {
+                    console.log(data)
+                    $('#recommendations_block').html(data);
+                    console.log('recommendations have been loaded.')
+
+                },
+                error: function (err) {
+                    console.log(err);
+                    return err
+                }
+            });
+        }
+
+        load_citations = function () {
+            let doi = document.getElementById('resource_doi').innerHTML
+            $.ajax({
+                url: '/resource-details-citations/' + doi,
+                type: "GET",
+                data: {
+                },
+                beforeSend: function () {
+                    $('#citations_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
+                },
+                complete: function () {
+                    $('.loader').remove();
+                },
+                success: function (data) {
+                    console.log(data)
+                    $('#citations_block').html(data);
+                    console.log('citations have been loaded.')
+                },
+                error: function (err) {
+                    console.log(err);
+                    return err
+                }
+            });
+        }
+
+        $('#btn-load-references').click(function () {
+            load_references();
+        });
+
+        $('#btn-load-recommendations').click(function () {
+            load_recommendations();
+        });
+
+        $('#btn-load-citations').click(function () {
+            load_citations();
+        });
 
 </script>
 

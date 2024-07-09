@@ -8,7 +8,6 @@ from flask import Flask, render_template, request, make_response, session
 from flask_session import Session
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers
-from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, openaire
 from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import crossref, semanticscholar
@@ -78,10 +77,8 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module         
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, dblp_researchers, re3data, orkg, gesis, eulg]
-        # sources = [zenodo]
+                   eudat, dblp_researchers, re3data, orkg, gesis, eulg]
 
-        # sources = [openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -311,17 +308,18 @@ def publication_details_citations(doi):
     print("response:", response)
     return response
 
-@app.route('/resource-details')
-def resource_details():
-    response = make_response(render_template('resource-details.html'))
+@app.route('/resource-details/<path:sources>', methods=['GET'])
+def resource_details(sources):
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
+    sources = unquote(sources)
+    sources = ast.literal_eval(sources)    
+    for source in sources:
+        doi = source['doi']
+    
+    resource = zenodo.get_resource(doi="https://doi.org/"+doi)
+    response = make_response(render_template('resource-details.html', resource=resource))
 
+    print("response:", response)
     return response
 
 

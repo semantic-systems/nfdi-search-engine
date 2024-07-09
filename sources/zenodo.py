@@ -59,13 +59,14 @@ def search(search_term, results):
                 keywords = metadata.get('keywords', [])
                 if isinstance(keywords, list):
                     for keyword in keywords:
-                        digitalObj.keywords.append(keyword)               
+                        terms = [term.strip() for term in keyword.split(",")]
+                        digitalObj.keywords.extend(terms)                
                 
                 language = metadata.get('language', '')
                 digitalObj.inLanguage.append(language)
                 digitalObj.dateCreated = hit.get('created','')
                 digitalObj.dateModified = hit.get('modified','')        
-                digitalObj.datePublished = metadata.get('publication_date', '')
+                digitalObj.datePublished = metadata.get('resource_date', '')
                 digitalObj.license = metadata.get('license', {}).get('id', '')    
                 digitalObj.creativeWorkStatus = hit.get('status','') 
                 digitalObj.funder = metadata.get('grants', [{}])[0].get('funder', {}).get('name', '')
@@ -73,45 +74,45 @@ def search(search_term, results):
                 if(digitalObj.conditionsOfAccess == ''):
                     digitalObj.conditionsOfAccess = metadata.get('access_right','')
 
-                relation_map = {
-                    'iscitedby': 'isCitedBy',
-                    'issupplementto': 'isSupplementTo',
-                    'ispartof': 'isPartOf',
-                    'cites': 'cites',
-                    'issourceof': 'isSourceOf',
-                    'isderivedfrom': 'isDerivedFrom',
-                    'issupplementedby': 'isSupplementedBy',
-                    'ispreviousversionof': 'isPreviousVersionOf',
-                    'documents': 'documents',
-                    'haspart': 'hasPart'
-                }
+                # relation_map = {
+                #     'iscitedby': 'isCitedBy',
+                #     'issupplementto': 'isSupplementTo',
+                #     'ispartof': 'isPartOf',
+                #     'cites': 'cites',
+                #     'issourceof': 'isSourceOf',
+                #     'isderivedfrom': 'isDerivedFrom',
+                #     'issupplementedby': 'isSupplementedBy',
+                #     'ispreviousversionof': 'isPreviousVersionOf',
+                #     'documents': 'documents',
+                #     'haspart': 'hasPart'
+                # }
 
-                related_identifiers = metadata.get('related_identifiers', [])
+                # related_identifiers = metadata.get('related_identifiers', [])
 
-                for related_identifier in related_identifiers:
-                    relation = related_identifier.get('relation', '').lower()
-                    identifier = related_identifier.get('identifier', '')
+                # for related_identifier in related_identifiers:
+                #     relation = related_identifier.get('relation', '').lower()
+                #     identifier = related_identifier.get('identifier', '')
                     
-                    if relation == 'iscitedby':
-                        digitalObj.isCitedBy.append(identifier)
-                    elif relation == 'issupplementto':
-                        digitalObj.isSupplementTo.append(identifier)
-                    elif relation == 'ispartof':
-                        digitalObj.isPartOf.append(identifier)
-                    elif relation == 'cites':
-                        digitalObj.cites.append(identifier)
-                    elif relation == 'issourceof':
-                        digitalObj.isSourceOf.append(identifier)
-                    elif relation == 'isderivedfrom':
-                        digitalObj.isDerivedFrom.append(identifier)
-                    elif relation == 'issupplementedby':
-                        digitalObj.isSupplementedBy.append(identifier)
-                    elif relation == 'ispreviousversionof':
-                        digitalObj.isPreviousVersionOf.append(identifier)
-                    elif relation == 'documents':
-                        digitalObj.documents.append(identifier)
-                    elif relation == 'haspart':
-                        digitalObj.hasPart.append(identifier)
+                #     if relation == 'iscitedby':
+                #         digitalObj.isCitedBy.append(identifier)
+                #     elif relation == 'issupplementto':
+                #         digitalObj.isSupplementTo.append(identifier)
+                #     elif relation == 'ispartof':
+                #         digitalObj.isPartOf.append(identifier)
+                #     elif relation == 'cites':
+                #         digitalObj.cites.append(identifier)
+                #     elif relation == 'issourceof':
+                #         digitalObj.isSourceOf.append(identifier)
+                #     elif relation == 'isderivedfrom':
+                #         digitalObj.isDerivedFrom.append(identifier)
+                #     elif relation == 'issupplementedby':
+                #         digitalObj.isSupplementedBy.append(identifier)
+                #     elif relation == 'ispreviousversionof':
+                #         digitalObj.isPreviousVersionOf.append(identifier)
+                #     elif relation == 'documents':
+                #         digitalObj.documents.append(identifier)
+                #     elif relation == 'haspart':
+                #         digitalObj.hasPart.append(identifier)
 
                 authors = metadata.get("creators", [])                        
                 for author in authors:
@@ -177,7 +178,7 @@ def search(search_term, results):
                     digitalObj.JournalVolume = journal_info.get('volume', '')
                     digitalObj.issue = journal_info.get('issue', '')
                    
-                    results['publications'].append(digitalObj)
+                    results['publication'].append(digitalObj)
                 elif resource_type.upper() in ['PRESENTATION', 'POSTER', 'DATASET', 'SOFTWARE', 'VIDEO', 'IMAGE', 'LESSON']:                
                     results['resources'].append(digitalObj)                
                 else:
@@ -186,6 +187,52 @@ def search(search_term, results):
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
         results['timedout_sources'].append(source)
+    
+    except Exception as ex:
+        logger.error(f'Exception: {str(ex)}')
+        logger.error(traceback.format_exc())
+    
+
+@utils.timeit
+def get_resource(doi: str):
+     
+    source = "Zenodo"
+
+    try:
+        search_result = data_retriever.retrieve_single_object(source=source, 
+                                                     base_url=utils.config["search_url_zenodo"],
+                                                     doi=doi)
+        
+        metadata = search_result.get('metadata', {})
+        resource = CreativeWork()   
+        resource.name = search_result.get("title", "")  
+        resource.url = search_result.get('links', {}).get('self', '') 
+        resource.identifier = search_result.get("doi", "")
+        resource.datePublished = metadata.get("publication_date", "") 
+        resource.inLanguage.append(metadata.get("language", ""))
+        resource.license = metadata.get("license", "")
+
+        resource.description =  utils.remove_html_tags(metadata.get("description", ""))
+        resource.abstract = resource.description
+        authors = search_result.get("creators", [])                        
+        for author in authors:
+            _author = Author()
+            _author.type = 'Person'
+            _author.name = author.get("name", "")
+            _author.identifier = author.get("orcid", "")
+            _author.affiliation = author.get("affiliation", "")
+            resource.author.append(_author)
+
+        keywords = metadata.get('keywords', [])
+        if isinstance(keywords, list):
+            for keyword in keywords:
+                terms = [term.strip() for term in keyword.split(",")]
+                resource.keywords.extend(terms)             
+        
+        return resource
+
+    except requests.exceptions.Timeout as ex:
+        logger.error(f'Timed out Exception: {str(ex)}')        
     
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
