@@ -1,6 +1,6 @@
 import requests
 import logging
-from objects import Person, Author
+from objects import Person, Author, thing, Organization
 import utils
 
 logger = logging.getLogger('nfdi_search_engine')
@@ -9,10 +9,10 @@ logger = logging.getLogger('nfdi_search_engine')
 def search(search_term: str, results):
 
     try:
-                
+
         base_url = utils.config["search_url_orcid"]
         url = base_url + '"' + search_term.replace(' ', '+') + '"'
-        
+
         headers = {'Accept': 'application/json',
                    'Content-Type': 'application/json',
                    'User-Agent': utils.config["request_header_user_agent"]
@@ -30,19 +30,18 @@ def search(search_term: str, results):
                 authors = search_result.get('expanded-result', None)
                 if authors:
                     for author in authors:
-                
+
                         authorObj = Author()
-                        authorObj.source = 'ORCID'
+                        # authorObj.source = 'ORCID'
+                        authorObj.source.append(thing(name='ORCID'))
                         given_names = author.get('given-names', '')
                         family_names = author.get('family-names', '')
                         authorObj.name = given_names + " " + family_names
                         authorObj.orcid = author.get('orcid-id', '')
 
-                        last_known_institution = author.get('institution-name', {})
-                        if last_known_institution:
-                            authorObj.affiliation = last_known_institution[-1]
-                        else:
-                            authorObj.affiliation = ''                    
+                        institution = author.get('institution-name', [])
+                        for inst in institution:
+                            authorObj.affiliation.append(Organization(name=inst))
                         authorObj.works_count = ''
                         authorObj.cited_by_count = ''
 
@@ -51,7 +50,7 @@ def search(search_term: str, results):
     except requests.exceptions.Timeout as ex:
         logger.error(f'Timed out Exception: {str(ex)}')
         results['timedout_sources'].append('ORCID')
-    
+
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
 
@@ -80,11 +79,11 @@ def get_orcid_access_token():
     else:
         print("Failed to obtain access token:", response.text)
         return None
-    
+
 # Function to search for public information from ORCID
 def old_search(search_term, results):
     # It also can be used for retrieving further information, logging in, edite records etc
-    access_token = '45d5a287-de76-4a62-8ab9-1ffc046e7cde' 
+    access_token = '45d5a287-de76-4a62-8ab9-1ffc046e7cde'
     headers = {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
@@ -106,7 +105,7 @@ def old_search(search_term, results):
             # Check if the response contains any search results
             if 'result' in json_data and isinstance(json_data['result'], list) and json_data['result']:
                 # Iterate through the first 10 results for now (can be changed)
-                for result in json_data['result'][:10]:  
+                for result in json_data['result'][:10]:
                     orcid_id = result['orcid-identifier']['path']
 
                     # Generate the URL to the person's public profile in ORCID
@@ -119,7 +118,7 @@ def old_search(search_term, results):
                     if response.status_code == 200:
                         # Extract the JSON response
                         json_data = response.json()
-                        
+
                         # Extract the name information
                         name_data = json_data.get('name', {})
                         given_names = name_data.get('given-names', {}).get('value', '')
@@ -153,7 +152,7 @@ def old_search(search_term, results):
                             external_identifier_type = external_identifier.get('external-id-type', '')
                             external_identifier_value = external_identifier.get('external-id-value', '')
                             external_identifier_values.append((external_identifier_type, external_identifier_value))
-                        
+
                         affiliations = json_data.get('employments', {}).get('employment-summary', [])
                         if affiliations:
                             for affiliation in affiliations:
@@ -193,7 +192,7 @@ def old_search(search_term, results):
         else:
             print("Failed to search for public data:", response.text)
 
-        logger.info(f'Got {len(results)} records from Orcid') 
-        
+        logger.info(f'Got {len(results)} records from Orcid')
+
     except requests.exceptions.RequestException as e:
         print("An error occurred during the request:", str(e))

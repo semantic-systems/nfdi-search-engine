@@ -1,3 +1,6 @@
+{% from 'partials/common/share-modal.html' import shareModal %}
+{% from 'partials/common/preview-modal.html' import previewModal %}
+{% from 'partials/common/download-modal.html' import downloadModal %}
 {% extends "layouts/base.html" %}
 
 {% block title %} Publication Details {% endblock title %}
@@ -5,8 +8,7 @@
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
 
-<link rel="stylesheet" href="{{ url_for('static', filename='css/tabs.css') }}" />
-
+<link rel="stylesheet" href="{{ url_for('static', filename='css/scrollable-tabs.css') }}" />
 {% endblock stylesheets %}
 
 {% block content %}
@@ -14,81 +16,75 @@
 <main class=''>
     <div id='mainContent' class="container">
 
-        <div class="row pb-4">
+        <!-- <div class="row pb-4">
             <div class="col text-start">
                 <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
             </div>
-        </div>
-        <div class="row justify-content-start align-items-center border-bottom pb-4 bg-image banner img-fluid" style="background-image:url('https://st.depositphotos.com/2627021/3057/i/600/depositphotos_30577319-stock-photo-peace-blue-sky.jpg')">
+        </div> -->
+        <div class="row justify-content-start align-items-center border-bottom pb-4 bg-image banner img-fluid"
+            style="background-image:url('https://st.depositphotos.com/2627021/3057/i/600/depositphotos_30577319-stock-photo-peace-blue-sky.jpg')">
             <div class="col-1 ps-2">
                 <i class="bi bi-person-circle" style="font-size:7vw;"></i>
             </div>
-            <div class="col-auto">
-                <h3>Alberto Corona</h3>
-                <p><i  class="px-1 bi-geo-alt-fill"></i>Lima, Peru</p>
+            <div class="col-auto ms-auto">
+                <h3>{{researcher.name}}</h3>
+                <!-- <p><i  class="px-1 bi-geo-alt-fill"></i>Lima, Peru</p> -->
             </div>
-            <div class="col align-self-start">
-                <a href="#" class="btn p-1" tabindex="-1"
-                            role="button" aria-disabled="true"><i class="bi-bookmark align-self-end fs-4"></i></a>
-                <a href="#" class="btn p-1" tabindex="-1"
-                            role="button" aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
+            <div class="col-auto ms-auto align-self-start">
+                <a href="#" class="btn p-1" tabindex="-1" role="button" aria-disabled="true"><i
+                        class="bi-bookmark align-self-end fs-4"></i></a>
+                <a href="#" class="btn p-1" tabindex="-1" data-bs-toggle="modal"
+                    data-bs-target="#researcher-{{researcher.source[0].identifier | regex_replace ('\W','') }}"
+                    role="button" aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
             </div>
+            {% with modal_id='researcher-'+researcher.source[0].identifier | regex_replace ('\W',''),
+            url = '/researcher-details/'+ researcher | format_digital_obj_url,
+            title=researcher.name | trim
+            %}
+            {{ shareModal(modal_id, url, title) }}
+            {% endwith %}
         </div>
 
         <div class="row pt-4">
 
             <div class="col-3 px-2 justify-content-start">
+                {% if researcher.about | length > 1 %}
                 <div class="d-flex p-2">
                     <h5>ABOUT</h5>
                 </div>
                 <div class="d-flex p-2 fs-6 pb-4">
-                    An accomplished IT / Digital engineer with rich experience,
-                    seeking progressive growth in leadership and excellence.
-                    Currently, I am in the position of Network Administrator Manager
-                    for the USA and Argentina. Enduser experience, supporting global and
-                    local business strategies that deliver tangible business results.
+                    {{researcher.about}}
                 </div>
-
+                {% endif %}
                 <div class="d-flex p-2 pb-4 justify-content-start">
                     <div class="summary-block p-1">
                         <i class="bi bi-book fs-4"></i>
                         <div class="fs-7 my-1">Publications</div>
-                        <div class="fs-5 fw-bold">32</div>
+                        <div class="fs-5 fw-bold">{{researcher.works_count}}</div>
                     </div>
                     <div class="summary-block p-1 ms-2">
                         <i class="bi bi-chat-quote fs-4"></i>
                         <div class="fs-7 my-1">Citations</div>
-                        <div class="fs-5 fw-bold">17</div>
+                        <div class="fs-5 fw-bold">{{researcher.cited_by_count}}</div>
                     </div>
                     <div class="summary-block p-1 ms-2">
                         <i class="bi bi-eye fs-4"></i>
                         <div class="fs-7 my-1">Views</div>
-                        <div class="fs-5 fw-bold">493</div>
+                        <div class="fs-5 fw-bold">-</div>
                     </div>
                     <div class="summary-block p-1 ms-2">
                         <i class="bi bi-bookmark fs-4"></i>
                         <div class="fs-7 my-1">Saved</div>
-                        <div class="fs-5 fw-bold">4</div>
+                        <div class="fs-5 fw-bold">-</div>
                     </div>
                 </div>
 
                 <div class="card m-2" style="border-radius: 10px; border: 2px solid #c9c9c9;">
                     <div class="card-body">
-                        <span class="badge bg-pill">Computer Science</span>
-                        <span class="badge bg-pill">Artificial intelligence</span>
-                        <span class="badge bg-pill">Information retrieval</span>
-                        <span class="badge bg-pill">Engineering</span>
-                        <span class="badge bg-pill">Math</span>
-                        <span class="badge bg-pill">Question answering</span>
-                        <span class="badge bg-pill">Biology</span>
-                        <span class="badge bg-pill">WWW</span>
-                        <span class="badge bg-pill">Biology</span>
-                        <span class="badge bg-pill">Economics</span>
-                        <span class="badge bg-pill">Philosophy</span>
-                        <span class="badge bg-pill">Semantic Web</span>
-                        <span class="badge bg-pill">Operating</span>
-                        <span class="badge bg-pill">Machine learning</span>
-                        <span class="badge bg-pill">Linguistics</span>
+                        {% for topic in researcher.researchAreas %}
+                        <p class="badge bg-pill" style="display: block; white-space: normal; margin: 0.5vh;">{{topic}}
+                        </p>
+                        {% endfor %}
                     </div>
                 </div>
 
@@ -96,7 +92,7 @@
                     <h5>CONTACT & PROFILES</h5>
                 </div>
                 <div class="contacts p-2">
-                    <div class="d-flex p-1 bd-highlight">
+                    <!-- <div class="d-flex p-1 bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-envelope"></i>alberto@corona.com</a>
                     </div>
@@ -105,18 +101,28 @@
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-globe"></i>www.alberto-corona.com</a>
                     </div>
                     <div class="d-flex p-1 bd-highlight">
-                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
+                        <a href="{{researcher.orcid}}" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
                                             src="{{ url_for('static', filename='images/sources/orcid-id.png') }}"
-                                            >orcid.org/0000-0002-0191-7211</a>
-                    </div>
+                                            >{{researcher.orcid |replace('https://', '')}}</a>
+                    </div> -->
                     <div class="d-flex p-1 bd-highlight">
-                        <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
-                            role="button" aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
-                                            src="{{ url_for('static', filename='images/sources/openalex-small.png') }}"
-                                            >openalex.org/A1905735547</a>
+                        <a href="https://openalex.org/{{researcher.source[0].identifier}}"
+                            class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
+                            aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
+                                src="{{ url_for('static', filename='images/sources/openalex-small.png') }}">{{researcher.source[0].identifier
+                            |replace('https://openalex.org/', '')}}</a>
                     </div>
+                    {% if researcher.source | length > 1 %}
                     <div class="d-flex p-1 bd-highlight">
+                        <a href="{{researcher.source[1].url}}"
+                            class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
+                            aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
+                                src="{{ url_for('static', filename='images/sources/semantic-scholar.png') }}">{{researcher.source[1].identifier
+                            |replace('https://', '')}}</a>
+                    </div>
+                    {% endif %}
+                    <!-- <div class="d-flex p-1 bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-twitter"></i>@albertocorona</a>
                     </div>
@@ -127,152 +133,196 @@
                     <div class="d-flex p-1 bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-facebook"></i>Alberto Corona</a>
-                    </div>
+                    </div> -->
                 </div>
             </div>
 
-            <div class="col-9 px-4">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col">
-                            <div class="row">
-                                <div class="col tabs-section">
-                                    <ul class="nav nav-tabs nav-fill" id="myTab" role="tablist">
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link active position-relative" id="employment-tab"
-                                                data-bs-toggle="tab" data-bs-target="#employment" type="button" role="tab"
-                                                aria-controls="employment" aria-selected="true">
-                                                Employment [4]
-                                            </button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link position-relative" id="education-tab" data-bs-toggle="tab"
-                                                data-bs-target="#education" type="button" role="tab"
-                                                aria-controls="education" aria-selected="false">
-                                                Education & Qualifications [1]
-                                            </button>
-                                        </li>
-                                        <li class="nav-item" role="presentation">
-                                            <button class="nav-link position-relative" id="works-tab" data-bs-toggle="tab"
-                                                data-bs-target="#works" type="button" role="tab" aria-controls="works"
-                                                aria-selected="false">
-                                                Works [12]
-                                            </button>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                            <div class="tab-content" id="myTabContent">
-                                <div class="tab-pane fade show active" id="employment" role="tabpanel"
-                                    aria-labelledby="employment-tab">
-                                    <div class="p-2 border-bottom">
-                                        <h4>Junior Professor (Computer Science)</h4>
-                                        <p>University Hamburg · Hamburg, DE · Employment<br>
-                                        <span style="color:#c9c9c9;">May 2021 - Present · 2 years</span></p>
-                                    </div>
-                                    <div class="p-2 pt-4 border-bottom">
-                                        <h4>Lead Research Engineer (Enterprise Information Systems / Conversational AI)</h4>
-                                        <p>Fraunhofer IAIS · Dresden, DE · Employment<br>
-                                        <span style="color:#c9c9c9;">April 2019 - May 2021 · 2 years</span></p>
-                                    </div>
-                                    <div class="p-2 pt-4 border-bottom">
-                                        <h4>Senior Researcher (Data Science)</h4>
-                                        <p>Paderborn University · Paderborn, DE · Employment<br>
-                                        <span style="color:#c9c9c9;">May 2017 - March 2019 · 2 years</span></p>
-                                    </div>
-                                    <div class="p-2 pt-4">
-                                        <h4>Ph.D. Student (Computer Science)</h4>
-                                        <p>Leipzig University · Leipzig, DE · Employment<br>
-                                        <span style="color:#c9c9c9;">January 2015 - April 2017 · 2 years</span></p>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="education" role="tabpanel" aria-labelledby="education-tab">
-                                    <div class="p-2">
-                                        <h4>Dr. rer. nat. (AKSW)</h4>
-                                        <p>Leipzig University · Leipzig, DE · Education<br>
-                                        <span style="color:#c9c9c9;">January 2013 - May 2017 · 2 years</span></p>
-                                    </div>
-                                </div>
-                                <div class="tab-pane fade" id="works" role="tabpanel" aria-labelledby="works-tab">
-
-                                <div class="tab-pane fade show active" id="publications" role="tabpanel"
-                            aria-labelledby="publications-tab">
-<table id="tbl-publications" class="datatable display" style="width:100%">
-    <thead>
-        <tr>
-            <th></th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for i in range(11) %}
-        <tr>
-            <td>
-                <div class="card mb-2 p-3">
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-lg-11 fs-6">
-                                <div class="row mb-2">
-                                    <div class="col-lg-12 fs-5">
-                                        <a class="text-secondary fw-bold" href='/publication-details' target='_blank'>
-                                            Tree-KGQA: An Unsupervised Approach for Question Answering Over Knowledge Graphs</a>
-                                    </div>
-                                </div>
+            <div class="col mt-4">
+                <div class="row">
+                    <div class="col tab-scroller">
+                        <i class="tab-scroller-arrow left-arrow d-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-chevron-left" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z" />
+                            </svg>
+                        </i>
+                        <i class="tab-scroller-arrow right-arrow d-none">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                                class="bi bi-chevron-right" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd"
+                                    d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z" />
+                            </svg>
+                        </i>
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link position-relative" id="affilitions-tab" data-bs-toggle="tab"
+                                    data-bs-target="#affiliations" type="button" role="tab" aria-controls="affiliations"
+                                    aria-selected="false"><i class="px-1 bi-bank"></i>Affiliations
+                                    <span class="visually-hidden">Affiliations</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active position-relative" id="publications-tab"
+                                    data-bs-toggle="tab" data-bs-target="#publications" type="button" role="tab"
+                                    aria-controls="publications" aria-selected="true"><i
+                                        class="px-1 bi-journal-album"></i>Publications
+                                    <span class="visually-hidden">Publications</span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link position-relative" id="projects-tab" data-bs-toggle="tab"
+                                    data-bs-target="#projects" type="button" role="tab" aria-controls="projects"
+                                    aria-selected="false"><i class="px-1 bi-database-fill-gear"></i>Projects
+                                    <span class="visually-hidden">Projects</span>
+                                </button>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="tab-content mt-5" id="myTabContent">
+                    <div class="tab-pane fade" id="affiliations" role="tabpanel" aria-labelledby="affiliations-tab">
+                        {% for institution in researcher.affiliation %}
+                        <div class="p-2 border-bottom">
+                            <!-- <h4>Junior Professor (Computer Science)</h4> -->
+                            <p><span class="text-secondary fw-bold">{{institution.name}}<br></span>
+                                <span>{{institution.keywords[0]}}</span>
+                            </p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="tab-pane fade show active" id="publications" role="tabpanel"
+                        aria-labelledby="publications-tab">
+                        {% for publication in researcher.works %}
+                        <div class="card mb-2 p-3">
+                            <div class="card-body">
                                 <div class="row">
-                                    <div class="col-lg-12 my-2 authors">
-                                        <a href="#"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true">
-                                            <i class="ps-1 pe-1 bi-person-circle"></i>Md Rashad Al Hasan Rony</a>
-                                        <a href="#"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true">
-                                            <i class="ps-1 pe-1 bi-person-circle"></i>Debenjan Chaudhuri </a>
-                                        <a href="#"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true">
-                                            <i class="ps-1 pe-1 bi-person-circle"></i>Alberto Corona</a>
-                                        <a href="#"
-                                            class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
-                                            tabindex="-1" role="button" aria-disabled="true">
-                                            <i class="ps-1 pe-1 bi-person-circle"></i>Jens Lehmann</a>
+                                    <div class="col-11 fs-6">
+                                        <div class="row mb-2">
+                                            <div class="col-9 fs-6">
+                                                {% if publication.identifier == '' %}
+                                                <span class="text-secondary fw-bold publication_name">
+                                                    {{publication.name}}</span>
+                                                {% else %}
+                                                <a class="text-secondary fw-bold publication_name"
+                                                    href='/publication-details/{{publication | format_digital_obj_url}}'
+                                                    target='_blank'>{{publication.name}}</a>
+                                                {% endif %}
+                                            </div>
+                                            <div class="col-3 text-end ">
+                                                <span
+                                                    class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-9 my-2 authors">
+                                                {% set author_count = namespace(value=0) %}
+                                                {% for author in publication.author %}
+                                                {% if author_count.value == 5 %}
+                                                <a href="#" class="tag_more_authors">and {{ (publication.author|count) -
+                                                    5 }}
+                                                    more</a>
+                                                {% endif %}
+                                                {% if author.type == 'Person' %}
+                                                <a href="{{author.identifier}}"
+                                                    class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                                                    tabindex="-1" role="button" aria-disabled="true"><i
+                                                        class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                                                {% endif %}
+                                                {% set author_count.value = author_count.value + 1 %}
+                                                {% endfor %}
+                                            </div>
+                                            <div class="col-3 text-end ">
+                                                <!-- <span
+                                                        class="badge bg-pill bg-success text-wrap text-break">Score:{{publication.rankScore}}</span> -->
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-12">
+                                                <p class="card-text">{{publication.description|truncate(500)}}</p>
+                                            </div>
+                                        </div>
+                                        <div class="row pt-3">
+                                            <div class="col-9 text-start">
+                                                {% for source in publication.source %}
+                                                <a id="source_link" href="{{source.url}}" target=_blank>
+                                                    <span
+                                                        class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                                                </a>
+                                                {% endfor %}
+                                                <span
+                                                    class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
+                                            </div>
+                                            <div class="col-3 text-end">
+                                                <span
+                                                    class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
+                                                <span
+                                                    class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="row pt-3">
-                                    <div class="col-lg-9 text-start">
-                                        <span class="badge bg-pill">2022</span>
-                                        <span class="badge bg-pill">Journal article</span>
-                                        <span class="badge bg-pill">DOI: 10.1109/ACCESS.2022.3173355 T</span>
-                                        <span class="badge bg-pill">Tag</span>
+                                    <div class="col-1">
+                                        <div class="row fs-5">
+                                            <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                                            class="bi bi-bookmark"></i></a></div> -->
+                                            {% if publication.identifier != '' %}
+                                            <div class="text-end mb-3"><a href="#" title="Share"
+                                                    class="share_modal_link" data-bs-toggle="modal"
+                                                    data-bs-target="#share-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                                        class="bi bi-share"></i></a>
+                                            </div>
+                                            {% endif %}
+                                            {% if publication.image != '' %}
+                                            <div class="text-end mb-3"><a href="#" title="Preview"
+                                                    class="preview_modal_link" data-bs-toggle="modal"
+                                                    data-bs-target="#preview-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                                        class="bi bi-eye"></i></a>
+                                            </div>
+                                            {% endif %}
+                                            {% if publication.encoding_contentUrl != '' %}
+                                            <div class="text-end mb-3"><a href="#" title="Download"
+                                                    class="download_modal_link" data-bs-toggle="modal"
+                                                    data-bs-target="#download-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                                        class="bi bi-download"></i></a>
+                                            </div>
+                                            {% endif %}
+                                        </div>
                                     </div>
-                                </div>
-                            </div>
-                            <div class="col-lg-1">
-                                <div class="row fs-5">
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
-                                                class="bi bi-bookmark"></i></a></div>
-                                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
-                                                class="bi bi-share"></i></a></div>
+
+                                    {% with share_modal_id='share-publication-'+publication.identifier | regex_replace
+                                    ('\W',''),
+                                    preview_modal_id='preview-publication-'+publication.identifier | regex_replace
+                                    ('\W',''),
+                                    download_modal_id='download-publication-'+publication.identifier | regex_replace
+                                    ('\W',''),
+                                    url = '/publication-details/'+ publication | format_digital_obj_url,
+                                    img_src = publication.image,
+                                    encoding_contentUrl = publication.encoding_contentUrl,
+                                    title = publication.name | trim
+                                    %}
+                                    {{ shareModal(share_modal_id, url, title) }}
+                                    {{ previewModal(preview_modal_id, title, img_src) }}
+                                    {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
+                                    {% endwith %}
+
+
+
+
+
                                 </div>
                             </div>
                         </div>
+                        {% endfor %}
                     </div>
-                </div>
-            </td>
-        </tr>
-    {% endfor %}
-    </tbody>
-</table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
+                        <h4>Coming Soon...</h4>
+                        <!-- <p>Leipzig University · Leipzig, DE · Education<br>
+                        <span style="color:#c9c9c9;">January 2013 - May 2017 · 2 years</span></p> -->
                     </div>
                 </div>
             </div>
+
         </div>
-
-
-
     </div>
 </main>
 
@@ -296,6 +346,18 @@
         });
 
     });
+
+    // JavaScript to fetch and update the banner after page load
+    // document.addEventListener("DOMContentLoaded", function() {
+    //         fetch('/researcher-banner/{{researcher.list_index}}')  // Endpoint to generate the image
+    //             .then(response => response.json())
+    //             .then(data => {
+    //                 if (data.imageUrl) {
+    //                     document.querySelector('.banner').style.backgroundImage = `url(${data.imageUrl})`;
+    //                 }
+    //             })
+    //             .catch(error => console.error('Error fetching image:', error));
+    //     });
 
 
 

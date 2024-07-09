@@ -29,7 +29,6 @@ def search(search_term: str, results):
 
         if int(total_hits) > 0:
             hits = hits['hit']         
-
             for hit in hits:
                     
                 author = Author()
@@ -64,7 +63,6 @@ def search(search_term: str, results):
                 _source.identifier = hit.get("@id", "")
                 _source.url = info.get("url", "")                         
                 author.source.append(_source)
-
 
                 results['researchers'].append(author)                
 

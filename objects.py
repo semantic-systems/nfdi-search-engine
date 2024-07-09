@@ -8,7 +8,7 @@ class thing:
     description: str = ""
     url: str = ""
     image: str = "" #url of the image
-    identifier: str = "" #doi or pid will be stored as identifier    
+    identifier: str = "" #doi or pid will be stored as identifier
     originalSource: str = ""
     source: list() = field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
@@ -18,7 +18,7 @@ class thing:
         strValue = ""
         for field in fields(self):
             # print(field.type)
-            # concatenate all the property values            
+            # concatenate all the property values
             strValue += f"{getattr(self, field.name)}###"
         return strValue
 
@@ -54,15 +54,15 @@ class Person(thing):
     nationality: str = "" # we can later link it to country   #this should be a list
     workLocation: str = ""  #this should be a list
     worksFor: Organization = None  #this should be a list
-    
-Organization.founder = List[Person]  
+
+Organization.founder = List[Person]
 # Organization.funder = Union[Organization(), Person()]
 Organization.parentOrganization = Organization()
 
 
 @dataclass
 class Author(Person):
-    # orcid: str = "" # we should not have this attribute; orcid should be kept in 
+    # orcid: str = "" # we should not have this attribute; orcid should be kept in
     works_count: str = ""
     cited_by_count: str = ""
 
@@ -92,7 +92,7 @@ class CreativeWork(thing):
     datePublished: str = ""
     encoding_contentUrl: Dict[str, str] = field(default_factory=dict)
     encodingFormat: str = ""
-    funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
+    funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10
     funding: str = "" # we can change this to Grant
     genre: str = ""
     headline: str = ""
@@ -119,9 +119,9 @@ class CreativeWork(thing):
     isDerivedFrom: List[Union[str, str]] = field(default_factory=list)
     documents: List[Union[str, str]] = field(default_factory=list)
 
-    
+
 @dataclass
-class Article(CreativeWork):    
+class Article(CreativeWork):
     articleBody: str = ""
     pageEnd: str = ""
     pageStart: str = ""
@@ -132,13 +132,24 @@ class Article(CreativeWork):
     JournalVolume: str = ""
 
 @dataclass
-class Dataset(CreativeWork): 
+class Dataset(CreativeWork):
     distribution: str = ""
     issn: str = ""
 
+@dataclass
+class Author(Person):
+    orcid: str = "" # we should not have this attribute; orcid should be kept in
+    works_count: str = ""
+    about: str = ""
+    banner: str = ""
+    cited_by_count: str = ""
+    url: str = ""
+    researchAreas: List[str] = field(default_factory=list)
+    works: List[Union[Article, Dataset]] = field(default_factory=list)
+
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
 @dataclass
-class Project(Organization): 
+class Project(Organization):
     dateStart: str = ""
     dateEnd: str = ""
     dateLastModified : str = ""
@@ -157,7 +168,7 @@ class SoftwareApplication(CreativeWork):
     issn: str = ""
     softwareVersion: str = ""
 @dataclass
-class LearningResource(CreativeWork): 
+class LearningResource(CreativeWork):
     assesses: str = ""  #The item being described is intended to assess the competency or learning outcome defined by the referenced term.
     competencyRequired: str = ""
     educationalAlignment:str = ""
@@ -167,7 +178,7 @@ class LearningResource(CreativeWork):
     teaches:str = ""   #The item being described is intended to help a person learn the competency or learning outcome defined by the referenced term.
 
 @dataclass
-class MediaObject(CreativeWork): 
+class MediaObject(CreativeWork):
     associatedArticle: str = ""
     bitrate: str = ""
     contentSize: str = ""
@@ -187,9 +198,9 @@ class MediaObject(CreativeWork):
     startTime: str = ""
     uploadDate: str = ""
     width: str = ""
-    
+
 @dataclass
-class VideoObject(MediaObject): 
+class VideoObject(MediaObject):
     actor: str = ""
     caption: str = ""
     director: str = ""
@@ -199,21 +210,21 @@ class VideoObject(MediaObject):
     videoFrameSize: str = ""
     videoQuality: str = ""
 @dataclass
-class ImageObject(MediaObject): 
+class ImageObject(MediaObject):
     caption: str = ""
     embeddedTextCaption: str = ""
     exifData: str = ""  #exif data for this object
     representativeOfPage: str = ""   #Indicates whether this image is representative of the content of the page
 
 @dataclass
-class Place(thing): 
+class Place(thing):
     additionalProperty: str = ""
     address: str = ""
     addressType: str = ""
     aggregateRating: str = ""
     amenityFeature: str = ""
     branchCode: str = ""
-    containedInPlace: str = ""	
+    containedInPlace: str = ""
     containsPlace	: str = ""
     event: str = ""
     faxNumber: str = ""
@@ -228,17 +239,17 @@ class Place(thing):
     geoOverlaps: str = ""
     geoTouches: str = ""
     geoWithin: str = ""
-    globalLocationNumber: str = ""	
+    globalLocationNumber: str = ""
     hasDriveThroughService: str = ""
     hasMap: str = ""
-    isAccessibleForFree: str = ""	
+    isAccessibleForFree: str = ""
     isicV4: str = ""
     keywords: str = ""
     latitude: str = ""
     licence: str = ""
     logo: str = ""
     longitude: str = ""
-    maximumAttendeeCapacity: str = ""	
+    maximumAttendeeCapacity: str = ""
     openingHoursSpecification: str = ""
     photo: str = ""
     placType: str = ""
@@ -347,7 +358,7 @@ class Lesson:
     description: str
     date: str
 
-    
+
 @dataclass
 class Publisher:
     id: str
@@ -374,7 +385,7 @@ class Funder:
 class Gesis:
     resource_type: str
     url: str
-    date: str 
+    date: str
     title: str
     description: str
     authors: str
@@ -384,7 +395,7 @@ class Gesis:
 class Cordis:
     id: str
     url: str
-    date: str 
+    date: str
     title: str
     description: str
 

@@ -1,3 +1,6 @@
+{% from 'partials/common/share-modal.html' import shareModal %}
+{% from 'partials/common/preview-modal.html' import previewModal %}
+{% from 'partials/common/download-modal.html' import downloadModal %}
 {% for publication in results.publications %}
 <div class="card mb-2 p-3">
     <div class="card-body">
@@ -68,168 +71,39 @@
                                                 class="bi bi-bookmark"></i></a></div> -->
                     {% if publication.identifier != '' %}
                     <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
+                            data-bs-target="#share-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-share"></i></a>
+                    </div>
                     {% endif %}
                     {% if publication.image != '' %}
                     <div class="text-end mb-3"><a href="#" title="Preview" class="preview_modal_link"
-                            data-bs-toggle="modal" data-bs-target="#preview_modal_dialog"
-                            data-bs-publ-name="{{publication.name}}" data-bs-img-src="{{publication.image}}"><i
+                            data-bs-toggle="modal"
+                            data-bs-target="#preview-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
                                 class="bi bi-eye"></i></a>
                     </div>
                     {% endif %}
                     {% if publication.encoding_contentUrl != '' %}
                     <div class="text-end mb-3"><a href="#" title="Download" class="download_modal_link"
-                            data-bs-toggle="modal" data-bs-target="#download_modal_dialog"
-                            data-bs-publ-name="{{publication.name}}"
-                            data-bs-embed-src="{{publication.encoding_contentUrl}}"><i class="bi bi-download"></i></a>
+                            data-bs-toggle="modal"
+                            data-bs-target="#download-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-download"></i></a>
                     </div>
                     {% endif %}
                 </div>
             </div>
 
-            <div class="modal" id="share_modal_dialog" tabindex="-1" role="dialog" aria-labelledby="shareModalLabel"
-                aria-hidden="true">
-                <div class="modal-dialog" role="document">
-                    <div class="modal-content col-12">
-                        <div class="modal-header">
-                            <h5 class="fw-bolder">Share</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                            <div class="d-flex flex-wrap">
-                                <!-- <div class="smd">
-                                                    <a href="#" base-href="https://" class="disabled"
-                                                        aria-disabled="true">
-                                                        <i class="img-thumbnail bi bi-discord "
-                                                            style="color: #738ADB;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Discord</p>
-                                                    </a>
-                                                </div> -->
-                                <div class="smd">
-                                    <a id="sharelink_facebook" href="#"
-                                        base-href="https://www.facebook.com/sharer/sharer.php?u=[[url]]" target=_blank>
-                                        <i class="img-thumbnail bi bi-facebook "
-                                            style="color: #1091F3;background-color: aliceblue;"></i>
-                                        <p class="pt-2">Facebook</p>
-                                    </a>
-                                </div>
-                                <!-- <div class="smd">
-                                                    <a href="#" class="disabled" aria-disabled="true">
-                                                        <i class="img-thumbnail bi bi-instagram "
-                                                            style="color: #FF5700;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Instagram</p>
-                                                    </a>
-                                                </div> -->
-                                <div class="smd">
-                                    <a id="sharelink_linkedin" href="#"
-                                        base-href="https://www.linkedin.com/shareArticle?mini=true&url=[[url]]&title=[[title]]"
-                                        target=_blank>
-                                        <i class="img-thumbnail bi bi-linkedin "
-                                            style="color: #0a66c2;background-color: aliceblue;"></i>
-                                        <p class="pt-2">Linkedin</p>
-                                    </a>
-                                </div>
-                                <div class="smd">
-                                    <a id="sharelink_pinterest" href="#"
-                                        base-href="https://pinterest.com/pin/create/button/?url=[[url]]&media=[[url]]&description=[[title]]"
-                                        target=_blank>
-                                        <i class="img-thumbnail bi bi-pinterest"
-                                            style="color: #E60023;background-color: aliceblue;"></i>
-                                        <p class="pt-2">Pinterest</p>
-                                    </a>
-                                </div>
-                                <div class="smd">
-                                    <a id="sharelink_reddit" href="#"
-                                        base-href="https://www.reddit.com/submit?url=[[url]]&title=[[title]]"
-                                        target=_blank>
-                                        <i class="img-thumbnail bi bi-reddit"
-                                            style="color: #FF4500;background-color: aliceblue;"></i>
-                                        <p class="pt-2">Reddit</p>
-                                    </a>
-                                </div>
-                                <!-- <div class="smd">
-                                                    <a href="#" class="disabled" aria-disabled="true">
-                                                        <i class="img-thumbnail bi bi-slack "
-                                                            style="color: orange;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Slack</p>
-                                                    </a>
-                                                </div> -->
-                                <!-- <div class="smd">
-                                                    <a href="#" class="disabled" aria-disabled="true">
-                                                        <i class="img-thumbnail bi bi-telegram "
-                                                            style="color: #4c6ef5;background-color: aliceblue;"></i>
-                                                        <p class="pt-2">Telegram</p>
-                                                    </a>
-                                                </div> -->
-                                <div class="smd">
-                                    <a id="sharelink_twitter" href="#"
-                                        base-href="https://twitter.com/intent/tweet?text=[[title]]&url=[[url]]"
-                                        target=_blank>
-                                        <i class="img-thumbnail bi bi-twitter"
-                                            style="color:#4c6ef5;background-color: aliceblue"></i>
-                                        <p class="pt-2">Twitter</p>
-                                    </a>
-                                </div>
-                                <div class="smd">
-                                    <a id="sharelink_whatsapp" href="#"
-                                        base-href="https://api.whatsapp.com/send?text=[[url]]" class="disabled"
-                                        aria-disabled="true">
-                                        <i class="img-thumbnail bi bi-whatsapp "
-                                            style="color: #00E676;background-color: aliceblue;"></i>
-                                        <p class="pt-2">Whatsapp</p>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer text-start">
-                            <div class="input-group mb-3">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text fw-bold">Link</span>
-                                </div>
-                                <input type="url" class="form-control" aria-label="URL" placeholder="https://"
-                                    id="txtShareLink" aria-describedby="inputGroup-sizing-default" disabled
-                                    aria-disabled="true">
-                                <div class="input-group-append">
-                                    <span class="input-group-text" id="btnShareLinkCopy" role="button">
-                                        <i class="bi bi-clipboard"></i></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="preview_modal_dialog" class="modal">
-                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <img src="" class="figure-img img-fluid border border-dark">
-                            <figcaption>
-                            </figcaption>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div id="download_modal_dialog" class="modal">
-                <div class="modal-dialog modal-dialog-scrollable" style="max-width : 1200px;">
-                    <div class="modal-content">
-                        <div class="modal-header">
-                            <h5 class="modal-title">
-                            </h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body text-center">
-                            <iframe src="" width="1150px" height="800px"></iframe>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
+            preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
+            download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
+            url = '/publication-details/'+ publication | format_digital_obj_url,
+            img_src = publication.image,
+            encoding_contentUrl = publication.encoding_contentUrl,
+            title = publication.name | trim
+            %}
+            {{ shareModal(share_modal_id, url, title) }}
+            {{ previewModal(preview_modal_id, title, img_src) }}
+            {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
+            {% endwith %}
 
         </div>
     </div>
@@ -248,3 +122,14 @@
     {% endif %}
 </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('btn_load_more_publications')) {
+            document.getElementById('btn_load_more_publications').addEventListener('click', function () {
+                console.log('load more publications button clicked')
+                load_more_publications()
+            });
+        }
+    });
+</script>
