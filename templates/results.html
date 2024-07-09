@@ -298,7 +298,7 @@
         //     }, 'slow');
 
         //     $('thead tr th:first-child').focus().blur();
-        // });        
+        // });
 
         // $('#btnShareLinkCopy').on('click', function (e) {
         $('body').on('click', "#btnShareLinkCopy", function (e) {
@@ -358,19 +358,13 @@
             load_more_researchers()
         });
 
-        $('body').on('click', "#btn_load_more_resources", function (e) {
-            console.log('load more resources button clicked')
-            load_more_resources()
-        });
-
-
 
         $(window).scroll(function () {
 
             // console.log($(window).scrollTop(), ($(document).height() - $(window).height() - 500), $(document).height(), $(window).height(), ajax_request_sent)
 
             if ($('.nav-item .active').attr('id') == 'publications-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
+                // Use the flag in the condition (so if sent and not yet received == false)
                 if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
                     !ajax_request_sent && //no other ajax request is currently being processed
                     $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
@@ -385,7 +379,7 @@
             }
 
             if ($('.nav-item .active').attr('id') == 'researchers-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
+                // Use the flag in the condition (so if sent and not yet received == false)
                 if ($('#btn_load_more_researchers').is(":visible") &&  //load more button is visible
                     !ajax_request_sent && //no other ajax request is currently being processed
                     $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
@@ -400,7 +394,7 @@
             }
 
             if ($('.nav-item .active').attr('id') == 'resources-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
+                // Use the flag in the condition (so if sent and not yet received == false)
                 if ($('#btn_load_more_resources').is(":visible") &&  //load more button is visible
                     !ajax_request_sent && //no other ajax request is currently being processed
                     $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page

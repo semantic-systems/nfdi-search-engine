@@ -1,6 +1,6 @@
 import requests
 import logging
-from objects import Person, Author, thing, Organization
+from objects import Person, Author
 import utils
 
 logger = logging.getLogger('nfdi_search_engine')

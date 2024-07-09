@@ -4,11 +4,11 @@ import os
 import uuid
 # from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
 from objects import Article, Organization, Person, Dataset, Project
-from flask import Flask, render_template, request, make_response, session, requests
+from flask import Flask, render_template, request, make_response, session, jsonify, request
 from flask_session import Session
 import threading
 from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers, openalex_researchers
-from sources import resodate, oersi, ieee, eudat, openaire_products, openalex_publications
+from sources import resodate, oersi, ieee, eudat, openaire_products
 from sources import dblp_researchers
 from sources import crossref, semanticscholar
 from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
@@ -43,8 +43,23 @@ results = {
             'timedout_sources': []
         }
 
+results = {
+            'publications': [],
+            'researchers': [],
+            'resources': [],
+            'organizations': [],
+            'events': [],
+            'fundings': [],
+            'others': [],
+            'timedout_sources': []
+        }
+
 @app.route('/')
 def index():
+
+    if (utils.env_config["OPENAI_API_KEY"] == ""):
+        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+
 
     if (utils.env_config["OPENAI_API_KEY"] == ""):
         return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
@@ -78,12 +93,13 @@ def search_results():
         session['search-term'] = search_term
 
         for k in results.keys(): results[k] = []
+        for k in results.keys(): results[k] = []
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, dblp_researchers, re3data, orkg]
+                   eudat, openaire_products, re3data, orkg, openalex_researchers]
         # sources = [openalex_publications]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
@@ -103,7 +119,9 @@ def search_results():
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)
 
+
         # Chatbot - push search results to chatbot server for embeddings generation
+        if (utils.config['chatbot_feature_enable']):
         if (utils.config['chatbot_feature_enable']):
 
             # Convert a UUID to a 32-character hexadecimal string
@@ -198,6 +216,7 @@ def are_embeddings_generated():
 
     #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
     if (utils.config['chatbot_feature_enable']):
+    if (utils.config['chatbot_feature_enable']):
         print('are_embeddings_generated')
         uuid = session['search_uuid']
         chatbot_server = utils.config['chatbot_server']
@@ -267,6 +286,12 @@ def format_authors_for_citations(value):
         authors += (author.name + " and ")
     return authors.rstrip(' and ') + "."
 FILTERS["format_authors_for_citations"] = format_authors_for_citations
+
+import re
+def regex_replace(s, find, replace):
+    """A non-optimal implementation of a regex filter"""
+    return re.sub(find, replace, s)
+FILTERS["regex_replace"] = regex_replace
 
 import re
 def regex_replace(s, find, replace):
@@ -346,6 +371,16 @@ def researcher_details(index):
     # logger.info(f'Found researcher {researcher}')
     researcher = openalex_researchers.get_researcher_details(index)
     response = make_response(render_template('researcher-details.html',researcher=researcher))
+@app.route('/researcher-details/<string:index>', methods=['GET'])
+def researcher_details(index):
+    # index = json.loads(index)
+    # for result in results['researchers']:
+    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
+    #         researcher = result
+    #         break
+    # logger.info(f'Found researcher {researcher}')
+    researcher = openalex_researchers.get_researcher_details(index)
+    response = make_response(render_template('researcher-details.html',researcher=researcher))
 
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
@@ -355,6 +390,19 @@ def researcher_details(index):
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
+@app.route('/researcher-banner/<string:index>', methods=['GET'])
+def researcher_banner(index):
+    # logger.info(f'Fetching details for researcher with index {index}')
+    for result in results['researchers']:
+        if result.list_index == index:
+            researcher = result
+            break
+    # logger.info(f'Found researcher {researcher}')
+    researcher = openalex_researchers.get_researcher_banner(researcher)
+    if researcher.banner == "":
+        return jsonify()
+    return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
 
 @app.route('/researcher-banner/<string:index>', methods=['GET'])
 def researcher_banner(index):
