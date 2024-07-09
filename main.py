@@ -122,25 +122,25 @@ def search_results():
 
         # Chatbot - push search results to chatbot server for embeddings generation
         if (utils.config['chatbot_feature_enable']):
-        if (utils.config['chatbot_feature_enable']):
+            if (utils.config['chatbot_feature_enable']):
 
-            # Convert a UUID to a 32-character hexadecimal string
-            search_uuid = uuid.uuid4().hex
-            session['search_uuid'] = search_uuid
+                # Convert a UUID to a 32-character hexadecimal string
+                search_uuid = uuid.uuid4().hex
+                session['search_uuid'] = search_uuid
 
-            def send_search_results_to_chatbot(search_uuid: str):
-                print('request is about to start')
-                chatbot_server = utils.config['chatbot_server']
-                save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings']
-                request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'
-                response = requests.post(request_url, json=json.dumps(results, default=vars))
-                response.raise_for_status()
-                print('request completed')
+                def send_search_results_to_chatbot(search_uuid: str):
+                    print('request is about to start')
+                    chatbot_server = utils.config['chatbot_server']
+                    save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings']
+                    request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'
+                    response = requests.post(request_url, json=json.dumps(results, default=vars))
+                    response.raise_for_status()
+                    print('request completed')
 
-            # create a new daemon thread
-            chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
-            # start the new thread
-            chatbot_thread.start()
+                # create a new daemon thread
+                chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
+                # start the new thread
+                chatbot_thread.start()
             # sleep(1)
 
 
@@ -216,21 +216,21 @@ def are_embeddings_generated():
 
     #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
     if (utils.config['chatbot_feature_enable']):
-    if (utils.config['chatbot_feature_enable']):
-        print('are_embeddings_generated')
-        uuid = session['search_uuid']
-        chatbot_server = utils.config['chatbot_server']
-        are_embeddings_generated = utils.config['endpoint_are_embeddings_generated']
-        request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.request("GET", request_url, headers=headers)
-        json_response = response.json()
-        print('json_response:', json_response)
-        return str(json_response['file_exists'])
-    else:
-        return str(True)
+        if (utils.config['chatbot_feature_enable']):
+            print('are_embeddings_generated')
+            uuid = session['search_uuid']
+            chatbot_server = utils.config['chatbot_server']
+            are_embeddings_generated = utils.config['endpoint_are_embeddings_generated']
+            request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            response = requests.request("GET", request_url, headers=headers)
+            json_response = response.json()
+            print('json_response:', json_response)
+            return str(json_response['file_exists'])
+        else:
+            return str(True)
 
 @app.route('/get-chatbot-answer', methods=['GET'])
 def get_chatbot_answer():
