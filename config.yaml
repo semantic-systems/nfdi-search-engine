@@ -6,6 +6,8 @@ search_url_dblp_researchers: https://dblp.org/search/author/api?format=json&h=25
 
 search_url_openalex_publications: https://api.openalex.org/works?page=1&per-page=25&search=
 search_url_openalex_researchers: https://api.openalex.org/authors?page=1&per-page=25&search=
+search_url_semantic_scholar_researchers: https://api.semanticscholar.org/graph/v1/author/search?fields=name,url,externalIds,paperCount,citationCount&query=
+search_url_openalex_ordicId: https://api.openalex.org/authors/
 
 search_url_zenodo: https://zenodo.org/api/records?size=25&q=
 search_url_wikidata: https://query.wikidata.org/sparql?format=json&query=

@@ -80,7 +80,7 @@ def search(search_term: str, results):
                 author.source.append(_source)
 
                 search_result_semantic = data_retriever.retrieve_data(source=source, 
-                                                    base_url="https://api.semanticscholar.org/graph/v1/author/search?fields=name,url,externalIds,paperCount,citationCount&query=",
+                                                    base_url=utils.config["search_url_semantic_scholar_researchers"],
                                                     search_term= author.name.replace(" ", "+"),
                                                     results={})
                 semantic_hits = search_result_semantic.get("data", [])
@@ -109,7 +109,14 @@ def search(search_term: str, results):
 
 def convert_to_string(value):
     if isinstance(value, list):
-        return ", ".join(convert_to_string(item) for item in value if item not in ("", [], {}, None))
+        string = ""
+        for item in value[:5]:
+            if isinstance(item, Article):
+                item = {'name': item.name, 'description':item.description}
+            if item not in ("", [], {}, None):
+                string = string + ", " + convert_to_string(item)
+        return string
+        # return ", ".join(convert_to_string(item) for item in value[:5] if item not in ("", [], {}, None))
     elif hasattr(value, '__dict__'):  # Check if the value is an instance of a class
         details = vars(value)
         return ", ".join(f"{key}: {convert_to_string(val)}" for key, val in details.items() if val not in ("", [], {}, None))
@@ -123,7 +130,7 @@ def get_researcher_details(url):
 
     try:
         hit = data_retriever.retrieve_data(source=source, 
-                                            base_url="https://api.openalex.org/authors/",
+                                            base_url=utils.config["search_url_openalex_ordicId"],
                                             search_term=url[0]['sid'],
                                             results={})
                     
@@ -221,7 +228,7 @@ def get_researcher_details(url):
 
         # search semantic scholar...
         search_result = data_retriever.retrieve_data(source=source, 
-                                                    base_url="https://api.semanticscholar.org/graph/v1/author/search?fields=name,url,externalIds,paperCount,citationCount&query=",
+                                                    base_url=utils.config['search_url_semantic_scholar_researchers'],
                                                     search_term= researcher.name.replace(" ", "+"),
                                                     results={})
         hits = search_result.get("data", [])
@@ -288,7 +295,7 @@ def get_researcher_details(url):
         logger.info(f'Getting publications {a}')
         details = vars(researcher)
         # Convert the details into a string format
-        details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key not in ("works", "source","orcid")))
+        details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key in ("name", "works_count","cited_by_count","researchAreas","works")))
         prompt = f"Generate a 2-3 line 'About' section for a researcher based on the following details:\n{details_str}"
         client = OpenAI(
             api_key=utils.env_config["OPENAI_API_KEY"],
