@@ -198,15 +198,15 @@ def get_resource(doi: str):
 
     source = "Zenodo"
     start_index = doi.find("zenodo.") + len("zenodo.")
-    if(start_index):
-        numeric_string = doi[start_index:]
+    if start_index!= -1:
+        doi = doi[start_index:]
     else:
-        numeric_string = doi
+        doi = doi
 
     try:
         search_results = data_retriever.retrieve_single_object(source=source,
                                                      base_url=utils.config["search_url_zenodo"],
-                                                     doi=numeric_string)
+                                                     doi = doi)
         search_result = search_results.get("hits", {}).get("hits", [])
         search_result = search_result[0]
         metadata = search_result.get('metadata', {})
@@ -217,7 +217,8 @@ def get_resource(doi: str):
         resource.datePublished = metadata.get("publication_date", "")
         resource.inLanguage.append(metadata.get("language", ""))
         resource.license = metadata.get("license", "")
-
+        files = search_result.get('files','')
+        resource.encoding_contentUrl = {file["key"]: file["links"]["self"] for file in files}
         resource.description =  utils.remove_html_tags(metadata.get("description", ""))
         resource.abstract = resource.description
         authors = metadata.get("creators", [])

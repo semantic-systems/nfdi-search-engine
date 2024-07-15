@@ -110,15 +110,22 @@
 
                 <div class="d-flex p-2 bd-highlight pt-4" id="supplemental-material">
                     <h5>SUPPLEMENTAL MATERIAL <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from xxx"></i></h5>
+                            data-bs-placement="top" title="Retrieved from Zenodo"></i></h5>
+
                 </div>
-                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+
+                {% for file_name, file_url in resource.encoding_contentUrl.items() %}
+                    <div>
+                        <a href="{{ file_url }}">{{ file_name }}</a> <br>
+                    </div>
+                {% endfor %}
+                <!-- <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="fw-lighter fst-italic">
                         <i class="bi bi-hourglass-split"></i>
                         Coming soon ....
                         <i class="bi bi-hourglass-split"></i>
                     </div>
-                </div>
+                </div> -->
                 <div class="d-flex p-2 bd-highlight pt-4" id="references">
                     <h5>REFERENCES <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="Retrieved from CrossRef"></i></h5>

@@ -7,18 +7,22 @@ on:
 
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: self-hosted    
     steps:
       - name: 'Check out repo'
         uses: actions/checkout@v3
         with:
-          ref: main
+          ref: main         
       - name: 'Stop the running NFDI Search Engine'
         run: docker compose down
       - name: 'Delete old Docker image'
         run: docker image rm nfdi-search-engine-search-engine
       - name: 'Copy logging.conf'
+<<<<<<< HEAD
       run: cp logging.conf.example logging.conf
+=======
+        run: cp logging.conf.example logging.conf       
+>>>>>>> origin/develop
       - name: 'Create .env'
         run: |
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> ./.env

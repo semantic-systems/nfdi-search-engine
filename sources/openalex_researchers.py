@@ -8,6 +8,7 @@ import traceback
 from openai import OpenAI
 import json
 from openai import OpenAI
+
 import json
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -311,7 +312,7 @@ def get_researcher_details(url):
             model="gpt-3.5-turbo",
         )
         about_section = response.choices[0].text.strip()
-        researcher.about = chat_completion.choices[0].message.content.strip()
+        # researcher.about = chat_completion.choices[0].message.content.strip()
 
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
@@ -389,5 +390,7 @@ def get_researcher_banner(researcher: Author):
     except Exception as ex:
         logger.error(f'Exception: {str(ex)}')
         logger.error(traceback.format_exc())
+
+    return researcher
 
     return researcher

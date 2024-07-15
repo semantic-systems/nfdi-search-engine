@@ -7,7 +7,11 @@ from sources import data_retriever
 from objects import CreativeWork, Author
 
 base_url = "https://zenodo.org/api/records?size=25&q="
-doi = "4701615"
+doi = "r3730f562f9e::324df2bd7d05a0942f31f0fe34e2eefa"
+
+# search_result = data_retriever.retrieve_single_object(source=source,
+#                                                         base_url=
+#                                                         doi=doi)
 
 encoded_doi = urllib.parse.quote_plus(string=doi, safe='()?&=,')
 url = base_url + encoded_doi
@@ -52,9 +56,9 @@ try:
             _author.affiliation = author.get("affiliation", "")
             resource.author.append(_author)
         # print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        # print(json.dumps(search_result, indent=4))
+        print(json.dumps(search_result, indent=4))
         # print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
-        print(resource.author[0].name)
+        # print( resource.name)
     else:
         logger.error(f'Failed to retrieve data: {response.status_code}')
 

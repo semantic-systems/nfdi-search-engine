@@ -57,12 +57,12 @@ results = {
 @app.route('/')
 def index():
 
-    if (utils.env_config["OPENAI_API_KEY"] == ""):
-        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+    # if (utils.env_config["OPENAI_API_KEY"] == ""):
+    #     return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
 
 
-    if (utils.env_config["OPENAI_API_KEY"] == ""):
-        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+    # if (utils.env_config["OPENAI_API_KEY"] == ""):
+    #     return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
 
     response = make_response(render_template('index.html'))
 
@@ -99,8 +99,7 @@ def search_results():
         # add all the sources here in this list; for simplicity we should use the exact module name
         # ensure the main method which execute the search is named "search" in the module
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, re3data, orkg, openalex_researchers]
-        # sources = [openalex_publications]
+                   eudat, eulg,  openaire_products, re3data, orkg, openalex_researchers]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -351,9 +350,38 @@ def resource_details(sources):
     sources = ast.literal_eval(sources)
     for source in sources:
         doi = source['doi']
-    resource = zenodo.get_resource(doi)
+    resource = zenodo.get_resource(doi="https://doi.org/"+doi)
     response = make_response(render_template('resource-details.html', resource=resource))
 
+    print("response:", response)
+    return response
+
+@app.route('/resource-details-citations/<path:doi>', methods=['GET'])
+@utils.timeit
+def resource_details_citations(doi):
+    print("DOI:", doi)
+    resource = semanticscholar.get_citations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/citations.html', resource=resource))
+    print("response:", response)
+    return response
+
+@app.route('/resource-details-references/<path:doi>', methods=['GET'])
+@utils.timeit
+def resource_details_references(doi):
+    print("doi:", doi)
+
+    resource = crossref.get_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/references.html', resource=resource))
+
+    print("response:", response)
+    return response
+
+@app.route('/resource-details-recommendations/<path:doi>', methods=['GET'])
+@utils.timeit
+def resource_details_recommendations(doi):
+    print("DOI:", doi)
+    publications = semanticscholar.get_recommendations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
     print("response:", response)
     return response
 
