@@ -43,11 +43,26 @@ results = {
             'timedout_sources': []
         }
 
+results = {
+            'publications': [],
+            'researchers': [],
+            'resources': [],
+            'organizations': [],
+            'events': [],
+            'fundings': [],
+            'others': [],
+            'timedout_sources': []
+        }
+
 @app.route('/')
 def index():
 
-    if (utils.env_config["OPENAI_API_KEY"] == ""):
-        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+    # if (utils.env_config["OPENAI_API_KEY"] == ""):
+    #     return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+
+
+    # if (utils.env_config["OPENAI_API_KEY"] == ""):
+    #     return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
 
     response = make_response(render_template('index.html'))
 
@@ -78,13 +93,13 @@ def search_results():
         session['search-term'] = search_term
 
         for k in results.keys(): results[k] = []
+        for k in results.keys(): results[k] = []
         threads = []
 
         # add all the sources here in this list; for simplicity we should use the exact module name
-        # ensure the main method which execute the search is named "search" in the module         
+        # ensure the main method which execute the search is named "search" in the module
         sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, re3data, orkg, openalex_researchers]
-        # sources = [openalex_publications]
+                   eudat, eulg,  openaire_products, re3data, orkg, openalex_researchers]
         for source in sources:
             t = threading.Thread(target=source.search, args=(search_term, results,))
             t.start()
@@ -96,42 +111,43 @@ def search_results():
 
         # deduplicator.convert_publications_to_csv(results["publications"])
         # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
-
         # sort all the results in each category
-        results["publications"] = utils.sort_search_results(search_term, results["publications"])  
-        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
-        
+        results["publications"] = utils.sort_search_results(search_term, results["publications"])
+        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])
+        results["resources"] = utils.sort_search_results(search_term, results["resources"])
         #store the search results in the session
-        session['search-results'] = copy.deepcopy(results)        
+        session['search-results'] = copy.deepcopy(results)
+
 
         # Chatbot - push search results to chatbot server for embeddings generation
         if (utils.config['chatbot_feature_enable']):
+            if (utils.config['chatbot_feature_enable']):
 
-            # Convert a UUID to a 32-character hexadecimal string
-            search_uuid = uuid.uuid4().hex
-            session['search_uuid'] = search_uuid
-            
-            def send_search_results_to_chatbot(search_uuid: str):
-                print('request is about to start')
-                chatbot_server = utils.config['chatbot_server'] 
-                save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings'] 
-                request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
-                response = requests.post(request_url, json=json.dumps(results, default=vars))
-                response.raise_for_status() 
-                print('request completed')
+                # Convert a UUID to a 32-character hexadecimal string
+                search_uuid = uuid.uuid4().hex
+                session['search_uuid'] = search_uuid
 
-            # create a new daemon thread
-            chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
-            # start the new thread
-            chatbot_thread.start()
+                def send_search_results_to_chatbot(search_uuid: str):
+                    print('request is about to start')
+                    chatbot_server = utils.config['chatbot_server']
+                    save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings']
+                    request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'
+                    response = requests.post(request_url, json=json.dumps(results, default=vars))
+                    response.raise_for_status()
+                    print('request completed')
+
+                # create a new daemon thread
+                chatbot_thread = threading.Thread(target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True)
+                # start the new thread
+                chatbot_thread.start()
             # sleep(1)
-        
+
 
         # on the first page load, only push top 20 records in each category
-        number_of_records_to_show_on_page_load = int(utils.config["number_of_records_to_show_on_page_load"])        
-        total_results = {} # the dict to keep the total number of search results 
+        number_of_records_to_show_on_page_load = int(utils.config["number_of_records_to_show_on_page_load"])
+        total_results = {} # the dict to keep the total number of search results
         displayed_results = {} # the dict to keep the total number of search results currently displayed to the user
-        
+
         for k, v in results.items():
             logger.info(f'Got {len(v)} {k}')
             total_results[k] = len(v)
@@ -139,12 +155,12 @@ def search_results():
             displayed_results[k] = len(results[k])
 
         results["timedout_sources"] = list(set(results["timedout_sources"]))
-        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))  
+        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))
 
         session['total_search_results'] = total_results
-        session['displayed_search_results'] = displayed_results 
-        
-        template_response = render_template('results.html', results=results, total_results=total_results, search_term=search_term)    
+        session['displayed_search_results'] = displayed_results
+
+        template_response = render_template('results.html', results=results, total_results=total_results, search_term=search_term)
         logger.info('search server call completed - after render call')
 
         return template_response
@@ -159,10 +175,10 @@ def load_more_publications():
 
     total_search_results_publications = session['total_search_results']['publications']
     displayed_search_results_publications = session['displayed_search_results']['publications']
-    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])
     results['publications'] = results['publications'][displayed_search_results_publications:displayed_search_results_publications+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['publications'] = displayed_search_results_publications+number_of_records_to_append_on_lazy_load
-    return render_template('components/publications.html', results=results)  
+    return render_template('components/publications.html', results=results)
 
 @app.route('/load-more-researchers', methods=['GET'])
 def load_more_researchers():
@@ -174,30 +190,46 @@ def load_more_researchers():
 
     total_search_results_researchers = session['total_search_results']['researchers']
     displayed_search_results_researchers = session['displayed_search_results']['researchers']
-    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])
     results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
-    return render_template('components/researchers.html', results=results)     
+    return render_template('components/researchers.html', results=results)
+
+@app.route('/load-more-resources', methods=['GET'])
+def load_more_resources():
+    print('load more resources')
+
+    #define a new results dict for resources to take new resources from the search results stored in the session
+    results = {}
+    results['resources'] = session['search-results']['resources']
+
+    total_search_results_resources = session['total_search_results']['resources']
+    displayed_search_results_resources = session['displayed_search_results']['resources']
+    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])
+    results['resources'] = results['resources'][displayed_search_results_resources:displayed_search_results_resources+number_of_records_to_append_on_lazy_load]
+    session['displayed_search_results']['resources'] = displayed_search_results_resources+number_of_records_to_append_on_lazy_load
+    return render_template('components/resources.html', results=results)
 
 @app.route('/are-embeddings-generated', methods=['GET'])
 def are_embeddings_generated():
 
     #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
     if (utils.config['chatbot_feature_enable']):
-        print('are_embeddings_generated')
-        uuid = session['search_uuid']
-        chatbot_server = utils.config['chatbot_server'] 
-        are_embeddings_generated = utils.config['endpoint_are_embeddings_generated'] 
-        request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
-        headers = {
-            'Content-Type': 'application/json'
-        }
-        response = requests.request("GET", request_url, headers=headers)    
-        json_response = response.json()
-        print('json_response:', json_response)
-        return str(json_response['file_exists'])
-    else:
-        return str(True)
+        if (utils.config['chatbot_feature_enable']):
+            print('are_embeddings_generated')
+            uuid = session['search_uuid']
+            chatbot_server = utils.config['chatbot_server']
+            are_embeddings_generated = utils.config['endpoint_are_embeddings_generated']
+            request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"
+            headers = {
+                'Content-Type': 'application/json'
+            }
+            response = requests.request("GET", request_url, headers=headers)
+            json_response = response.json()
+            print('json_response:', json_response)
+            return str(json_response['file_exists'])
+        else:
+            return str(True)
 
 @app.route('/get-chatbot-answer', methods=['GET'])
 def get_chatbot_answer():
@@ -211,7 +243,7 @@ def get_chatbot_answer():
 
     search_uuid = session['search_uuid']
     answer = chatbot.getAnswer(question=question, search_uuid=search_uuid)
-    
+
     return answer
 
 
@@ -236,8 +268,11 @@ def format_digital_obj_url(value):
     for source in value.source:
         source_dict = {}
         source_dict['doi'] = value.identifier
-        source_dict['sname'] = source.name
-        source_dict['sid'] = source.identifier
+        if isinstance(source, str):
+            source_dict['sname'] = source
+        else:
+            source_dict['sname'] = source.name
+            source_dict['sid'] = source.identifier
         sources_list.append(source_dict)
     return json.dumps(sources_list)
 FILTERS["format_digital_obj_url"] = format_digital_obj_url
@@ -245,9 +280,15 @@ FILTERS["format_digital_obj_url"] = format_digital_obj_url
 def format_authors_for_citations(value):
     authors = ""
     for author in value:
-        authors += (author.name + " and ")    
+        authors += (author.name + " and ")
     return authors.rstrip(' and ') + "."
 FILTERS["format_authors_for_citations"] = format_authors_for_citations
+
+import re
+def regex_replace(s, find, replace):
+    """A non-optimal implementation of a regex filter"""
+    return re.sub(find, replace, s)
+FILTERS["regex_replace"] = regex_replace
 
 import re
 def regex_replace(s, find, replace):
@@ -263,10 +304,10 @@ import ast
 def publication_details(sources):
 
     sources = unquote(sources)
-    sources = ast.literal_eval(sources)    
+    sources = ast.literal_eval(sources)
     for source in sources:
         doi = source['doi']
-    
+
     publication = openalex_publications.get_publication(doi="https://doi.org/"+doi)
     response = make_response(render_template('publication-details.html', publication=publication))
 
@@ -276,8 +317,8 @@ def publication_details(sources):
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
-    print("doi:", doi)    
-    
+    print("doi:", doi)
+
     publication = crossref.get_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))
 
@@ -287,7 +328,7 @@ def publication_details_references(doi):
 @app.route('/publication-details-recommendations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_recommendations(doi):
-    print("DOI:", doi)    
+    print("DOI:", doi)
     publications = semanticscholar.get_recommendations_for_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
     print("response:", response)
@@ -296,34 +337,62 @@ def publication_details_recommendations(doi):
 @app.route('/publication-details-citations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_citations(doi):
-    print("DOI:", doi)    
+    print("DOI:", doi)
     publications = semanticscholar.get_citations_for_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
     print("response:", response)
     return response
 
-@app.route('/resource-details')
-def resource_details():
-    response = make_response(render_template('resource-details.html'))
+@app.route('/resource-details/<path:sources>', methods=['GET'])
+def resource_details(sources):
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
+    sources = unquote(sources)
+    sources = ast.literal_eval(sources)
+    for source in sources:
+        doi = source['doi']
+    resource = zenodo.get_resource(doi="https://doi.org/"+doi)
+    response = make_response(render_template('resource-details.html', resource=resource))
 
+    print("response:", response)
     return response
 
+@app.route('/resource-details-citations/<path:doi>', methods=['GET'])
+@utils.timeit
+def resource_details_citations(doi):
+    print("DOI:", doi)
+    resource = semanticscholar.get_citations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/citations.html', resource=resource))
+    print("response:", response)
+    return response
+
+@app.route('/resource-details-references/<path:doi>', methods=['GET'])
+@utils.timeit
+def resource_details_references(doi):
+    print("doi:", doi)
+
+    resource = crossref.get_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/references.html', resource=resource))
+
+    print("response:", response)
+    return response
+
+@app.route('/resource-details-recommendations/<path:doi>', methods=['GET'])
+@utils.timeit
+def resource_details_recommendations(doi):
+    print("DOI:", doi)
+    publications = semanticscholar.get_recommendations_for_publication(doi=doi)
+    response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
+    print("response:", response)
+    return response
 
 @app.route('/researcher-details/<string:index>', methods=['GET'])
 def researcher_details(index):
-    # index = json.loads(index)
-    # for result in results['researchers']:
-    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
-    #         researcher = result
-    #         break
-    # logger.info(f'Found researcher {researcher}')
+    index = json.loads(index)
+    for result in results['researchers']:
+        if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
+            researcher = result
+            break
+    logger.info(f'Found researcher {researcher}')
     researcher = openalex_researchers.get_researcher_details(index)
     response = make_response(render_template('researcher-details.html',researcher=researcher))
 
@@ -348,7 +417,6 @@ def researcher_banner(index):
     if researcher.banner == "":
         return jsonify()
     return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
-
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
 def organization_details(organization_id, organization_name):

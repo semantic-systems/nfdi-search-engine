@@ -298,14 +298,73 @@
         //     }, 'slow');
 
         //     $('thead tr th:first-child').focus().blur();
-        // });  
+        // });
+
+        // $('#btnShareLinkCopy').on('click', function (e) {
+        $('body').on('click', "#btnShareLinkCopy", function (e) {
+            var txtShareLink = document.getElementById('txtShareLink');
+            txtShareLink.select();
+            if (navigator.clipboard) {
+                alert(txtShareLink.value)
+                navigator.clipboard.writeText(txtShareLink.value)
+                    .then(() => {
+                        var notification = alertify.notify('Link copied', 'success', 5);
+                    })
+                    .catch((error) => {
+                        var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+                    });
+            } else {
+                var notification = alertify.notify('Copy operation failed', 'error', 5);
+            }
+        });
+
+        $('body').on('click', ".share_modal_link", function (e) {
+            // alert('pressed')
+            publication = $(this).closest("tr").find('.publication_name')
+            url = window.location.origin + $(publication).attr('href')
+            title = $(publication).text().trim()
+            $('#txtShareLink').val(url)
+
+            $('.smd a').each(function (i, obj) {
+                $(this).attr('href', $(this).attr('base-href').replace('[[url]]', encodeURIComponent(url)))
+                $(this).attr('href', $(this).attr('href').replace('[[title]]', encodeURIComponent(title)))
+            });
+        });
+
+        // $('#share_modal_dialog').on('shown.bs.modal', function (e) {
+        //     // do something...
+        // });
+
+        $("body").on("shown.bs.modal", ".preview_modal_dialog", function (event) {
+            $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
+            $(this).find('.modal-body img').attr("src", event.relatedTarget.getAttribute('data-bs-img-src'));
+        });
+
+        $("body").on("shown.bs.modal", ".download_modal_dialog", function (event) {
+            $(this).find('.modal-title').text(event.relatedTarget.getAttribute('data-bs-publ-name'));
+
+            var b = getBinary(event.relatedTarget.getAttribute('data-bs-embed-src'));
+            var b64 = base64Encode(b);
+            $(this).find('.modal-body iframe').attr("src", "data:application/pdf;base64," + b64);
+        });
+
+        $('body').on('click', "#btn_load_more_publications", function (e) {
+            console.log('load more publications button clicked')
+            load_more_publications()
+        });
+
+        $('body').on('click', "#btn_load_more_researchers", function (e) {
+            console.log('load more researchers button clicked')
+            load_more_researchers()
+        });
+
 
         $(window).scroll(function () {
 
             // console.log($(window).scrollTop(), ($(document).height() - $(window).height() - 500), $(document).height(), $(window).height(), ajax_request_sent)
 
             if ($('.nav-item .active').attr('id') == 'publications-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
+                // Use the flag in the condition (so if sent and not yet received == false)
                 if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
                     !ajax_request_sent && //no other ajax request is currently being processed
                     $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
@@ -320,7 +379,7 @@
             }
 
             if ($('.nav-item .active').attr('id') == 'researchers-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
+                // Use the flag in the condition (so if sent and not yet received == false)
                 if ($('#btn_load_more_researchers').is(":visible") &&  //load more button is visible
                     !ajax_request_sent && //no other ajax request is currently being processed
                     $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
@@ -333,6 +392,22 @@
                     load_more_researchers();
                 }
             }
+
+            if ($('.nav-item .active').attr('id') == 'resources-tab') {
+                // Use the flag in the condition (so if sent and not yet received == false)
+                if ($('#btn_load_more_resources').is(":visible") &&  //load more button is visible
+                    !ajax_request_sent && //no other ajax request is currently being processed
+                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+
+                    // Set the flag to prevent any concurring request
+                    ajax_request_sent = true
+
+                    // ajax call get data from server and append to the div
+                    console.log('load more via ajax now')
+                    load_more_resources();
+                }
+            }
+
 
 
         });
@@ -397,6 +472,35 @@
                 console.log(err);
             }
         });
+    }
+
+    function load_more_resources() {
+
+    $('#div_load_more_resources').remove()
+    jQuery.ajax({
+        url: '/load-more-resources',
+        type: "GET",
+        beforeSend: function () {
+            $('#resources').append("<div class='loader'><div class='sp-3balls'></div></div>");
+        },
+        complete: function () {
+            $('.loader').remove();
+        },
+        // data: {
+        //     action: "pj_load_more",
+        //     pjCount: pjCount
+        // },
+        success: function (data) {
+            $('#resources').append(data);
+            console.log('more resources loaded.')
+
+            // Unset the flag
+            ajax_request_sent = false;
+        },
+        error: function (err) {
+            console.log(err);
+        }
+    });
     }
 
 

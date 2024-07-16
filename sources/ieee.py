@@ -65,7 +65,7 @@ def search(search_term, results):
                 _source.name = source
                 _source.identifier = hit.get("article_number", "")
                 _source.url = hit.get("html_url", "")                         
-                publication.source.append(_source)               
+                publication.source.append(_source)              
 
                 results['publications'].append(publication)         
 

@@ -8,7 +8,7 @@ import traceback
 logger = logging.getLogger('nfdi_search_engine')
 
 def retrieve_data(source: str, base_url: str, search_term: str, results):
-    
+
     try:
 
         search_term = urllib.parse.quote_plus(string=search_term, safe='()?&=,')
@@ -23,8 +23,8 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
                     'User-Agent': utils.config["request_header_user_agent"]
                     }
         # print("url:", url)
-        
-        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))        
+
+        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))
 
         logger.debug(f'{source} response status code: {response.status_code}')
         logger.debug(f'{source} response headers: {response.headers}')
@@ -36,7 +36,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
             #clean the json response; remove all the keys which don't have any value
             search_result = utils.clean_json(search_result)
 
-            return search_result 
+            return search_result
 
         else:
             logger.error(f'Response status code: {str(response.status_code)}')
@@ -47,8 +47,8 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
         raise ex
 
 def retrieve_single_object(source: str, base_url: str, doi: str):
-    
-    try:        
+
+    try:
         doi = urllib.parse.quote_plus(string=doi, safe='()?&=,')
         url = base_url + doi
         # print('url:', url)
@@ -56,7 +56,7 @@ def retrieve_single_object(source: str, base_url: str, doi: str):
                     'Content-Type': 'application/json',
                     'User-Agent': utils.config["request_header_user_agent"]
                     }
-        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))        
+        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))
 
         logger.debug(f'{source} response status code: {response.status_code}')
         # logger.debug(f'{source} response headers: {response.headers}')
@@ -68,7 +68,7 @@ def retrieve_single_object(source: str, base_url: str, doi: str):
             #clean the json response; remove all the keys which don't have any value
             search_result = utils.clean_json(search_result)
 
-            return search_result 
+            return search_result
 
         else:
             logger.error(f'Response status code: {str(response.status_code)}')

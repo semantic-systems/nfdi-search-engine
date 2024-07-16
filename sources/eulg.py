@@ -66,7 +66,11 @@ def search(search_term, results):
                     dataset.name = result.resource_name
                     dataset.url = url
                     dataset.datePublished = str(result.creation_date)
+                    dataset.dateModified = str(result.last_date_updated)
                     dataset.description = description
+                    dataset.version = result.version
+                    dataset.encoding_contentUrl = result.detail
+                    # dataset.conditionsOfAccess = result.condition_of_use[0]
                     keywords = result.keywords
                     if isinstance(keywords, list):
                         for keyword in keywords:
@@ -115,6 +119,9 @@ def search(search_term, results):
                     software.name = result.resource_name
                     software.url = url
                     software.description = description
+                    # software.version = result.version
+                    software.encoding_contentUrl = result.detail
+                    software.conditionsOfAccess - result.condition_of_use[0]
                     software.datePublished = str(result.creation_date)
                     software.countryOfOrigin = result.country_of_registration
                     keywords = result.keywords
