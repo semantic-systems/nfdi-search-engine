@@ -74,45 +74,45 @@ def search(search_term, results):
                 if(digitalObj.conditionsOfAccess == ''):
                     digitalObj.conditionsOfAccess = metadata.get('access_right','')
 
-                # relation_map = {
-                #     'iscitedby': 'isCitedBy',
-                #     'issupplementto': 'isSupplementTo',
-                #     'ispartof': 'isPartOf',
-                #     'cites': 'cites',
-                #     'issourceof': 'isSourceOf',
-                #     'isderivedfrom': 'isDerivedFrom',
-                #     'issupplementedby': 'isSupplementedBy',
-                #     'ispreviousversionof': 'isPreviousVersionOf',
-                #     'documents': 'documents',
-                #     'haspart': 'hasPart'
-                # }
+                relation_map = {
+                    'iscitedby': 'isCitedBy',
+                    'issupplementto': 'isSupplementTo',
+                    'ispartof': 'isPartOf',
+                    'cites': 'cites',
+                    'issourceof': 'isSourceOf',
+                    'isderivedfrom': 'isDerivedFrom',
+                    'issupplementedby': 'isSupplementedBy',
+                    'ispreviousversionof': 'isPreviousVersionOf',
+                    'documents': 'documents',
+                    'haspart': 'hasPart'
+                }
 
-                # related_identifiers = metadata.get('related_identifiers', [])
+                related_identifiers = metadata.get('related_identifiers', [])
 
-                # for related_identifier in related_identifiers:
-                #     relation = related_identifier.get('relation', '').lower()
-                #     identifier = related_identifier.get('identifier', '')
+                for related_identifier in related_identifiers:
+                    relation = related_identifier.get('relation', '').lower()
+                    identifier = related_identifier.get('identifier', '')
 
-                #     if relation == 'iscitedby':
-                #         digitalObj.isCitedBy.append(identifier)
-                #     elif relation == 'issupplementto':
-                #         digitalObj.isSupplementTo.append(identifier)
-                #     elif relation == 'ispartof':
-                #         digitalObj.isPartOf.append(identifier)
-                #     elif relation == 'cites':
-                #         digitalObj.cites.append(identifier)
-                #     elif relation == 'issourceof':
-                #         digitalObj.isSourceOf.append(identifier)
-                #     elif relation == 'isderivedfrom':
-                #         digitalObj.isDerivedFrom.append(identifier)
-                #     elif relation == 'issupplementedby':
-                #         digitalObj.isSupplementedBy.append(identifier)
-                #     elif relation == 'ispreviousversionof':
-                #         digitalObj.isPreviousVersionOf.append(identifier)
-                #     elif relation == 'documents':
-                #         digitalObj.documents.append(identifier)
-                #     elif relation == 'haspart':
-                #         digitalObj.hasPart.append(identifier)
+                    if relation == 'iscitedby':
+                        digitalObj.isCitedBy.append(identifier)
+                    elif relation == 'issupplementto':
+                        digitalObj.isSupplementTo.append(identifier)
+                    elif relation == 'ispartof':
+                        digitalObj.isPartOf.append(identifier)
+                    elif relation == 'cites':
+                        digitalObj.cites.append(identifier)
+                    elif relation == 'issourceof':
+                        digitalObj.isSourceOf.append(identifier)
+                    elif relation == 'isderivedfrom':
+                        digitalObj.isDerivedFrom.append(identifier)
+                    elif relation == 'issupplementedby':
+                        digitalObj.isSupplementedBy.append(identifier)
+                    elif relation == 'ispreviousversionof':
+                        digitalObj.isPreviousVersionOf.append(identifier)
+                    elif relation == 'documents':
+                        digitalObj.documents.append(identifier)
+                    elif relation == 'haspart':
+                        digitalObj.hasPart.append(identifier)
 
                 authors = metadata.get("creators", [])
                 for author in authors:
