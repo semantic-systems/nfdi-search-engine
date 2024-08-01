@@ -10,7 +10,8 @@
             <div>
                 <div class="d-inline-block">
                     {% if search_term %}
-                    <form name="searchbox" class="col-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET" onsubmit="return emptySearch()">
+                    <form name="searchbox" class="col-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET"
+                        onsubmit="return emptySearch()">
                         <!-- <input type="search" class="form-control" placeholder="Search..." aria-label="Search"> -->
                         <div>
                             <div class="searchbox">
@@ -27,9 +28,9 @@
                     </form>
                     {% endif %}
                 </div>
-                <div class="d-inline-block">
+                <!-- <div class="d-inline-block">
                     <a href="#" class="nav-link px-2 link-dark">About Us</a>
-                </div>
+                </div> -->
                 <div class="d-inline-block">
                     <!-- NFDI4DS Button-->
                     <div class="col-auto mb-3 px-2 pt-2 mb-lg-0 me-lg-3 nfdi4ds-banner" data-variant="button"
@@ -52,6 +53,27 @@
                         nfdi4ds('widget');
                     </script>
                     <!-- End NFDI4DS Button -->
+                </div>
+                <div class="d-inline-block">
+                    <div class="dropdown">
+                        {% if current_user.is_anonymous %}
+                        <a class="btn btn-secondary" href="{{ url_for('login') }}">Login</a>
+                        {% else %}
+                        <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton2"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Hi, {{ current_user.first_name }}!
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton2">
+                            <li><a class="dropdown-item active" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('preferences') }}">Preferences</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
+                        </ul>
+                        {% endif %}
+
+                    </div>
                 </div>
             </div>
             <!--dark and light switch -->

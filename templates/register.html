@@ -1,0 +1,93 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} {% endblock title %}
+
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+<section class="py-3 py-md-5 py-xl-8">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <div class="mb-5">
+                    <h2 class="display-5 fw-bold text-center">Register</h2>
+                </div>
+            </div>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-8">
+                <div class="row gy-5 justify-content-center">
+                    <div class="col-12 col-lg-5">
+                        <form action="" method="post" novalidate>
+                            {{ form.hidden_tag() }}
+                            <div class="row gy-3 overflow-hidden">
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        {{ form.first_name(class="form-control border-0 border-bottom rounded-0",
+                                        placeholder="first name") }}
+                                        <label for="first_name" class="form-label">First Name</label>
+                                    </div>
+                                    {% for error in form.first_name.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        {{ form.last_name(class="form-control border-0 border-bottom rounded-0",
+                                        placeholder="last name") }}
+                                        <label for="last_name" class="form-label">Last Name</label>
+                                    </div>
+                                    {% for error in form.last_name.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        {{ form.email(class="form-control border-0 border-bottom rounded-0",
+                                        placeholder="name@example.com") }}
+                                        <label for="email" class="form-label">Email</label>
+                                    </div>
+                                    {% for error in form.email.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        {{ form.password(class="form-control border-0 border-bottom rounded-0",
+                                        placeholder="Password") }}
+                                        <label for="password" class="form-label">Password</label>
+                                    </div>
+                                    {% for error in form.password.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-floating mb-3">
+                                        {{ form.password2(class="form-control border-0 border-bottom rounded-0",
+                                        placeholder="Password") }}
+                                        <label for="password2" class="form-label">Repeat Password</label>
+                                    </div>
+                                    {% for error in form.password2.errors %}
+                                    <span style="color: red;">[{{ error }}]</span>
+                                    {% endfor %}
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-grid">
+                                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <p class="text-center m-0">Already have an account? <a
+                                            href="{{ url_for('login') }}">Login</a>
+                                    </p>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

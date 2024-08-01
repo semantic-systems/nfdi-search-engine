@@ -31,7 +31,7 @@ settings_file_publications: static/weights/publications-settings.json
 number_of_records_to_show_on_page_load: 20
 number_of_records_to_append_on_lazy_load: 10
 
-chatbot_feature_enable: True
+chatbot_feature_enable: False
 chatbot_server: https://nfdi-chatbot.nliwod.org
 # chatbot_server: http://127.0.0.1:5005
 endpoint_chat: /chat
