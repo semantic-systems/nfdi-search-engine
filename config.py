@@ -5,23 +5,61 @@ class Config:
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
 
+    REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
+    REQUEST_TIMEOUT = 5
+
+    NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
+    NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
+
     DATA_SOURCES = {
         "dblp - Publications": {
             "module": "dblp_publications", 
             "endpoint": "https://dblp.org/search/publ/api?format=json&h=25&q=",
         }, 
-        "dblp - Researchers": {
-            "module": "dblp_researchers", 
-            "endpoint": "https://dblp.org/search/author/api?format=json&h=25&q=",
-        },
-        "openalex - Publications": {
-            "module": "openalex_publications", 
-            "endpoint": "https://api.openalex.org/works?page=1&per-page=25&search=",
-        },
-        "openalex - Researchers": {
-            "module": "openalex_researchers", 
-            "endpoint": "https://api.openalex.org/authors?page=1&per-page=25&search=",
-        },
+        # "dblp - Researchers": {
+        #     "module": "dblp_researchers", 
+        #     "endpoint": "https://dblp.org/search/author/api?format=json&h=25&q=",
+        # },
+        # "openalex - Publications": {
+        #     "module": "openalex_publications", 
+        #     "endpoint": "https://api.openalex.org/works?page=1&per-page=25&search=",
+        # },
+        # "openalex - Researchers": {
+        #     "module": "openalex_researchers", 
+        #     "endpoint": "https://api.openalex.org/authors?page=1&per-page=25&search=",
+        # },
+        # "zenodo": {
+        #     "module": "zenodo", 
+        #     "endpoint": "https://zenodo.org/api/records?size=25&q=",
+        # },
+        # "wikidata - Publications": {
+        #     "module": "wikidata_publications", 
+        #     "endpoint": "https://query.wikidata.org/sparql?format=json&query=",
+        # },
+        # "wikidata - Researchers": {
+        #     "module": "wikidata_researchers", 
+        #     "endpoint": "https://query.wikidata.org/sparql?format=json&query=",
+        # },
+        # "resodate": {
+        #     "module": "resodate", 
+        #     "endpoint": "https://resodate.org/resources/api/search/oer_data/_search?pretty&size=25&q=",
+        # },
+        # "oersi": {
+        #     "module": "oersi", 
+        #     "endpoint": "https://oersi.org/resources/api/search/oer_data/_search?pretty&size=25&q=",
+        # },
+        # "ieee": {
+        #     "module": "ieee", 
+        #     "endpoint": "http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={api_key}&max_records=25&querytext=",
+        # },
+        # "eudat": {
+        #     "module": "eudat", 
+        #     "endpoint": "https://b2share.eudat.eu/api/records/?page=1&size=25&sort=bestmatch&q=",
+        # },
+        # "openaire - Products": {
+        #     "module": "openaire_products", 
+        #     "endpoint": "https://api.openaire.eu/search/researchProducts?format=json&size=25&keywords=",
+        # },
     }
 
     OAUTH2_PROVIDERS = {

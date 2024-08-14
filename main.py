@@ -9,8 +9,7 @@ import logging
 import logging.config
 import secrets
 from urllib.parse import urlsplit, urlencode
-
-
+import importlib
 
 from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, current_app, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
@@ -195,7 +194,7 @@ def login():
         user.email = form.email.data
         res_flag, user = utils.get_user_by_email(user)        
         if not res_flag or not user.check_password(form.password.data):
-            flash('Invalid email or password')
+            flash('Invalid email or password', 'danger')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         next_page = request.args.get('next')
@@ -209,7 +208,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('You have been logged out.')
+    flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
 
@@ -225,7 +224,7 @@ def register():
         user.email = form.email.data
         user.set_password(form.password.data)
         utils.add_user(user)
-        flash('Congratulations, you are now a registered user!')
+        flash('Congratulations, you are now a registered user!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
 
@@ -341,7 +340,7 @@ def profile():
         current_user.last_name = form.last_name.data
         # current_user.email = form.email.data
         utils.update_user(current_user)
-        flash('Your changes have been saved.')
+        flash('Your changes have been saved.', 'success')
         return redirect(url_for('profile'))
     elif request.method == 'GET':
         form.first_name.data = current_user.first_name
@@ -377,6 +376,7 @@ def preferences():
         current_user.included_data_sources = '; '.join(included_data_sources)
         current_user.excluded_data_sources = '; '.join(excluded_data_sources)
         utils.update_user_preferences_data_sources(current_user)
+        flash('Your preferences have been saved.', 'success')
     else:
         # tell the form what's already selected
         form.data_sources.data = [source for source in current_user.included_data_sources.split('; ')]
@@ -384,10 +384,12 @@ def preferences():
 
 
 @app.route('/')
-def index():
+def index():    
     
-    flash("testing message in base.html", category='info')
-    flash("testing message 2 in base.html", category='warning')
+    # flash("testing message 3 in base.html", category='info')
+    # flash("testing message 4 in base.html", category='danger')
+    # flash("testing message 1 in base.html", category='success')
+    # flash("testing message 2 in base.html", category='warning')
 
     utils.log_activity("loading index page")
 
@@ -404,6 +406,9 @@ def index():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
+
+
 
 @app.route('/results', methods=['POST', 'GET'])
 @utils.timeit
@@ -437,13 +442,14 @@ def search_results():
         for k in results.keys(): results[k] = []
         threads = []
 
-        # add all the sources here in this list; for simplicity we should use the exact module name
-        # ensure the main method which execute the search is named "search" in the module         
-        sources = [dblp_publications, openalex_publications, zenodo, wikidata_publications, resodate, oersi, ieee,
-                   eudat, openaire_products, re3data, orkg, openalex_researchers]
-        # sources = [openalex_publications]
+        #Load all the sources from config.py used to harvest data related to search term 
+        sources = []
+        for module in current_app.config['DATA_SOURCES']:
+            sources.append(module)
+
         for source in sources:
-            t = threading.Thread(target=source.search, args=(search_term, results,))
+            module_name = current_app.config['DATA_SOURCES'][source].get('module', '')            
+            t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).search, args=(source, search_term, results,))
             t.start()
             threads.append(t)
 
@@ -485,7 +491,7 @@ def search_results():
         
 
         # on the first page load, only push top 20 records in each category
-        number_of_records_to_show_on_page_load = int(utils.config["number_of_records_to_show_on_page_load"])        
+        number_of_records_to_show_on_page_load = int(current_app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])        
         total_results = {} # the dict to keep the total number of search results 
         displayed_results = {} # the dict to keep the total number of search results currently displayed to the user
         
@@ -516,7 +522,7 @@ def load_more_publications():
 
     total_search_results_publications = session['total_search_results']['publications']
     displayed_search_results_publications = session['displayed_search_results']['publications']
-    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    number_of_records_to_append_on_lazy_load = int(current_app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])       
     results['publications'] = results['publications'][displayed_search_results_publications:displayed_search_results_publications+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['publications'] = displayed_search_results_publications+number_of_records_to_append_on_lazy_load
     return render_template('components/publications.html', results=results)  
@@ -531,7 +537,7 @@ def load_more_researchers():
 
     total_search_results_researchers = session['total_search_results']['researchers']
     displayed_search_results_researchers = session['displayed_search_results']['researchers']
-    number_of_records_to_append_on_lazy_load = int(utils.config["number_of_records_to_append_on_lazy_load"])       
+    number_of_records_to_append_on_lazy_load = int(current_app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])        
     results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
     return render_template('components/researchers.html', results=results)     

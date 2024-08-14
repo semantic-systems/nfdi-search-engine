@@ -104,6 +104,25 @@ a:focus {
 /* Header styles */
 
 
+/* alertify styles */
+.ajs-success {
+    background-color: #198754 !important;
+}
+
+.ajs-danger {
+    background-color: #dc3545 !important
+}
+
+.ajs-info {
+    background-color: #0dcaf0 !important;
+}
+
+.ajs-warning {
+    background-color: #ffc107 !important;
+}
+
+
+
 
 /*  Index page */
 

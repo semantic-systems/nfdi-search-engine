@@ -3,6 +3,8 @@ import extruct
 from objects import Article, Person, Author
 import wikipedia
 from bs4 import BeautifulSoup
+import traceback
+import inspect
 
 # read config file
 import yaml
@@ -20,25 +22,7 @@ env_config = dict(
 )
 
 
-#region DECORATORS
 
-from functools import wraps
-from time import time
-import inspect
-import os
-
-def timeit(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        ts = time()
-        result = f(*args, **kwargs)
-        te = time()
-        filename = os.path.basename(inspect.getfile(f))
-        print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
-        return result
-    return decorated_function
-
-#endregion
 
 
 def clean_json(value):
@@ -181,9 +165,10 @@ from enum import Enum
 class ES_Index(Enum):
     user_activity_log = 1
     users = 2
+    event_logs = 3
 
 # create all the indices if they don't exist
-# ignore 400 cause by IndexAlreadyExistsException when creating an index
+# ignore 400 caused by IndexAlreadyExistsException when creating an index
 for idx in ES_Index:
     es_client.indices.create(index=idx.name, ignore=400)
 
@@ -222,6 +207,30 @@ def log_activity(user_activity):
             "base_url": request.base_url,            
             "path": request.path,
             "description": user_activity,
+        }
+    )
+
+def log_event(type: str = "info", filename: str = None, method: str = None, args = None, kwargs = None, message: str = None, traceback = None):
+
+    if not filename:
+        caller_frame = inspect.stack()[1]
+        caller_filename_full = caller_frame.filename
+        filename = os.path.splitext(os.path.basename(caller_filename_full))[0]
+    
+    if not method:
+        method = inspect.stack()[1][3]
+
+    es_client.index(
+        index=ES_Index.event_logs.name,        
+        document={
+            "timestamp": datetime.now(timezone.utc),
+            "type": type,
+            "filename": filename,
+            "method": method,
+            "args": args,
+            "kwargs": kwargs,
+            "message": message,
+            "traceback": traceback
         }
     )
 
@@ -298,5 +307,37 @@ def update_user_preferences_data_sources(user):
         }
     )
 
+
+#endregion
+
+
+#region DECORATORS
+
+from functools import wraps
+from time import time
+import inspect
+import os
+
+def timeit(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        ts = time()
+        result = f(*args, **kwargs)
+        te = time()
+        filename = os.path.basename(inspect.getfile(f))
+        # print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
+        log_event(type="info", filename=filename, method=f.__name__, message=f"execution time: {(te-ts):2.4f} sec")
+        return result
+    return decorated_function
+
+def handle_exceptions(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except Exception as ex:
+            filename = os.path.basename(inspect.getfile(f))
+            log_event(type="error", filename=filename, method=f.__name__, message=str(ex), traceback= traceback.format_exc())
+    return decorated_function
 
 #endregion
