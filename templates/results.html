@@ -9,9 +9,6 @@
 
 {% block content %}
 
-
-<meta id="timedout_sources_data" data-timedoutsources="{{ results['timedout_sources'] }}">
-
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
@@ -94,13 +91,13 @@
                                     </button>
                                 </li>
                                 <li class="nav-item" role="presentation">
-                                    <button class="nav-link position-relative" id="fundings-tab" data-bs-toggle="tab"
-                                        data-bs-target="#fundings" type="button" role="tab" aria-controls="fundings"
-                                        aria-selected="false"><i class="px-1 bi-currency-exchange"></i>Fundings
+                                    <button class="nav-link position-relative" id="projects-tab" data-bs-toggle="tab"
+                                        data-bs-target="#projects" type="button" role="tab" aria-controls="projects"
+                                        aria-selected="false"><i class="px-1 bi-currency-exchange"></i>Projects
                                         <span
                                             class="position-absolute top-0 start-100 translate-middle badge rounded-pill">
-                                            {{total_results.fundings}}
-                                            <span class="visually-hidden">fundings</span>
+                                            {{total_results.projects}}
+                                            <span class="visually-hidden">projects</span>
                                         </span>
                                     </button>
                                 </li>
@@ -143,8 +140,8 @@
                         </div>
                         <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
                             {% include 'components/events.html' %}</div>
-                        <div class="tab-pane fade" id="fundings" role="tabpanel" aria-labelledby="fundings-tab">
-                            {% include 'components/fundings.html' %}
+                        <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
+                            {% include 'components/projects.html' %}
                         </div>
                         <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">{% include
                             'components/others.html' %}</div>
@@ -271,11 +268,7 @@
 
     $(document).ready(function () {
 
-        //alert the user about the timed out sources
-        var timedout_sources = $('#timedout_sources_data').data("timedoutsources").toString();
-        if (timedout_sources != '') {
-            var notification = alertify.notify('Following sources got timed out:' + timedout_sources, 'error', 10);
-        }
+        reinitialize_tooltips();
 
         // bind show all authors click event
         $("body").on("click", ".tag_more_authors", function (event) {
@@ -301,105 +294,67 @@
         // });  
 
         $(window).scroll(function () {
-
             // console.log($(window).scrollTop(), ($(document).height() - $(window).height() - 500), $(document).height(), $(window).height(), ajax_request_sent)
-
             if ($('.nav-item .active').attr('id') == 'publications-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
-                if ($('#btn_load_more_publications').is(":visible") &&  //load more button is visible
-                    !ajax_request_sent && //no other ajax request is currently being processed
-                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
-
-                    // Set the flag to prevent any concurring request
-                    ajax_request_sent = true
-
-                    // ajax call get data from server and append to the div
-                    console.log('load more via ajax now')
-                    load_more_publications();
-                }
+                load_more('publications');
             }
-
             if ($('.nav-item .active').attr('id') == 'researchers-tab') {
-                // Use the flag in the condition (so if sent and not yet received == false)            
-                if ($('#btn_load_more_researchers').is(":visible") &&  //load more button is visible
-                    !ajax_request_sent && //no other ajax request is currently being processed
-                    $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
-
-                    // Set the flag to prevent any concurring request
-                    ajax_request_sent = true
-
-                    // ajax call get data from server and append to the div
-                    console.log('load more via ajax now')
-                    load_more_researchers();
-                }
+                load_more('researchers');
+            }
+            if ($('.nav-item .active').attr('id') == 'resources-tab') {
+                load_more('resources');
+            }
+            if ($('.nav-item .active').attr('id') == 'projects-tab') {
+                load_more('projects');
+            }
+            if ($('.nav-item .active').attr('id') == 'others-tab') {
+                load_more('others');
             }
 
-
+            reinitialize_tooltips();
         });
-
-
 
     });
 
-    function load_more_publications() {
-
-        $('#div_load_more_publications').remove()
-        jQuery.ajax({
-            url: '/load-more-publications',
-            type: "GET",
-            beforeSend: function () {
-                $('#publications').append("<div class='loader'><div class='sp-3balls'></div></div>");
-            },
-            complete: function () {
-                $('.loader').remove();
-            },
-            // data: {
-            //     action: "pj_load_more",
-            //     pjCount: pjCount
-            // },
-            success: function (data) {
-                $('#publications').append(data);
-                console.log('more publications loaded.')
-
-                // Unset the flag
-                ajax_request_sent = false;
-            },
-            error: function (err) {
-                console.log(err);
-            }
-        });
+    function reinitialize_tooltips() {
+        // initialize all tooltips on a page 
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
     }
 
-    function load_more_researchers() {
-
-        $('#div_load_more_researchers').remove()
-        jQuery.ajax({
-            url: '/load-more-researchers',
-            type: "GET",
-            beforeSend: function () {
-                $('#researchers').append("<div class='loader'><div class='sp-3balls'></div></div>");
-            },
-            complete: function () {
-                $('.loader').remove();
-            },
-            // data: {
-            //     action: "pj_load_more",
-            //     pjCount: pjCount
-            // },
-            success: function (data) {
-                $('#researchers').append(data);
-                console.log('more researchers loaded.')
-
-                // Unset the flag
-                ajax_request_sent = false;
-            },
-            error: function (err) {
-                console.log(err);
-            }
-        });
+    function load_more(object_type) {
+        // Use the flag in the condition (so if sent and not yet received == false)            
+        if ($('#btn_load_more_' + object_type).is(":visible") &&  //load more button is visible
+            !ajax_request_sent && //no other ajax request is currently being processed
+            $(window).scrollTop() >= $(document).height() - $(window).height() - 500) { // scroll is about to reach the bottom of the page
+            // Set the flag to prevent any concurring request
+            ajax_request_sent = true
+            // ajax call get data from server and append to the div
+            console.log('start loading more ' + object_type)
+            $('#div_load_more_' + object_type).remove()
+            jQuery.ajax({
+                url: '/load-more/' + object_type,
+                type: "GET",
+                beforeSend: function () {
+                    $('#' + object_type).append("<div class='loader'><div class='sp-3balls'></div></div>");
+                },
+                complete: function () {
+                    $('.loader').remove();
+                },
+                success: function (data) {
+                    $('#' + object_type).append(data);
+                    console.log('successfully loaded more ' + object_type)
+                    // Unset the flag
+                    ajax_request_sent = false;
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+        }
     }
-
-
 
 </script>
 

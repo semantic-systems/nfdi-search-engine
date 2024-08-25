@@ -3,12 +3,12 @@ import logging
 import utils
 import urllib.parse
 from main import app
-from flask import flash
+from flask import request, flash
 
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
-def retrieve_data(source: str, base_url: str, search_term: str, results):
+def retrieve_data(source: str, base_url: str, search_term: str, failed_sources):
     
     try:
 
@@ -33,13 +33,13 @@ def retrieve_data(source: str, base_url: str, search_term: str, results):
             search_result = utils.clean_json(search_result)
             return search_result 
         else:
-            # logger.error(f'Response status code: {str(response.status_code)}')
-            # results['timedout_sources'].append(source)
-            # return response.status_code
+            failed_sources.append(source)
+            utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")            
             return None
     
     except requests.exceptions.Timeout as ex:
-        flash(f'{source} timed out.', 'danger')
+        failed_sources.append(source)
+        utils.log_event(type="error", message=f"{source} - timed out.")
         raise ex
     
     except Exception as ex:
@@ -66,12 +66,12 @@ def retrieve_single_object(source: str, base_url: str, doi: str):
             search_result = utils.clean_json(search_result)
             return search_result 
         else:
-            # logger.error(f'Response status code: {str(response.status_code)}')
-            # return response.status_code
+            utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")     
             return None
         
     except requests.exceptions.Timeout as ex:
-        flash(f'{source} timed out.', 'danger')
+        # flash(f'{source} timed out.', 'danger')
+        utils.log_event(type="error", message=f"{source} - timed out.")
         raise ex
 
     except Exception as ex:

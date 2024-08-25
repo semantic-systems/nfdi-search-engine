@@ -10,7 +10,7 @@
                             {{digitalObj.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href='/other-details/{{digitalObj | format_digital_obj_url}}'
+                            href="/other-details/{{digitalObj | format_digital_obj_url('doi')}}"
                             target='_blank'>{{digitalObj.name}}</a>
                         {% endif %}
                     </div>
@@ -54,6 +54,12 @@
                         {% endfor %}
                         <span
                             class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.originalSource}}</span>
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.additionalType}}</span>
+                        {% for language in digitalObj.inLanguage %}
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
+                        {% endfor %}
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.license}}</span>
                     </div>
                     <div class="col-3 text-end">
                         <span class="badge bg-pill text-wrap text-break">{{digitalObj.publication}}</span>
@@ -247,3 +253,14 @@
     {% endif %}
 </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('btn_load_more_others')) {
+            document.getElementById('btn_load_more_others').addEventListener('click', function () {
+                console.log('load more others button clicked')
+                load_more('others');
+            });
+        }
+    });
+</script>

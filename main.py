@@ -11,24 +11,14 @@ import secrets
 from urllib.parse import urlsplit, urlencode
 import importlib
 
-from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, current_app, abort
+from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_session import Session
 
 from config import Config
-
-# from objects import Person, Zenodo, Article, Dataset, Presentation, Poster, Software, Video, Image, Lesson, Institute, Funder, Publisher, Gesis, Cordis, Orcid, Gepris
-from objects import Article, Organization, Person, Dataset, Project
-
-from sources import dblp_publications, openalex_publications, zenodo, wikidata_publications, wikidata_researchers, openalex_researchers
-from sources import resodate, oersi, ieee, eudat, openaire_products
-from sources import dblp_researchers
 from sources import crossref, semanticscholar
-from sources import cordis, gesis, orcid, gepris, eulg, re3data, orkg
-
 from chatbot import chatbot
 
-import details_page
 from sources.gepris import org_details
 import utils
 import deduplicator
@@ -151,15 +141,17 @@ class PreferencesForm(FlaskForm):
 #region JINJA2 FILTERS
 from jinja2.filters import FILTERS
 import json
-def format_digital_obj_url(value):
-    sources_list = []
-    for source in value.source:
-        source_dict = {}
-        source_dict['doi'] = value.identifier
-        source_dict['sname'] = source.name
-        source_dict['sid'] = source.identifier
-        sources_list.append(source_dict)
-    return json.dumps(sources_list)
+def format_digital_obj_url(value, identifier_type):
+    return f"{identifier_type}:{value.identifier}"
+    # sources_list = []
+    # for source in value.source:
+    #     source_dict = {}
+    #     source_dict['doi'] = value.identifier
+    #     source_dict['sname'] = source.name
+    #     source_dict['sid'] = source.identifier
+    #     sources_list.append(source_dict)
+    # return json.dumps(sources_list)
+    
 FILTERS["format_digital_obj_url"] = format_digital_obj_url
 
 def format_authors_for_citations(value):
@@ -236,7 +228,7 @@ def oauth2_authorize(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
 
-    provider_data = current_app.config['OAUTH2_PROVIDERS'].get(provider)
+    provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
     if provider_data is None:
         abort(404)
 
@@ -262,7 +254,7 @@ def oauth2_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
 
-    provider_data = current_app.config['OAUTH2_PROVIDERS'].get(provider)
+    provider_data = app.config['OAUTH2_PROVIDERS'].get(provider)
     if provider_data is None:
         abort(404)
 
@@ -356,12 +348,12 @@ def preferences():
 
     form = PreferencesForm()
     # populate the forms dynamically with the values in the configuration and database
-    data_sources_list = current_app.config['DATA_SOURCES']
-    form.data_sources.choices = [(source, source) for source in current_app.config['DATA_SOURCES'].keys()]
+    data_sources_list = app.config['DATA_SOURCES']
+    form.data_sources.choices = [(source, source) for source in app.config['DATA_SOURCES'].keys()]
     # if it's a post request and we validated successfully
     if request.method == 'POST' and form.validate_on_submit():
         # get our choices again, could technically cache these in a list if we wanted but w/e
-        all_sources = current_app.config['DATA_SOURCES'].keys()
+        all_sources = app.config['DATA_SOURCES'].keys()
         # need a list to hold the selections
         included_data_sources = []
         excluded_data_sources = []
@@ -385,15 +377,10 @@ def preferences():
 
 @app.route('/')
 def index():    
-    
-    # flash("testing message 3 in base.html", category='info')
-    # flash("testing message 4 in base.html", category='danger')
-    # flash("testing message 1 in base.html", category='success')
-    # flash("testing message 2 in base.html", category='warning')
 
     utils.log_activity("loading index page")
-
-    if (utils.env_config["OPENAI_API_KEY"] == ""):
+   
+    if (app.config["SECRET_KEY"] == ""):
         return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
 
     response = make_response(render_template('index.html'))
@@ -414,9 +401,7 @@ def index():
 @utils.timeit
 def search_results():
 
-    utils.log_activity("loading search results")
-
-    logger.info('search server call initiated.')
+    utils.log_activity(f"loading search results for {request.args.get('txtSearchTerm','')}")    
     # The search-session cookie setting can still be None if a user enters the
     # /sources endpoint directly without going to / first!!!
     logger.debug(
@@ -430,10 +415,12 @@ def search_results():
         'resources': [],
         'organizations': [],
         'events': [],
-        'fundings': [],
+        'projects': [],
         'others': [],
         'timedout_sources': []
     }
+
+    failed_sources = []
 
     if request.method == 'GET':
         search_term = request.args.get('txtSearchTerm')
@@ -444,12 +431,18 @@ def search_results():
 
         #Load all the sources from config.py used to harvest data related to search term 
         sources = []
-        for module in current_app.config['DATA_SOURCES']:
-            sources.append(module)
+        if current_user.is_anonymous:
+            for module in app.config['DATA_SOURCES']:
+                sources.append(module)
+        else:
+            excluded_data_sources = current_user.excluded_data_sources.split('; ')
+            for module in app.config['DATA_SOURCES']:
+                if module not in excluded_data_sources:
+                    sources.append(module)
 
         for source in sources:
-            module_name = current_app.config['DATA_SOURCES'][source].get('module', '')            
-            t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).search, args=(source, search_term, results,))
+            module_name = app.config['DATA_SOURCES'][source].get('module', '')            
+            t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).search, args=(source, search_term, results, failed_sources,))
             t.start()
             threads.append(t)
 
@@ -457,12 +450,20 @@ def search_results():
             t.join()
             # print(t.is_alive())
 
+        if len(failed_sources) > 0:
+            flash(f"Following sources could not be harvested: { ', '.join(failed_sources)}", category='error')
+
         # deduplicator.convert_publications_to_csv(results["publications"])
         # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
         results["publications"] = utils.sort_search_results(search_term, results["publications"])  
-        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])             
+        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])  
+        results["resources"] = utils.sort_search_results(search_term, results["resources"]) 
+        results["organizations"] = utils.sort_search_results(search_term, results["organizations"]) 
+        results["events"] = utils.sort_search_results(search_term, results["events"]) 
+        results["projects"] = utils.sort_search_results(search_term, results["projects"]) 
+        results["others"] = utils.sort_search_results(search_term, results["others"])             
         
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)        
@@ -491,7 +492,7 @@ def search_results():
         
 
         # on the first page load, only push top 20 records in each category
-        number_of_records_to_show_on_page_load = int(current_app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])        
+        number_of_records_to_show_on_page_load = int(app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])        
         total_results = {} # the dict to keep the total number of search results 
         displayed_results = {} # the dict to keep the total number of search results currently displayed to the user
         
@@ -512,35 +513,22 @@ def search_results():
 
         return template_response
 
-@app.route('/load-more-publications', methods=['GET'])
-def load_more_publications():
-    print('load more publications')
+
+@app.route('/load-more/<string:object_type>', methods=['GET'])
+def load_more(object_type):
+    utils.log_activity(f"loading more {object_type}")
 
     #define a new results dict for publications to take new publications from the search results stored in the session
     results = {}
-    results['publications'] = session['search-results']['publications']
+    results[object_type] = session['search-results'][object_type]
 
-    total_search_results_publications = session['total_search_results']['publications']
-    displayed_search_results_publications = session['displayed_search_results']['publications']
-    number_of_records_to_append_on_lazy_load = int(current_app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])       
-    results['publications'] = results['publications'][displayed_search_results_publications:displayed_search_results_publications+number_of_records_to_append_on_lazy_load]
-    session['displayed_search_results']['publications'] = displayed_search_results_publications+number_of_records_to_append_on_lazy_load
-    return render_template('components/publications.html', results=results)  
+    total_search_results = session['total_search_results'][object_type]
+    displayed_search_results = session['displayed_search_results'][object_type]
+    number_of_records_to_append_on_lazy_load = int(app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])       
+    results[object_type] = results[object_type][displayed_search_results:displayed_search_results+number_of_records_to_append_on_lazy_load]
+    session['displayed_search_results'][object_type] = displayed_search_results+number_of_records_to_append_on_lazy_load
+    return render_template(f'components/{object_type}.html', results=results) 
 
-@app.route('/load-more-researchers', methods=['GET'])
-def load_more_researchers():
-    print('load more researchers')
-
-    #define a new results dict for researchers to take new researchers from the search results stored in the session
-    results = {}
-    results['researchers'] = session['search-results']['researchers']
-
-    total_search_results_researchers = session['total_search_results']['researchers']
-    displayed_search_results_researchers = session['displayed_search_results']['researchers']
-    number_of_records_to_append_on_lazy_load = int(current_app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])        
-    results['researchers'] = results['researchers'][displayed_search_results_researchers:displayed_search_results_researchers+number_of_records_to_append_on_lazy_load]
-    session['displayed_search_results']['researchers'] = displayed_search_results_researchers+number_of_records_to_append_on_lazy_load
-    return render_template('components/researchers.html', results=results)     
 
 @app.route('/are-embeddings-generated', methods=['GET'])
 def are_embeddings_generated():
@@ -563,63 +551,41 @@ def are_embeddings_generated():
         return str(True)
 
 @app.route('/get-chatbot-answer', methods=['GET'])
+@utils.timeit
 def get_chatbot_answer():
-    print('get chatbot answer')
-
     question = request.args.get('question')
-    print('User asked:', question)
-
-    # context = session['search-results']
-    # answer = chatbot.getAnswer(question=question, context=context)
-
+    utils.log_activity(f"User asked the chatbot: {question}")
     search_uuid = session['search_uuid']
     answer = chatbot.getAnswer(question=question, search_uuid=search_uuid)
     
     return answer
 
 
-# @app.route('/chatbot')
-# def chatbot():
-#     response = make_response(render_template('chatbot.html'))
-
-#     # Set search-session cookie to the session cookie value of the first visit
-#     if request.cookies.get('search-session') is None:
-#         if request.cookies.get('session') is None:
-#             response.set_cookie('search-session', str(uuid.uuid4()))
-#         else:
-#             response.set_cookie('search-session', request.cookies['session'])
-
-#     return response
-
-
-
-from urllib.parse import unquote
-import ast
-
-@app.route('/publication-details/<path:sources>', methods=['GET'])
+@app.route('/publication-details/<path:source>', methods=['GET'])
 @utils.timeit
-def publication_details(sources):
+def publication_details(source):
 
-    sources = unquote(sources)
-    sources = ast.literal_eval(sources)    
+    utils.log_activity(f"loading publication details page: {source}")    
+    identifier_type = source.split(':',1)[0] # as of now this is hardcoded as 'doi'
+    identifier = source.split(':',1)[1]
+
+    sources = []
+    for module in app.config['DATA_SOURCES']:
+        sources.append(module)
+
     for source in sources:
-        doi = source['doi']
-    
-    publication = openalex_publications.get_publication(doi="https://doi.org/"+doi)
-    response = make_response(render_template('publication-details.html', publication=publication))
+        module_name = app.config['DATA_SOURCES'][source].get('module', '')              
 
-    print("response:", response)
+    publication = importlib.import_module(f'sources.{module_name}').get_publication(source, doi="https://doi.org/"+identifier)
+    response = make_response(render_template('publication-details.html', publication=publication))    
     return response
 
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
-    print("doi:", doi)    
-    
+    print("doi:", doi)        
     publication = crossref.get_publication(doi=doi)
-    response = make_response(render_template('partials/publication-details/references.html', publication=publication))
-
-    print("response:", response)
+    response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
     return response
 
 @app.route('/publication-details-recommendations/<path:doi>', methods=['GET'])
@@ -642,37 +608,16 @@ def publication_details_citations(doi):
 
 @app.route('/resource-details')
 def resource_details():
-    response = make_response(render_template('resource-details.html'))
-
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
-
+    response = make_response(render_template('resource-details.html'))  
     return response
 
 
 @app.route('/researcher-details/<string:index>', methods=['GET'])
-def researcher_details(index):
-    # index = json.loads(index)
-    # for result in results['researchers']:
-    #     if result.source[0].identifier.replace("https://openalex.org/", "") == index[0]['sid']:
-    #         researcher = result
-    #         break
-    # logger.info(f'Found researcher {researcher}')
-    researcher = openalex_researchers.get_researcher_details(index)
-    response = make_response(render_template('researcher-details.html',researcher=researcher))
-
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
-
-    return response
+def researcher_details(index): 
+    pass   
+    # researcher = openalex_researchers.get_researcher_details(index)
+    # response = make_response(render_template('researcher-details.html',researcher=researcher))
+    # return response
 
 @app.route('/researcher-banner/<string:index>', methods=['GET'])
 def researcher_banner(index):
@@ -734,9 +679,9 @@ def events_details():
     return response
 
 
-@app.route('/fundings-details')
-def fundings_details():
-    response = make_response(render_template('fundings-details.html'))
+@app.route('/project-details')
+def project_details():
+    response = make_response(render_template('project-details.html'))
     # Set search-session cookie to the session cookie value of the first visit
     if request.cookies.get('search-session') is None:
         if request.cookies.get('session') is None:
@@ -747,23 +692,10 @@ def fundings_details():
     return response
 
 
-@app.route('/details', methods=['POST', 'GET'])
-def details():
-    if request.method == 'GET':
-        # data_type = request.args.get('type')
-        details = {}
-        links = {}
-        name = ''
-        search_term = request.args.get('searchTerm')
-        if search_term.startswith('https://openalex.org/'):
-            details, links, name = details_page.search_openalex(search_term)
-        elif search_term.startswith('https://dblp'):
-            details, links, name = details_page.search_dblp(search_term)
-        elif search_term.startswith('http://www.wikidata.org'):
-            details, links, name = details_page.search_wikidata(search_term)
-        elif search_term.startswith('https://orcid.org/'):
-            details, links, name = details_page.search_orcid(search_term)
-        return render_template('details.html', search_term=search_term, details=details, links=links, name=name)
+@app.route('/event-log')
+def event_log():
+    events = utils.get_events()
+    return render_template(f'event-log.html', events=events) 
 
 
 #endregion

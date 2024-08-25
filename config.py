@@ -1,9 +1,17 @@
 import os
 
+#load environment variables
+from dotenv import find_dotenv, load_dotenv
+_ = load_dotenv(find_dotenv())
+
 class Config:
-    SECRET_KEY = os.environ.get('SECRET_KEY') or 'you-will-never-guess'
+    
+    SECRET_KEY = os.environ.get('SECRET_KEY', '')
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
+
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
+    IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 5
@@ -11,55 +19,76 @@ class Config:
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
 
+    NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
+
     DATA_SOURCES = {
-        "dblp - Publications": {
+        "dblp-Publications": {
             "module": "dblp_publications", 
-            "endpoint": "https://dblp.org/search/publ/api?format=json&h=25&q=",
+            "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         }, 
-        # "dblp - Researchers": {
-        #     "module": "dblp_researchers", 
-        #     "endpoint": "https://dblp.org/search/author/api?format=json&h=25&q=",
+        # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
+        # "dblp-Researchers": { 
+        #    "module": "dblp_researchers", 
+        #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        # "openalex - Publications": {
-        #     "module": "openalex_publications", 
-        #     "endpoint": "https://api.openalex.org/works?page=1&per-page=25&search=",
-        # },
-        # "openalex - Researchers": {
-        #     "module": "openalex_researchers", 
-        #     "endpoint": "https://api.openalex.org/authors?page=1&per-page=25&search=",
-        # },
-        # "zenodo": {
-        #     "module": "zenodo", 
-        #     "endpoint": "https://zenodo.org/api/records?size=25&q=",
-        # },
-        # "wikidata - Publications": {
-        #     "module": "wikidata_publications", 
-        #     "endpoint": "https://query.wikidata.org/sparql?format=json&query=",
-        # },
-        # "wikidata - Researchers": {
-        #     "module": "wikidata_researchers", 
-        #     "endpoint": "https://query.wikidata.org/sparql?format=json&query=",
-        # },
-        # "resodate": {
-        #     "module": "resodate", 
-        #     "endpoint": "https://resodate.org/resources/api/search/oer_data/_search?pretty&size=25&q=",
-        # },
-        # "oersi": {
-        #     "module": "oersi", 
-        #     "endpoint": "https://oersi.org/resources/api/search/oer_data/_search?pretty&size=25&q=",
-        # },
-        # "ieee": {
-        #     "module": "ieee", 
-        #     "endpoint": "http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={api_key}&max_records=25&querytext=",
-        # },
-        # "eudat": {
-        #     "module": "eudat", 
-        #     "endpoint": "https://b2share.eudat.eu/api/records/?page=1&size=25&sort=bestmatch&q=",
-        # },
-        # "openaire - Products": {
-        #     "module": "openaire_products", 
-        #     "endpoint": "https://api.openaire.eu/search/researchProducts?format=json&size=25&keywords=",
-        # },
+        "openalex-Publications": {
+            "module": "openalex_publications", 
+            "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-endpoint": "https://api.openalex.org/works/"
+        },
+        "openalex-Researchers": {
+            "module": "openalex_researchers", 
+            "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+        },
+        "zenodo": {
+            "module": "zenodo", 
+            "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        "wikidata - Publications": {
+            "module": "wikidata_publications", 
+            "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
+        },
+        "wikidata - Researchers": {
+            "module": "wikidata_researchers", 
+            "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
+        },
+        "resodate": {
+            "module": "resodate", 
+            "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        "oersi": {
+            "module": "oersi", 
+            "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        "ieee": {
+            "module": "ieee", 
+            "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+        },
+        "eudat": {
+            "module": "eudat", 
+            "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
+            "record-base-url": f"https://b2share.eudat.eu/records/"
+        },
+        "openaire - Products": {
+            "module": "openaire_products", 
+            "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
+        },
+        "openaire - Projects": {
+            "module": "openaire_projects", 
+            "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
+        },
+        "orcid": {
+            "module": "orcid", 
+            "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        "gesis": {
+            "module": "gesis", 
+            "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        "cordis": {
+            "module": "cordis", 
+            "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
+        },
     }
 
     OAUTH2_PROVIDERS = {

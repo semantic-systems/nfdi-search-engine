@@ -10,12 +10,15 @@
                 <div class="row">
                     <div class="col-6">
                         <a class="text-secondary fw-bold"
-                            href='/researcher-details/{{researcher | format_digital_obj_url}}' target='_blank'>
+                            href="/researcher-details/{{researcher | format_digital_obj_url('orcid')}}" target='_blank'>
                             {{researcher.name}}</a>
                     </div>
                     <div class="col-6">
-                        <a class="text-secondary fw-bold" href='{{researcher.orcid}}' target='_blank'>
-                            ORCID: {{ researcher.orcid|replace('https://orcid.org/', '') }}</a>
+                        ORCID:
+                        {% if researcher.identifier != "" %}
+                        <a class="text-secondary fw-bold" href='https://orcid.org/{{researcher.identifier}}'
+                            target='_blank'>{{ researcher.identifier }}</a>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row px-2 pt-3">
@@ -51,8 +54,8 @@
                         {% endfor %}
                     </div>
                     <div class="col-3 text-end">
-                        <span
-                            class="badge bg-pill bg-success text-wrap text-break">Score:{{researcher.rankScore}}</span>
+                        <!-- <span
+                            class="badge bg-pill bg-success text-wrap text-break">Score:{{researcher.rankScore}}</span> -->
                     </div>
                 </div>
             </div>
@@ -91,7 +94,7 @@
         if (document.getElementById('btn_load_more_researchers')) {
             document.getElementById('btn_load_more_researchers').addEventListener('click', function () {
                 console.log('load more researchers button clicked')
-                load_more_researchers()
+                load_more('researchers');
             });
         }
     });

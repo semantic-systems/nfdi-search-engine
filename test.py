@@ -8,12 +8,15 @@ from enum import Enum
 class ES_Index(Enum):
     user_activity_log = 1
     users = 2
+    event_logs = 3
 
 
 # es_client.delete(index=ES_Index.users.name, id="a-gMAZEBUmJ85srMM-TI")
-try:
-    result = es_client.get(index=ES_Index.users.name, id="a-gMAZEBUmJ85srMM-TI")
-    print(result)
-except exceptions.NotFoundError:
-    pass
+# try:
+#     result = es_client.get(index=ES_Index.users.name, id="a-gMAZEBUmJ85srMM-TI")
+#     print(result)
+# except exceptions.NotFoundError:
+#     pass
 
+
+# es_client.delete(index=ES_Index.event_logs.name, id="Y8egYJEBJDuHyLItISMd")

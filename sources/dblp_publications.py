@@ -1,17 +1,14 @@
 from objects import thing, Article, Author
 from sources import data_retriever
-import logging
 import utils
 from main import app
 
 @utils.handle_exceptions
-@utils.timeit
-def search(source: str, search_term: str, results): 
-
+def search(source: str, search_term: str, results, failed_sources): 
     search_result = data_retriever.retrieve_data(source=source, 
-                                                    base_url=app.config['DATA_SOURCES'][source].get('endpoint', ''),
-                                                    search_term=search_term,
-                                                    results=results)        
+                                                base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+                                                search_term=search_term,
+                                                failed_sources=failed_sources)      
 
     hits = search_result['result']['hits']
     total_records_found = hits['@total']
@@ -55,4 +52,7 @@ def search(source: str, search_term: str, results):
             _source.url = info.get("url", "")                         
             publication.source.append(_source)
 
-            results['publications'].append(publication)    
+            if publication.identifier != "":
+                results['publications'].append(publication)
+            else:
+                results['others'].append(publication)

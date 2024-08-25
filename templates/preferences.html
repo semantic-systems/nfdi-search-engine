@@ -9,82 +9,39 @@
 
 <section class="py-3 py-md-5 py-xl-8">
     <div class="container">
-
-        <div class="accordion accordion-flush" id="accordionFlushExample">
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingOne">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#flush-collapseOne" aria-expanded="false" aria-controls="flush-collapseOne">
-                        Manage Data Sources
-                    </button>
-                </h2>
-                <div id="flush-collapseOne" class="accordion-collapse collapse" aria-labelledby="flush-headingOne"
-                    data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">
-                        <p>
-                            Here is the list of all the data sources that are currently being scanned or "harvested" to
-                            provide aggregate search
-                            results corresponding to your entered search term. However, should you prefer to exclude any
-                            of these sources from being
-                            harvested, then make your preferred adjustments. You can easily prevent a source from being
-                            harvested simply by
-                            deselecting the accompanying checkbox next to it. This flexibility ensures that you are in
-                            control of your search
-                            parameters, allowing for more tailored and focused results.
-                        </p>
-                        <form method="POST" action="">
-                            {{ form.hidden_tag() }}
-                            <fieldset class="form-group">
-                                <legend class="border-bottom mb-4">Data Sources</legend>
-                                {% if form.data_sources.errors %}
-                                <div class="invalid-feedback">
-                                    {% for error in form.data_sources.errors %}
-                                    <span style="color: red;">[{{ error }}]</span>
-                                    {% endfor %}
-                                </div>
-                                {% endif %}
-                                {% for data_source in form.data_sources %}
-                                <div class="form-check">
-                                    {{ data_source(class="form-check-input") }}
-                                    {{ data_source.label(class="form-check-label") }}
-                                </div>
-                                {% endfor %}
-                            </fieldset>
-                            <div class="form-group">
-                                {{ form.submit(class="btn btn-primary") }}
-                            </div>
-                        </form>
-                    </div>
+        <p>
+            Here is the list of all the data sources that are currently being scanned or "harvested" to
+            provide aggregate search
+            results corresponding to your entered search term. However, should you prefer to exclude any
+            of these sources from being
+            harvested, then make your preferred adjustments. You can easily prevent a source from being
+            harvested simply by
+            deselecting the accompanying checkbox next to it. This flexibility ensures that you are in
+            control of your search
+            parameters, allowing for more tailored and focused results.
+        </p>
+        <form method="POST" action="">
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4">Data Sources</legend>
+                {% if form.data_sources.errors %}
+                <div class="invalid-feedback">
+                    {% for error in form.data_sources.errors %}
+                    <span style="color: red;">[{{ error }}]</span>
+                    {% endfor %}
                 </div>
-            </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingTwo">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#flush-collapseTwo" aria-expanded="false" aria-controls="flush-collapseTwo">
-                        Preference #2
-                    </button>
-                </h2>
-                <div id="flush-collapseTwo" class="accordion-collapse collapse" aria-labelledby="flush-headingTwo"
-                    data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">Coming soon ...
-                    </div>
+                {% endif %}
+                {% for data_source in form.data_sources %}
+                <div class="form-check">
+                    {{ data_source(class="form-check-input") }}
+                    {{ data_source.label(class="form-check-label") }}
                 </div>
+                {% endfor %}
+            </fieldset>
+            <div class="form-group mt-3">
+                {{ form.submit(class="btn btn-primary") }}
             </div>
-            <div class="accordion-item">
-                <h2 class="accordion-header" id="flush-headingThree">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                        data-bs-target="#flush-collapseThree" aria-expanded="false" aria-controls="flush-collapseThree">
-                        Preference #3
-                    </button>
-                </h2>
-                <div id="flush-collapseThree" class="accordion-collapse collapse" aria-labelledby="flush-headingThree"
-                    data-bs-parent="#accordionFlushExample">
-                    <div class="accordion-body">Coming soon ....
-                    </div>
-                </div>
-            </div>
-        </div>
-
+        </form>
     </div>
 </section>
 

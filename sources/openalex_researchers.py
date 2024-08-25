@@ -1,111 +1,98 @@
 import requests
 from objects import thing, Article, Author, Organization
-import logging
 import utils
+from main import app
 from sources import data_retriever
+import logging
 import traceback
 from openai import OpenAI
 import json
 # logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 
-def generate_string_from_keys(dictionary):
-    keys_list = list(dictionary.keys())
-    keys_string = " ".join(keys_list)
-    return keys_string
+@utils.handle_exceptions
+def search(source: str, search_term: str, results, failed_sources): 
+    search_result = data_retriever.retrieve_data(source=source, 
+                                                base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+                                                search_term=search_term,
+                                                failed_sources=failed_sources) 
+    total_records_found = search_result['meta']['count']
+    hits = search_result.get("results", [])
+    total_hits = len(hits)
+    utils.log_event(type="info", message=f"{source} - {total_records_found} records matched; pulled top {total_hits}")   
 
-@utils.timeit
-def search(search_term: str, results):
-    
-    source = "OPENALEX Researchers"
+    if int(total_hits) > 0:  
+        for hit in hits:
+                
+            author = Author()
+            # info = hit.get('info',{})
+            author.identifier = hit.get("ids", {}).get("orcid", "").replace("https://orcid.org/","")
+            author.name = hit.get('display_name', '')
+            alias = hit.get('display_name_alternatives', {})
+            if isinstance(alias, str):
+                author.alternateName.append(alias)
+            if isinstance(alias, list):
+                for _alias in alias:
+                    author.alternateName.append(_alias)
 
-    try:
-        search_result = data_retriever.retrieve_data(source=source, 
-                                                     base_url=utils.config["search_url_openalex_researchers"],
-                                                     search_term=search_term,
-                                                     results=results)
-        total_records_found = search_result['meta']['count']
-        hits = search_result.get("results", [])
-        total_hits = len(hits)
-        logger.info(f'{source} - {total_records_found} records matched; pulled top {total_hits}') 
+            affiliations = hit.get('affiliations', {})
+            if isinstance(affiliations, list):
+                for affiliation in affiliations:
+                    institution =  affiliation.get('institution', {})
+                    if isinstance(institution, dict):
+                        _organization = Organization()
+                        _organization.name = institution.get('display_name', '')
+                        years = affiliation.get('years', [])
+                        if(len(years) > 1): _organization.keywords.append(f'{years[-1]}-{years[0]}')
+                        else: _organization.keywords.append(f'{years[0]}')
+                        author.affiliation.append(_organization)
 
-        if int(total_hits) > 0:  
-            for hit in hits:
-                    
-                author = Author()
-                # info = hit.get('info',{})
-                author.orcid = hit.get("ids", {}).get("orcid", "")
-                author.name = hit.get('display_name', '')
-                alias = hit.get('display_name_alternatives', {})
-                if isinstance(alias, str):
-                    author.alternateName.append(alias)
-                if isinstance(alias, list):
-                    for _alias in alias:
-                        author.alternateName.append(_alias)
+            # topics = hit.get('topics', {})
+            # if isinstance(topics, list):
+            #     for topic in topics:
+            #         name =  topic.get('display_name', '')
+            #         author.researchAreas.append(name)
+            # topics = hit.get('topic_share', {})
+            # if isinstance(topics, list):
+            #     for topic in topics:
+            #         name =  topic.get('display_name', '')
+            #         author.researchAreas.append(name)
+            topics = hit.get('x_concepts', {})
+            if isinstance(topics, list):
+                for topic in topics:
+                    name =  topic.get('display_name', '')
+                    author.researchAreas.append(name)                   
+                                        
+            author.works_count = hit.get('works_count', '')
+            author.cited_by_count = hit.get('cited_by_count', '')
 
-                affiliations = hit.get('affiliations', {})
-                if isinstance(affiliations, list):
-                    for affiliation in affiliations:
-                        institution =  affiliation.get('institution', {})
-                        if isinstance(institution, dict):
-                            _organization = Organization()
-                            _organization.name = institution.get('display_name', '')
-                            years = affiliation.get('years', [])
-                            if(len(years) > 1): _organization.keywords.append(f'{years[-1]}-{years[0]}')
-                            else: _organization.keywords.append(f'{years[0]}')
-                            author.affiliation.append(_organization)
+            _source = thing()
+            _source.name = 'OPENALEX'
+            _source.identifier = hit.get("ids", {}).get("openalex", "").replace('https://openalex.org/','')
+            _source.url = hit.get("ids", {}).get("openalex", "")
+            author.source.append(_source)
 
-                # topics = hit.get('topics', {})
-                # if isinstance(topics, list):
-                #     for topic in topics:
-                #         name =  topic.get('display_name', '')
-                #         author.researchAreas.append(name)
-                # topics = hit.get('topic_share', {})
-                # if isinstance(topics, list):
-                #     for topic in topics:
-                #         name =  topic.get('display_name', '')
-                #         author.researchAreas.append(name)
-                topics = hit.get('x_concepts', {})
-                if isinstance(topics, list):
-                    for topic in topics:
-                        name =  topic.get('display_name', '')
-                        author.researchAreas.append(name)                   
-                                            
-                author.works_count = hit.get('works_count', '')
-                author.cited_by_count = hit.get('cited_by_count', '')
+            # search_result_semantic = data_retriever.retrieve_data(source=source, 
+            #                                     base_url="https://api.semanticscholar.org/graph/v1/author/search?fields=name,url,externalIds,paperCount,citationCount&query=",
+            #                                     search_term= author.name.replace(" ", "+"),
+            #                                     results={})
+            # semantic_hits = search_result_semantic.get("data", [])
+            # for semantic_hit in semantic_hits:
+            #     if semantic_hit.get("externalIds", {}).get("ORCID", "") == author.orcid.replace('https://orcid.org/', ''):
+            #         author.works_count = semantic_hit.get('paperCount', '')
+            #         author.cited_by_count = semantic_hit.get('citationCount', '')
+            #         semanticId = semantic_hit.get("authorId", "")
+            #         _source = thing()
+            #         _source.name = 'SEMANITCSCHOLAR'
+            #         _source.identifier = semanticId
+            #         _source.url = semantic_hit.get("url", "")                       
+            #         author.source.append(_source)
+            #         break
 
-                _source = thing()
-                _source.name = 'OPENALEX'
-                _source.identifier = hit.get("ids", {}).get("openalex", "").replace('https://openalex.org/','')
-                author.source.append(_source)
-
-                search_result_semantic = data_retriever.retrieve_data(source=source, 
-                                                    base_url="https://api.semanticscholar.org/graph/v1/author/search?fields=name,url,externalIds,paperCount,citationCount&query=",
-                                                    search_term= author.name.replace(" ", "+"),
-                                                    results={})
-                semantic_hits = search_result_semantic.get("data", [])
-                for semantic_hit in semantic_hits:
-                    if semantic_hit.get("externalIds", {}).get("ORCID", "") == author.orcid.replace('https://orcid.org/', ''):
-                        author.works_count = semantic_hit.get('paperCount', '')
-                        author.cited_by_count = semantic_hit.get('citationCount', '')
-                        semanticId = semantic_hit.get("authorId", "")
-                        _source = thing()
-                        _source.name = 'SEMANITCSCHOLAR'
-                        _source.identifier = semanticId
-                        _source.url = semantic_hit.get("url", "")                       
-                        author.source.append(_source)
-                        break
-
-                results['researchers'].append(author)
+            results['researchers'].append(author)
 
         
-    except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append(source)
-    
-    except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
-        logger.error(traceback.format_exc())
+
 
 def convert_to_string(value):
     if isinstance(value, list):
@@ -114,7 +101,6 @@ def convert_to_string(value):
         details = vars(value)
         return ", ".join(f"{key}: {convert_to_string(val)}" for key, val in details.items() if val not in ("", [], {}, None))
     return str(value)
-
 
 def get_researcher_details(url):
 
@@ -195,7 +181,7 @@ def get_researcher_details(url):
         #             # publication.publication = hit.get("primary_location", {}).get("source", {}).get("display_name", "")
 
         #             abstract_inverted_index = hit.get("abstract_inverted_index", {})
-        #             publication.description = generate_string_from_keys(abstract_inverted_index) # Generate the string using keys from the dictionary
+        #             publication.description = utils.generate_string_from_keys(abstract_inverted_index) # Generate the string using keys from the dictionary
         #             publication.abstract = publication.description
 
         #             authorships = hit.get("authorships", [])                        
@@ -260,7 +246,7 @@ def get_researcher_details(url):
                     # publication.publication = hit.get("primary_location", {}).get("source", {}).get("display_name", "")
 
                     # abstract_inverted_index = hit.get("abstract_inverted_index", {})
-                    # publication.description = generate_string_from_keys(abstract_inverted_index) # Generate the string using keys from the dictionary
+                    # publication.description = utils.generate_string_from_keys(abstract_inverted_index) # Generate the string using keys from the dictionary
                     # publication.abstract = publication.description
 
                     authorships = hit.get("authors", [])                        

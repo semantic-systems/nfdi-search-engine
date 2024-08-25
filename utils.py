@@ -11,20 +11,6 @@ import yaml
 with open("config.yaml", "r") as f:
     config = yaml.load(f, Loader=yaml.FullLoader)
 
-
-#load environment variables
-from dotenv import find_dotenv, load_dotenv
-_ = load_dotenv(find_dotenv())
-env_config = dict(
-    {
-        "OPENAI_API_KEY": os.environ.get("OPENAI_API_KEY", ""),
-    }
-)
-
-
-
-
-
 def clean_json(value):
     """
     Recursively remove all None values from dictionaries and lists, and returns
@@ -112,6 +98,10 @@ def remove_html_tags(text):
 def remove_line_tags(text):
     return text.replace('\n', ' ').replace('\t', ' ')
 
+def generate_string_from_keys(dictionary):
+    keys_list = list(dictionary.keys())
+    keys_string = " ".join(keys_list)
+    return keys_string
 
 from dateparser import parse
 def parse_date(date_str):
@@ -234,6 +224,10 @@ def log_event(type: str = "info", filename: str = None, method: str = None, args
         }
     )
 
+def get_events():
+    result = es_client.search(index=ES_Index.event_logs.name, query={"match": {"type": {"query": "error"}}}, size=100, sort=[{ "timestamp" : "asc" }])    
+    return result["hits"]["hits"]
+
 def add_user(user):
     es_client.index(
         index=ES_Index.users.name,        
@@ -334,7 +328,12 @@ def handle_exceptions(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         try:
-            return f(*args, **kwargs)
+            ts = time()
+            result = f(*args, **kwargs)
+            te = time()
+            filename = os.path.basename(inspect.getfile(f))            
+            log_event(type="info", filename=filename, method=f.__name__, message=f"execution time: {(te-ts):2.4f} sec")
+            return result
         except Exception as ex:
             filename = os.path.basename(inspect.getfile(f))
             log_event(type="error", filename=filename, method=f.__name__, message=str(ex), traceback= traceback.format_exc())

@@ -1,58 +1,43 @@
-import requests
-import logging
 from objects import Person, Author, thing, Organization
+from sources import data_retriever
 import utils
+from main import app
 
-logger = logging.getLogger('nfdi_search_engine')
+@utils.handle_exceptions
+def search(source: str, search_term: str, results, failed_sources): 
+    search_result = data_retriever.retrieve_data(source=source, 
+                                                base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+                                                search_term=search_term,
+                                                failed_sources=failed_sources)
 
-@utils.timeit
-def search(search_term: str, results):
-
-    try:
+    records_found = search_result['num-found']    
+    if records_found > 0:
+        authors = search_result.get('expanded-result', None)
+        if authors:
+            utils.log_event(type="info", message=f"{source} - {records_found} records matched; pulled top {len(authors)}")   
+            for author in authors:
+                authorObj = Author()
+                authorObj.identifier = author.get('orcid-id', '')
+                given_names = author.get('given-names', '')
+                family_names = author.get('family-names', '')
+                authorObj.name = given_names + " " + family_names
                 
-        base_url = utils.config["search_url_orcid"]
-        url = base_url + '"' + search_term.replace(' ', '+') + '"'
-        
-        headers = {'Accept': 'application/json',
-                   'Content-Type': 'application/json',
-                   'User-Agent': utils.config["request_header_user_agent"]
-                   }
+                institution = author.get('institution-name', [])
+                for inst in institution:
+                    authorObj.affiliation.append(Organization(name=inst))                
+                authorObj.works_count = ''
+                authorObj.cited_by_count = ''
 
-        response = requests.get(url, headers=headers, timeout=int(utils.config["request_timeout"]))
+                _source = thing()
+                _source.name = 'ORCID'
+                _source.identifier = author.get('orcid-id', '')
+                _source.url = 'https://orcid.org/' + author.get('orcid-id', '')                         
+                authorObj.source.append(_source)
 
-        if response.status_code == 200:
-            search_result = response.json()
+                results['researchers'].append(authorObj)
 
-            records_found = search_result['num-found']
-            logger.info(f'ORCID - {records_found} records found')
 
-            if records_found > 0:
-                authors = search_result.get('expanded-result', None)
-                if authors:
-                    for author in authors:
-
-                        authorObj = Author()
-                        # authorObj.source = 'ORCID'
-                        authorObj.source.append(thing(name='ORCID'))
-                        given_names = author.get('given-names', '')
-                        family_names = author.get('family-names', '')
-                        authorObj.name = given_names + " " + family_names
-                        authorObj.orcid = author.get('orcid-id', '')
-
-                        institution = author.get('institution-name', [])
-                        for inst in institution:
-                            authorObj.affiliation.append(Organization(name=inst))                
-                        authorObj.works_count = ''
-                        authorObj.cited_by_count = ''
-
-                        results['researchers'].append(authorObj)
-
-    except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('ORCID')
-    
-    except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
+import requests
 
 def get_orcid_access_token():
     # Function to obtain the ORCID access token using client credentials
@@ -94,10 +79,6 @@ def old_search(search_term, results):
     try:
         # Send the GET request to search for public data
         response = requests.get(search_url, headers=headers, timeout=int(utils.config["request_timeout"]))
-
-        logger.debug(f'Orcid response status code: {response.status_code}')
-        logger.debug(f'Orcid response headers: {response.headers}')
-
         if response.status_code == 200:
             # Extract the JSON response
             json_data = response.json()
@@ -192,7 +173,7 @@ def old_search(search_term, results):
         else:
             print("Failed to search for public data:", response.text)
 
-        logger.info(f'Got {len(results)} records from Orcid') 
+        print(f'Got {len(results)} records from Orcid') 
         
     except requests.exceptions.RequestException as e:
         print("An error occurred during the request:", str(e))
