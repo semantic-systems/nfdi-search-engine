@@ -469,7 +469,7 @@ def search_results():
         session['search-results'] = copy.deepcopy(results)        
 
         # Chatbot - push search results to chatbot server for embeddings generation
-        if (utils.config['chatbot_feature_enable']):
+        if (app.config['CHATBOT']['chatbot_feature_enable']):
 
             # Convert a UUID to a 32-character hexadecimal string
             search_uuid = uuid.uuid4().hex
@@ -477,8 +477,8 @@ def search_results():
             
             def send_search_results_to_chatbot(search_uuid: str):
                 print('request is about to start')
-                chatbot_server = utils.config['chatbot_server'] 
-                save_docs_with_embeddings = utils.config['endpoint_save_docs_with_embeddings'] 
+                chatbot_server = app.config['CHATBOT']['chatbot_server'] 
+                save_docs_with_embeddings = app.config['CHATBOT']['endpoint_save_docs_with_embeddings'] 
                 request_url = f'{chatbot_server}{save_docs_with_embeddings}/{search_uuid}'        
                 response = requests.post(request_url, json=json.dumps(results, default=vars))
                 response.raise_for_status() 
@@ -534,11 +534,11 @@ def load_more(object_type):
 def are_embeddings_generated():
 
     #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
-    if (utils.config['chatbot_feature_enable']):
+    if (app.config['CHATBOT']['chatbot_feature_enable']):
         print('are_embeddings_generated')
         uuid = session['search_uuid']
-        chatbot_server = utils.config['chatbot_server'] 
-        are_embeddings_generated = utils.config['endpoint_are_embeddings_generated'] 
+        chatbot_server = app.config['CHATBOT']['chatbot_server'] 
+        are_embeddings_generated = app.config['CHATBOT']['endpoint_are_embeddings_generated'] 
         request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"    
         headers = {
             'Content-Type': 'application/json'
@@ -556,7 +556,7 @@ def get_chatbot_answer():
     question = request.args.get('question')
     utils.log_activity(f"User asked the chatbot: {question}")
     search_uuid = session['search_uuid']
-    answer = chatbot.getAnswer(question=question, search_uuid=search_uuid)
+    answer = chatbot.getAnswer(app=app, question=question, search_uuid=search_uuid)
     
     return answer
 

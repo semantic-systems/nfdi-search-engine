@@ -89,7 +89,36 @@ class Config:
             "module": "cordis", 
             "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
         },
+        "orkg": {
+            "module": "orkg", 
+            "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        # "gepris": {
+        #     "module": "gepris", 
+        #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
+        # },
     }
+
+    CHATBOT = {
+        "chatbot_feature_enable": False,
+        "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),        
+        "endpoint_chat": "/chat",
+        "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",
+        "endpoint_are_embeddings_generated": "/are-embeddings-generated",
+        #open ai ... these two parameters should be passed onto chatbot
+        "openai_model_version": "gpt-3.5-turbo-0125", 
+        "openai_temperature": 2
+    }
+
+    ENTITY_RESOLUTION = {
+        "settings_file_publications": "static/weights/publications-settings.json",
+    }
+
+    # ELASTIC = {
+    #     "server": os.environ.get('ELASTIC_SERVER',""),
+    #     "username": os.environ.get('ELASTIC_USERNAME',""), 
+    #     "password": os.environ.get('ELASTIC_PASSWORD',""),
+    # }
 
     OAUTH2_PROVIDERS = {
         # Google OAuth 2.0 documentation:
@@ -120,17 +149,17 @@ class Config:
             'scopes': ['user:email'],
         },
 
-        # ORCID OAuth 2.0 documentation:
-        # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/        
-        'orcid': {
-            'client_id': os.environ.get('ORCID_CLIENT_ID'),
-            'client_secret': os.environ.get('ORCID_CLIENT_SECRET'),
-            'authorize_url': 'https://github.com/login/oauth/authorize',
-            'token_url': 'https://github.com/login/oauth/access_token',
-            'userinfo': {
-                'url': 'https://api.github.com/user/emails',
-                'email': lambda json: json[0]['email'],
-            },
-            'scopes': ['user:email'],
-        },
+        # # ORCID OAuth 2.0 documentation:
+        # # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/        
+        # 'orcid': {
+        #     'client_id': os.environ.get('ORCID_CLIENT_ID'),
+        #     'client_secret': os.environ.get('ORCID_CLIENT_SECRET'),
+        #     'authorize_url': 'https://sandbox.orcid.org/oauth/authorize',
+        #     'token_url': 'https://sandbox.orcid.org/oauth/token',
+        #     'userinfo': {
+        #         'url': '',
+        #         'email': lambda json: json[0]['email'],
+        #     },
+        #     'scopes': ['/read-limited'],
+        # },
     }

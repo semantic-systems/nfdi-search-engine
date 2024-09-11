@@ -147,10 +147,11 @@ def split_authors(authors_names, seperator, authors_list):
 #region User Activity Logging
 from elasticsearch import Elasticsearch, exceptions
 es_client = Elasticsearch(
-    "http://localhost:9200/",  # Elasticsearch endpoint
-    basic_auth=("elastic", "gQyfAiLs-7mQ+Mq8dNCm"),
+    os.environ.get("ELASTIC_SERVER", ""),  # Elasticsearch endpoint
+    basic_auth=(os.environ.get("ELASTIC_USERNAME", ""), os.environ.get("ELASTIC_PASSWORD", "")),
     # api_key="aWozWnVKQUItaEJISkZmZS1hd1c6WFQ3OUdZdUlTZFdZUDlqcmVGVkhvdw==",
 ) 
+
 from enum import Enum
 class ES_Index(Enum):
     user_activity_log = 1
