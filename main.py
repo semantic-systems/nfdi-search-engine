@@ -469,7 +469,7 @@ def search_results():
         session['search-results'] = copy.deepcopy(results)        
 
         # Chatbot - push search results to chatbot server for embeddings generation
-        if (app.config['CHATBOT']['chatbot_feature_enable']):
+        if (app.config['CHATBOT']['chatbot_enable']):
 
             # Convert a UUID to a 32-character hexadecimal string
             search_uuid = uuid.uuid4().hex
@@ -531,10 +531,10 @@ def load_more(object_type):
 
 
 @app.route('/are-embeddings-generated', methods=['GET'])
+@utils.timeit
 def are_embeddings_generated():
-
     #Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
-    if (app.config['CHATBOT']['chatbot_feature_enable']):
+    if (app.config['CHATBOT']['chatbot_enable']):
         print('are_embeddings_generated')
         uuid = session['search_uuid']
         chatbot_server = app.config['CHATBOT']['chatbot_server'] 
@@ -561,13 +561,13 @@ def get_chatbot_answer():
     return answer
 
 
-@app.route('/publication-details/<path:source>', methods=['GET'])
+@app.route('/publication-details/<path:identifier_with_type>', methods=['GET'])
 @utils.timeit
-def publication_details(source):
+def publication_details(identifier_with_type):
 
-    utils.log_activity(f"loading publication details page: {source}")    
-    identifier_type = source.split(':',1)[0] # as of now this is hardcoded as 'doi'
-    identifier = source.split(':',1)[1]
+    utils.log_activity(f"loading publication details page: {identifier_with_type}")    
+    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'doi'
+    identifier = identifier_with_type.split(':',1)[1]
 
     sources = []
     for module in app.config['DATA_SOURCES']:
@@ -612,8 +612,12 @@ def resource_details():
     return response
 
 
-@app.route('/researcher-details/<string:index>', methods=['GET'])
-def researcher_details(index): 
+@app.route('/researcher-details/<path:identifier_with_type>', methods=['GET'])
+def researcher_details(identifier_with_type):
+
+    utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
+    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
+    identifier = identifier_with_type.split(':',1)[1]
     pass   
     # researcher = openalex_researchers.get_researcher_details(index)
     # response = make_response(render_template('researcher-details.html',researcher=researcher))

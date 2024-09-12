@@ -15,9 +15,8 @@ def search(source: str, search_term: str, results, failed_sources):
                                                 search_term=search_term,
                                                 failed_sources=failed_sources) 
 
-
     total_hits = search_result['totalElements']
-    total_records_pulled = hits['numberOfElements']
+    total_records_pulled = search_result['numberOfElements']
     utils.log_event(type="info", message=f"{source} - {total_hits} records matched; pulled top {total_records_pulled}")
 
     hits = search_result['content']

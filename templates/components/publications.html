@@ -101,7 +101,8 @@
             {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
             download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
-            url = '/publication-details/'+ publication | format_digital_obj_url('doi'),
+            url = url_for('publication_details', identifier_with_type=(publication | format_digital_obj_url('doi')),
+            _external=True),
             img_src = publication.image,
             encoding_contentUrl = publication.encoding_contentUrl,
             title = publication.name | trim

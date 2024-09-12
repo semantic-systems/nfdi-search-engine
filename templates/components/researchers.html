@@ -1,3 +1,4 @@
+{% from 'partials/common/share-modal.html' import shareModal %}
 {% for researcher in results.researchers %}
 <div class="card mb-2">
     <div class="card-body">
@@ -65,28 +66,38 @@
                                                     class="bi bi-bookmark"></i></a></div> -->
                     {% if researcher.identifier != '' %}
                     <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
-                    {% endif %}
+                            data-bs-target="#share-researcher-{{researcher.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-share"></i></a>
+                        {% endif %}
+                    </div>
                 </div>
+
+                {% with share_modal_id='share-researcher-'+researcher.identifier | regex_replace ('\W',''),
+                url = url_for('researcher_details', identifier_with_type=(researcher | format_digital_obj_url('orcid')),
+                _external=True),
+                title = researcher.name | trim
+                %}
+                {{ shareModal(share_modal_id, url, title) }}
+                {% endwith %}
+
             </div>
         </div>
     </div>
-</div>
-{% endfor %}
+    {% endfor %}
 
-<div id="div_load_more_researchers" class="row text-center my-2">
-    <div class="col">
-        {% if session.displayed_search_results.researchers
-        < session.total_search_results.researchers %} <div>Displaying top {{
-            session.displayed_search_results.researchers }} researchers out of
-            {{ session.total_search_results.researchers }}
+    <div id="div_load_more_researchers" class="row text-center my-2">
+        <div class="col">
+            {% if session.displayed_search_results.researchers
+            < session.total_search_results.researchers %} <div>Displaying top {{
+                session.displayed_search_results.researchers }} researchers out of
+                {{ session.total_search_results.researchers }}
+        </div>
+        <br />
+        <button type="button" class="btn btn-secondary" aria-label="Load more researchers"
+            id="btn_load_more_researchers">Load
+            more researchers</button>
+        {% endif %}
     </div>
-    <br />
-    <button type="button" class="btn btn-secondary" aria-label="Load more researchers"
-        id="btn_load_more_researchers">Load
-        more researchers</button>
-    {% endif %}
-</div>
 </div>
 
 <script>
