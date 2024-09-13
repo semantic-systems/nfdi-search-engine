@@ -22,7 +22,7 @@ class Config:
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
 
     DATA_SOURCES = {
-        "dblp-Publications": {
+        "dblp - Publications": {
             "module": "dblp_publications", 
             "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         }, 
@@ -31,12 +31,12 @@ class Config:
         #    "module": "dblp_researchers", 
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        "openalex-Publications": {
+        "openalex - Publications": {
             "module": "openalex_publications", 
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-endpoint": "https://api.openalex.org/works/"
         },
-        "openalex-Researchers": {
+        "openalex - Researchers": {
             "module": "openalex_researchers", 
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
         },
@@ -97,6 +97,17 @@ class Config:
         #     "module": "gepris", 
         #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         # },
+        "crossref - Publications": {
+            "module": "crossref_publications", 
+            "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
+            "get-endpoint": "https://api.crossref.org/works/"
+        },
+        "semantic scholar": {
+            "module": "semanticscholar", 
+            # "search-endpoint": f"",
+            "get-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
+            "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+        },
     }
 
     CHATBOT = {

@@ -1,4 +1,0 @@
-publication_details_openalex_publications: https://api.openalex.org/works/
-publication_details_crossref_publications: https://api.crossref.org/works/
-publication_details_semanticscholar_publication:  https://api.semanticscholar.org/graph/v1/paper/
-publication_details_semanticscholar_recommendations:  https://api.semanticscholar.org/recommendations/v1/papers/forpaper/

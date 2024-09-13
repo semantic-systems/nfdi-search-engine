@@ -6,11 +6,6 @@ from bs4 import BeautifulSoup
 import traceback
 import inspect
 
-# read config file
-import yaml
-with open("config.yaml", "r") as f:
-    config = yaml.load(f, Loader=yaml.FullLoader)
-
 def clean_json(value):
     """
     Recursively remove all None values from dictionaries and lists, and returns

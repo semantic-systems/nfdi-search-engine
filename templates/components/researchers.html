@@ -83,21 +83,22 @@
             </div>
         </div>
     </div>
-    {% endfor %}
+</div>
+{% endfor %}
 
-    <div id="div_load_more_researchers" class="row text-center my-2">
-        <div class="col">
-            {% if session.displayed_search_results.researchers
-            < session.total_search_results.researchers %} <div>Displaying top {{
-                session.displayed_search_results.researchers }} researchers out of
-                {{ session.total_search_results.researchers }}
-        </div>
-        <br />
-        <button type="button" class="btn btn-secondary" aria-label="Load more researchers"
-            id="btn_load_more_researchers">Load
-            more researchers</button>
-        {% endif %}
+<div id="div_load_more_researchers" class="row text-center my-2">
+    <div class="col">
+        {% if session.displayed_search_results.researchers
+        < session.total_search_results.researchers %} <div>Displaying top {{
+            session.displayed_search_results.researchers }} researchers out of
+            {{ session.total_search_results.researchers }}
     </div>
+    <br />
+    <button type="button" class="btn btn-secondary" aria-label="Load more researchers"
+        id="btn_load_more_researchers">Load
+        more researchers</button>
+    {% endif %}
+</div>
 </div>
 
 <script>

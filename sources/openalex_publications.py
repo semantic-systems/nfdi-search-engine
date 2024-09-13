@@ -62,10 +62,9 @@ def search(source: str, search_term: str, results, failed_sources):
 
 
 @utils.handle_exceptions
-@utils.timeit
 def get_publication(source: str, doi: str):
 
-    search_result = data_retriever.retrieve_single_object(source=source, 
+    search_result = data_retriever.retrieve_object(source=source, 
                                                     base_url=app.config['DATA_SOURCES'][source].get('get-endpoint', ''),
                                                     doi=doi)
     

@@ -20,7 +20,7 @@ def search(search_term, results):
         base_url = 'https://gepris.dfg.de/gepris/OCTOPUS'
         url = f"{base_url}?context=projekt&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
 
-        # base_url = utils.config["search_url_gepris"]
+        # base_url = app.config["search_url_gepris"]
         # url = base_url + search_term
 
         # response = requests.get(url)

@@ -1,8 +1,8 @@
 import requests
 import utils
 from objects import Dataset, Author, Article, CreativeWork, Organization, Project
+from main import app
 import logging
-
 logger = logging.getLogger('nfdi_search_engine')
 
 @utils.timeit
@@ -30,7 +30,7 @@ def openaire_product_search(search_string, results):
         api_url = 'https://api.openaire.eu/search/researchProducts'
         response = requests.get(api_url,
                                 params={"keywords": search_string, "format": "json", "size": 20},
-                                timeout=int(utils.config["request_timeout"]))
+                                timeout=int(app.config["REQUEST_TIMEOUT"]))
         data = response.json()
         logger.debug(f'Openaire product search response status code: {response.status_code}')
         logger.debug(f'Openaire product search response headers: {response.headers}')
@@ -127,7 +127,7 @@ def openaire_project_search(search_string, results):
         api_url = 'https://api.openaire.eu/search/projects'
         response = requests.get(api_url, 
                                 params={"name": search_string, "format": "json", "size": 20},
-                                timeout=int(utils.config["request_timeout"]))
+                                timeout=int(app.config["REQUEST_TIMEOUT"]))
         data = response.json()
         logger.debug(f'Openaire project search response status code: {response.status_code}')
         logger.debug(f'Openaire project search response headers: {response.headers}')

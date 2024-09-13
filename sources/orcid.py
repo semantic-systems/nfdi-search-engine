@@ -78,7 +78,7 @@ def old_search(search_term, results):
 
     try:
         # Send the GET request to search for public data
-        response = requests.get(search_url, headers=headers, timeout=int(utils.config["request_timeout"]))
+        response = requests.get(search_url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))
         if response.status_code == 200:
             # Extract the JSON response
             json_data = response.json()

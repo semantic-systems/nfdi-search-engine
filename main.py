@@ -16,7 +16,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 from flask_session import Session
 
 from config import Config
-from sources import crossref, semanticscholar
+# from sources import crossref_publications, semanticscholar
 from chatbot import chatbot
 
 from sources.gepris import org_details
@@ -433,11 +433,12 @@ def search_results():
         sources = []
         if current_user.is_anonymous:
             for module in app.config['DATA_SOURCES']:
-                sources.append(module)
+                if app.config['DATA_SOURCES'][module].get('search-endpoint','').strip() != "":
+                    sources.append(module)
         else:
             excluded_data_sources = current_user.excluded_data_sources.split('; ')
             for module in app.config['DATA_SOURCES']:
-                if module not in excluded_data_sources:
+                if app.config['DATA_SOURCES'][module].get('search-endpoint','').strip() != "" and module not in excluded_data_sources:
                     sources.append(module)
 
         for source in sources:
@@ -571,7 +572,8 @@ def publication_details(identifier_with_type):
 
     sources = []
     for module in app.config['DATA_SOURCES']:
-        sources.append(module)
+        if app.config['DATA_SOURCES'][module].get('get-endpoint','').strip() != "":
+            sources.append(module)
 
     for source in sources:
         module_name = app.config['DATA_SOURCES'][source].get('module', '')              
@@ -583,8 +585,9 @@ def publication_details(identifier_with_type):
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
-    print("doi:", doi)        
-    publication = crossref.get_publication(doi=doi)
+    print("doi:", doi)   
+    module_name = "crossref_publications"     
+    publication = importlib.import_module(f'sources.{module_name}').get_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
     return response
 
@@ -592,7 +595,8 @@ def publication_details_references(doi):
 @utils.timeit
 def publication_details_recommendations(doi):
     print("DOI:", doi)    
-    publications = semanticscholar.get_recommendations_for_publication(doi=doi)
+    module_name = "semanticscholar"
+    publications = importlib.import_module(f'sources.{module_name}').get_recommendations_for_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
     print("response:", response)
     return response
@@ -600,8 +604,9 @@ def publication_details_recommendations(doi):
 @app.route('/publication-details-citations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_citations(doi):
-    print("DOI:", doi)    
-    publications = semanticscholar.get_citations_for_publication(doi=doi)
+    print("DOI:", doi)  
+    module_name = "semanticscholar"  
+    publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(doi=doi)
     response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
     print("response:", response)
     return response
@@ -636,6 +641,7 @@ def researcher_banner(index):
     # if researcher.banner == "":
     #     return jsonify()
     # return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
+
 
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
@@ -694,6 +700,14 @@ def project_details():
             response.set_cookie('search-session', request.cookies['session'])
 
     return response
+
+@app.route('/digital-obj-details/<path:identifier_with_type>', methods=['GET'])
+def digital_obj_details(identifier_with_type):
+
+    utils.log_activity(f"loading digital obj details page: {identifier_with_type}")    
+    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'doi'
+    identifier = identifier_with_type.split(':',1)[1]
+    pass   
 
 
 @app.route('/event-log')
