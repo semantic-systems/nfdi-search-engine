@@ -53,15 +53,14 @@ def search(source: str, search_term: str, results, failed_sources):
             results['publications'].append(publication)  
 
 @utils.handle_exceptions
-def get_publication(source: str, doi: str):
+def get_publication(source: str, doi: str, publications):
     search_result = data_retriever.retrieve_object(source=source, 
                                                     base_url=app.config['DATA_SOURCES'][source].get('get-endpoint', ''),
                                                     doi=doi)
     
     search_result = search_result.get('message',{})
     
-    publication = Article()   
-
+    publication = Article()  
     title = search_result.get("title")        
     publication.name = utils.remove_html_tags(title[0])      
     publication.identifier = search_result.get("DOI", "").replace("https://doi.org/", "") 
@@ -74,6 +73,6 @@ def get_publication(source: str, doi: str):
         referenced_publication.identifier = reference.get("DOI", "")                            
         publication.citation.append(referenced_publication)     
     
-    return publication
+    publications.append(publication)
 
     

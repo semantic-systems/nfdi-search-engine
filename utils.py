@@ -129,7 +129,8 @@ def sort_search_results(search_term, search_results):
         for idx, doc_score in enumerate(doc_scores):
             search_results[idx].rankScore = doc_score
 
-    return sorted(search_results, key=lambda x: x.rankScore, reverse=True)
+    search_results = sorted(search_results, key=lambda x: x.rankScore, reverse=True)
+    # return sorted(search_results, key=lambda x: x.rankScore, reverse=True)
 
 def split_authors(authors_names, seperator, authors_list):
     authors = authors_names.split(seperator)

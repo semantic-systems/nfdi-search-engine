@@ -62,14 +62,13 @@ def search(source: str, search_term: str, results, failed_sources):
 
 
 @utils.handle_exceptions
-def get_publication(source: str, doi: str):
+def get_publication(source: str, doi: str, publications):
 
     search_result = data_retriever.retrieve_object(source=source, 
                                                     base_url=app.config['DATA_SOURCES'][source].get('get-endpoint', ''),
                                                     doi=doi)
     
     publication = Article()   
-
     publication.name = utils.remove_html_tags(search_result.get("title", ""))  
     publication.url = search_result.get("id", "") # not a valid url, openalex is currently working on their web interface.
     publication.identifier = search_result.get("doi", "").replace("https://doi.org/", "")
@@ -97,4 +96,4 @@ def get_publication(source: str, doi: str):
     for keyword in keywords:
         publication.keywords.append(keyword.get("display_name", "") )            
     
-    return publication
+    publications.append(publication)

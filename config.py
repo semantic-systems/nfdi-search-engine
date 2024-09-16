@@ -105,9 +105,22 @@ class Config:
         "semantic scholar": {
             "module": "semanticscholar", 
             # "search-endpoint": f"",
-            "get-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
+            "get-endpoint": "",
+            "citations-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
             "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
         },
+    }
+
+    LLMS = {
+        "openai": {
+            "url": "https://api.openai.com/v1/chat/completions",
+            'open_api_key': os.environ.get("OPENAI_API_KEY", "")
+        },
+        "llama3": {
+            "url": "https://llm-chat.skynet.coypu.org/generate_text",
+            "username": os.environ.get("LLAMA3_USERNAME", ""),
+            "password": os.environ.get("LLAMA3_PASSWORD", ""),
+        }
     }
 
     CHATBOT = {

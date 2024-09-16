@@ -22,6 +22,7 @@ from chatbot import chatbot
 from sources.gepris import org_details
 import utils
 import deduplicator
+import gen_ai
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -458,13 +459,22 @@ def search_results():
         # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
-        results["publications"] = utils.sort_search_results(search_term, results["publications"])  
-        results["researchers"] = utils.sort_search_results(search_term, results["researchers"])  
-        results["resources"] = utils.sort_search_results(search_term, results["resources"]) 
-        results["organizations"] = utils.sort_search_results(search_term, results["organizations"]) 
-        results["events"] = utils.sort_search_results(search_term, results["events"]) 
-        results["projects"] = utils.sort_search_results(search_term, results["projects"]) 
-        results["others"] = utils.sort_search_results(search_term, results["others"])             
+        threads = [] 
+        for k in results.keys():           
+            t = threading.Thread(target=utils.sort_search_results, args=(search_term, results[k],))
+            t.start()
+            threads.append(t)
+
+        for t in threads:
+            t.join()
+
+        # results["publications"] = utils.sort_search_results(search_term, results["publications"])  
+        # results["researchers"] = utils.sort_search_results(search_term, results["researchers"])  
+        # results["resources"] = utils.sort_search_results(search_term, results["resources"]) 
+        # results["organizations"] = utils.sort_search_results(search_term, results["organizations"]) 
+        # results["events"] = utils.sort_search_results(search_term, results["events"]) 
+        # results["projects"] = utils.sort_search_results(search_term, results["projects"]) 
+        # results["others"] = utils.sort_search_results(search_term, results["others"])             
         
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)        
@@ -569,7 +579,7 @@ def publication_details(identifier_with_type):
     utils.log_activity(f"loading publication details page: {identifier_with_type}")    
     identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'doi'
     identifier = identifier_with_type.split(':',1)[1]
-
+      
     sources = []
     for module in app.config['DATA_SOURCES']:
         if app.config['DATA_SOURCES'][module].get('get-endpoint','').strip() != "":
@@ -578,8 +588,29 @@ def publication_details(identifier_with_type):
     for source in sources:
         module_name = app.config['DATA_SOURCES'][source].get('module', '')              
 
-    publication = importlib.import_module(f'sources.{module_name}').get_publication(source, doi="https://doi.org/"+identifier)
-    response = make_response(render_template('publication-details.html', publication=publication))    
+    threads = []  
+    publications = []
+
+    for source in sources:
+        module_name = app.config['DATA_SOURCES'][source].get('module', '')            
+        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_publication, args=(source, "https://doi.org/"+identifier, publications,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
+
+    # publications_json = jsonify(publications)
+    # with open('publications.json', 'w', encoding='utf-8') as f:
+    #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
+
+    if (len(publications) == 1): #forward the only publication record received from one of the sources
+        response = make_response(render_template('publication-details.html', publication=publications[0]))
+    else: 
+        #merge more than one publications record into one publication
+        merged_publication = gen_ai.generate_response_with_openai(jsonify(publications).json)
+        response = make_response(render_template('publication-details.html', publication=merged_publication))
+
     return response
 
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
