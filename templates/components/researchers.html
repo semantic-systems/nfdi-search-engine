@@ -1,3 +1,4 @@
+{% from 'partials/common/share-modal.html' import shareModal %}
 {% for researcher in results.researchers %}
 <div class="card mb-2">
     <div class="card-body">
@@ -10,12 +11,15 @@
                 <div class="row">
                     <div class="col-6">
                         <a class="text-secondary fw-bold"
-                            href='/researcher-details/{{researcher | format_digital_obj_url}}' target='_blank'>
+                            href="/researcher-details/{{researcher | format_digital_obj_url('orcid')}}" target='_blank'>
                             {{researcher.name}}</a>
                     </div>
                     <div class="col-6">
-                        <a class="text-secondary fw-bold" href='{{researcher.orcid}}' target='_blank'>
-                            ORCID: {{ researcher.orcid|replace('https://orcid.org/', '') }}</a>
+                        ORCID:
+                        {% if researcher.identifier != "" %}
+                        <a class="text-secondary fw-bold" href='https://orcid.org/{{researcher.identifier}}'
+                            target='_blank'>{{ researcher.identifier }}</a>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row px-2 pt-3">
@@ -51,8 +55,8 @@
                         {% endfor %}
                     </div>
                     <div class="col-3 text-end">
-                        <span
-                            class="badge bg-pill bg-success text-wrap text-break">Score:{{researcher.rankScore}}</span>
+                        <!-- <span
+                            class="badge bg-pill bg-success text-wrap text-break">Score:{{researcher.rankScore}}</span> -->
                     </div>
                 </div>
             </div>
@@ -62,9 +66,20 @@
                                                     class="bi bi-bookmark"></i></a></div> -->
                     {% if researcher.identifier != '' %}
                     <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                            data-bs-target="#share_modal_dialog"><i class="bi bi-share"></i></a></div>
-                    {% endif %}
+                            data-bs-target="#share-researcher-{{researcher.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-share"></i></a>
+                        {% endif %}
+                    </div>
                 </div>
+
+                {% with share_modal_id='share-researcher-'+researcher.identifier | regex_replace ('\W',''),
+                url = url_for('researcher_details', identifier_with_type=(researcher | format_digital_obj_url('orcid')),
+                _external=True),
+                title = researcher.name | trim
+                %}
+                {{ shareModal(share_modal_id, url, title) }}
+                {% endwith %}
+
             </div>
         </div>
     </div>
@@ -91,7 +106,7 @@
         if (document.getElementById('btn_load_more_researchers')) {
             document.getElementById('btn_load_more_researchers').addEventListener('click', function () {
                 console.log('load more researchers button clicked')
-                load_more_researchers()
+                load_more('researchers');
             });
         }
     });

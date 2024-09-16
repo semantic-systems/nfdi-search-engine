@@ -5,6 +5,7 @@ from elg import Catalog
 import urllib
 from typing import List
 import requests
+from main import app
 
 import logging
 logger = logging.getLogger('nfdi_search_engine')
@@ -24,7 +25,7 @@ def search(search_term, results):
                     + ("?" if len(queries) >= 1 else "")
                     + "&".join([f"{query}={urllib.parse.quote_plus(str(value))}" for (query, value) in queries])
                 )
-                response = requests.get(url, timeout=int(utils.config["request_timeout"]))
+                response = requests.get(url, timeout=int(app.config["REQUEST_TIMEOUT"]))
                 # ensure_response_ok(response)
                 if json:
                     return response.json()

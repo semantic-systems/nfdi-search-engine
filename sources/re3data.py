@@ -3,7 +3,7 @@ import utils
 from objects import CreativeWork, Organization
 import logging
 import xmltodict
-
+from main import app
 logger = logging.getLogger('nfdi_search_engine')
 
 
@@ -19,7 +19,7 @@ def re3data_product_search(search_string, results):
     try:
         api_url = 'https://www.re3data.org/api/beta/repositories'
         response = requests.get(api_url,
-                                params={"query": search_string}, timeout=int(utils.config["request_timeout"])
+                                params={"query": search_string}, timeout=int(app.config["REQUEST_TIMEOUT"])
                                 )
         # Response comes as XML
         data = xmltodict.parse(response.content)

@@ -1,6 +1,0 @@
-@prefix zenodo: <http://zenodo.org/>.
-@prefix schema: <http://schema.org/>.
-@prefix owl: <http://www.w3.org/2002/07/owl#>.
-
-zenodo:image owl:sameAs schema:image.
-zenodo:created owl:sameAs schema:dateCreated.

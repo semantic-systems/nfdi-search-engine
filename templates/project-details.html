@@ -1,0 +1,232 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Project Details{% endblock title %}
+
+<!-- Specific CSS goes HERE  -->
+{% block stylesheets %}
+
+{% endblock stylesheets %}
+
+{% block content %}
+
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+
+        <div class="row pb-4">
+            <div class="col text-start">
+                <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
+            </div>
+        </div>
+        <div class="row border-bottom pb-4">
+            <div class="col-7 text-start">
+                <h3>Project Details </h3>
+                <div class="py-2">
+                    <span class="badge bg-pill">funder</span>
+                    <span class="badge bg-pill">funding</span>
+                    <span class="badge bg-pill">financing</span>
+                    <span class="badge bg-pill">sponsorship</span>
+                    <span class="badge bg-pill">budget</span>
+                </div>
+                <div class="fs-7 py-2">
+                    <span class="pe-4">
+                        <span class="fw-bold">Last update:</span>
+                        <span>20.07.2023</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col-5 d-flex justify-content-end">
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-download fs-4"></i>
+                    <div class="fs-7 my-1">Downloads</div>
+                    <div class="fs-5 fw-bold">500</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-bookmarks fs-4"></i>
+                    <div class="fs-7 my-1">Saved</div>
+                    <div class="fs-5 fw-bold">220</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-eye fs-4"></i>
+                    <div class="fs-7 my-1">Views</div>
+                    <div class="fs-5 fw-bold">2.778</div>
+                </div>
+            </div>
+            <!-- <div class="row border-bottom mt-4"></div> -->
+        </div>
+
+        <div class="row pt-4">
+
+            <div class="col-2 px-2 authors">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5> TOTAL BUDGET </h5>
+                </div>
+                <div class="summary-block p-2 ms-4 mb-2 shadow-sm">
+                    <i class="bi-currency-exchange"></i>
+                    <div class="fs-5 fw-bold"> 333.33$</div>
+                </div>
+                <div class="d-flex p-2 bd-highlight pt-4 pb-1 ">
+                    <h5>FUNDERS (3)</h5>
+                </div>
+                <div class="d-flex p-2 bd-highlight ms-2">
+                    <a href="#"
+                        class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm"
+                        tabindex="-1" role="button" aria-disabled="true"><i
+                            class="px-1 bi-currency-exchange"></i>FUNDER</a>
+                </div>
+                <div class="d-flex p-2 bd-highlight ms-2">
+                    <a href="#"
+                        class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm"
+                        tabindex="-1" role="button" aria-disabled="true"><i
+                            class="px-1 bi-currency-exchange"></i>FUNDER</a>
+                </div>
+                <div class="d-flex p-2 bd-highlight ms-2">
+                    <a href="#"
+                        class="btn btn-outline-secondary text-dark rounded-pill border-1 p-1 pe-2 mb-1 shadow-sm"
+                        tabindex="-1" role="button" aria-disabled="true"><i
+                            class="px-1 bi-currency-exchange"></i>FUNDER</a>
+                </div>
+
+            </div>
+            <div class="col-5 px-4">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5>FUNDERS</h5>
+                </div>
+
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <a class="text-dark fw-bold link-secondary" href='#' target='_blank'>Funder</a>
+                        </div>
+                        <div class="d-flex p-2 bd-highlight fs-6">
+                            <br>Financial Support: 111,11$</br>
+                            <br>Material Support: Laboratory, Gloves</br>
+                            <br>Duration: 01.06.2017 - 03.12.2022<br>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <a class="text-dark fw-bold" href='#' target='_blank'>Funder</a>
+                        </div>
+                        <div class="d-flex p-2 bd-highlight fs-6">
+                            <br>Financial Support: 111,11$</br>
+                            <br>Material Support: Laboratory, Gloves</br>
+                            <br>Duration: 01.06.2017 - 03.12.2022<br>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <a class="text-dark fw-bold" href='#' target='_blank'>Funder</a>
+                        </div>
+                        <div class="d-flex p-2 bd-highlight fs-6">
+                            <br>Financial Support: 111,11$</br>
+                            <br>Material Support: Laboratory, Gloves</br>
+                            <br>Duration: 01.06.2017 - 03.12.2022<br>
+                        </div>
+                    </div>
+                </div>
+
+
+
+
+            </div>
+            <div class="col-auto">
+                <div class="card p-0 shadow-bottom-right" style="border-radius:2.0rem;">
+                    <div class="card-body p-0">
+                        <a href="#" class="btn" tabindex="-1" role="button" aria-disabled="true"><i
+                                class="bi-bookmark fs-5"></i></a><br>
+                        <a href="#" class="btn" tabindex="-1" role="button" aria-disabled="true"><i
+                                class="bi-download  fs-5"></i></a><br>
+                        <a href="#" class="btn" tabindex="-1" role="button" aria-disabled="true"><i
+                                class="bi-flag fs-5"></i></a><br>
+                        <a href="#" class="btn" tabindex="-1" role="button" aria-disabled="true"><i
+                                class="bi-share fs-5"></i></a><br>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-4 ps-5">
+                <div class="d-flex p-2 bd-highlight">
+                    <h5> FUNDED ALSO</h5>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <a class="text-dark fw-bold" href='#' target='_blank'>
+                                Reconstruction and Visualization of 5μm Sectional Coronal Views for Macula
+                                Vasculature in OptoVue OCTA</a>
+                        </div>
+                        <div class="d-flex justify-content-between fs-7 pt-3">
+                            <span class="badge bg-pill"> FUNDER</span>
+                            <span class="">
+                                <a class="text-decoration-none fw-bold" href='#' target='_blank'>
+                                    READ MORE ></a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <a class="text-dark fw-bold" href='#' target='_blank'>
+                                Centerline-supervision multitask learning network for coronary angiography
+                                segmentation</a>
+                        </div>
+                        <div class="d-flex justify-content-between fs-7 pt-3">
+                            <span class="badge bg-pill">FUNDER</span>
+                            <span class="">
+                                <a class="text-decoration-none fw-bold" href='#' target='_blank'>
+                                    READ MORE ></a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
+                    <div class="card-body">
+                        <div class="d-flex bd-highlight">
+                            <a class="text-dark fw-bold" href='#' target='_blank'>
+                                Identification and classification of coronavirus genomic signals based on
+                                linear predictive coding and machine learning methods</a>
+                        </div>
+                        <div class="d-flex justify-content-between fs-7 pt-3">
+                            <span class="badge bg-pill">FUNDER</span>
+                            <span class="">
+                                <a class="text-decoration-none fw-bold" href='#' target='_blank'>
+                                    READ MORE ></a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+</main>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+<script>
+
+    $(document).ready(function () {
+
+
+    });
+
+
+
+</script>
+
+
+{% endblock javascripts %}

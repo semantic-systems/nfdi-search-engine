@@ -13,7 +13,7 @@
                             {{publication.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href='/publication-details/{{publication | format_digital_obj_url}}'
+                            href="/publication-details/{{publication | format_digital_obj_url('doi')}}"
                             target='_blank'>{{publication.name}}</a>
                         {% endif %}
                     </div>
@@ -58,6 +58,12 @@
                         {% endfor %}
                         <span
                             class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.additionalType}}</span>
+                        {% for language in publication.inLanguage %}
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
+                        {% endfor %}
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{publication.license}}</span>
                     </div>
                     <div class="col-3 text-end">
                         <span class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
@@ -95,7 +101,8 @@
             {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
             download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
-            url = '/publication-details/'+ publication | format_digital_obj_url,
+            url = url_for('publication_details', identifier_with_type=(publication | format_digital_obj_url('doi')),
+            _external=True),
             img_src = publication.image,
             encoding_contentUrl = publication.encoding_contentUrl,
             title = publication.name | trim
@@ -128,7 +135,7 @@
         if (document.getElementById('btn_load_more_publications')) {
             document.getElementById('btn_load_more_publications').addEventListener('click', function () {
                 console.log('load more publications button clicked')
-                load_more_publications()
+                load_more('publications');
             });
         }
     });

@@ -20,7 +20,7 @@ def search(search_term, results):
         base_url = 'https://gepris.dfg.de/gepris/OCTOPUS'
         url = f"{base_url}?context=projekt&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
 
-        # base_url = utils.config["search_url_gepris"]
+        # base_url = app.config["search_url_gepris"]
         # url = base_url + search_term
 
         # response = requests.get(url)
@@ -50,38 +50,38 @@ def search(search_term, results):
             
             for entry in entries:
                 try:
-                    fundings = Project()
-                    fundings.source = 'GEPRIS'
+                    project = Project()
+                    project.source = 'GEPRIS'
                     project_link = entry.find("a")["href"]
                     project_description = ''.join(entry.find("div", class_="beschreibung").find_all(string=True, recursive=False)).strip()
-                    fundings.description = project_description
-                    fundings.abstract = project_description
+                    project.description = project_description
+                    project.abstract = project_description
                     title = entry.find("h2").text.strip()
-                    fundings.name = title
+                    project.name = title
                     term = entry.find("div", class_="two_columns").find("span", class_="value2").text.strip()
-                    fundings.dateLastModified = term
+                    project.dateLastModified = term
                     project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
-                    fundings.url = project_url
+                    project.url = project_url
                     applicants_element = entry.find("div", class_="details").find("span", class_="value")
                     applicant_names = applicants_element.text.strip()
                     #check if there is more than one applicant 
                     if "," in applicant_names:
-                        # If there are comma-separated names, split them and add each one to the fundings.author list
+                        # If there are comma-separated names, split them and add each one to the project.author list
                         applicant_names_list = applicant_names.split(',')
                         for applicant_name in applicant_names_list:
                             author = Person()
                             author.type = "Person"
                             author.name = applicant_name.strip()
-                            fundings.author.append(author)
+                            project.author.append(author)
                     else:
-                        # If there is a single applicant, add it to the fundings.author list
+                        # If there is a single applicant, add it to the project.author list
                         author = Person()
                         author.type = "Person"
                         author.name = applicant_names
-                        fundings.author.append(author)
+                        project.author.append(author)
 
                     
-                    results['fundings'].append(fundings)
+                    results['projects'].append(project)
 
                 except KeyError:
                     logger.warning("Key 'href' not found in 'a' tag. Skipping project.")

@@ -10,10 +10,11 @@
             <div>
                 <div class="d-inline-block">
                     {% if search_term %}
-                    <form name="searchbox" class="col-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET" onsubmit="return emptySearch()">
+                    <form name="searchbox" class="col-auto mb-3 mb-lg-0 me-lg-3" action="/results" method="GET"
+                        onsubmit="return emptySearch()">
                         <!-- <input type="search" class="form-control" placeholder="Search..." aria-label="Search"> -->
                         <div>
-                            <div class="searchbox">
+                            <div class="searchbox searchbox_small">
                                 <svg aria-hidden="true" viewBox="0 0 24 24">
                                     <path
                                         d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
@@ -27,9 +28,9 @@
                     </form>
                     {% endif %}
                 </div>
-                <div class="d-inline-block">
+                <!-- <div class="d-inline-block">
                     <a href="#" class="nav-link px-2 link-dark">About Us</a>
-                </div>
+                </div> -->
                 <div class="d-inline-block">
                     <!-- NFDI4DS Button-->
                     <div class="col-auto mb-3 px-2 pt-2 mb-lg-0 me-lg-3 nfdi4ds-banner" data-variant="button"
@@ -52,6 +53,27 @@
                         nfdi4ds('widget');
                     </script>
                     <!-- End NFDI4DS Button -->
+                </div>
+                <div class="d-inline-block" style="vertical-align: super;">
+                    <div class="dropdown">
+                        {% if current_user.is_anonymous %}
+                        <a class="btn btn-success px-4 py-0" href="{{ url_for('login') }}">Login</a>
+                        {% else %}
+                        <button class="btn btn-success dropdown-toggle px-4 py-0" type="button" id="dropdownMenuButton2"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Hi, {{ current_user.first_name }}!
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton2">
+                            <li><a class="dropdown-item active" href="{{ url_for('profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('preferences') }}">Preferences</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
+                        </ul>
+                        {% endif %}
+
+                    </div>
                 </div>
             </div>
             <!--dark and light switch -->
