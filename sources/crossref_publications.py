@@ -55,7 +55,7 @@ def search(source: str, search_term: str, results, failed_sources):
 @utils.handle_exceptions
 def get_publication(source: str, doi: str, publications):
     search_result = data_retriever.retrieve_object(source=source, 
-                                                    base_url=app.config['DATA_SOURCES'][source].get('get-endpoint', ''),
+                                                    base_url=app.config['DATA_SOURCES'][source].get('get-publication-endpoint', ''),
                                                     doi=doi)
     
     search_result = search_result.get('message',{})

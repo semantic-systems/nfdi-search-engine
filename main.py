@@ -511,10 +511,7 @@ def search_results():
             logger.info(f'Got {len(v)} {k}')
             total_results[k] = len(v)
             results[k] = v[:number_of_records_to_show_on_page_load]
-            displayed_results[k] = len(results[k])
-
-        results["timedout_sources"] = list(set(results["timedout_sources"]))
-        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))  
+            displayed_results[k] = len(results[k])          
 
         session['total_search_results'] = total_results
         session['displayed_search_results'] = displayed_results 
@@ -582,7 +579,7 @@ def publication_details(identifier_with_type):
       
     sources = []
     for module in app.config['DATA_SOURCES']:
-        if app.config['DATA_SOURCES'][module].get('get-endpoint','').strip() != "":
+        if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "":
             sources.append(module)
 
     for source in sources:
@@ -651,13 +648,51 @@ def resource_details():
 @app.route('/researcher-details/<path:identifier_with_type>', methods=['GET'])
 def researcher_details(identifier_with_type):
 
-    utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
-    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
-    identifier = identifier_with_type.split(':',1)[1]
-    pass   
+    # utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
+    # identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
+    # identifier = identifier_with_type.split(':',1)[1]
+    # pass   
     # researcher = openalex_researchers.get_researcher_details(index)
     # response = make_response(render_template('researcher-details.html',researcher=researcher))
     # return response
+
+
+    utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
+    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
+    identifier = identifier_with_type.split(':',1)[1]
+      
+    sources = []
+    for module in app.config['DATA_SOURCES']:
+        if app.config['DATA_SOURCES'][module].get('get-researcher-endpoint','').strip() != "":
+            sources.append(module)
+
+    for source in sources:
+        module_name = app.config['DATA_SOURCES'][source].get('module', '')              
+
+    threads = []  
+    researchers = []
+
+    for source in sources:
+        module_name = app.config['DATA_SOURCES'][source].get('module', '')            
+        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_researcher, args=(source, identifier, researchers,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
+
+    # publications_json = jsonify(publications)
+    # with open('publications.json', 'w', encoding='utf-8') as f:
+    #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
+
+    if (len(researchers) == 1): #forward the only publication record received from one of the sources
+        response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
+    else: 
+        #merge more than one researchers record into one researcher
+        merged_researcher = gen_ai.generate_response_with_openai(jsonify(researchers).json)
+        response = make_response(render_template('researcher-details.html', researcher=merged_researcher))
+
+    return response
 
 @app.route('/researcher-banner/<string:index>', methods=['GET'])
 def researcher_banner(index):
@@ -746,6 +781,10 @@ def event_log():
     events = utils.get_events()
     return render_template(f'event-log.html', events=events) 
 
+@app.route('/delete-event/<string:event_id>')
+def delete_event(event_id):
+    utils.delete_event(event_id)
+    return "Event has been deleted" 
 
 #endregion
 

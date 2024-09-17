@@ -68,7 +68,7 @@ def get_citations_for_publication(doi: str):
     while(reAttemptFlag):
         # first retrieve semantic scholar paper id against the doi 
         search_result = data_retriever.retrieve_object(source=source, 
-                                                    base_url=app.config['DATA_SOURCES'][source].get('get-endpoint', ''),
+                                                    base_url=app.config['DATA_SOURCES'][source].get('get-publication-endpoint', ''),
                                                     doi=doi+"?fields=citations.title,citations.year,citations.externalIds,citations.authors")
         
         if type(search_result) != dict and int(search_result) == 429:

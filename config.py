@@ -34,11 +34,14 @@ class Config:
         "openalex - Publications": {
             "module": "openalex_publications", 
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
-            "get-endpoint": "https://api.openalex.org/works/"
+            "get-publication-endpoint": "https://api.openalex.org/works/",
+            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "openalex - Researchers": {
             "module": "openalex_researchers", 
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-researcher-endpoint": "https://api.openalex.org/authors/",
+            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "zenodo": {
             "module": "zenodo", 
@@ -100,14 +103,19 @@ class Config:
         "crossref - Publications": {
             "module": "crossref_publications", 
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
-            "get-endpoint": "https://api.crossref.org/works/"
+            "get-publication-endpoint": "https://api.crossref.org/works/"
         },
-        "semantic scholar": {
-            "module": "semanticscholar", 
+        "semantic scholar - Publications": {
+            "module": "semanticscholar_publications", 
             # "search-endpoint": f"",
-            "get-endpoint": "",
+            # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
             "citations-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
             "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+        },
+        "semantic scholar - Researchers": {
+            "module": "semanticscholar_researchers", 
+            # "search-endpoint": f"",
+            # "get-researcher-endpoint": "https://api.semanticscholar.org/graph/v1/author/",            
         },
     }
 

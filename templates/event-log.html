@@ -43,6 +43,7 @@
                     <th>filename</th>
                     <th>method</th>
                     <th>message</th>
+                    <th>action</th>
                     <th class="none">traceback</th>
                 </tr>
             </thead>
@@ -54,6 +55,7 @@
                     <th>filename</th>
                     <th>method</th>
                     <th>message</th>
+                    <th>action</th>
                     <th class="none">traceback</th>
                 </tr>
             </tfoot>
@@ -66,6 +68,8 @@
                     <td>{{ event['_source']['filename'] }}</td>
                     <td>{{ event['_source']['method'] }}</td>
                     <td>{{ event['_source']['message'] }}</td>
+                    <td><a href="http://192.168.178.20:5002/delete-event/{{ event['_id'] }}" target="_blank">Delete</a>
+                    </td>
                     <td>{{ event['_source']['traceback'] }}</td>
                 </tr>
                 {% endfor %}
@@ -80,7 +84,7 @@
             var table = new DataTable('#example', {
                 columnDefs: [
                     {
-                        targets: 6,
+                        targets: 7,
                         render: function (data, type, row) {
                             var d = $.fn.dataTable.render.text().display(data);
                             d = d.replaceAll('\n', '<br>');

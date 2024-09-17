@@ -225,6 +225,10 @@ def get_events():
     result = es_client.search(index=ES_Index.event_logs.name, query={"match": {"type": {"query": "error"}}}, size=100, sort=[{ "timestamp" : "asc" }])    
     return result["hits"]["hits"]
 
+def delete_event(event_id:str):
+    es_client.delete(index=ES_Index.event_logs.name, id=event_id)
+
+
 def add_user(user):
     es_client.index(
         index=ES_Index.users.name,        

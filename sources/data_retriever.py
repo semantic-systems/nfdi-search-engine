@@ -4,10 +4,13 @@ import utils
 import urllib.parse
 from main import app
 
-def retrieve_data(source: str, base_url: str, search_term: str, failed_sources):    
+def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url:str=""):    
     try:
-        search_term = urllib.parse.quote_plus(string=search_term, safe='()?&=,')
-        url = base_url + search_term
+        # Either the request will have base url and search then the url will be formed concatenating both of them 
+        # otherwise the url will be used as is.
+        if url == "":
+            search_term = urllib.parse.quote_plus(string=search_term, safe='()?&=,')
+            url = base_url + search_term
         # encode the url
         # url = urllib.parse.quote_plus(string=url, safe=';/?:@&=+$,')
         # url = urllib.parse.quote_plus(string=url)
