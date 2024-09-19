@@ -96,7 +96,6 @@ def convert_to_string(value):
         return ", ".join(f"{key}: {convert_to_string(val)}" for key, val in details.items() if val not in ("", [], {}, None))
     return str(value)
 
-
 @utils.handle_exceptions
 def get_researcher(source: str, orcid: str, researchers):
 
@@ -109,7 +108,7 @@ def get_researcher(source: str, orcid: str, researchers):
                 
     researcher = Author()    
     researcher.url = orcid
-    researcher.orcid = hit.get("ids", {}).get("orcid", "")
+    researcher.identifier = hit.get("ids", {}).get("orcid", "").replace('https://orcid.org/','')
     researcher.name = hit.get('display_name', '')
     alias = hit.get('display_name_alternatives', {})
     if isinstance(alias, str):
@@ -227,45 +226,45 @@ def get_researcher(source: str, orcid: str, researchers):
     #             researcher.works.append(publication)
     #             a+=1
 
-    researcher.about = get_researcher_about_us(researcher)    
+    # researcher.about = get_researcher_about_us(researcher)    
     researchers.append(researcher)
 
-@utils.handle_exceptions
-def get_researcher_about_us(researcher: Author):
-    ### uncomment to generate about section
-    details = vars(researcher)
-    # Convert the details into a string format
-    details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key not in ("works", "source","orcid")))
-    prompt = f"Generate a 2-3 line 'About' section for a researcher based on the following details:\n{details_str}"
-    client = OpenAI(
-        api_key=utils.env_config["OPENAI_API_KEY"],
-    )        
-    chat_completion = client.chat.completions.create(
-        messages=[
-            {
-                "role": "user",
-                "content": f'{prompt}',
-            }
-        ],
-        model="gpt-3.5-turbo",
-    )
-    # about_section = response.choices[0].text.strip()
-    researcher.about = chat_completion.choices[0].message.content.strip()
+# @utils.handle_exceptions
+# def get_researcher_about_us(researcher: Author):
+#     ### uncomment to generate about section
+#     details = vars(researcher)
+#     # Convert the details into a string format
+#     details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key not in ("works", "source","orcid")))
+#     prompt = f"Generate a 2-3 line 'About' section for a researcher based on the following details:\n{details_str}"
+#     client = OpenAI(
+#         api_key=utils.env_config["OPENAI_API_KEY"],
+#     )        
+#     chat_completion = client.chat.completions.create(
+#         messages=[
+#             {
+#                 "role": "user",
+#                 "content": f'{prompt}',
+#             }
+#         ],
+#         model="gpt-3.5-turbo",
+#     )
+#     # about_section = response.choices[0].text.strip()
+#     researcher.about = chat_completion.choices[0].message.content.strip()
 
 
-@utils.handle_exceptions
-def get_researcher_banner(researcher: Author):
-    details = vars(researcher)
-    details_str = "\n".join(f"{convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key in ("researchAreas")))
-    prompt = f"A banner for researcher with following research areas:\n{researcher.about}"
-    client = OpenAI(api_key=utils.env_config["OPENAI_API_KEY"])
-    response = client.images.generate(
-        model="dall-e-2",
-        prompt=prompt,
-        size="512x512",
-        quality="standard",
-        response_format="b64_json",
-        n=1,
-    )
-    researcher.banner = response.data[0].b64_json
-    return researcher
+# @utils.handle_exceptions
+# def get_researcher_banner(researcher: Author):
+#     details = vars(researcher)
+#     details_str = "\n".join(f"{convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key in ("researchAreas")))
+#     prompt = f"A banner for researcher with following research areas:\n{researcher.about}"
+#     client = OpenAI(api_key=utils.env_config["OPENAI_API_KEY"])
+#     response = client.images.generate(
+#         model="dall-e-2",
+#         prompt=prompt,
+#         size="512x512",
+#         quality="standard",
+#         response_format="b64_json",
+#         n=1,
+#     )
+#     researcher.banner = response.data[0].b64_json
+#     return researcher

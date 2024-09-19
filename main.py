@@ -648,15 +648,6 @@ def resource_details():
 @app.route('/researcher-details/<path:identifier_with_type>', methods=['GET'])
 def researcher_details(identifier_with_type):
 
-    # utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
-    # identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
-    # identifier = identifier_with_type.split(':',1)[1]
-    # pass   
-    # researcher = openalex_researchers.get_researcher_details(index)
-    # response = make_response(render_template('researcher-details.html',researcher=researcher))
-    # return response
-
-
     utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
     identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
     identifier = identifier_with_type.split(':',1)[1]
@@ -687,26 +678,27 @@ def researcher_details(identifier_with_type):
 
     if (len(researchers) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
+        session['researcher:'+identifier] = jsonify(researchers[0]).json
     else: 
         #merge more than one researchers record into one researcher
         merged_researcher = gen_ai.generate_response_with_openai(jsonify(researchers).json)
         response = make_response(render_template('researcher-details.html', researcher=merged_researcher))
+        session['researcher:'+identifier] = merged_researcher
 
     return response
 
-@app.route('/researcher-banner/<string:index>', methods=['GET'])
-def researcher_banner(index):
-    pass
-    # logger.info(f'Fetching details for researcher with index {index}')
-    # for result in results['researchers']:
-    #     if result.list_index == index:
-    #         researcher = result
-    #         break
-    # # logger.info(f'Found researcher {researcher}')
-    # researcher = openalex_researchers.get_researcher_banner(researcher)
-    # if researcher.banner == "":
-    #     return jsonify()
-    # return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
+@app.route('/generate-researcher-about-me/<string:orcid>', methods=['GET'])
+def generate_researcher_about_me(orcid):
+    researcher_about_me = gen_ai.generate_researcher_about_me(session['researcher:'+orcid])
+    return jsonify(summary=f'{researcher_about_me}')
+
+
+@app.route('/generate-researcher-banner/<string:orcid>', methods=['GET'])
+def generate_researcher_banner(orcid): 
+    generated_banner = gen_ai.generate_researcher_banner(session['researcher:'+orcid])
+    if generated_banner == "":
+        return jsonify()
+    return jsonify(generated_banner = f'data:image/jpeg;base64,{generated_banner}')
 
 
 

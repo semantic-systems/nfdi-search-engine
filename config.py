@@ -25,6 +25,7 @@ class Config:
         "dblp - Publications": {
             "module": "dblp_publications", 
             "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            
         }, 
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
         # "dblp-Researchers": { 
@@ -121,7 +122,8 @@ class Config:
 
     LLMS = {
         "openai": {
-            "url": "https://api.openai.com/v1/chat/completions",
+            "url_chat_completions": "https://api.openai.com/v1/chat/completions",
+            "url_images_generations": "https://api.openai.com/v1/images/generations",
             'open_api_key': os.environ.get("OPENAI_API_KEY", "")
         },
         "llama3": {
@@ -132,7 +134,7 @@ class Config:
     }
 
     CHATBOT = {
-        "chatbot_enable": True,
+        "chatbot_enable": False,
         "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),        
         "endpoint_chat": "/chat",
         "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",
