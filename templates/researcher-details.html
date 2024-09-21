@@ -51,7 +51,9 @@
                     <h5>ABOUT</h5>
                 </div>
                 <div class="d-flex p-2 fs-6 pb-4 researcher-about-me">
-                    Researcher Summary
+                    <div class='loader'>
+                        <div class='sp-3balls'></div>
+                    </div>
                 </div>
                 <div class="d-flex p-2 pb-4 justify-content-start">
                     <div class="summary-block p-1">
@@ -332,14 +334,14 @@
 
     // JavaScript to generate researcher 'about me' / summary after page load
     document.addEventListener("DOMContentLoaded", function () {
-        document.querySelector('.researcher-about-me').innerHTML = "<div class='loader'><div class='sp-3balls'></div></div>";
+        // document.querySelector('.researcher-about-me').innerHTML = "<div class='loader'><div class='sp-3balls'></div></div>";
         fetch('/generate-researcher-about-me/{{researcher.identifier}}')  // Endpoint to generate researcher 'about me' / summary
             .then(response => response.json())
             .then(data => {
                 if (data.summary) {
                     document.querySelector('.researcher-about-me').innerHTML = data.summary;
                 }
-            })  
+            })
             .catch(error => console.error('Error while generating summary:', error));
     });
 
@@ -352,7 +354,7 @@
                     document.querySelector('.banner').style.backgroundImage = `url(${data.generated_banner})`;
                 }
             })
-            .catch(error => console.error('Error fetching image:', error));
+            .catch(error => console.error('Error while fetching image:', error));
     });
 
 

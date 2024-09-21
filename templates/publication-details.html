@@ -132,15 +132,16 @@
                     </div>
                 </div> -->
                 <div class="d-flex p-2 bd-highlight pt-4" id="references">
-                    <h5>REFERENCES <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from CrossRef"></i></h5>
+                    <h5>REFERENCES ({{publication.referenceCount}}) <i class="bi bi-info-circle-fill text-secondary"
+                            data-bs-toggle="tooltip" data-bs-placement="top" title="Retrieved from CrossRef"></i></h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
                 </div>
                 <div class="d-flex p-2 bd-highlight pt-4" id="cited-by">
-                    <h5>CITATIONS <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></h5>
+                    <h5>CITATIONS ({{publication.citationCount}}) <i class="bi bi-info-circle-fill text-secondary"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Retrieved from Semantic Scholar"></i></h5>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-citations">Load</button>
@@ -230,7 +231,7 @@
                 },
                 success: function (data) {
                     $('#references_block').html(data);
-                    console.log(data)
+                    // console.log(data)
                     console.log('references have been loaded.')
                     $('.loader').remove();
                 },

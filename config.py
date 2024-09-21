@@ -25,7 +25,7 @@ class Config:
         "dblp - Publications": {
             "module": "dblp_publications", 
             "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-            
+
         }, 
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
         # "dblp-Researchers": { 
@@ -104,7 +104,8 @@ class Config:
         "crossref - Publications": {
             "module": "crossref_publications", 
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
-            "get-publication-endpoint": "https://api.crossref.org/works/"
+            "get-publication-endpoint": "https://api.crossref.org/works/",
+            "get-publication-references-endpoint": "https://api.crossref.org/works/",
         },
         "semantic scholar - Publications": {
             "module": "semanticscholar_publications", 

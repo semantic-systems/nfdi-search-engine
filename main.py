@@ -613,9 +613,10 @@ def publication_details(identifier_with_type):
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
-    print("doi:", doi)   
+    print("doi:", doi)  
+    source = "crossref - Publications" 
     module_name = "crossref_publications"     
-    publication = importlib.import_module(f'sources.{module_name}').get_publication(doi=doi)
+    publication = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
     return response
 
@@ -688,16 +689,20 @@ def researcher_details(identifier_with_type):
     return response
 
 @app.route('/generate-researcher-about-me/<string:orcid>', methods=['GET'])
+@utils.handle_exceptions
 def generate_researcher_about_me(orcid):
     researcher_about_me = gen_ai.generate_researcher_about_me(session['researcher:'+orcid])
     return jsonify(summary=f'{researcher_about_me}')
 
 
 @app.route('/generate-researcher-banner/<string:orcid>', methods=['GET'])
+@utils.handle_exceptions
 def generate_researcher_banner(orcid): 
     generated_banner = gen_ai.generate_researcher_banner(session['researcher:'+orcid])
     if generated_banner == "":
-        return jsonify()
+        import base64
+        with open('static/images/researcher-default-banner.jpg', "rb") as fh:
+            generated_banner = base64.b64encode(fh.read()).decode()
     return jsonify(generated_banner = f'data:image/jpeg;base64,{generated_banner}')
 
 

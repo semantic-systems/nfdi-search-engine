@@ -65,14 +65,64 @@ def get_publication(source: str, doi: str, publications):
     publication.name = utils.remove_html_tags(title[0])      
     publication.identifier = search_result.get("DOI", "").replace("https://doi.org/", "") 
     publication.abstract = utils.remove_html_tags(search_result.get("abstract", "")) 
+    publication.publication = search_result.get("publisher", "")
+    licenses = search_result.get("license", [])
+    if len(licenses) > 0:
+        publication.license = licenses[0].get('URL',"")
+    publication.additionalType = search_result.get("type", "")
+    publication.referenceCount = search_result.get("reference-count", "")
+    publication.citationCount = search_result.get("is-referenced-by-count", "")
 
-    references = search_result.get("reference", [])                        
-    for reference in references:
-        referenced_publication = Article() 
-        referenced_publication.text = reference.get("unstructured", "")
-        referenced_publication.identifier = reference.get("DOI", "")                            
-        publication.citation.append(referenced_publication)     
+    authors = search_result.get("author", [])                        
+    for author in authors:
+        _author = Author()
+        _author.type = 'Person'
+        _author.name = author.get("given", "") + " " + author.get("family", "")
+        _author.identifier = author.get("orcid", "")                            
+        publication.author.append(_author)
+
+    # references = search_result.get("reference", [])                        
+    # for reference in references:
+    #     referenced_publication = Article() 
+    #     referenced_publication.identifier = reference.get("DOI", "") 
+    #     structured_reference_text = []  
+    #     structured_reference_text.append(reference.get("author", "")) 
+    #     reference_year = reference.get("year", "")
+    #     if reference_year  != "":
+    #         structured_reference_text.append("(" + reference_year + ")")
+    #     structured_reference_text.append(reference.get("article-title", ""))
+    #     structured_reference_text.append(reference.get("series-title", ""))
+    #     structured_reference_text.append(reference.get("journal-title", ""))
+    #     structured_reference_text.append(reference.get("unstructured", ""))        
+    #     referenced_publication.text = ('. ').join(structured_reference_text)
+    #     publication.reference.append(referenced_publication)     
     
     publications.append(publication)
 
+@utils.handle_exceptions
+def get_publication_references(source: str, doi: str):
+    search_result = data_retriever.retrieve_object(source=source, 
+                                                    base_url=app.config['DATA_SOURCES'][source].get('get-publication-references-endpoint', ''),
+                                                    doi=doi)
+    
+    search_result = search_result.get('message',{})
+    
+    publication = Article()  
+    references = search_result.get("reference", [])                        
+    for reference in references:
+        referenced_publication = Article() 
+        referenced_publication.identifier = reference.get("DOI", "") 
+        structured_reference_text = []  
+        structured_reference_text.append(reference.get("author", "")) 
+        reference_year = reference.get("year", "")
+        if reference_year  != "":
+            structured_reference_text.append("(" + reference_year + ")")
+        structured_reference_text.append(reference.get("article-title", ""))
+        structured_reference_text.append(reference.get("series-title", ""))
+        structured_reference_text.append(reference.get("journal-title", ""))
+        structured_reference_text.append(reference.get("unstructured", ""))        
+        referenced_publication.text = ('. ').join(filter(None, structured_reference_text))
+        publication.reference.append(referenced_publication)     
+    
+    return publication
     

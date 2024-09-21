@@ -22,7 +22,9 @@ def search(source: str, search_term: str, results, failed_sources):
             publication.name = hit_source.get("name", "")             
             publication.url = hit_source.get("id", "")  
             publication.identifier =re.sub('^.*doi\.org\/', '', hit_source.get("id", "")) 
-            publication.datePublished = utils.parse_date(hit_source.get("datePublished", "")) 
+            publication.datePublished = hit_source.get("datePublished", "")
+            if publication.datePublished != "":
+                publication.datePublished = utils.parse_date(publication.datePublished) 
             publication.license = hit_source.get("license", {}).get("id", "")
             
             publication.description = utils.remove_html_tags(hit_source.get("description", ""))
