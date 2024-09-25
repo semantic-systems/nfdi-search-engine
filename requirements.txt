@@ -1,6 +1,6 @@
 lxml==5.1.0
 flask==2.3.2
-Flask-Login==0.6.2
+Flask-Login==0.6.3
 Flask-Session==0.5.0
 flask-wtf==1.2.1
 extruct~=0.14.0
@@ -17,7 +17,7 @@ PyYAML~=6.0
 pydantic == 1.* # can be updated to V2 when package "elg" is compatible
 pylbfgs @ git+https://github.com/fzimmermann89/pylbfgs.git@fzimmermann89-cython
 dedupe>=2.0.23
-xmltodict
+xmltodict~=0.13.0
 dateparser>=1.2.0
 rank_bm25==0.2.2
 python-dotenv==1.0.1
@@ -26,3 +26,6 @@ elasticsearch==8.14.0
 ua_parser==0.18.0
 google-re2==1.1.20240702
 email-validator==2.2.0
+Werkzeug~=3.0.4
+WTForms~=3.1.2
+Jinja2~=3.1.4

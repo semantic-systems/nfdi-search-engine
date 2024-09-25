@@ -1,5 +1,6 @@
 import requests
-import logging
+import xmltodict
+
 import utils
 import urllib.parse
 from main import app
@@ -19,7 +20,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources):
         response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))                
 
         if response.status_code == 200:
-            search_result = response.json()
+            search_result = convert_to_json(response)
             #clean the json response; remove all the keys which don't have any value
             search_result = utils.clean_json(search_result)
             return search_result 
@@ -62,3 +63,22 @@ def retrieve_object(source: str, base_url: str, doi: str):
 
     except Exception as ex:
         raise ex
+
+
+def convert_to_json(response):
+    content_type = response.headers.get('Content-Type')
+
+    # Handle JSON responses
+    if 'application/json' in content_type:
+        data = response.json()
+
+    # Handle XML responses
+    elif 'xml' in content_type:
+        data = xmltodict.parse(response.content)
+
+    # Add more content types as needed
+    # Handle unknown formats by treating the response as plain text
+    else:
+        data = {'raw_content': response.text}
+
+    return data

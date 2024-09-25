@@ -1,124 +1,131 @@
-import requests
+import time
+from typing import List, Dict
+
 import utils
 from objects import CreativeWork, Organization
-import logging
-import xmltodict
 from main import app
-logger = logging.getLogger('nfdi_search_engine')
+from sources import data_retriever
 
 
-@utils.timeit
-def search(search_string: str, results):
-    re3data_product_search(search_string, results)
+@utils.handle_exceptions
+def search(source: str, search_term: str, results: Dict, failed_sources: List):
+    start_time = time.time()  # TODO: Retrieval takes way too long!
+    search_results = data_retriever.retrieve_data(source=source,
+                                                  base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+                                                  search_term=search_term,
+                                                  failed_sources=failed_sources)
 
-    logger.info(f"Got {len(results)} records from re3data")
-    return results
+    # Iterate through each repository and retrieve details using its ID
+    counter_retrieved_resources = 0
+    repositories = search_results['list']['repository']
+    repositories = [repositories] if isinstance(repositories, dict) else repositories
+    for repo in repositories:
+        # Call another API to get repository details
+        details = data_retriever.retrieve_data(source=source,
+                                               base_url=app.config['DATA_SOURCES'][source].get('details-endpoint', ''),
+                                               search_term=repo['id'],
+                                               failed_sources=failed_sources)
+
+        if details is not None:
+            creative_work = map_repository_to_creative_work(source=source,
+                                                            doi=repo['doi'],
+                                                            repository_details=details,)
+            results['resources'].append(creative_work)
+            counter_retrieved_resources += 1
+
+    utils.log_event(type="info", message=f"{source} - retrieved {counter_retrieved_resources} repository details")
+
+    end_time = time.time()
+    duration = end_time - start_time
+    print(f"searching Re3Data took {duration:.2f} seconds to execute")
 
 
-def re3data_product_search(search_string, results):
-    try:
-        api_url = 'https://www.re3data.org/api/beta/repositories'
-        response = requests.get(api_url,
-                                params={"query": search_string}, timeout=int(app.config["REQUEST_TIMEOUT"])
-                                )
-        # Response comes as XML
-        data = xmltodict.parse(response.content)
+def map_repository_to_creative_work(source: str, doi: str, repository_details: dict) -> CreativeWork:
+    repository_data = repository_details.get('r3d:re3data', {}).get('r3d:repository', {})
 
-        logger.debug(f're3data product search response status code: {response.status_code}')
-        logger.debug(f're3data product search response headers: {response.headers}')
+    # TODO: we could also return a list of organizations for the organizations tab, not just resources/repositories
+    authors = []
+    funder = Organization()
+    institutions = repository_data.get('r3d:institution', [])
+    organizations = []
+    if isinstance(institutions, dict):
+        institutions = [institutions]
+    for institution in institutions:
+        organization = Organization(
+            name=institution.get('r3d:institutionName', {}).get('#text', ''),
+            alternateName=get_alternate_names(institution.get('r3d:institutionAdditionalName', {})),
+            additionalType=institution.get('r3d:institutionType', ''),
+            url=institution.get('r3d:institutionURL', ''),
+            identifier=institution.get('r3d:institutionIdentifier', ''),
+            location=institution.get('r3d:institutionCountry', ''),
+            email=institution.get('r3d:institutionContact', ''),
+            keywords=institution.get('r3d:responsibilityType', []),
+            source=source
+        )
+        if 'funding' in organization.keywords:
+            # select the first funding organization as funder since only one funder is permitted
+            funder = organization if funder.name == '' else funder  # TODO: Why is only one funder allowed?
+        organizations.append(organization)
+    authors.extend(organizations) # TODO: why are organizations as authors not displayed on the results overview page?
 
-        if response.status_code == 200:
-            try:
-                hits = data.get('list', {}).get('repository', [])
-            except AttributeError:
-                hits = []  # Set hits as an empty list if the 'get' operation fails due to AttributeError
 
-            for hit in hits:
-                repo_uri = hit.get('link', {}).get('@href', '')
-                try:
-                    # if repo_uri != "":
-                    hit_response = requests.get(repo_uri)
-                    hit_data = xmltodict.parse(hit_response.content)
-                    hit_details = hit_data.get('r3d:re3data', {}).get('r3d:repository', {})
-                    repository = CreativeWork()
-                    repository.source = 're3data'
-                    repo_id = hit_details.get('r3d:re3data.orgIdentifier', None)
-                    if repo_id is not None:
-                        repository.url = 'https://www.re3data.org/repository/' + repo_id
-                    repository.name = hit_details.get('r3d:repositoryName', {}).get('#text', '')
-                    alternate_names = hit_details.get('r3d:additionalName', None)
-                    if isinstance(alternate_names, dict):
-                        repository.alternateName = alternate_names.get('#text', '')
-                    elif isinstance(alternate_names, list):
-                        item_list = []
-                        for alternate_name in alternate_names:
-                            item_list.append(alternate_name.get('#text'))
-                        repository.alternateName = ' - '.join(item_list)
-                    repository.description = utils.remove_line_tags(
-                        hit_details.get('r3d:description', {}).get('#text', ''))
+    # Handle languages (ISO-639-3)
+    languages = []
+    if 'r3d:repositoryLanguage' in repository_data:
+        if type(repository_data['r3d:repositoryLanguage']) is list:
+            languages.extend(repository_data['r3d:repositoryLanguage'])
+        else:
+            languages.append(repository_data['r3d:repositoryLanguage'])
 
-                    # Not showing identifiers on result page
-                    # repository.identifier = hit_details.get('r3d:repositoryIdentifier', '')
+    # Handle licenses # ToDo: why was licenses not used in prev implementation?
+    license_names = repository_data.get('r3d:dataLicense', {})
+    if isinstance(license_names, dict):
+        license_names = [license_names.get('r3d:dataLicenseName', '')]
+    elif isinstance(license_names, list):
+        license_names = [item.get('r3d:dataLicenseName', '') for item in license_names]
+    license_url = ', '.join(set(license_names))
 
-                    repository.dateCreated = hit_details.get('r3d:startDate', '')
-                    repository.datePublished = hit_details.get('r3d:entryDate', '')
-                    repository.dateModified = hit_details.get('r3d:lastUpdate''')
-                    repository.keywords = hit_details.get('r3d:keyword', '')
-                    repository.inLanguage = [hit_details.get('r3d:repositoryLanguage', '')]
+    # ToDo - does ContentType match the field logic of additionalType? Could it be a list also?
+    raw_content_types = repository_data.get('r3d:contentType', [])
+    content_type_list = [raw_content_types.get('#text', '')] \
+        if isinstance(raw_content_types, dict) else [ct.get('#text', '') for ct in raw_content_types]
+    additional_type = ', '.join(content_type_list)
 
-                    # Not showing licenses on result page
-                    # licenses = hit_details.get('r3d:dataLicense', None)
-                    # if type(licenses) is dict:
-                    #     repository.license = licenses.get('r3d:dataLicenseURL', '')
-                    # elif type(licenses) is list:
-                    #     license_list = []
-                    #     for item in licenses:
-                    #         license_list.append(item.get('r3d:dataLicenseURL', ''))
-                    #         repository.license = license_list
+    # Todo: is this the correct way to use the genre field?
+    subject_data = repository_data.get('r3d:subject', [])
+    if isinstance(subject_data, list):
+        genre_list = [subject.get('#text', '') for subject in subject_data]
+        genre = ', '.join(genre_list)
+    else:
+        genre = subject_data.get('#text', '')
 
-                    institutions = hit_details.get('r3d:institution', None)
-                    if isinstance(institutions, dict):
-                        organization = Organization()
-                        organization.name = institutions.get('r3d:institutionName', {}).get('#text', '')
-                        organization.alternateName = institutions.get('r3d:institutionAdditionalName', {}).get(
-                            '#text', '')
-                        organization.location = institutions.get('r3d:institutionCountry', '')
-                        organization.url = institutions.get('r3d:institutionURL', '')
-                        if 'funding' in institutions.get('r3d:responsibilityType', []):
-                            repository.funder = organization
-                        else:
-                            repository.sourceOrganization = organization
+    return CreativeWork(
+        name=repository_data.get('r3d:repositoryName', {}).get('#text', ''),
+        alternateName=get_alternate_names(repository_data.get('r3d:additionalName', {})),
+        description=repository_data.get('r3d:description', {}).get('#text', ''),
+        url=repository_data.get('r3d:repositoryURL', ""),
+        identifier=doi.partition('doi.org/')[2],
+        additionalType=additional_type,
+        source=source, # ToDo: why is source not displayed on results page?
+        author=organizations,
+        sourceOrganization=organizations[0] if organizations else None, # ToDo: why only one Organization allowed?
+        funder=funder,
+        inLanguage=languages,
+        license=license_url,
+        keywords=repository_data.get('r3d:keyword', []),
+        dateCreated=repository_data.get('r3d:startDate', ""),
+        datePublished=repository_data.get('r3d:entryDate', ""),
+        dateModified=repository_data.get('r3d:lastUpdate', ""),
+        abstract=repository_data.get('r3d:description', {}).get('#text', ''),
+        genre=genre,
+        text=repository_data.get('r3d:remarks', "")
+    )
 
-                    elif isinstance(institutions, list):
-                        funder_list, sourceOrga_list = [], []
-                        for institution in institutions:
-                            organization = Organization()
-                            organization.name = institution.get('r3d:institutionName', {}).get('#text', '')
-                            additional_names = institution.get('r3d:institutionAdditionalName', None)
-                            if isinstance(additional_names, list):
-                                name_list = []
-                                for additional_name in additional_names:
-                                    name_list.append(additional_name.get('#text', ''))
-                                organization.alternateName = ", ".join(name_list)
-                            elif isinstance(additional_names, str):
-                                organization.alternateName = additional_names
-                            organization.location = institution.get('r3d:institutionCountry', '')
-                            organization.url = institution.get('r3d:institutionURL', '')
-                            if 'funding' in institution.get('r3d:responsibilityType', None):
-                                funder_list.append(organization)
-                            else:
-                                sourceOrga_list.append(organization)
-                        repository.funder = funder_list
-                        repository.sourceOrganization = sourceOrga_list
-                    results['resources'].append(repository)
+# helper function to retrieve alternateNames
+def get_alternate_names(additional_names) -> List[str]:
+    alternate_names = []
+    if isinstance(additional_names, dict):
+        alternate_names.append(additional_names.get('#text', ''))
+    return alternate_names
 
-                # Exception if no url to call Details API
-                except Exception as ex:
-                    logger.error(f'Exception: {str(ex)}')
-
-    except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('re3data')
-
-    except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
+# ToDo: What about the details page, is it not implemented for the resources tab? Could we just open the doi link?

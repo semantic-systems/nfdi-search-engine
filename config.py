@@ -107,8 +107,13 @@ class Config:
             # "search-endpoint": f"",
             "get-endpoint": "",
             "citations-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
-            "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+            "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/"
         },
+        "re3data": {
+            "module": "re3data",
+            "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
+            "details-endpoint": f"https://www.re3data.org/api/v1/repository/"
+        }
     }
 
     LLMS = {

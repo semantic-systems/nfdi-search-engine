@@ -144,3 +144,4 @@ launch.json
 flask_session/
 
 test.py
+/log_Script.py
