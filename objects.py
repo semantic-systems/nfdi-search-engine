@@ -1,5 +1,4 @@
 from typing import Union, List
-import dataclasses
 from dataclasses import dataclass, fields, field
 @dataclass
 class thing:
@@ -11,7 +10,7 @@ class thing:
     identifier: str = "" #doi or pid will be stored as identifier   
     additionalType: str = "" 
     originalSource: str = ""
-    source: list() = field(default_factory=list) # this list will have "thing" objects
+    source: List = field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
 
     # @classmethod
@@ -65,8 +64,8 @@ Organization.parentOrganization = Organization()
 class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
-    author: List[Union[Organization, Person]] = field(default_factory=list)
-    citation: list() = field(default_factory=list) # this list will have "CreativeWork" objects
+    author: List[Organization | Person] = field(default_factory=list)
+    citation: List = field(default_factory=list) # this list will have "CreativeWork" objects
     countryOfOrigin: str = ""
     creativeWorkStatus: str = ""
     dateCreated: str = ""
@@ -74,9 +73,9 @@ class CreativeWork(thing):
     datePublished: str = ""
     encoding_contentUrl: str = "" 
     encodingFormat: str = ""
-    funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
+    funder: List[Organization | Person] = field(default_factory=list) # Organization | Person # we can use pipe operator for Union in Python >= 3.10
     funding: str = "" # we can change this to Grant
-    genre: str = ""
+    genre: str | List[str] = field(default_factory=list)
     headline: str = ""
     inLanguage: List[str] = field(default_factory=list)
     keywords: List[str] = field(default_factory=list)
