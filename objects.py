@@ -13,6 +13,7 @@ class thing:
     originalSource: str = ""
     source: list() = field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
+    partiallyLoaded: bool = False
 
     # @classmethod
     def __str__(self):

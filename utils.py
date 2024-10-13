@@ -1,10 +1,12 @@
 import os
+import uuid
 import extruct
 from objects import Article, Person, Author
 import wikipedia
 from bs4 import BeautifulSoup
 import traceback
 import inspect
+from flask import Flask, request, session
 
 def clean_json(value):
     """
@@ -151,8 +153,9 @@ es_client = Elasticsearch(
 from enum import Enum
 class ES_Index(Enum):
     user_activity_log = 1
-    users = 2
-    event_logs = 3
+    user_agent_log = 2
+    users = 3
+    event_logs = 4
 
 # create all the indices if they don't exist
 # ignore 400 caused by IndexAlreadyExistsException when creating an index
@@ -162,6 +165,7 @@ for idx in ES_Index:
 from datetime import datetime, timezone
 from flask import request, current_app
 from ua_parser import user_agent_parser
+
 def log_activity(user_activity):
 
     #extract user agent details from the request headers
@@ -172,22 +176,8 @@ def log_activity(user_activity):
         index=ES_Index.user_activity_log.name,        
         document={
             "timestamp": datetime.now(timezone.utc),
-            "user": "", #this will be logged once we start user registrations 
-            "ip_address": request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
-            "user_agent": user_agent_string,
-            "device_family": user_agent_parsed.get('device',{}).get('family',""),
-            "device_brand":  user_agent_parsed.get('device',{}).get('major',""),
-            "device_model":  user_agent_parsed.get('device',{}).get('minor',""),
-            "os_family": user_agent_parsed.get('os',{}).get('family',""),
-            "os_major":  user_agent_parsed.get('os',{}).get('major',""),
-            "os_minor":  user_agent_parsed.get('os',{}).get('minor',""),
-            "os_patch":  user_agent_parsed.get('os',{}).get('patch',""),
-            "os_patch_minor": user_agent_parsed.get('os',{}).get('patch_minor',""),
-            "user_agent_family": user_agent_parsed.get('user_agent',{}).get('family',""),
-            "user_agent_major":  user_agent_parsed.get('user_agent',{}).get('major',""),
-            "user_agent_minor":  user_agent_parsed.get('user_agent',{}).get('minor',""),
-            "user_agent_patch":  user_agent_parsed.get('user_agent',{}).get('patch',""),           
-            "user_agent_language": request.user_agent.language,
+            "user_email": session["current-user-email"] if session.get('current-user-email') else "",
+            "session_id": session["gateway-session-id"] if session.get('gateway-session-id') else "",     
             "url": request.url,
             "host": request.host,
             "url_root": request.root_url,
@@ -196,6 +186,70 @@ def log_activity(user_activity):
             "description": user_activity,
         }
     )
+
+def get_user_activities():
+    result = es_client.search(index=ES_Index.user_activity_log.name, size=1000, sort=[{ "timestamp" : "asc" }])    
+    return result["hits"]["hits"]
+
+def log_agent():
+
+    if session.get('gateway-session-id'):
+        session_id = session["gateway-session-id"]
+    else:
+        exit
+    
+    # first check if the agent details already exist for this session id, if not then add them, else update that record
+    result = es_client.search(index=ES_Index.user_agent_log.name, query={"match": {"session_id": {"query": session_id}}})
+    result_rec_count = int(result["hits"]["total"]["value"])       
+    if result_rec_count > 0:
+        hit = result["hits"]["hits"][0] 
+        es_client.update(
+            index=ES_Index.user_agent_log.name, 
+            id=hit['_id'],   
+            doc={            
+                "timestamp_updated": datetime.now(timezone.utc),
+                "url": request.url,
+            }
+        )
+    else:
+        #extract user agent details from the request headers
+        user_agent_string = request.headers.get("user-agent") 
+        user_agent_parsed = user_agent_parser.Parse(user_agent_string)
+        # print(user_agent_parsed)
+        es_client.index(
+            index=ES_Index.user_agent_log.name,        
+            document={
+                "timestamp_created": datetime.now(timezone.utc),
+                "timestamp_updated": datetime.now(timezone.utc),
+                "user_email": session["current-user-email"] if session.get('current-user-email') else "",
+                "session_id": session["gateway-session-id"] if session.get('gateway-session-id') else "",
+                "ip_address": request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                "user_agent": user_agent_string,
+                "device_family": user_agent_parsed.get('device',{}).get('family',""),
+                "device_brand":  user_agent_parsed.get('device',{}).get('major',""),
+                "device_model":  user_agent_parsed.get('device',{}).get('minor',""),
+                "os_family": user_agent_parsed.get('os',{}).get('family',""),
+                "os_major":  user_agent_parsed.get('os',{}).get('major',""),
+                "os_minor":  user_agent_parsed.get('os',{}).get('minor',""),
+                "os_patch":  user_agent_parsed.get('os',{}).get('patch',""),
+                "os_patch_minor": user_agent_parsed.get('os',{}).get('patch_minor',""),
+                "user_agent_family": user_agent_parsed.get('user_agent',{}).get('family',""),
+                "user_agent_major":  user_agent_parsed.get('user_agent',{}).get('major',""),
+                "user_agent_minor":  user_agent_parsed.get('user_agent',{}).get('minor',""),
+                "user_agent_patch":  user_agent_parsed.get('user_agent',{}).get('patch',""),           
+                "user_agent_language": request.user_agent.language,
+                "url": request.url,
+                # "host": request.host,
+                # "url_root": request.root_url,
+                # "base_url": request.base_url,            
+                # "path": request.path,
+            }
+        )
+
+def get_user_agents():
+    result = es_client.search(index=ES_Index.user_agent_log.name, size=1000, sort=[{ "timestamp_created" : "asc" }])    
+    return result["hits"]["hits"]
+
 
 def log_event(type: str = "info", filename: str = None, method: str = None, args = None, kwargs = None, message: str = None, traceback = None):
 
@@ -222,12 +276,12 @@ def log_event(type: str = "info", filename: str = None, method: str = None, args
     )
 
 def get_events():
-    result = es_client.search(index=ES_Index.event_logs.name, query={"match": {"type": {"query": "error"}}}, size=100, sort=[{ "timestamp" : "asc" }])    
+    # result = es_client.search(index=ES_Index.event_logs.name, query={"match": {"type": {"query": "error"}}}, size=100, sort=[{ "timestamp" : "asc" }]) 
+    result = es_client.search(index=ES_Index.event_logs.name, size=1000, sort=[{ "timestamp" : "desc" }])    
     return result["hits"]["hits"]
 
 def delete_event(event_id:str):
     es_client.delete(index=ES_Index.event_logs.name, id=event_id)
-
 
 def add_user(user):
     es_client.index(
@@ -302,6 +356,13 @@ def update_user_preferences_data_sources(user):
         }
     )
 
+def get_users():
+    # result = es_client.search(index=ES_Index.users.name, query={"match": {"first_name": {"query": "first"}}}, size=100, sort=[{ "timestamp_created" : "asc" }])   
+    result = es_client.search(index=ES_Index.users.name, size=1000, sort=[{ "timestamp_created" : "asc" }])     
+    return result["hits"]["hits"]
+
+def delete_user(user_id:str):
+    es_client.delete(index=ES_Index.users.name, id=user_id)
 
 #endregion
 
@@ -339,5 +400,31 @@ def handle_exceptions(f):
             filename = os.path.basename(inspect.getfile(f))
             log_event(type="error", filename=filename, method=f.__name__, message=str(ex), traceback= traceback.format_exc())
     return decorated_function
+
+def set_cookies(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        # first set the session id
+        if request.cookies.get('session') is None:
+            # print('1')
+            session_id = str(uuid.uuid4())
+        else:
+            # print('2')
+            session_id = request.cookies['session']
+        print(f'{session_id=}')
+        session['gateway-session-id'] = session_id
+
+        response = f(*args, **kwargs)
+
+        log_agent()
+        log_activity(f"loading route: {f.__name__}")
+
+        # Set 'nfdi4ds-gateway-search-session' cookie to the session_id
+        # response.set_cookie('session', session_id)
+        
+        return response
+    return decorated_function
+
+
 
 #endregion

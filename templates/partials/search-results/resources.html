@@ -1,0 +1,74 @@
+{% for resource in results.resources %}
+<div class="card mb-2 p-3 {{'partially_loaded' if resource.partiallyLoaded }}">
+    {% include 'partials/search-results/resource-block.html' %}
+</div>
+{% endfor %}
+
+<div id="div_load_more_resources" class="row text-center my-2">
+    <div class="col">
+        {% if session.displayed_search_results.resources < session.total_search_results.resources %} <div>
+            Displaying top {{session.displayed_search_results.resources }} resources out of {{
+            session.total_search_results.resources }}
+    </div>
+    <br />
+    <button type="button" class="btn btn-secondary" aria-label="Load more resources" id="btn_load_more_resources">Load
+        more resources</button>
+    {% endif %}
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('btn_load_more_resources')) {
+            document.getElementById('btn_load_more_resources').addEventListener('click', function () {
+                console.log('load more resources button clicked')
+                load_more('resources');
+            });
+        }
+
+        // define an observer instance
+        var observerResources = new IntersectionObserver(onIntersectionResources, {
+            root: null,   // default is the viewport
+            threshold: .5 // percentage of target's visible area. Triggers "onIntersection"
+        })
+
+        // callback is called on intersection change
+        function onIntersectionResources(entries, opts) {
+            entries.forEach(entry => {
+
+                doi = entry.target.querySelector('.resource_doi').innerHTML
+                source = entry.target.querySelector('.source_name').innerHTML
+                source_identifier = entry.target.querySelector('.source_identifier').innerHTML
+
+                console.log(source);
+                console.log(doi);
+                console.log(source_identifier);
+
+                jQuery.ajax({
+                    url: '/update_search_result/' + source + "/" + source_identifier + "/" + doi,
+                    type: "GET",
+                    complete: function () {
+                        $('.loader').remove();
+                    },
+                    success: function (data) {
+                        entry.target.innerHTML = data;
+                        console.log('successfully loaded more details of ' + doi)
+                        // To stop observing:
+                        observerResources.unobserve(entry.target)
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        observerResources.unobserve(entry.target)
+                    }
+                });
+
+            })
+        }
+
+        observerResources.observe(document.querySelector('.partially_loaded'))
+
+    });
+
+
+
+</script>

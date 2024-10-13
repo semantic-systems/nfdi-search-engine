@@ -174,12 +174,15 @@ FILTERS["regex_replace"] = regex_replace
 
 @app.route("/ping")
 def ping():
+    if (app.config["SECRET_KEY"] == ""):
+        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
+    
     return jsonify(ping="NFDI4DS Gateway is up and running :) ")
-
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        session["current-user-email"] = current_user.email
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -190,12 +193,12 @@ def login():
             flash('Invalid email or password', 'danger')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
+        session["current-user-email"] = user.email
         next_page = request.args.get('next')
         if not next_page or urlsplit(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Login', form=form)
-
 
 @app.route('/logout')
 @login_required
@@ -203,7 +206,6 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -220,8 +222,6 @@ def register():
         flash('Congratulations, you are now a registered user!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
-
-
 
 # authization code copied from https://github.com/miguelgrinberg/flask-oauth-example
 @app.route('/authorize/<provider>')
@@ -248,7 +248,6 @@ def oauth2_authorize(provider):
 
     # redirect the user to the OAuth2 provider authorization URL
     return redirect(provider_data['authorize_url'] + '?' + qs)
-
 
 @app.route('/callback/<provider>')
 def oauth2_callback(provider):
@@ -323,7 +322,6 @@ def oauth2_callback(provider):
     login_user(user)
     return redirect(url_for('index'))
 
-
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -341,7 +339,6 @@ def profile():
         form.email.data = current_user.email
     return render_template('profile.html', title='Profile',
                            form=form)
-
 
 @app.route('/preferences', methods=['GET', 'POST'])
 @login_required
@@ -375,23 +372,17 @@ def preferences():
         form.data_sources.data = [source for source in current_user.included_data_sources.split('; ')]
     return render_template('preferences.html', title='Preferences', form=form)
 
-
 @app.route('/')
-def index():    
-
-    utils.log_activity("loading index page")
-   
-    if (app.config["SECRET_KEY"] == ""):
-        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
-
+@utils.set_cookies
+def index():     
     response = make_response(render_template('index.html'))
 
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
+    # # Set search-session cookie to the session cookie value of the first visit
+    # if request.cookies.get('search-session') is None:
+    #     if request.cookies.get('session') is None:
+    #         response.set_cookie('search-session', str(uuid.uuid4()))
+    #     else:
+    #         response.set_cookie('search-session', request.cookies['session'])
 
     return response
 
@@ -418,7 +409,7 @@ def search_results():
         'events': [],
         'projects': [],
         'others': [],
-        'timedout_sources': []
+        'timedout_sources': [] ### this should be removed. no longer used
     }
 
     failed_sources = []
@@ -521,6 +512,11 @@ def search_results():
 
         return template_response
 
+@app.route('/update_search_result/<string:source>/<string:source_identifier>/<path:doi>', methods=['GET'])
+def update_search_result(source: str, source_identifier: str, doi):
+    module_name = app.config['DATA_SOURCES'][source].get('module', '')            
+    resource = importlib.import_module(f'sources.{module_name}').get_resource(source, source_identifier, doi.replace("DOI:",""))
+    return render_template(f'partials/search-results/resource-block.html', resource=resource)
 
 @app.route('/load-more/<string:object_type>', methods=['GET'])
 def load_more(object_type):
@@ -535,7 +531,7 @@ def load_more(object_type):
     number_of_records_to_append_on_lazy_load = int(app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])       
     results[object_type] = results[object_type][displayed_search_results:displayed_search_results+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results'][object_type] = displayed_search_results+number_of_records_to_append_on_lazy_load
-    return render_template(f'components/{object_type}.html', results=results) 
+    return render_template(f'partials/search-results/{object_type}.html', results=results) 
 
 
 @app.route('/are-embeddings-generated', methods=['GET'])
@@ -773,15 +769,60 @@ def digital_obj_details(identifier_with_type):
     pass   
 
 
-@app.route('/event-log')
+
+
+#endregion
+
+
+
+#region Control Panel
+
+@app.route('/control-panel/dashboard')
+def dashboard():
+    return render_template(f'control-panel/dashboard.html')
+
+@app.route('/control-panel/activity-log')
+def activity_log():
+    user_activities = utils.get_user_activities()
+    return render_template(f'control-panel/activity-log.html', user_activities=user_activities) 
+
+@app.route('/control-panel/user-agent-log')
+def user_agent_log():
+    user_agents = utils.get_user_agents()
+    return render_template(f'control-panel/agent-log.html', user_agents=user_agents) 
+
+@app.route('/control-panel/event-log')
 def event_log():
     events = utils.get_events()
-    return render_template(f'event-log.html', events=events) 
+    return render_template(f'control-panel/event-log.html', events=events) 
 
-@app.route('/delete-event/<string:event_id>')
+@app.route('/control-panel/event-log/delete-event/<string:event_id>')
 def delete_event(event_id):
     utils.delete_event(event_id)
     return "Event has been deleted" 
+
+
+@app.route('/control-panel/registered-users')
+def registered_users():
+    users = utils.get_users()
+    return render_template(f'control-panel/registered-users.html', users=users) 
+
+@app.route('/control-panel/registered-users/delete-user/<string:user_id>')
+def delete_user(user_id):
+    utils.delete_user(user_id)
+    return "User has been deleted" 
+
+@app.route('/control-panel/load-test-users')
+def load_test_users():
+    for i in range(1,5):
+        user = User()
+        user.first_name = "First Name " +str(i)
+        user.last_name = "Last Name " +str(i)
+        user.email = "user.email."+str(i)+"@example.com"
+        user.set_password("1234")
+        utils.add_user(user)
+
+    return "users created"
 
 #endregion
 

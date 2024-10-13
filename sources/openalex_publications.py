@@ -82,7 +82,7 @@ def get_publication(source: str, doi: str, publications):
     publication = Article()   
     publication.name = utils.remove_html_tags(search_result.get("title", ""))  
     publication.url = search_result.get("id", "") # not a valid url, openalex is currently working on their web interface.
-    publication.identifier = search_result.get("doi", "").replace("https://doi.org/", "")
+    publication.identifier = search_result.get("doi", "").partition('doi.org/')[2]
     publication.datePublished = search_result.get("publication_date", "") 
     publication.inLanguage.append(search_result.get("language", ""))
     publication.license = search_result.get("primary_location", {}).get("license", "")

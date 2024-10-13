@@ -1,0 +1,49 @@
+<!-- [ Sidebar Menu ] start -->
+<nav class="pc-sidebar">
+  <div class="navbar-wrapper">
+    <div class="m-header">
+      <a href="index.html" class="b-brand">
+        <!-- ========   Change your logo from here   ============ -->
+        <img src="{{ url_for('static', filename='images/logo_NFDI4DS.svg') }}" alt="" class="logo logo-lg" />
+      </a>
+    </div>
+    <div class="navbar-content">
+      <ul class="pc-navbar">
+        <li class="pc-item pc-caption">
+          <label>Dashboard</label>
+          <i class="ti ti-dashboard"></i>
+        </li>
+
+        <li class="pc-item">
+          <a href="{{url_for('dashboard')}}" class="pc-link">
+            <span class="pc-micon"><i class="ti ti-dashboard"></i></span>
+            <span class="pc-mtext">Dashboard</span></a>
+        </li>
+
+        <li class="pc-item pc-caption">
+          <label>Reports</label>
+          <i class="ti ti-apps"></i>
+        </li>
+        <li class="pc-item">
+          <a href="{{url_for('registered_users')}}" class="pc-link"><span class="pc-micon"><i
+                class="ti ti-users"></i></span><span class="pc-mtext">Registered Users</span></a>
+        </li>
+        <li class="pc-item">
+          <a href="{{url_for('activity_log')}}" class="pc-link"><span class="pc-micon"><i
+                class="ti ti-calendar-stats"></i></span><span class="pc-mtext">Actvity Log</span></a>
+        </li>
+        <li class="pc-item">
+          <a href="{{url_for('user_agent_log')}}" class="pc-link"><span class="pc-micon"><i
+                class="ti ti-calendar-stats"></i></span><span class="pc-mtext">Agent Log</span></a>
+        </li>
+        <li class="pc-item">
+          <a href="{{url_for('event_log')}}" class="pc-link"><span class="pc-micon"><i
+                class="ti ti-calendar-stats"></i></span><span class="pc-mtext">Event Log</span><span
+              class="pc-arrow"></a>
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</nav>
+<!-- [ Sidebar Menu ] end -->

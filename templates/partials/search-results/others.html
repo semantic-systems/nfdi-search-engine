@@ -1,32 +1,29 @@
-{% from 'partials/common/share-modal.html' import shareModal %}
-{% from 'partials/common/preview-modal.html' import previewModal %}
-{% from 'partials/common/download-modal.html' import downloadModal %}
-{% for resource in results.resources %}
+{% for digitalObj in results.others %}
 <div class="card mb-2 p-3">
     <div class="card-body">
         <div class="row">
             <div class="col-11 fs-6">
                 <div class="row mb-2">
                     <div class="col-9 fs-6">
-                        {% if resource.identifier == '' %}
+                        {% if digitalObj.identifier == '' %}
                         <span class="text-secondary fw-bold publication_name">
-                            {{resource.name}}</span>
+                            {{digitalObj.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href="/resource-details/{{resource | format_digital_obj_url('doi')}}"
-                            target='_blank'>{{resource.name}}</a>
+                            href="/other-details/{{digitalObj | format_digital_obj_url('doi')}}"
+                            target='_blank'>{{digitalObj.name}}</a>
                         {% endif %}
                     </div>
                     <div class="col-3 text-end ">
-                        <span class="badge bg-pill bg-success text-wrap text-break">DOI:{{resource.identifier}}</span>
+                        <span class="badge bg-pill bg-success text-wrap text-break">DOI:{{digitalObj.identifier}}</span>
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-9 my-2 authors">
                         {% set author_count = namespace(value=0) %}
-                        {% for author in resource.author %}
+                        {% for author in digitalObj.author %}
                         {% if author_count.value == 5 %}
-                        <a href="#" class="tag_more_authors">and {{ (resource.author|count) - 5 }}
+                        <a href="#" class="tag_more_authors">and {{ (digitalObj.author|count) - 5 }}
                             more</a>
                         {% endif %}
                         {% if author.type == 'Person' %}
@@ -39,97 +36,103 @@
                         {% endfor %}
                     </div>
                     <div class="col-3 text-end ">
-                        <!-- <span class="badge bg-pill bg-success text-wrap text-break">Score:{{resource.rankScore}}</span> -->
+                        <!-- <span
+                            class="badge bg-pill bg-success text-wrap text-break">Score:{{digitalObj.rankScore}}</span> -->
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <p class="card-text">{{resource.description|truncate(500)}}</p>
+                        <p class="card-text">{{digitalObj.description|truncate(500)}}</p>
                     </div>
                 </div>
                 <div class="row pt-3">
                     <div class="col-9 text-start">
-                        {% for source in resource.source %}
+                        {% for source in digitalObj.source %}
                         <a id="source_link" href="{{source.url}}" target=_blank>
                             <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
                         </a>
                         {% endfor %}
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{resource.originalSource}}</span>
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{resource.additionalType}}</span>
-                        {% for language in resource.inLanguage %}
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.originalSource}}</span>
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.additionalType}}</span>
+                        {% for language in digitalObj.inLanguage %}
                         <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
                         {% endfor %}
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{resource.license}}</span>
-
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.license}}</span>
                     </div>
                     <div class="col-3 text-end">
-                        <span class="badge bg-pill text-wrap text-break">{{resource.publication}}</span>
-                        <span class="badge bg-pill text-wrap text-break">{{resource.datePublished}}</span>
+                        <span class="badge bg-pill text-wrap text-break">{{digitalObj.publication}}</span>
+                        <span class="badge bg-pill text-wrap text-break">{{digitalObj.datePublished}}</span>
                     </div>
                 </div>
             </div>
+
             <div class="col-1">
                 <div class="row fs-5">
                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
-                                                class="bi bi-bookmark"></i></a></div> -->
-                    {% if resource.identifier != '' %}
+                                                            class="bi bi-bookmark"></i></a></div> -->
+                    {% if digitalObj.identifier != '' %}
                     <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                            data-bs-target="#share-resource-{{resource.identifier | regex_replace ('\W','') }}"><i
+                            data-bs-target="#share-other-{{digitalObj.identifier | regex_replace ('\W','') }}"><i
                                 class="bi bi-share"></i></a>
                     </div>
                     {% endif %}
-                    {% if resource.image != '' %}
+                    {% if digitalObj.image != '' %}
                     <div class="text-end mb-3"><a href="#" title="Preview" class="preview_modal_link"
                             data-bs-toggle="modal"
-                            data-bs-target="#preview-resource-{{resource.identifier | regex_replace ('\W','') }}"><i
+                            data-bs-target="#preview-other-{{digitalObj.identifier | regex_replace ('\W','') }}"><i
                                 class="bi bi-eye"></i></a>
                     </div>
                     {% endif %}
-                    {% if resource.encoding_contentUrl != '' %}
+                    {% if digitalObj.encoding_contentUrl != '' %}
                     <div class="text-end mb-3"><a href="#" title="Download" class="download_modal_link"
                             data-bs-toggle="modal"
-                            data-bs-target="#download-resource-{{resource.identifier | regex_replace ('\W','') }}"><i
+                            data-bs-target="#download-other-{{digitalObj.identifier | regex_replace ('\W','') }}"><i
                                 class="bi bi-download"></i></a>
                     </div>
                     {% endif %}
                 </div>
             </div>
-            {% with share_modal_id='share-resource-'+resource.identifier | regex_replace ('\W',''),
-            preview_modal_id='preview-resource-'+resource.identifier | regex_replace ('\W',''),
-            download_modal_id='download-resource-'+resource.identifier | regex_replace ('\W',''),
-            url = '/resource-details/'+ resource | format_digital_obj_url('doi'),
-            img_src = resource.image,
-            encoding_contentUrl = resource.encoding_contentUrl,
-            title = resource.name | trim
+
+            {% with share_modal_id='share-other-'+digitalObj.identifier | regex_replace ('\W',''),
+            preview_modal_id='preview-other-'+digitalObj.identifier | regex_replace ('\W',''),
+            download_modal_id='download-other-'+digitalObj.identifier | regex_replace ('\W',''),
+            url = url_for('digital_obj_details', identifier_with_type=(digitalObj | format_digital_obj_url('doi')),
+            _external=True),
+            img_src = digitalObj.image,
+            encoding_contentUrl = digitalObj.encoding_contentUrl,
+            title = digitalObj.name | trim
             %}
             {{ shareModal(share_modal_id, url, title) }}
             {{ previewModal(preview_modal_id, title, img_src) }}
             {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
             {% endwith %}
+
         </div>
     </div>
 </div>
 {% endfor %}
 
-<div id="div_load_more_resources" class="row text-center my-2">
+<div id="div_load_more_others" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.resources < session.total_search_results.resources %} <div>
-            Displaying top {{session.displayed_search_results.resources }} resources out of {{
-            session.total_search_results.resources }}
+        {% if session.displayed_search_results.others < session.total_search_results.others %} <div>
+            Displaying top {{session.displayed_search_results.others }} digital objects out of {{
+            session.total_search_results.others }}
     </div>
     <br />
-    <button type="button" class="btn btn-secondary" aria-label="Load more resources" id="btn_load_more_resources">Load
-        more resources</button>
+    <button type="button" class="btn btn-secondary" aria-label="Load more digital objects"
+        id="btn_load_more_others">Load more digital objects</button>
     {% endif %}
 </div>
 </div>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        if (document.getElementById('btn_load_more_resources')) {
-            document.getElementById('btn_load_more_resources').addEventListener('click', function () {
-                console.log('load more resources button clicked')
-                load_more('resources');
+        if (document.getElementById('btn_load_more_others')) {
+            document.getElementById('btn_load_more_others').addEventListener('click', function () {
+                console.log('load more others button clicked')
+                load_more('others');
             });
         }
     });

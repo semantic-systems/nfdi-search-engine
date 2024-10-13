@@ -1,0 +1,90 @@
+{% extends 'control-panel/layouts/base.html' %}
+
+{% block title %} Users Report {% endblock title %}
+
+{% block extrastyle %}
+
+{% endblock extrastyle %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ Main Content ] start -->
+        <div class="row">
+            <!-- [ sample-page ] start -->
+            <div class="table-responsive">
+                <h1>Registered Users</h1>
+                <p></p>
+                <table id="example" class="display table-hover table-bordered table-sm" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>registration timestamp</th>
+                            <th class="all">id</th>
+                            <th>first name</th>
+                            <th>last name</th>
+                            <th>email</th>
+                            <th>oauth source</th>
+                            <th>action</th>
+                        </tr>
+                    </thead>
+                    <tfoot>
+                        <tr>
+                            <th>registration timestamp</th>
+                            <th class="all">id</th>
+                            <th>first name</th>
+                            <th>last name</th>
+                            <th>email</th>
+                            <th>oauth source</th>
+                            <th>action</th>
+                        </tr>
+                    </tfoot>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td>{{ user['_source']['timestamp_created'] }}</td>
+                            <td>{{ user['_id'] }}</td>
+                            <td>{{ user['_source']['first_name'] }}</td>
+                            <td>{{ user['_source']['last_name'] }}</td>
+                            <td>{{ user['_source']['email'] }}</td>
+                            <td>{{ user['_source']['oauth_source'] }}</td>
+                            <td><a href="{{url_for('delete_user', user_id=user['_id'])}}" target="_blank">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+
+                </table>
+            </div>
+            <!-- [ sample-page ] end -->
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock content %}
+
+{% block extra_js %}
+
+<script>
+    $(document).ready(function () {
+        var table = new DataTable('#example', {
+            columnDefs: [
+                {
+                    targets: 7,
+                    render: function (data, type, row) {
+                        var d = $.fn.dataTable.render.text().display(data);
+                        d = d.replaceAll('\n', '<br>');
+                        return d;
+                    }
+                }
+            ]
+        });
+    });
+
+    $.extend($.fn.dataTable.defaults, {
+        responsive: true
+    });
+</script>
+
+{% endblock extra_js %}

@@ -22,11 +22,11 @@ class Config:
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
 
     DATA_SOURCES = {
-        "dblp - Publications": {
-            "module": "dblp_publications", 
-            "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # "dblp - Publications": {
+        #     "module": "dblp_publications", 
+        #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
 
-        }, 
+        # }, 
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
         # "dblp-Researchers": { 
         #    "module": "dblp_researchers", 
@@ -111,13 +111,18 @@ class Config:
             "module": "semanticscholar_publications", 
             # "search-endpoint": f"",
             # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
-            "citations-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
-            "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+            "citations-endpoint": f"https://api.semanticscholar.org/graph/v1/paper/",
+            "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
         },
         "semantic scholar - Researchers": {
             "module": "semanticscholar_researchers", 
             # "search-endpoint": f"",
             # "get-researcher-endpoint": "https://api.semanticscholar.org/graph/v1/author/",            
+        },
+        "re3data": {
+            "module": "re3data",
+            "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
+            "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
         },
     }
 

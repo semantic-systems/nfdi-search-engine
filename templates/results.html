@@ -9,6 +9,10 @@
 
 {% block content %}
 
+{% from 'partials/common/share-modal.html' import shareModal %}
+{% from 'partials/common/preview-modal.html' import previewModal %}
+{% from 'partials/common/download-modal.html' import downloadModal %}
+
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
@@ -126,25 +130,25 @@
                     <div class="tab-content mt-5" id="myTabContent">
                         <div class="tab-pane fade show active" id="publications" role="tabpanel"
                             aria-labelledby="publications-tab">
-                            {% include 'components/publications.html' %}
+                            {% include 'partials/search-results/publications.html' %}
                         </div>
                         <div class="tab-pane fade" id="researchers" role="tabpanel" aria-labelledby="researchers-tab">
-                            {% include 'components/researchers.html' %}
+                            {% include 'partials/search-results/researchers.html' %}
                         </div>
                         <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
-                            {% include 'components/resources.html' %}
+                            {% include 'partials/search-results/resources.html' %}
                         </div>
                         <div class="tab-pane fade" id="organizations" role="tabpanel"
                             aria-labelledby="organizations-tab">
-                            {% include 'components/organizations.html' %}
+                            {% include 'partials/search-results/organizations.html' %}
                         </div>
                         <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
-                            {% include 'components/events.html' %}</div>
+                            {% include 'partials/search-results/events.html' %}</div>
                         <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
-                            {% include 'components/projects.html' %}
+                            {% include 'partials/search-results/projects.html' %}
                         </div>
                         <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">{% include
-                            'components/others.html' %}</div>
+                            'partials/search-results/others.html' %}</div>
                     </div>
                 </div>
 
@@ -159,7 +163,7 @@
                             aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body p-0">
-                        {% include 'components/chatbot.html' %}
+                        {% include 'partials/search-results/chatbot.html' %}
                     </div>
                 </div>
 
@@ -355,6 +359,28 @@
             });
         }
     }
+
+    // // define an observer instance
+    // var observer = new IntersectionObserver(onIntersection, {
+    //     root: null,   // default is the viewport
+    //     threshold: .5 // percentage of target's visible area. Triggers "onIntersection"
+    // })
+
+    // // callback is called on intersection change
+    // function onIntersection(entries, opts) {
+    //     entries.forEach(entry =>
+    //         // entry.target.classList.toggle('visible', entry.isIntersecting)
+    //         alert(entry.target.innerHTML)
+    //     )
+    // }
+
+    // Use the observer to observe an element
+    // observer.observe(document.querySelector('#resources.card.card-body.row.col-11.row.col-3.badge'))
+    // observer.observe(document.querySelector('.resources-doi'))
+
+    // To stop observing:
+    // observer.unobserve(entry.target)
+
 
 </script>
 

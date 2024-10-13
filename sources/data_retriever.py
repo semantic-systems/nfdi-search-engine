@@ -1,8 +1,8 @@
 import requests
-import logging
 import utils
 import urllib.parse
 from main import app
+import xmltodict
 
 def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url:str=""):    
     try:
@@ -22,7 +22,12 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
         response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))                
 
         if response.status_code == 200:
-            search_result = response.json()
+
+            if 'xml' in response.headers.get('content-type'):
+                search_result  = xmltodict.parse(response.text)
+            else:
+                search_result = response.json()
+
             #clean the json response; remove all the keys which don't have any value
             search_result = utils.clean_json(search_result)
             return search_result 
@@ -51,7 +56,11 @@ def retrieve_object(source: str, base_url: str, doi: str):
         response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))        
 
         if response.status_code == 200:
-            search_result = response.json()
+            if 'xml' in response.headers.get('content-type'):
+                search_result  = xmltodict.parse(response.text)
+            else:
+                search_result = response.json()
+            
             #clean the json response; remove all the keys which don't have any value
             search_result = utils.clean_json(search_result)
             return search_result 
