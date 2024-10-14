@@ -25,50 +25,5 @@
                 load_more('resources');
             });
         }
-
-        // define an observer instance
-        var observerResources = new IntersectionObserver(onIntersectionResources, {
-            root: null,   // default is the viewport
-            threshold: .5 // percentage of target's visible area. Triggers "onIntersection"
-        })
-
-        // callback is called on intersection change
-        function onIntersectionResources(entries, opts) {
-            entries.forEach(entry => {
-
-                doi = entry.target.querySelector('.resource_doi').innerHTML
-                source = entry.target.querySelector('.source_name').innerHTML
-                source_identifier = entry.target.querySelector('.source_identifier').innerHTML
-
-                console.log(source);
-                console.log(doi);
-                console.log(source_identifier);
-
-                jQuery.ajax({
-                    url: '/update_search_result/' + source + "/" + source_identifier + "/" + doi,
-                    type: "GET",
-                    complete: function () {
-                        $('.loader').remove();
-                    },
-                    success: function (data) {
-                        entry.target.innerHTML = data;
-                        console.log('successfully loaded more details of ' + doi)
-                        // To stop observing:
-                        observerResources.unobserve(entry.target)
-                    },
-                    error: function (err) {
-                        console.log(err);
-                        observerResources.unobserve(entry.target)
-                    }
-                });
-
-            })
-        }
-
-        observerResources.observe(document.querySelector('.partially_loaded'))
-
     });
-
-
-
 </script>

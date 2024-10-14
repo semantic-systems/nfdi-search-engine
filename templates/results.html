@@ -267,6 +267,12 @@
         }
     }
 
+    // define an observer instance
+    var observerSearchResults = new IntersectionObserver(onIntersection, {
+        root: null, // default is the viewport
+        threshold: .9 // percentage of target's visible area. Triggers "onIntersection"
+    })
+
     // A flag to know if a request is sent and the response is not yet received
     let ajax_request_sent = false;
 
@@ -352,6 +358,12 @@
                     console.log('successfully loaded more ' + object_type)
                     // Unset the flag
                     ajax_request_sent = false;
+
+                    // observe the newly added elements; if they are partially loaded then more details should be loaded via ajax calls
+                    document.querySelectorAll('.partially_loaded').forEach(element => {
+                        console.log(element)
+                        observerSearchResults.observe(element);
+                    })
                 },
                 error: function (err) {
                     console.log(err);
@@ -360,26 +372,48 @@
         }
     }
 
-    // // define an observer instance
-    // var observer = new IntersectionObserver(onIntersection, {
-    //     root: null,   // default is the viewport
-    //     threshold: .5 // percentage of target's visible area. Triggers "onIntersection"
-    // })
+    // callback is called on intersection change; when any partially loaded search result block gets visible in the viewport
+    function onIntersection(entries, opts) {
+        console.log(entries.length)
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                doi = entry.target.querySelector('.resource_doi').innerHTML
+                source = entry.target.querySelector('.source_name').innerHTML
+                source_identifier = entry.target.querySelector('.source_identifier').innerHTML
 
-    // // callback is called on intersection change
-    // function onIntersection(entries, opts) {
-    //     entries.forEach(entry =>
-    //         // entry.target.classList.toggle('visible', entry.isIntersecting)
-    //         alert(entry.target.innerHTML)
-    //     )
-    // }
+                console.log(source);
+                console.log(doi);
+                console.log(source_identifier);
 
-    // Use the observer to observe an element
-    // observer.observe(document.querySelector('#resources.card.card-body.row.col-11.row.col-3.badge'))
-    // observer.observe(document.querySelector('.resources-doi'))
+                jQuery.ajax({
+                    url: '/update_search_result/' + source + "/" + source_identifier + "/" + doi,
+                    type: "GET",
+                    complete: function () {
+                        $('.loader').remove();
+                    },
+                    success: function (data) {
+                        entry.target.innerHTML = data;
+                        console.log('successfully loaded more details of ' + doi)
+                        // To stop observing:
+                        observerSearchResults.unobserve(entry.target)
+                        entry.target.classList.remove('partially_loaded')
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        observerSearchResults.unobserve(entry.target)
+                        entry.target.classList.remove('partially_loaded')
+                    }
+                });
 
-    // To stop observing:
-    // observer.unobserve(entry.target)
+            }
+
+        })
+
+    }
+
+    document.querySelectorAll('.partially_loaded').forEach(element => {
+        observerSearchResults.observe(element);
+    })
 
 
 </script>

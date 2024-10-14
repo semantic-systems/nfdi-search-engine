@@ -35,8 +35,10 @@ def search(source: str, search_term: str, results: Dict, failed_sources: List):
     if isinstance(repositories, dict):
         repositories = [repositories]
 
-    counter_repository_short_models = 0
-    for repo in repositories:
+    repositories_to_parse = repositories[:app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']]
+    utils.log_event(type="info", message=f"{source} - {len(repositories)} records matched; pulled top {len(repositories_to_parse)}")   
+    
+    for repo in repositories_to_parse:
         repository = Dataset(
             name=repo.get('name', ''),
             identifier=repo.get('doi', '').partition('doi.org/')[2],
@@ -44,12 +46,7 @@ def search(source: str, search_term: str, results: Dict, failed_sources: List):
             source=[thing(name=source, url=repo.get('doi', ''), identifier=repo.get('link', {}).get('@href', '').partition('https://www.re3data.org/api/beta/repository/')[2])],
             partiallyLoaded=True,
         )
-        results['resources'].append(repository)
-        counter_repository_short_models += 1
-
-    utils.log_event(type="info",
-                    message=f"{source} - retrieved {counter_repository_short_models} repository short models")
-    # print(f"searching Re3Data overview took {time.time() - start_time:.2f} seconds to execute")
+        results['resources'].append(repository)         
 
 @utils.handle_exceptions
 def search_displayed_resources(displayed_repos: List[Dataset], results: Dict, failed_sources: List):
