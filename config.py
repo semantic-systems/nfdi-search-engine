@@ -113,6 +113,10 @@ class Config:
             "module": "re3data",
             "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
             "details-endpoint": f"https://www.re3data.org/api/v1/repository/"
+        },
+        "eulg": {
+            "module": "eulg",
+            "search-endpoint": f"https://live.european-language-grid.eu/catalogue_backend/api/registry/search&search=",
         }
     }
 
