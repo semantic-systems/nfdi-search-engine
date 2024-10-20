@@ -101,6 +101,7 @@ def generate_string_from_keys(dictionary):
     return keys_string
 
 from dateparser import parse
+from datetime import timedelta
 def parse_date(date_str):
     try:
         parsed_date_str = parse(date_str).strftime("%Y-%m-%d")
@@ -108,7 +109,24 @@ def parse_date(date_str):
     except (TypeError, ValueError):
         print(f"original date str: {date_str}")
         return ""
-        
+
+def parse_report_date_range(report_date_range):
+    if report_date_range:
+        start_date =  datetime.strptime(report_date_range.partition(' - ')[0], current_app.config['DATE_FORMAT_FOR_REPORT'])
+        end_date =  datetime.strptime(report_date_range.partition(' - ')[2], current_app.config['DATE_FORMAT_FOR_REPORT'])      
+    else:
+        # default the date range filter to last 7 days
+        start_date = (datetime.now()+timedelta(days=-6))
+        end_date = datetime.now()
+    return start_date, end_date 
+
+def parse_date_range_for_elastic(start_date, end_date):
+    start_date = start_date.strftime(current_app.config['DATE_FORMAT_FOR_ELASTIC'])
+    # Add a day to end-date so it can include that the documents for that day too
+    end_date = (end_date+timedelta(days=1)).strftime(current_app.config['DATE_FORMAT_FOR_ELASTIC'])
+    return start_date, end_date  
+
+
 # def sort_results_publications(results):
 #     def custom_sort_key(obj):    
 #         desc = getattr(obj, 'description', '') 
@@ -187,8 +205,19 @@ def log_activity(user_activity):
         }
     )
 
-def get_user_activities():
-    result = es_client.search(index=ES_Index.user_activity_log.name, size=1000, sort=[{ "timestamp" : "asc" }])    
+def get_user_activities(start_date, end_date):
+    start_date, end_date = parse_date_range_for_elastic(start_date, end_date)
+    result = es_client.search(index=ES_Index.user_activity_log.name, 
+                              size=10000,
+                              query = {
+                                    "range": { 
+                                        "timestamp": {
+                                            "gte":start_date, 
+                                            "lte":end_date,
+                                        }
+                                    }
+                                },
+                                sort=[{ "timestamp" : "desc" }])   
     return result["hits"]["hits"]
 
 def log_agent():
@@ -246,8 +275,18 @@ def log_agent():
             }
         )
 
-def get_user_agents():
-    result = es_client.search(index=ES_Index.user_agent_log.name, size=1000, sort=[{ "timestamp_created" : "asc" }])    
+def get_user_agents(start_date, end_date):
+    result = es_client.search(index=ES_Index.user_agent_log.name, 
+                              size=10000,
+                              query = {
+                                    "range": { 
+                                        "timestamp_created": {
+                                            "gte":start_date, 
+                                            "lte":end_date,
+                                        }
+                                    }
+                                },
+                                sort=[{ "timestamp_created" : "desc" }])  
     return result["hits"]["hits"]
 
 
@@ -275,9 +314,20 @@ def log_event(type: str = "info", filename: str = None, method: str = None, args
         }
     )
 
-def get_events():
+def get_events(start_date, end_date):
+    start_date, end_date = parse_date_range_for_elastic(start_date, end_date)
     # result = es_client.search(index=ES_Index.event_logs.name, query={"match": {"type": {"query": "error"}}}, size=100, sort=[{ "timestamp" : "asc" }]) 
-    result = es_client.search(index=ES_Index.event_logs.name, size=1000, sort=[{ "timestamp" : "desc" }])    
+    result = es_client.search(index=ES_Index.event_logs.name, 
+                            size=10000,
+                            query = {
+                                "range": { 
+                                    "timestamp": {
+                                        "gte":start_date, 
+                                        "lte":end_date,
+                                    }
+                                }
+                            },
+                            sort=[{ "timestamp" : "desc" }])    
     return result["hits"]["hits"]
 
 def delete_event(event_id:str):
@@ -356,9 +406,20 @@ def update_user_preferences_data_sources(user):
         }
     )
 
-def get_users():
+def get_users(start_date, end_date):
+    start_date, end_date = parse_date_range_for_elastic(start_date, end_date)
     # result = es_client.search(index=ES_Index.users.name, query={"match": {"first_name": {"query": "first"}}}, size=100, sort=[{ "timestamp_created" : "asc" }])   
-    result = es_client.search(index=ES_Index.users.name, size=1000, sort=[{ "timestamp_created" : "asc" }])     
+    result = es_client.search(index=ES_Index.users.name, 
+                              size=10000,
+                              query = {
+                                    "range": { 
+                                        "timestamp_created": {
+                                            "gte":start_date, 
+                                            "lte":end_date,
+                                        }
+                                    }
+                                },
+                                sort=[{ "timestamp_created" : "desc" }])    
     return result["hits"]["hits"]
 
 def delete_user(user_id:str):

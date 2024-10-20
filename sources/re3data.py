@@ -101,7 +101,6 @@ def get_resource(source: str, source_identifier: str, doi: str):
         utils.log_event(type="info", message=f"{source} - retrieved repository details")
         return dataset
 
-
 def map_repository_to_dataset(source: str, doi: str, repository_details: dict) -> Dataset:
     """
     Map the detailed information of a repository to a Dataset object.
@@ -181,7 +180,6 @@ def map_repository_to_dataset(source: str, doi: str, repository_details: dict) -
         genre=subjects,
         text=repository_data.get('r3d:remarks', "")
     )
-
 
 def get_alternate_names(additional_names) -> List[str]:
     if isinstance(additional_names, dict):

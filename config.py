@@ -21,6 +21,9 @@ class Config:
 
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
 
+    DATE_FORMAT_FOR_REPORT = "%B %d, %Y"
+    DATE_FORMAT_FOR_ELASTIC = "%Y-%m-%d"
+
     DATA_SOURCES = {
         # "dblp - Publications": {
         #     "module": "dblp_publications", 

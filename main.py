@@ -10,6 +10,7 @@ import logging.config
 import secrets
 from urllib.parse import urlsplit, urlencode
 import importlib
+from datetime import datetime
 
 from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
@@ -781,20 +782,35 @@ def digital_obj_details(identifier_with_type):
 def dashboard():
     return render_template(f'control-panel/dashboard.html')
 
-@app.route('/control-panel/activity-log')
-def activity_log():
-    user_activities = utils.get_user_activities()
-    return render_template(f'control-panel/activity-log.html', user_activities=user_activities) 
+@app.route('/control-panel/activity-log', defaults={'report_date_range': None})
+@app.route('/control-panel/activity-log/<report_date_range>')
+def activity_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    user_activities = utils.get_user_activities(start_date, end_date)
+    return render_template(f'control-panel/activity-log.html', 
+                           user_activities=user_activities,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
 
-@app.route('/control-panel/user-agent-log')
-def user_agent_log():
-    user_agents = utils.get_user_agents()
-    return render_template(f'control-panel/agent-log.html', user_agents=user_agents) 
+@app.route('/control-panel/user-agent-log', defaults={'report_date_range': None})
+@app.route('/control-panel/user-agent-log/<report_date_range>')
+def user_agent_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    user_agents = utils.get_user_agents(start_date, end_date)
+    return render_template(f'control-panel/agent-log.html', 
+                           user_agents=user_agents,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}")  
 
-@app.route('/control-panel/event-log')
-def event_log():
-    events = utils.get_events()
-    return render_template(f'control-panel/event-log.html', events=events) 
+@app.route('/control-panel/event-log', defaults={'report_date_range': None})
+@app.route('/control-panel/event-log/<report_date_range>')
+def event_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    events = utils.get_events(start_date, end_date)    
+    return render_template(f'control-panel/event-log.html', 
+                           events=events, 
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
 
 @app.route('/control-panel/event-log/delete-event/<string:event_id>')
 def delete_event(event_id):
@@ -802,10 +818,15 @@ def delete_event(event_id):
     return "Event has been deleted" 
 
 
-@app.route('/control-panel/registered-users')
-def registered_users():
-    users = utils.get_users()
-    return render_template(f'control-panel/registered-users.html', users=users) 
+@app.route('/control-panel/registered-users', defaults={'report_date_range': None})
+@app.route('/control-panel/registered-users/<report_date_range>')
+def registered_users(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    users = utils.get_users(start_date, end_date)
+    return render_template(f'control-panel/registered-users.html', 
+                           users=users,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
 
 @app.route('/control-panel/registered-users/delete-user/<string:user_id>')
 def delete_user(user_id):

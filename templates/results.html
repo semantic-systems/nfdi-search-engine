@@ -389,7 +389,7 @@
                     url: '/update_search_result/' + source + "/" + source_identifier + "/" + doi,
                     type: "GET",
                     complete: function () {
-                        $('.loader').remove();
+                        // $('.loader').remove();
                     },
                     success: function (data) {
                         entry.target.innerHTML = data;

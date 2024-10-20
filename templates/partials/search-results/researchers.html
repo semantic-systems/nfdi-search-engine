@@ -67,10 +67,9 @@
                     <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
                             data-bs-target="#share-researcher-{{researcher.identifier | regex_replace ('\W','') }}"><i
                                 class="bi bi-share"></i></a>
-                        {% endif %}
                     </div>
+                    {% endif %}
                 </div>
-
                 {% with share_modal_id='share-researcher-'+researcher.identifier | regex_replace ('\W',''),
                 url = url_for('researcher_details', identifier_with_type=(researcher | format_digital_obj_url('orcid')),
                 _external=True),
