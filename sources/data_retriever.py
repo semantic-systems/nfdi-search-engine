@@ -5,7 +5,7 @@ import utils
 import urllib.parse
 from main import app
 
-def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, clean_json:bool =True):
+def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, clean_json=True, elg=False):
     try:
         search_term = urllib.parse.quote_plus(string=search_term, safe='()?&=,')
         url = base_url + search_term
@@ -27,7 +27,9 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
             return search_result 
         else:
             failed_sources.append(source)
-            utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")            
+            utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")
+            if elg:
+                return response
             return None
     
     except requests.exceptions.Timeout as ex:
