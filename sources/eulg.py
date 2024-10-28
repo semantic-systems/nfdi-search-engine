@@ -13,7 +13,7 @@ from sources import data_retriever
 def set_common_attributes(obj, name, alternate_name, identifier, description, keywords, licences, in_language, country_of_origin, additional_type, version, date_published, date_modified):
     obj.name = name
     obj.alternateName = alternate_name
-    obj.identifier = None
+    # obj.identifier = identifier  # excluded because it's an internal ID, not a DOI
     obj.description = description
     obj.keywords = keywords
     obj.license = licences
@@ -123,4 +123,3 @@ def search(source: str, search_term: str, results: Dict, failed_sources: List):
         counter_retrieved_resources += 1
 
     utils.log_event(type="info", message=f"{source} - retrieved {counter_retrieved_resources} results.")
-    print(f"{source} - retrieved {counter_retrieved_resources} results.")
