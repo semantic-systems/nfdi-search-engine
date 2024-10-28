@@ -13,7 +13,7 @@ from sources import data_retriever
 def set_common_attributes(obj, name, alternate_name, identifier, description, keywords, licences, in_language, country_of_origin, additional_type, version, date_published, date_modified):
     obj.name = name
     obj.alternateName = alternate_name
-    obj.identifier = identifier
+    obj.identifier = None
     obj.description = description
     obj.keywords = keywords
     obj.license = licences
