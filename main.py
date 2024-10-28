@@ -10,7 +10,6 @@ import logging.config
 import secrets
 from urllib.parse import urlsplit, urlencode
 import importlib
-from datetime import datetime
 
 from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
@@ -375,32 +374,27 @@ def preferences():
 
 @app.route('/')
 @utils.set_cookies
-def index():     
-    response = make_response(render_template('index.html'))
-
-    # # Set search-session cookie to the session cookie value of the first visit
-    # if request.cookies.get('search-session') is None:
-    #     if request.cookies.get('session') is None:
-    #         response.set_cookie('search-session', str(uuid.uuid4()))
-    #     else:
-    #         response.set_cookie('search-session', request.cookies['session'])
-
+def index():  
+    response = make_response(render_template('index.html'))  
     return response
 
-
+@app.route('/update-visitor-id', methods=['GET'])
+@utils.timeit
+def update_visitor_id():
+    visitor_id = request.args.get('visitor_id')
+    print(f"{visitor_id=}")    
+    utils.update_visitor_id(visitor_id)
+    return str(True)
 
 
 @app.route('/results', methods=['POST', 'GET'])
 @utils.timeit
+@utils.set_cookies
 def search_results():
-
-    utils.log_activity(f"loading search results for {request.args.get('txtSearchTerm','')}")    
-    # The search-session cookie setting can still be None if a user enters the
-    # /sources endpoint directly without going to / first!!!
-    logger.debug(
-        f'Search session {request.cookies.get("search-session")} '
-        f'searched for "{request.args.get("txtSearchTerm")}"'
-    )
+    
+    search_term = request.args.get('txtSearchTerm', '')
+    utils.log_activity(f"loading search results for {search_term}")  
+    utils.log_search_term(search_term) 
 
     results = {
         'publications': [],
@@ -416,7 +410,7 @@ def search_results():
     failed_sources = []
 
     if request.method == 'GET':
-        search_term = request.args.get('txtSearchTerm')
+        # search_term = request.args.get('txtSearchTerm')
         session['search-term'] = search_term
 
         for k in results.keys(): results[k] = []
@@ -494,10 +488,10 @@ def search_results():
             # sleep(1)
         
 
-        # on the first page load, only push top 20 records in each category
+        # on the first page load, only push top XX records in each category
         number_of_records_to_show_on_page_load = int(app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])        
-        total_results = {} # the dict to keep the total number of search results 
-        displayed_results = {} # the dict to keep the total number of search results currently displayed to the user
+        total_results = {} # the dict to keep the all the search results 
+        displayed_results = {} # the dict to keep the search results currently displayed to the user
         
         for k, v in results.items():
             logger.info(f'Got {len(v)} {k}')
@@ -568,6 +562,7 @@ def get_chatbot_answer():
 
 @app.route('/publication-details/<path:identifier_with_type>', methods=['GET'])
 @utils.timeit
+@utils.set_cookies
 def publication_details(identifier_with_type):
 
     utils.log_activity(f"loading publication details page: {identifier_with_type}")    
@@ -638,12 +633,16 @@ def publication_details_citations(doi):
     return response
 
 @app.route('/resource-details')
+@utils.timeit
+@utils.set_cookies
 def resource_details():
     response = make_response(render_template('resource-details.html'))  
     return response
 
 
 @app.route('/researcher-details/<path:identifier_with_type>', methods=['GET'])
+@utils.timeit
+@utils.set_cookies
 def researcher_details(identifier_with_type):
 
     utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
@@ -705,6 +704,8 @@ def generate_researcher_banner(orcid):
 
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+@utils.timeit
+@utils.set_cookies
 def organization_details(organization_id, organization_name):
     try:
 
@@ -736,6 +737,8 @@ def organization_details(organization_id, organization_name):
 
 
 @app.route('/events-details')
+@utils.timeit
+@utils.set_cookies
 def events_details():
     response = make_response(render_template('events-details.html'))
 
@@ -750,6 +753,8 @@ def events_details():
 
 
 @app.route('/project-details')
+@utils.timeit
+@utils.set_cookies
 def project_details():
     response = make_response(render_template('project-details.html'))
     # Set search-session cookie to the session cookie value of the first visit
@@ -762,6 +767,8 @@ def project_details():
     return response
 
 @app.route('/digital-obj-details/<path:identifier_with_type>', methods=['GET'])
+@utils.timeit
+@utils.set_cookies
 def digital_obj_details(identifier_with_type):
 
     utils.log_activity(f"loading digital obj details page: {identifier_with_type}")    
@@ -780,7 +787,13 @@ def digital_obj_details(identifier_with_type):
 
 @app.route('/control-panel/dashboard')
 def dashboard():
-    return render_template(f'control-panel/dashboard.html')
+    current_month_users, current_month_users_count, current_year_users, current_year_users_count = utils.generate_registered_users_summaries()
+    current_month_visitors, current_month_visitors_count, current_year_visitors, current_year_visitors_count = utils.generate_visitors_summaries()
+    current_year_ua_series, current_year_ua_labels, current_year_ua_count = utils.generate_user_agent_family_summary()
+    current_year_os_series, current_year_os_labels, current_year_os_count = utils.generate_operating_system_family_summary()
+    current_year_search_terms = utils.generate_search_term_summary()
+    
+    return render_template(f'control-panel/dashboard.html', **locals())
 
 @app.route('/control-panel/activity-log', defaults={'report_date_range': None})
 @app.route('/control-panel/activity-log/<report_date_range>')
@@ -835,7 +848,7 @@ def delete_user(user_id):
 
 @app.route('/control-panel/load-test-users')
 def load_test_users():
-    for i in range(1,5):
+    for i in range(101,500):
         user = User()
         user.first_name = "First Name " +str(i)
         user.last_name = "Last Name " +str(i)
@@ -844,6 +857,19 @@ def load_test_users():
         utils.add_user(user)
 
     return "users created"
+
+
+@app.route('/control-panel/search-term-log', defaults={'report_date_range': None})
+@app.route('/control-panel/search-term-log/<report_date_range>')
+def search_term_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    search_terms = utils.get_search_terms(start_date, end_date)
+    return render_template(f'control-panel/search-term-log.html', 
+                           search_terms=search_terms,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
+
+
 
 #endregion
 

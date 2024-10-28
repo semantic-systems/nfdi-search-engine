@@ -1,6 +1,6 @@
 {% extends 'layouts/cp-base.html' %}
 
-{% block title %} User Activity Report {% endblock title %}
+{% block title %} Search Term Report {% endblock title %}
 
 {% block extrastyle %}
 
@@ -13,8 +13,8 @@
         <!-- [ Main Content ] start -->
         <div class="d-flex justify-content-between">
             <div class="">
-                <h3>Activity Log</h3>
-                <p>All the user activities are listed here. User behaviours can be analyzed from this data.</p>
+                <h3>Search Term Log</h3>
+                <p>All the user searches are listed here. User behaviours can be analyzed from this data.</p>
             </div>
             <div class="text-end">
                 <div class="input-group">
@@ -22,7 +22,7 @@
                     <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
                         aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
                     &nbsp;
-                    <a href="{{url_for('activity_log')}}" id="btn_refresh" class="btn btn-primary rounded"><span
+                    <a href="{{url_for('search_term_log')}}" id="btn_refresh" class="btn btn-primary rounded"><span
                             class="bi bi-arrow-repeat"></span></a>
                 </div>
             </div>
@@ -37,11 +37,7 @@
                         <th>session_id</th>
                         <th>visitor_id</th>
                         <th>url</th>
-                        <!-- <th>host</th>
-                            <th>url_root</th>
-                            <th>base_url</th>
-                            <th>path</th> -->
-                        <th>description</th>
+                        <th>search_term</th>
                     </tr>
                 </thead>
                 <tfoot>
@@ -52,27 +48,19 @@
                         <th>session_id</th>
                         <th>visitor_id</th>
                         <th>url</th>
-                        <!-- <th>host</th>
-                            <th>url_root</th>
-                            <th>base_url</th>
-                            <th>path</th> -->
-                        <th>description</th>
+                        <th>search_term</th>
                     </tr>
                 </tfoot>
                 <tbody>
-                    {% for user_activity in user_activities %}
+                    {% for search_term in search_terms %}
                     <tr>
-                        <td>{{ user_activity['_source']['timestamp'] }}</td>
-                        <td>{{ user_activity['_id'] }}</td>
-                        <td>{{ user_activity['_source']['user_email'] }}</td>
-                        <td>{{ user_activity['_source']['session_id'] }}</td>
-                        <td>{{ user_activity['_source']['visitor_id'] }}</td>
-                        <td>{{ user_activity['_source']['url'] }}</td>
-                        <!-- <td>{{ user_activity['_source']['host'] }}</td>
-                            <td>{{ user_activity['_source']['url_root'] }}</td>
-                            <td>{{ user_activity['_source']['base_url'] }}</td>
-                            <td>{{ user_activity['_source']['path'] }}</td> -->
-                        <td>{{ user_activity['_source']['description'] }}</td>
+                        <td>{{ search_term['_source']['timestamp'] }}</td>
+                        <td>{{ search_term['_id'] }}</td>
+                        <td>{{ search_term['_source']['user_email'] }}</td>
+                        <td>{{ search_term['_source']['session_id'] }}</td>
+                        <td>{{ search_term['_source']['visitor_id'] }}</td>
+                        <td>{{ search_term['_source']['url'] }}</td>
+                        <td>{{ search_term['_source']['search_term'] }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>
