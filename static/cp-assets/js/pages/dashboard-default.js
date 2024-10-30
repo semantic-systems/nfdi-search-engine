@@ -5,7 +5,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }, 500);
 });
 
-var chart_users_month, chart_users_year, chart_visitors_month, chart_visitors_year, chart_user_agents, chart_operating_systems;
+var chart_users_month, chart_users_year, chart_visitors_month, chart_visitors_year, chart_user_agents, chart_operating_systems, chart_traffic;
 
 function floatchart() {
 
@@ -177,7 +177,7 @@ function floatchart() {
     chart_operating_systems.render();
   })();
 
-  
+  // current year traffic
   (function () {
     var options = {
       chart: {
@@ -197,25 +197,8 @@ function floatchart() {
       dataLabels: {
         enabled: false
       },
-      colors: ['#d3eafd', '#2196f3', '#673ab7', '#e1d8f1'],
-      series: [
-        {
-          name: 'Investment',
-          data: [35, 125, 35, 35, 35, 80, 35, 20, 35, 45, 15, 75]
-        },
-        {
-          name: 'Loss',
-          data: [35, 15, 15, 35, 65, 40, 80, 25, 15, 85, 25, 75]
-        },
-        {
-          name: 'Profit',
-          data: [35, 145, 35, 35, 20, 105, 100, 10, 65, 45, 30, 10]
-        },
-        {
-          name: 'Maintenance',
-          data: [0, 0, 75, 0, 0, 115, 0, 0, 0, 0, 150, 0]
-        }
-      ],
+      colors: ['#673ab7', '#2196f3'],
+      series: [],
       responsive: [
         {
           breakpoint: 480,
@@ -239,31 +222,8 @@ function floatchart() {
         theme: 'dark'
       }
     };
-    var chart = new ApexCharts(document.querySelector('#growthchart'), options);
-    chart.render();
+    chart_traffic = new ApexCharts(document.querySelector('#tab-chart-traffic'), options);
+    chart_traffic.render();
   })();
-  (function () {
-    var options = {
-      chart: {
-        type: 'area',
-        height: 95,
-        stacked: true,
-        sparkline: {
-          enabled: true
-        }
-      },
-      colors: ['#673ab7'],
-      stroke: {
-        curve: 'smooth',
-        width: 1
-      },
-      series: [
-        {
-          data: [0, 15, 10, 50, 30, 40, 25]
-        }
-      ]
-    };
-    var chart = new ApexCharts(document.querySelector('#bajajchart'), options);
-    chart.render();
-  })();
+  
 }

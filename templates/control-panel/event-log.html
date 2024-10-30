@@ -18,12 +18,22 @@
             </div>
             <div class="text-end">
                 <div class="input-group">
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group" id="log_type">
+                        <input type="radio" class="btn-check" name="btnradio" id="btn-type-error" autocomplete="off"
+                            value="error" {% if log_type=='error' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="btn-type-error">Error</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btn-type-info" autocomplete="off"
+                            value="info" {% if log_type=='info' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="btn-type-info">Info</label>
+                    </div>
+                    &nbsp; &nbsp;&nbsp;
                     <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
                     <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
                         aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
                     &nbsp;
-                    <a href="{{url_for('event_log')}}" id="btn_refresh" class="btn btn-primary rounded"><span
-                            class="bi bi-arrow-repeat"></span></a>
+                    <a href="{{url_for('event_log', log_type='error')}}" id="btn_refresh"
+                        class="btn btn-primary rounded"><span class="bi bi-arrow-repeat"></span></a>
                 </div>
             </div>
         </div>
@@ -97,6 +107,15 @@
             ]
         });
     });
+
+    const select = document.getElementById('log_type');
+    select.addEventListener('click', ({target}) => { // handler fires on root container click
+        if (target.getAttribute('name') === 'btnradio') { // check if user clicks right element
+            console.log('Filter by: ' + target.value);
+            $('#btn_refresh').attr("href", '/control-panel/event-log/' + target.value);
+        }
+    });
+
 </script>
 
 {% endblock extra_js %}

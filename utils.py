@@ -181,7 +181,15 @@ class ES_Index(Enum):
 # create all the indices if they don't exist
 # ignore 400 caused by IndexAlreadyExistsException when creating an index
 for idx in ES_Index:
-    es_client.indices.create(index=idx.name, ignore=400)
+    """Create the given ElasticSearch index and ignore error if it already exists"""
+    try:
+        es_client.indices.create(index=idx.name)
+    except exceptions.RequestError as ex:
+        if ex.error == 'resource_already_exists_exception':
+            pass # Index already exists. Ignore.
+        else: # Other exception - raise it
+            raise ex
+    
 
 from datetime import datetime, timezone
 from flask import request, current_app
@@ -337,18 +345,18 @@ def log_event(type: str = "info", filename: str = None, method: str = None, args
         }
     )
 
-def get_events(start_date, end_date):
+def get_events(start_date, end_date, log_type):
     start_date, end_date = parse_date_range_for_elastic(start_date, end_date)
     # result = es_client.search(index=ES_Index.event_logs.name, query={"match": {"type": {"query": "error"}}}, size=100, sort=[{ "timestamp" : "asc" }]) 
     result = es_client.search(index=ES_Index.event_logs.name, 
                             size=10000,
-                            query = {
-                                "range": { 
-                                    "timestamp": {
-                                        "gte":start_date, 
-                                        "lte":end_date,
-                                    }
-                                }
+                            query={
+                                "bool" : {
+                                    "must" : [
+                                        { "term" : { "type.keyword" : log_type } },
+                                        { "range": { "timestamp": { "gte":start_date, "lte":end_date }} }                                        
+                                    ]
+                                } 
                             },
                             sort=[{ "timestamp" : "desc" }])    
     return result["hits"]["hits"]
@@ -578,6 +586,45 @@ def generate_search_term_summary():
 
     return dict_current_year_search_terms_top10
 
+def generate_traffic_summary():
+    year_start_date = datetime.today().replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)  
+    current_date = datetime.today()    
+    current_year_hits = get_user_activities(year_start_date, current_date)
+
+    # generate monthly summary for current year
+    df_current_year_hits = pd.json_normalize(current_year_hits)
+    df_current_year_hits = df_current_year_hits[['_id', '_source.user_email', '_source.timestamp']]
+    df_current_year_hits = df_current_year_hits.rename(columns={'_id': 'id', '_source.user_email': 'email', '_source.timestamp': 'timestamp'})  
+    #replace none or null or nan to empty string
+    df_current_year_hits.fillna('', inplace=True)
+    #convert the email column to category - either registered user or visitor
+    df_current_year_hits['user_type'] = df_current_year_hits.apply(lambda x: 'visitor' if x['email'] == '' else 'registered user', axis=1)
+    # Convert timestamp to datetime object
+    df_current_year_hits['timestamp'] = pd.to_datetime(df_current_year_hits['timestamp'], format='ISO8601')
+    # Create a new column for the month
+    df_current_year_hits['month'] = df_current_year_hits['timestamp'].dt.month_name()
+    # Group the data by month and count the ID's
+    grouped_df = df_current_year_hits.groupby(['user_type','month'])['id'].size()
+    result_df = pd.DataFrame(grouped_df).reset_index().rename(columns={'id': 'count'})
+    
+    result_df_registered_users = result_df.loc[result_df['user_type'] == 'registered user']
+    result_df_registered_users = result_df_registered_users[['month', 'count']]
+    result_df_registered_users.set_index('month', inplace = True)
+    
+    result_df_visitors = result_df.loc[result_df['user_type'] == 'visitor']
+    result_df_visitors = result_df_visitors[['month', 'count']]
+    result_df_visitors.set_index('month', inplace = True)
+        
+    # Handling months with no data
+    all_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+    result_df_registered_users = result_df_registered_users.reindex(all_months).fillna(0).reset_index()
+    result_df_visitors = result_df_visitors.reindex(all_months).fillna(0).reset_index()
+
+    current_year_traffic_registered_users = result_df_registered_users['count'].tolist()
+    current_year_traffic_visitors = result_df_visitors['count'].tolist()
+
+    return current_year_traffic_registered_users, current_year_traffic_visitors
+    
 
 import random
 from time import mktime as mktime

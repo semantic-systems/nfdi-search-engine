@@ -792,7 +792,8 @@ def dashboard():
     current_year_ua_series, current_year_ua_labels, current_year_ua_count = utils.generate_user_agent_family_summary()
     current_year_os_series, current_year_os_labels, current_year_os_count = utils.generate_operating_system_family_summary()
     current_year_search_terms = utils.generate_search_term_summary()
-    
+    current_year_traffic_registered_users, current_year_traffic_visitors = utils.generate_traffic_summary()
+
     return render_template(f'control-panel/dashboard.html', **locals())
 
 @app.route('/control-panel/activity-log', defaults={'report_date_range': None})
@@ -815,14 +816,16 @@ def user_agent_log(report_date_range):
                            user_agents=user_agents,
                            report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}")  
 
-@app.route('/control-panel/event-log', defaults={'report_date_range': None})
-@app.route('/control-panel/event-log/<report_date_range>')
-def event_log(report_date_range):
+@app.route('/control-panel/event-log/<log_type>', defaults={'report_date_range': None})
+@app.route('/control-panel/event-log/<log_type>/<report_date_range>')
+def event_log(log_type, report_date_range):
     print(f"{report_date_range=}")
+    print(f"{log_type=}")
     start_date, end_date = utils.parse_report_date_range(report_date_range)
-    events = utils.get_events(start_date, end_date)    
+    events = utils.get_events(start_date, end_date, log_type)    
     return render_template(f'control-panel/event-log.html', 
                            events=events, 
+                           log_type=log_type,
                            report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
 
 @app.route('/control-panel/event-log/delete-event/<string:event_id>')

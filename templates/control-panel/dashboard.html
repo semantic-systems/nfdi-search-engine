@@ -181,18 +181,18 @@
                     <div class="card-body">
                         <div class="row mb-3 align-items-center">
                             <div class="col">
-                                <small>Total Growth</small>
-                                <h3>$2,324.00</h3>
+                                <!-- <small>Traffic</small> -->
+                                <h3>Traffic</h3>
                             </div>
                             <div class="col-auto">
                                 <select class="form-select p-r-35">
-                                    <option>Today</option>
-                                    <option selected>This Month</option>
+                                    <!-- <option>Today</option>
+                                    <option selected>This Month</option> -->
                                     <option>This Year</option>
                                 </select>
                             </div>
                         </div>
-                        <div id="growthchart"></div>
+                        <div id="tab-chart-traffic"></div>
                     </div>
                 </div>
             </div>
@@ -268,6 +268,20 @@
     chart_operating_systems.updateOptions({
         series: {{current_year_os_series | safe }},
         labels: {{current_year_os_labels | safe }},
+        });
+    chart_traffic.updateOptions({
+        series: [
+            {
+                name: 'Registered Users',
+                data: {{current_year_traffic_registered_users | safe}} 
+            },
+        {
+            name: 'Visitors',
+            data: {{current_year_traffic_visitors | safe}}
+            }
+
+
+            ]            
         });
     };
 
