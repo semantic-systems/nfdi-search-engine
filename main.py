@@ -872,17 +872,17 @@ def delete_user(user_id):
     utils.delete_user(user_id)
     return "User has been deleted" 
 
-@app.route('/control-panel/load-test-users')
-def load_test_users():
-    for i in range(101,500):
-        user = User()
-        user.first_name = "First Name " +str(i)
-        user.last_name = "Last Name " +str(i)
-        user.email = "user.email."+str(i)+"@example.com"
-        user.set_password("1234")
-        utils.add_user(user)
+# @app.route('/control-panel/load-test-users')
+# def load_test_users():
+#     for i in range(101,500):
+#         user = User()
+#         user.first_name = "First Name " +str(i)
+#         user.last_name = "Last Name " +str(i)
+#         user.email = "user.email."+str(i)+"@example.com"
+#         user.set_password("1234")
+#         utils.add_user(user)
 
-    return "users created"
+#     return "users created"
 
 
 @app.route('/control-panel/search-term-log', defaults={'report_date_range': None})
