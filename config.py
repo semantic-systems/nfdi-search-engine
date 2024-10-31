@@ -21,11 +21,15 @@ class Config:
 
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
 
+    DATE_FORMAT_FOR_REPORT = "%B %d, %Y"
+    DATE_FORMAT_FOR_ELASTIC = "%Y-%m-%d"
+
     DATA_SOURCES = {
-        "dblp - Publications": {
-            "module": "dblp_publications", 
-            "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        }, 
+        # "dblp - Publications": {
+        #     "module": "dblp_publications", 
+        #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+
+        # }, 
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
         # "dblp-Researchers": { 
         #    "module": "dblp_researchers", 
@@ -34,11 +38,14 @@ class Config:
         "openalex - Publications": {
             "module": "openalex_publications", 
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
-            "get-endpoint": "https://api.openalex.org/works/"
+            "get-publication-endpoint": "https://api.openalex.org/works/",
+            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "openalex - Researchers": {
             "module": "openalex_researchers", 
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-researcher-endpoint": "https://api.openalex.org/authors/",
+            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "zenodo": {
             "module": "zenodo", 
@@ -52,10 +59,10 @@ class Config:
             "module": "wikidata_researchers", 
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
-        "resodate": {
-            "module": "resodate", 
-            "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
+        # "resodate": {
+        #     "module": "resodate", 
+        #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
         "oersi": {
             "module": "oersi", 
             "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
@@ -100,20 +107,32 @@ class Config:
         "crossref - Publications": {
             "module": "crossref_publications", 
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
-            "get-endpoint": "https://api.crossref.org/works/"
+            "get-publication-endpoint": "https://api.crossref.org/works/",
+            "get-publication-references-endpoint": "https://api.crossref.org/works/",
         },
-        "semantic scholar": {
-            "module": "semanticscholar", 
+        "semantic scholar - Publications": {
+            "module": "semanticscholar_publications", 
             # "search-endpoint": f"",
-            "get-endpoint": "",
-            "citations-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
-            "recommendations-endpoint": "https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+            # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
+            "citations-endpoint": f"https://api.semanticscholar.org/graph/v1/paper/",
+            "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+        },
+        "semantic scholar - Researchers": {
+            "module": "semanticscholar_researchers", 
+            # "search-endpoint": f"",
+            # "get-researcher-endpoint": "https://api.semanticscholar.org/graph/v1/author/",            
+        },
+        "re3data": {
+            "module": "re3data",
+            "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
+            "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
         },
     }
 
     LLMS = {
         "openai": {
-            "url": "https://api.openai.com/v1/chat/completions",
+            "url_chat_completions": "https://api.openai.com/v1/chat/completions",
+            "url_images_generations": "https://api.openai.com/v1/images/generations",
             'open_api_key': os.environ.get("OPENAI_API_KEY", "")
         },
         "llama3": {
@@ -148,8 +167,8 @@ class Config:
         # Google OAuth 2.0 documentation:
         # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
         'google': {
-            'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
-            'client_secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+            'client_id': os.environ.get('CLIENT_ID_GOOGLE'),
+            'client_secret': os.environ.get('CLIENT_SECRET_GOOGLE'),
             'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
             'token_url': 'https://accounts.google.com/o/oauth2/token',
             'userinfo': {
@@ -162,8 +181,8 @@ class Config:
         # GitHub OAuth 2.0 documentation:
         # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
         'github': {
-            'client_id': os.environ.get('GITHUB_CLIENT_ID'),
-            'client_secret': os.environ.get('GITHUB_CLIENT_SECRET'),
+            'client_id': os.environ.get('CLIENT_ID_GITHUB'),
+            'client_secret': os.environ.get('CLIENT_SECRET_GITHUB'),
             'authorize_url': 'https://github.com/login/oauth/authorize',
             'token_url': 'https://github.com/login/oauth/access_token',
             'userinfo': {
@@ -176,8 +195,8 @@ class Config:
         # # ORCID OAuth 2.0 documentation:
         # # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/        
         # 'orcid': {
-        #     'client_id': os.environ.get('ORCID_CLIENT_ID'),
-        #     'client_secret': os.environ.get('ORCID_CLIENT_SECRET'),
+        #     'client_id': os.environ.get('CLIENT_ID_ORCID'),
+        #     'client_secret': os.environ.get('CLIENT_SECRET_ORCID'),
         #     'authorize_url': 'https://sandbox.orcid.org/oauth/authorize',
         #     'token_url': 'https://sandbox.orcid.org/oauth/token',
         #     'userinfo': {

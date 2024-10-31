@@ -21,41 +21,40 @@
                 <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
             </div>
         </div> -->
-        <div class="row justify-content-start align-items-center border-bottom pb-4 bg-image banner img-fluid"
-            style="background-image:url('https://st.depositphotos.com/2627021/3057/i/600/depositphotos_30577319-stock-photo-peace-blue-sky.jpg')">
-            <div class="col-1 ps-2">
+        <div
+            class="banner img-fluid d-flex justify-content-between align-items-center border border-1 border-dark rounded">
+            <div class="ps-3">
                 <i class="bi bi-person-circle" style="font-size:7vw;"></i>
             </div>
-            <div class="col-auto ms-auto">
+            <div class="p-4 bg-dark text-light">
                 <h3>{{researcher.name}}</h3>
                 <!-- <p><i  class="px-1 bi-geo-alt-fill"></i>Lima, Peru</p> -->
             </div>
-            <div class="col-auto ms-auto align-self-start">
-                <a href="#" class="btn p-1" tabindex="-1" role="button" aria-disabled="true"><i
-                        class="bi-bookmark align-self-end fs-4"></i></a>
+            <div class="pe-3 align-self-start">
+                <!-- <a href="#" class="btn p-1" tabindex="-1" role="button" aria-disabled="true"><i
+                        class="bi-bookmark align-self-end fs-4"></i></a> -->
                 <a href="#" class="btn p-1" tabindex="-1" data-bs-toggle="modal"
-                    data-bs-target="#researcher-{{researcher.source[0].identifier | regex_replace ('\W','') }}"
-                    role="button" aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
+                    data-bs-target="#researcher-{{researcher.identifier | regex_replace ('\W','') }}" role="button"
+                    aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
             </div>
-            {% with modal_id='researcher-'+researcher.source[0].identifier | regex_replace ('\W',''),
+            {% with modal_id='researcher-'+researcher.identifier | regex_replace ('\W',''),
             url = '/researcher-details/'+ researcher | format_digital_obj_url('orcid'),
             title=researcher.name | trim
             %}
             {{ shareModal(modal_id, url, title) }}
             {% endwith %}
         </div>
-
         <div class="row pt-4">
 
             <div class="col-3 px-2 justify-content-start">
-                {% if researcher.about | length > 1 %}
                 <div class="d-flex p-2">
                     <h5>ABOUT</h5>
                 </div>
-                <div class="d-flex p-2 fs-6 pb-4">
-                    {{researcher.about}}
+                <div class="d-flex p-2 fs-6 pb-4 researcher-about-me">
+                    <div class='loader'>
+                        <div class='sp-3balls'></div>
+                    </div>
                 </div>
-                {% endif %}
                 <div class="d-flex p-2 pb-4 justify-content-start">
                     <div class="summary-block p-1">
                         <i class="bi bi-book fs-4"></i>
@@ -333,31 +332,30 @@
 
 <script>
 
-    $(document).ready(function () {
-
-        var dataTable = $('.datatable').DataTable({});
-        dataTable.on('page.dt', function () {
-            $('html, body').scrollTop(100)
-            $('html, body').stop().animate({
-                scrollTop: $(".dataTables_wrapper").offset().top
-            }, 'slow');
-
-            $('thead tr th:first-child').focus().blur();
-        });
-
+    // JavaScript to generate researcher 'about me' / summary after page load
+    document.addEventListener("DOMContentLoaded", function () {
+        // document.querySelector('.researcher-about-me').innerHTML = "<div class='loader'><div class='sp-3balls'></div></div>";
+        fetch('/generate-researcher-about-me/{{researcher.identifier}}')  // Endpoint to generate researcher 'about me' / summary
+            .then(response => response.json())
+            .then(data => {
+                if (data.summary) {
+                    document.querySelector('.researcher-about-me').innerHTML = data.summary;
+                }
+            })
+            .catch(error => console.error('Error while generating summary:', error));
     });
 
     // JavaScript to fetch and update the banner after page load
-    // document.addEventListener("DOMContentLoaded", function() {
-    //         fetch('/researcher-banner/{{researcher.list_index}}')  // Endpoint to generate the image
-    //             .then(response => response.json())
-    //             .then(data => {
-    //                 if (data.imageUrl) {
-    //                     document.querySelector('.banner').style.backgroundImage = `url(${data.imageUrl})`;
-    //                 }
-    //             })
-    //             .catch(error => console.error('Error fetching image:', error));
-    //     });
+    document.addEventListener("DOMContentLoaded", function () {
+        fetch('/generate-researcher-banner/{{researcher.identifier}}')  // Endpoint to generate the image
+            .then(response => response.json())
+            .then(data => {
+                if (data.generated_banner) {
+                    document.querySelector('.banner').style.backgroundImage = `url(${data.generated_banner})`;
+                }
+            })
+            .catch(error => console.error('Error while fetching image:', error));
+    });
 
 
 

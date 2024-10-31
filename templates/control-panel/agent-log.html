@@ -1,0 +1,144 @@
+{% extends 'layouts/cp-base.html' %}
+
+{% block title %} User Agents Report {% endblock title %}
+
+{% block extrastyle %}
+
+{% endblock extrastyle %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ Main Content ] start -->
+        <div class="d-flex justify-content-between">
+            <div class="">
+                <h3>Agent Log</h3>
+                <p>All the user agent details are listed here. Users' agent data such as os, browsers etc can be
+                    analyzed from this information.</p>
+            </div>
+            <div class="text-end">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                    <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
+                        aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
+                    &nbsp;
+                    <a href="{{url_for('user_agent_log')}}" id="btn_refresh" class="btn btn-primary rounded"><span
+                            class="bi bi-arrow-repeat"></span></a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <table id="tbl-report" class="display table-hover table-bordered table-sm" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>timestamp_updated</th>
+                        <th>id</th>
+                        <th>user_email</th>
+                        <th>session_id</th>
+                        <th>visitor_id</th>
+                        <th>ip_address</th>
+                        <th>user_agent</th>
+                        <th>url</th>
+                        <th>device_family</th>
+                        <th>device_brand</th>
+                        <th>device_model</th>
+                        <th>os_family</th>
+                        <th>os_major</th>
+                        <th>os_minor</th>
+                        <th>os_patch</th>
+                        <th>os_patch_minor</th>
+                        <th>user_agent_family</th>
+                        <th>user_agent_major</th>
+                        <th>user_agent_minor</th>
+                        <th>user_agent_patch</th>
+                        <th>user_agent_language</th>
+                        <!-- <th>host</th>
+                        <th>url_root</th>
+                        <th>base_url</th>
+                        <th>path</th> -->
+                        <th>timestamp_created</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>timestamp_updated</th>
+                        <th>id</th>
+                        <th>user_email</th>
+                        <th>session_id</th>
+                        <th>visitor_id</th>
+                        <th>ip_address</th>
+                        <th>user_agent</th>
+                        <th>url</th>
+                        <th>device_family</th>
+                        <th>device_brand</th>
+                        <th>device_model</th>
+                        <th>os_family</th>
+                        <th>os_major</th>
+                        <th>os_minor</th>
+                        <th>os_patch</th>
+                        <th>os_patch_minor</th>
+                        <th>user_agent_family</th>
+                        <th>user_agent_major</th>
+                        <th>user_agent_minor</th>
+                        <th>user_agent_patch</th>
+                        <th>user_agent_language</th>
+                        <!-- <th>host</th>
+                        <th>url_root</th>
+                        <th>base_url</th>
+                        <th>path</th> -->
+                        <th>timestamp_created</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for user_agent in user_agents %}
+                    <tr>
+                        <td>{{ user_agent['_source']['timestamp_updated'] }}</td>
+                        <td>{{ user_agent['_id'] }}</td>
+                        <td>{{ user_agent['_source']['user_email'] }}</td>
+                        <td>{{ user_agent['_source']['session_id'] }}</td>
+                        <td>{{ user_agent['_source']['visitor_id'] }}</td>
+                        <td>{{ user_agent['_source']['ip_address'] }}</td>
+                        <td>{{ user_agent['_source']['user_agent'] }}</td>
+                        <td>{{ user_agent['_source']['url'] }}</td>
+                        <td>{{ user_agent['_source']['device_family'] }}</td>
+                        <td>{{ user_agent['_source']['device_brand'] }}</td>
+                        <td>{{ user_agent['_source']['device_model'] }}</td>
+                        <td>{{ user_agent['_source']['os_family'] }}</td>
+                        <td>{{ user_agent['_source']['os_major'] }}</td>
+                        <td>{{ user_agent['_source']['os_minor'] }}</td>
+                        <td>{{ user_agent['_source']['os_patch'] }}</td>
+                        <td>{{ user_agent['_source']['os_patch_minor'] }}</td>
+                        <td>{{ user_agent['_source']['user_agent_family'] }}</td>
+                        <td>{{ user_agent['_source']['user_agent_major'] }}</td>
+                        <td>{{ user_agent['_source']['user_agent_minor'] }}</td>
+                        <td>{{ user_agent['_source']['user_agent_patch'] }}</td>
+                        <td>{{ user_agent['_source']['user_agent_language'] }}</td>
+                        <!-- <td>{{ user_agent['_source']['host'] }}</td>
+                        <td>{{ user_agent['_source']['url_root'] }}</td>
+                        <td>{{ user_agent['_source']['base_url'] }}</td>
+                        <td>{{ user_agent['_source']['path'] }}</td> -->
+                        <td>{{ user_agent['_source']['timestamp_created'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock content %}
+{% block extra_js %}
+<!-- [Page Specific JS] start -->
+<script src="{{ url_for('static', filename='js/daterangepicker.js') }}"></script>
+<!-- [Page Specific JS] end -->
+
+<script type="text/javascript">
+    $(function () {
+        var table = new DataTable('#tbl-report');
+    });
+</script>
+
+{% endblock extra_js %}

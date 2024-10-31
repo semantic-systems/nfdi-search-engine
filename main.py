@@ -174,12 +174,38 @@ FILTERS["regex_replace"] = regex_replace
 
 @app.route("/ping")
 def ping():
-    return jsonify(ping="NFDI4DS Gateway is up and running :) ")
 
+    # check if all the environment variables are set
+    for env_variable in ['SECRET_KEY', 'IEEE_API_KEY', 
+                         'CLIENT_ID_GOOGLE', 'CLIENT_SECRET_GOOGLE',
+                         'CLIENT_ID_GITHUB', 'CLIENT_SECRET_GITHUB',
+                         'CLIENT_ID_ORCID', 'CLIENT_SECRET_ORCID',
+                         'OPENAI_API_KEY', 
+                         'LLAMA3_USERNAME', 'LLAMA3_PASSWORD',
+                         'ELASTIC_SERVER', 'ELASTIC_USERNAME', #'ELASTIC_PASSWORD',
+                         'CHATBOT_SERVER',
+                         ]:
+        if (os.environ.get(env_variable, '') == ""):
+            return make_response(render_template('error.html',error_message=f"Environment variable '{env_variable}' is not set."))
+    
+    #check if the chatbot flag is enabled
+    if app.config['CHATBOT']["chatbot_enable"] == False:
+        return make_response(render_template('error.html',error_message=f"chatbot is not enabled."))
+    
+    #check if all the indices exist; if any of the indices doesn't exist, create it    
+    for idx in utils.ES_Index:
+        if not utils.es_client.indices.exists(index=idx.name):
+            try:
+                utils.es_client.indices.create(index=idx.name)
+            except Exception as ex:
+                return make_response(render_template('error.html',error_message=f"Elastic error while creating '{idx.name}': {ex.error}"))
+    
+    return jsonify(ping="NFDI4DS Gateway is up and running :) ")
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if current_user.is_authenticated:
+        session["current-user-email"] = current_user.email
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
@@ -190,12 +216,12 @@ def login():
             flash('Invalid email or password', 'danger')
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
+        session["current-user-email"] = user.email
         next_page = request.args.get('next')
         if not next_page or urlsplit(next_page).netloc != '':
             next_page = url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Login', form=form)
-
 
 @app.route('/logout')
 @login_required
@@ -203,7 +229,6 @@ def logout():
     logout_user()
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
-
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -220,8 +245,6 @@ def register():
         flash('Congratulations, you are now a registered user!', 'success')
         return redirect(url_for('login'))
     return render_template('register.html', title='Register', form=form)
-
-
 
 # authization code copied from https://github.com/miguelgrinberg/flask-oauth-example
 @app.route('/authorize/<provider>')
@@ -248,7 +271,6 @@ def oauth2_authorize(provider):
 
     # redirect the user to the OAuth2 provider authorization URL
     return redirect(provider_data['authorize_url'] + '?' + qs)
-
 
 @app.route('/callback/<provider>')
 def oauth2_callback(provider):
@@ -323,7 +345,6 @@ def oauth2_callback(provider):
     login_user(user)
     return redirect(url_for('index'))
 
-
 @app.route('/profile', methods=['GET', 'POST'])
 @login_required
 def profile():
@@ -341,7 +362,6 @@ def profile():
         form.email.data = current_user.email
     return render_template('profile.html', title='Profile',
                            form=form)
-
 
 @app.route('/preferences', methods=['GET', 'POST'])
 @login_required
@@ -375,40 +395,29 @@ def preferences():
         form.data_sources.data = [source for source in current_user.included_data_sources.split('; ')]
     return render_template('preferences.html', title='Preferences', form=form)
 
-
 @app.route('/')
-def index():    
-
-    utils.log_activity("loading index page")
-   
-    if (app.config["SECRET_KEY"] == ""):
-        return make_response(render_template('error.html',error_message='Environment variables are not set. Kindly set all the required variables.'))
-
-    response = make_response(render_template('index.html'))
-
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
-
+@utils.set_cookies
+def index():  
+    response = make_response(render_template('index.html'))  
     return response
 
-
+@app.route('/update-visitor-id', methods=['GET'])
+@utils.timeit
+def update_visitor_id():
+    visitor_id = request.args.get('visitor_id')
+    print(f"{visitor_id=}")    
+    utils.update_visitor_id(visitor_id)
+    return str(True)
 
 
 @app.route('/results', methods=['POST', 'GET'])
 @utils.timeit
+@utils.set_cookies
 def search_results():
-
-    utils.log_activity(f"loading search results for {request.args.get('txtSearchTerm','')}")    
-    # The search-session cookie setting can still be None if a user enters the
-    # /sources endpoint directly without going to / first!!!
-    logger.debug(
-        f'Search session {request.cookies.get("search-session")} '
-        f'searched for "{request.args.get("txtSearchTerm")}"'
-    )
+    
+    search_term = request.args.get('txtSearchTerm', '')
+    utils.log_activity(f"loading search results for {search_term}")  
+    utils.log_search_term(search_term) 
 
     results = {
         'publications': [],
@@ -418,13 +427,13 @@ def search_results():
         'events': [],
         'projects': [],
         'others': [],
-        'timedout_sources': []
+        'timedout_sources': [] ### this should be removed. no longer used
     }
 
     failed_sources = []
 
     if request.method == 'GET':
-        search_term = request.args.get('txtSearchTerm')
+        # search_term = request.args.get('txtSearchTerm')
         session['search-term'] = search_term
 
         for k in results.keys(): results[k] = []
@@ -502,19 +511,16 @@ def search_results():
             # sleep(1)
         
 
-        # on the first page load, only push top 20 records in each category
+        # on the first page load, only push top XX records in each category
         number_of_records_to_show_on_page_load = int(app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])        
-        total_results = {} # the dict to keep the total number of search results 
-        displayed_results = {} # the dict to keep the total number of search results currently displayed to the user
+        total_results = {} # the dict to keep the all the search results 
+        displayed_results = {} # the dict to keep the search results currently displayed to the user
         
         for k, v in results.items():
             logger.info(f'Got {len(v)} {k}')
             total_results[k] = len(v)
             results[k] = v[:number_of_records_to_show_on_page_load]
-            displayed_results[k] = len(results[k])
-
-        results["timedout_sources"] = list(set(results["timedout_sources"]))
-        logger.info('Following sources got timed out:' + ','.join(results["timedout_sources"]))  
+            displayed_results[k] = len(results[k])          
 
         session['total_search_results'] = total_results
         session['displayed_search_results'] = displayed_results 
@@ -524,6 +530,11 @@ def search_results():
 
         return template_response
 
+@app.route('/update_search_result/<string:source>/<string:source_identifier>/<path:doi>', methods=['GET'])
+def update_search_result(source: str, source_identifier: str, doi):
+    module_name = app.config['DATA_SOURCES'][source].get('module', '')            
+    resource = importlib.import_module(f'sources.{module_name}').get_resource(source, source_identifier, doi.replace("DOI:",""))
+    return render_template(f'partials/search-results/resource-block.html', resource=resource)
 
 @app.route('/load-more/<string:object_type>', methods=['GET'])
 def load_more(object_type):
@@ -538,7 +549,7 @@ def load_more(object_type):
     number_of_records_to_append_on_lazy_load = int(app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"])       
     results[object_type] = results[object_type][displayed_search_results:displayed_search_results+number_of_records_to_append_on_lazy_load]
     session['displayed_search_results'][object_type] = displayed_search_results+number_of_records_to_append_on_lazy_load
-    return render_template(f'components/{object_type}.html', results=results) 
+    return render_template(f'partials/search-results/{object_type}.html', results=results) 
 
 
 @app.route('/are-embeddings-generated', methods=['GET'])
@@ -574,6 +585,7 @@ def get_chatbot_answer():
 
 @app.route('/publication-details/<path:identifier_with_type>', methods=['GET'])
 @utils.timeit
+@utils.set_cookies
 def publication_details(identifier_with_type):
 
     utils.log_activity(f"loading publication details page: {identifier_with_type}")    
@@ -582,7 +594,7 @@ def publication_details(identifier_with_type):
       
     sources = []
     for module in app.config['DATA_SOURCES']:
-        if app.config['DATA_SOURCES'][module].get('get-endpoint','').strip() != "":
+        if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "":
             sources.append(module)
 
     for source in sources:
@@ -616,9 +628,10 @@ def publication_details(identifier_with_type):
 @app.route('/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
-    print("doi:", doi)   
+    print("doi:", doi)  
+    source = "crossref - Publications" 
     module_name = "crossref_publications"     
-    publication = importlib.import_module(f'sources.{module_name}').get_publication(doi=doi)
+    publication = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
     return response
 
@@ -643,39 +656,79 @@ def publication_details_citations(doi):
     return response
 
 @app.route('/resource-details')
+@utils.timeit
+@utils.set_cookies
 def resource_details():
     response = make_response(render_template('resource-details.html'))  
     return response
 
 
 @app.route('/researcher-details/<path:identifier_with_type>', methods=['GET'])
+@utils.timeit
+@utils.set_cookies
 def researcher_details(identifier_with_type):
 
     utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
     identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
     identifier = identifier_with_type.split(':',1)[1]
-    pass   
-    # researcher = openalex_researchers.get_researcher_details(index)
-    # response = make_response(render_template('researcher-details.html',researcher=researcher))
-    # return response
+      
+    sources = []
+    for module in app.config['DATA_SOURCES']:
+        if app.config['DATA_SOURCES'][module].get('get-researcher-endpoint','').strip() != "":
+            sources.append(module)
 
-@app.route('/researcher-banner/<string:index>', methods=['GET'])
-def researcher_banner(index):
-    pass
-    # logger.info(f'Fetching details for researcher with index {index}')
-    # for result in results['researchers']:
-    #     if result.list_index == index:
-    #         researcher = result
-    #         break
-    # # logger.info(f'Found researcher {researcher}')
-    # researcher = openalex_researchers.get_researcher_banner(researcher)
-    # if researcher.banner == "":
-    #     return jsonify()
-    # return jsonify(imageUrl = f'data:image/jpeg;base64,{researcher.banner}')
+    for source in sources:
+        module_name = app.config['DATA_SOURCES'][source].get('module', '')              
+
+    threads = []  
+    researchers = []
+
+    for source in sources:
+        module_name = app.config['DATA_SOURCES'][source].get('module', '')            
+        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_researcher, args=(source, identifier, researchers,))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
+
+    # publications_json = jsonify(publications)
+    # with open('publications.json', 'w', encoding='utf-8') as f:
+    #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
+
+    if (len(researchers) == 1): #forward the only publication record received from one of the sources
+        response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
+        session['researcher:'+identifier] = jsonify(researchers[0]).json
+    else: 
+        #merge more than one researchers record into one researcher
+        merged_researcher = gen_ai.generate_response_with_openai(jsonify(researchers).json)
+        response = make_response(render_template('researcher-details.html', researcher=merged_researcher))
+        session['researcher:'+identifier] = merged_researcher
+
+    return response
+
+@app.route('/generate-researcher-about-me/<string:orcid>', methods=['GET'])
+@utils.handle_exceptions
+def generate_researcher_about_me(orcid):
+    researcher_about_me = gen_ai.generate_researcher_about_me(session['researcher:'+orcid])
+    return jsonify(summary=f'{researcher_about_me}')
+
+
+@app.route('/generate-researcher-banner/<string:orcid>', methods=['GET'])
+@utils.handle_exceptions
+def generate_researcher_banner(orcid): 
+    generated_banner = gen_ai.generate_researcher_banner(session['researcher:'+orcid])
+    if generated_banner == "":
+        import base64
+        with open('static/images/researcher-default-banner.jpg', "rb") as fh:
+            generated_banner = base64.b64encode(fh.read()).decode()
+    return jsonify(generated_banner = f'data:image/jpeg;base64,{generated_banner}')
 
 
 
 @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+@utils.timeit
+@utils.set_cookies
 def organization_details(organization_id, organization_name):
     try:
 
@@ -707,6 +760,8 @@ def organization_details(organization_id, organization_name):
 
 
 @app.route('/events-details')
+@utils.timeit
+@utils.set_cookies
 def events_details():
     response = make_response(render_template('events-details.html'))
 
@@ -721,6 +776,8 @@ def events_details():
 
 
 @app.route('/project-details')
+@utils.timeit
+@utils.set_cookies
 def project_details():
     response = make_response(render_template('project-details.html'))
     # Set search-session cookie to the session cookie value of the first visit
@@ -733,6 +790,8 @@ def project_details():
     return response
 
 @app.route('/digital-obj-details/<path:identifier_with_type>', methods=['GET'])
+@utils.timeit
+@utils.set_cookies
 def digital_obj_details(identifier_with_type):
 
     utils.log_activity(f"loading digital obj details page: {identifier_with_type}")    
@@ -741,10 +800,101 @@ def digital_obj_details(identifier_with_type):
     pass   
 
 
-@app.route('/event-log')
-def event_log():
-    events = utils.get_events()
-    return render_template(f'event-log.html', events=events) 
+
+
+#endregion
+
+
+
+#region Control Panel
+
+@app.route('/control-panel/dashboard')
+def dashboard():
+    current_month_users, current_month_users_count, current_year_users, current_year_users_count = utils.generate_registered_users_summaries()
+    current_month_visitors, current_month_visitors_count, current_year_visitors, current_year_visitors_count = utils.generate_visitors_summaries()
+    current_year_ua_series, current_year_ua_labels, current_year_ua_count = utils.generate_user_agent_family_summary()
+    current_year_os_series, current_year_os_labels, current_year_os_count = utils.generate_operating_system_family_summary()
+    current_year_search_terms = utils.generate_search_term_summary()
+    current_year_traffic_registered_users, current_year_traffic_visitors = utils.generate_traffic_summary()
+
+    return render_template(f'control-panel/dashboard.html', **locals())
+
+@app.route('/control-panel/activity-log', defaults={'report_date_range': None})
+@app.route('/control-panel/activity-log/<report_date_range>')
+def activity_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    user_activities = utils.get_user_activities(start_date, end_date)
+    return render_template(f'control-panel/activity-log.html', 
+                           user_activities=user_activities,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
+
+@app.route('/control-panel/user-agent-log', defaults={'report_date_range': None})
+@app.route('/control-panel/user-agent-log/<report_date_range>')
+def user_agent_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    user_agents = utils.get_user_agents(start_date, end_date)
+    return render_template(f'control-panel/agent-log.html', 
+                           user_agents=user_agents,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}")  
+
+@app.route('/control-panel/event-log/<log_type>', defaults={'report_date_range': None})
+@app.route('/control-panel/event-log/<log_type>/<report_date_range>')
+def event_log(log_type, report_date_range):
+    print(f"{report_date_range=}")
+    print(f"{log_type=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    events = utils.get_events(start_date, end_date, log_type)    
+    return render_template(f'control-panel/event-log.html', 
+                           events=events, 
+                           log_type=log_type,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
+
+@app.route('/control-panel/event-log/delete-event/<string:event_id>')
+def delete_event(event_id):
+    utils.delete_event(event_id)
+    return "Event has been deleted" 
+
+
+@app.route('/control-panel/registered-users', defaults={'report_date_range': None})
+@app.route('/control-panel/registered-users/<report_date_range>')
+def registered_users(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    users = utils.get_users(start_date, end_date)
+    return render_template(f'control-panel/registered-users.html', 
+                           users=users,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
+
+@app.route('/control-panel/registered-users/delete-user/<string:user_id>')
+def delete_user(user_id):
+    utils.delete_user(user_id)
+    return "User has been deleted" 
+
+@app.route('/control-panel/load-test-users')
+def load_test_users():
+    for i in range(101,500):
+        user = User()
+        user.first_name = "First Name " +str(i)
+        user.last_name = "Last Name " +str(i)
+        user.email = "user.email."+str(i)+"@example.com"
+        user.set_password("1234")
+        utils.add_user(user)
+
+    return "users created"
+
+
+@app.route('/control-panel/search-term-log', defaults={'report_date_range': None})
+@app.route('/control-panel/search-term-log/<report_date_range>')
+def search_term_log(report_date_range):
+    print(f"{report_date_range=}")
+    start_date, end_date = utils.parse_report_date_range(report_date_range)
+    search_terms = utils.get_search_terms(start_date, end_date)
+    return render_template(f'control-panel/search-term-log.html', 
+                           search_terms=search_terms,
+                           report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
+
 
 
 #endregion

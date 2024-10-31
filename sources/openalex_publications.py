@@ -9,6 +9,9 @@ def search(source: str, search_term: str, results, failed_sources):
                                                     base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
                                                     search_term=search_term,
                                                     failed_sources=failed_sources) 
+    process_search_results(source, results, search_result)        
+    
+def process_search_results(source: str, results, search_result):     
     total_records_found = search_result['meta']['count']
     hits = search_result.get("results", [])
     total_hits = len(hits)
@@ -60,18 +63,26 @@ def search(source: str, search_term: str, results, failed_sources):
             else:
                 results['others'].append(publication) 
 
-
+@utils.handle_exceptions
+def get_publications(source: str, url: str, results, failed_sources): 
+    search_result = data_retriever.retrieve_data(source=source, 
+                                                    base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+                                                    search_term="",
+                                                    failed_sources=failed_sources,
+                                                    url=url)
+    process_search_results(source, results, search_result) 
+    
 @utils.handle_exceptions
 def get_publication(source: str, doi: str, publications):
 
     search_result = data_retriever.retrieve_object(source=source, 
-                                                    base_url=app.config['DATA_SOURCES'][source].get('get-endpoint', ''),
+                                                    base_url=app.config['DATA_SOURCES'][source].get('get-publication-endpoint', ''),
                                                     doi=doi)
     
     publication = Article()   
     publication.name = utils.remove_html_tags(search_result.get("title", ""))  
     publication.url = search_result.get("id", "") # not a valid url, openalex is currently working on their web interface.
-    publication.identifier = search_result.get("doi", "").replace("https://doi.org/", "")
+    publication.identifier = search_result.get("doi", "").partition('doi.org/')[2]
     publication.datePublished = search_result.get("publication_date", "") 
     publication.inLanguage.append(search_result.get("language", ""))
     publication.license = search_result.get("primary_location", {}).get("license", "")

@@ -9,6 +9,10 @@
 
 {% block content %}
 
+{% from 'partials/common/share-modal.html' import shareModal %}
+{% from 'partials/common/preview-modal.html' import previewModal %}
+{% from 'partials/common/download-modal.html' import downloadModal %}
+
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
@@ -126,25 +130,25 @@
                     <div class="tab-content mt-5" id="myTabContent">
                         <div class="tab-pane fade show active" id="publications" role="tabpanel"
                             aria-labelledby="publications-tab">
-                            {% include 'components/publications.html' %}
+                            {% include 'partials/search-results/publications.html' %}
                         </div>
                         <div class="tab-pane fade" id="researchers" role="tabpanel" aria-labelledby="researchers-tab">
-                            {% include 'components/researchers.html' %}
+                            {% include 'partials/search-results/researchers.html' %}
                         </div>
                         <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
-                            {% include 'components/resources.html' %}
+                            {% include 'partials/search-results/resources.html' %}
                         </div>
                         <div class="tab-pane fade" id="organizations" role="tabpanel"
                             aria-labelledby="organizations-tab">
-                            {% include 'components/organizations.html' %}
+                            {% include 'partials/search-results/organizations.html' %}
                         </div>
                         <div class="tab-pane fade" id="events" role="tabpanel" aria-labelledby="events-tab">
-                            {% include 'components/events.html' %}</div>
+                            {% include 'partials/search-results/events.html' %}</div>
                         <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
-                            {% include 'components/projects.html' %}
+                            {% include 'partials/search-results/projects.html' %}
                         </div>
                         <div class="tab-pane fade" id="others" role="tabpanel" aria-labelledby="others-tab">{% include
-                            'components/others.html' %}</div>
+                            'partials/search-results/others.html' %}</div>
                     </div>
                 </div>
 
@@ -159,7 +163,7 @@
                             aria-label="Close"></button>
                     </div>
                     <div class="offcanvas-body p-0">
-                        {% include 'components/chatbot.html' %}
+                        {% include 'partials/search-results/chatbot.html' %}
                     </div>
                 </div>
 
@@ -263,6 +267,12 @@
         }
     }
 
+    // define an observer instance
+    var observerSearchResults = new IntersectionObserver(onIntersection, {
+        root: null, // default is the viewport
+        threshold: .9 // percentage of target's visible area. Triggers "onIntersection"
+    })
+
     // A flag to know if a request is sent and the response is not yet received
     let ajax_request_sent = false;
 
@@ -348,6 +358,12 @@
                     console.log('successfully loaded more ' + object_type)
                     // Unset the flag
                     ajax_request_sent = false;
+
+                    // observe the newly added elements; if they are partially loaded then more details should be loaded via ajax calls
+                    document.querySelectorAll('.partially_loaded').forEach(element => {
+                        console.log(element)
+                        observerSearchResults.observe(element);
+                    })
                 },
                 error: function (err) {
                     console.log(err);
@@ -355,6 +371,50 @@
             });
         }
     }
+
+    // callback is called on intersection change; when any partially loaded search result block gets visible in the viewport
+    function onIntersection(entries, opts) {
+        console.log(entries.length)
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                doi = entry.target.querySelector('.resource_doi').innerHTML
+                source = entry.target.querySelector('.source_name').innerHTML
+                source_identifier = entry.target.querySelector('.source_identifier').innerHTML
+
+                console.log(source);
+                console.log(doi);
+                console.log(source_identifier);
+
+                jQuery.ajax({
+                    url: '/update_search_result/' + source + "/" + source_identifier + "/" + doi,
+                    type: "GET",
+                    complete: function () {
+                        // $('.loader').remove();
+                    },
+                    success: function (data) {
+                        entry.target.innerHTML = data;
+                        console.log('successfully loaded more details of ' + doi)
+                        // To stop observing:
+                        observerSearchResults.unobserve(entry.target)
+                        entry.target.classList.remove('partially_loaded')
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        observerSearchResults.unobserve(entry.target)
+                        entry.target.classList.remove('partially_loaded')
+                    }
+                });
+
+            }
+
+        })
+
+    }
+
+    document.querySelectorAll('.partially_loaded').forEach(element => {
+        observerSearchResults.observe(element);
+    })
+
 
 </script>
 

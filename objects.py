@@ -13,6 +13,7 @@ class thing:
     originalSource: str = ""
     source: list() = field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
+    partiallyLoaded: bool = False
 
     # @classmethod
     def __str__(self):
@@ -96,6 +97,9 @@ class Article(CreativeWork):
     pageStart: str = ""
     pagination: str = ""
     wordCount: str = ""
+    referenceCount: str = ""
+    citationCount: str = ""
+    reference: list() = field(default_factory=list) # this list will have "CreativeWork" or "Article" objects
 
 @dataclass
 class Dataset(CreativeWork): 
@@ -107,8 +111,7 @@ class Author(Person):
     works_count: str = ""
     about: str = ""
     banner: str = ""
-    cited_by_count: str = ""
-    url: str = ""
+    cited_by_count: str = ""    
     researchAreas: List[str] = field(default_factory=list)
     works: List[Union[Article, Dataset]] = field(default_factory=list)
 

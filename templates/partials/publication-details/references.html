@@ -1,10 +1,16 @@
 <ol class="list-group list-group-numbered">
-    {% for reference in publication.citation %}
+    {% for reference in publication.reference %}
     <li class="list-group-item border-0">
+        {% if reference.identifier == "" %}
         {{reference.text}}
+        {% else %}
+        <a class="text-secondary fw-bold publication_name"
+            href="/publication-details/{{reference | format_digital_obj_url('doi')}}"
+            target='_blank'>{{reference.text}}</a>
+        {% endif %}
     </li>
     {% endfor %}
 </ol>
-{% if publication.citation|length == 0 %}
+{% if publication.reference|length == 0 %}
 No references found
 {% endif %}

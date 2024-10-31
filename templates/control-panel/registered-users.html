@@ -1,0 +1,87 @@
+{% extends 'layouts/cp-base.html' %}
+
+{% block title %} Users Report {% endblock title %}
+
+{% block extrastyle %}
+
+{% endblock extrastyle %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ Main Content ] start -->
+        <div class="d-flex justify-content-between">
+            <div class="">
+                <h3>Registered Users</h3>
+                <p>All the registered users are listed here.</p>
+            </div>
+            <div class="text-end">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                    <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
+                        aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
+                    &nbsp;
+                    <a href="{{url_for('registered_users')}}" id="btn_refresh" class="btn btn-primary rounded"><span
+                            class="bi bi-arrow-repeat"></span></a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <table id="tbl-report" class="display table-hover table-bordered table-sm" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>registration timestamp</th>
+                        <th class="all">id</th>
+                        <th>first name</th>
+                        <th>last name</th>
+                        <th>email</th>
+                        <th>oauth source</th>
+                        <th>action</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>registration timestamp</th>
+                        <th class="all">id</th>
+                        <th>first name</th>
+                        <th>last name</th>
+                        <th>email</th>
+                        <th>oauth source</th>
+                        <th>action</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>{{ user['_source']['timestamp_created'] }}</td>
+                        <td>{{ user['_id'] }}</td>
+                        <td>{{ user['_source']['first_name'] }}</td>
+                        <td>{{ user['_source']['last_name'] }}</td>
+                        <td>{{ user['_source']['email'] }}</td>
+                        <td>{{ user['_source']['oauth_source'] }}</td>
+                        <td><a href="{{url_for('delete_user', user_id=user['_id'])}}" target="_blank">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock content %}
+{% block extra_js %}
+<!-- [Page Specific JS] start -->
+<script src="{{ url_for('static', filename='js/daterangepicker.js') }}"></script>
+<!-- [Page Specific JS] end -->
+
+<script type="text/javascript">
+    $(function () {
+        var table = new DataTable('#tbl-report');
+    });
+</script>
+
+{% endblock extra_js %}

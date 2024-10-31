@@ -1,0 +1,291 @@
+{% extends 'layouts/cp-base.html' %}
+
+{% block title %} Dashboard {% endblock title %}
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ Main Content ] start -->
+        <div class="row">
+            <!-- [ sample-page ] start -->
+            <div class="col-xl-4 col-md-6">
+                <div class="card bg-secondary-dark dashnum-card text-white overflow-hidden">
+                    <span class="round small"></span>
+                    <span class="round big"></span>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="avtar avtar-lg">
+                                    <i class="text-white bi bi-person-check"></i>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <ul class="nav nav-pills justify-content-end mb-0" id="chart-users-tab" role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-white active" id="chart-tab-users-month-tab"
+                                            data-bs-toggle="pill" data-bs-target="#chart-tab-users-month" type="button"
+                                            role="tab" aria-controls="chart-tab-users-month"
+                                            aria-selected="true">Month</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-white" id="chart-tab-users-year-tab"
+                                            data-bs-toggle="pill" data-bs-target="#chart-tab-users-year" type="button"
+                                            role="tab" aria-controls="chart-tab-users-year"
+                                            aria-selected="false">Year</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="chart-users-tabContent">
+                            <div class="tab-pane show active" id="chart-tab-users-month" role="tabpanel"
+                                aria-labelledby="chart-tab-users-month-tab" tabindex="0">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <span class="text-white d-block f-34 f-w-500 my-2">{{current_month_users_count}}
+                                        </span>
+                                        <p class="mb-0 opacity-50">Registered Users</p>
+                                    </div>
+                                    <div class="col-8">
+                                        <div id="tab-chart-users-month"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="chart-tab-users-year" role="tabpanel"
+                                aria-labelledby="chart-tab-users-year-tab" tabindex="0">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <span class="text-white d-block f-34 f-w-500 my-2">{{current_year_users_count}}
+                                        </span>
+                                        <p class="mb-0 opacity-50">Registered Users</p>
+                                    </div>
+                                    <div class="col-8">
+                                        <div id="tab-chart-users-year"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-6">
+                <div class="card bg-primary-dark dashnum-card text-white overflow-hidden">
+                    <span class="round small"></span>
+                    <span class="round big"></span>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="avtar avtar-lg">
+                                    <i class="text-white bi bi-person"></i>
+                                </div>
+                            </div>
+                            <div class="col-auto">
+                                <ul class="nav nav-pills justify-content-end mb-0" id="chart-visitors-tab"
+                                    role="tablist">
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-white active" id="chart-tab-visitors-month-tab"
+                                            data-bs-toggle="pill" data-bs-target="#chart-tab-visitors-month"
+                                            type="button" role="tab" aria-controls="chart-tab-visitors-month"
+                                            aria-selected="true">Month</button>
+                                    </li>
+                                    <li class="nav-item" role="presentation">
+                                        <button class="nav-link text-white" id="chart-tab-visitors-year-tab"
+                                            data-bs-toggle="pill" data-bs-target="#chart-tab-visitors-year"
+                                            type="button" role="tab" aria-controls="chart-tab-visitors-year"
+                                            aria-selected="false">Year</button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="tab-content" id="chart-visitors-tabContent">
+                            <div class="tab-pane show active" id="chart-tab-visitors-month" role="tabpanel"
+                                aria-labelledby="chart-tab-visitors-month-tab" tabindex="0">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <span
+                                            class="text-white d-block f-34 f-w-500 my-2">{{current_month_visitors_count}}
+                                        </span>
+                                        <p class="mb-0 opacity-50">Visitors</p>
+                                    </div>
+                                    <div class="col-8">
+                                        <div id="tab-chart-visitors-month"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane" id="chart-tab-visitors-year" role="tabpanel"
+                                aria-labelledby="chart-tab-visitors-year-tab" tabindex="0">
+                                <div class="row">
+                                    <div class="col-4">
+                                        <span
+                                            class="text-white d-block f-34 f-w-500 my-2">{{current_year_visitors_count}}
+                                        </span>
+                                        <p class="mb-0 opacity-50">Visitors</p>
+                                    </div>
+                                    <div class="col-8">
+                                        <div id="tab-chart-visitors-year"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12">
+                <div class="card bg-primary-dark dashnum-card dashnum-card-small text-white overflow-hidden">
+                    <span class="round bg-primary small"></span>
+                    <span class="round bg-primary big"></span>
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="avtar avtar-lg">
+                                        <i class="text-white bi bi-browser-chrome"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <h4 class="text-white mb-1">{{current_year_ua_count}}</h4>
+                                        <p class="mb-0 opacity-50 text-sm">User Agents</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="tab-chart-user-agents"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card dashnum-card dashnum-card-small overflow-hidden">
+                    <span class="round bg-warning small"></span>
+                    <span class="round bg-warning big"></span>
+                    <div class="card-body p-3">
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="d-flex align-items-center">
+                                    <div class="avtar avtar-lg bg-light-warning">
+                                        <i class="text-warning bi bi-credit-card"></i>
+                                    </div>
+                                    <div class="ms-2">
+                                        <h4 class="mb-1">{{current_year_os_count}}</h4>
+                                        <p class="mb-0 opacity-50 text-sm">Operating Systems</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div id="tab-chart-operating-systems"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-8 col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-center">
+                            <div class="col">
+                                <!-- <small>Traffic</small> -->
+                                <h3>Traffic</h3>
+                            </div>
+                            <div class="col-auto">
+                                <select class="form-select p-r-35">
+                                    <!-- <option>Today</option>
+                                    <option selected>This Month</option> -->
+                                    <option>This Year</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div id="tab-chart-traffic"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4 col-md-12">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row mb-3 align-items-center">
+                            <div class="col">
+                                <h4>Popular Searches</h4>
+                            </div>
+                            <div class="col-auto"> </div>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            {% for key,value in current_year_search_terms.items() %}
+                            <li class="list-group-item px-0">
+                                <div class="row align-items-start">
+                                    <div class="col">
+                                        <h5 class="mb-0">{{key}}</h5>
+                                        <small class="text-success"></small>
+                                    </div>
+                                    <div class="col-auto">
+                                        <h4 class="mb-0">{{value[0]}}</h4>
+                                    </div>
+                                </div>
+                            </li>
+                            {% endfor %}
+
+                        </ul>
+                        <div class="text-center">
+                            <a href="{{url_for('search_term_log')}}" class="b-b-primary text-primary">View all <i
+                                    class="bi bi-chevron-right"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- [ sample-page ] end -->
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock content %}
+
+{% block extra_js %}
+<!-- Apex Chart -->
+<script src="{{ url_for('static', filename='cp-assets/js/plugins/apexcharts.min.js') }}"></script>
+<script src="{{ url_for('static', filename='cp-assets/js/pages/dashboard-default.js') }}"></script>
+<!-- [Page Specific JS] end -->
+
+<script type="text/javascript">
+    document.addEventListener('DOMContentLoaded', function () {
+        setTimeout(function () {
+            updateSeries();
+        }, 700);
+    });
+    function updateSeries() {
+        chart_users_month.updateSeries([{
+            data: {{current_month_users | safe}}
+        }]);
+    chart_users_year.updateSeries([{
+        data: {{current_year_users | safe}}
+        }]);
+    chart_visitors_month.updateSeries([{
+        data: {{current_month_visitors | safe}}
+        }]);
+    chart_visitors_year.updateSeries([{
+        data: {{current_year_visitors | safe}}
+        }]);
+    chart_user_agents.updateOptions({
+        series: {{current_year_ua_series | safe }},
+        labels: {{current_year_ua_labels | safe }},
+        });
+    chart_operating_systems.updateOptions({
+        series: {{current_year_os_series | safe }},
+        labels: {{current_year_os_labels | safe }},
+        });
+    chart_traffic.updateOptions({
+        series: [
+            {
+                name: 'Registered Users',
+                data: {{current_year_traffic_registered_users | safe}} 
+            },
+        {
+            name: 'Visitors',
+            data: {{current_year_traffic_visitors | safe}}
+            }
+
+
+            ]            
+        });
+    };
+
+
+</script>
+
+{% endblock extra_js %}
