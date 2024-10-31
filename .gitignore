@@ -142,3 +142,5 @@ launch.json
 
 # flask session
 flask_session/
+
+test.py

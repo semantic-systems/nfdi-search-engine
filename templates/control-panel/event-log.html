@@ -1,0 +1,121 @@
+{% extends 'layouts/cp-base.html' %}
+
+{% block title %} Events Report {% endblock title %}
+
+{% block extrastyle %}
+
+{% endblock extrastyle %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ Main Content ] start -->
+        <div class="d-flex justify-content-between">
+            <div class="">
+                <h3>Event Log</h3>
+                <p>All the events are listed here. Don't forget to investigate the root cause of errors.</p>
+            </div>
+            <div class="text-end">
+                <div class="input-group">
+                    <div class="btn-group" role="group" aria-label="Basic radio toggle button group" id="log_type">
+                        <input type="radio" class="btn-check" name="btnradio" id="btn-type-error" autocomplete="off"
+                            value="error" {% if log_type=='error' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="btn-type-error">Error</label>
+
+                        <input type="radio" class="btn-check" name="btnradio" id="btn-type-info" autocomplete="off"
+                            value="info" {% if log_type=='info' %}checked{% endif %}>
+                        <label class="btn btn-outline-primary" for="btn-type-info">Info</label>
+                    </div>
+                    &nbsp; &nbsp;&nbsp;
+                    <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                    <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
+                        aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
+                    &nbsp;
+                    <a href="{{url_for('event_log', log_type='error')}}" id="btn_refresh"
+                        class="btn btn-primary rounded"><span class="bi bi-arrow-repeat"></span></a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <table id="tbl-report" class="display table-hover table-bordered table-sm" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>timestamp</th>
+                        <th class="all">id</th>
+                        <th>type</th>
+                        <th>filename</th>
+                        <th>method</th>
+                        <th>message</th>
+                        <th class="none">traceback</th>
+                        <th>action</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>timestamp</th>
+                        <th class="all">id</th>
+                        <th>type</th>
+                        <th>filename</th>
+                        <th>method</th>
+                        <th>message</th>
+                        <th class="none">traceback</th>
+                        <th>action</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for event in events %}
+                    <tr>
+                        <td>{{ event['_source']['timestamp'] }}</td>
+                        <td>{{ event['_id'] }}</td>
+                        <td>{{ event['_source']['type'] }}</td>
+                        <td>{{ event['_source']['filename'] }}</td>
+                        <td>{{ event['_source']['method'] }}</td>
+                        <td>{{ event['_source']['message'] }}</td>
+                        <td>{{ event['_source']['traceback'] }}</td>
+                        <td><a href="{{url_for('delete_event', event_id=event['_id'])}}" target="_blank">Delete</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock content %}
+
+{% block extra_js %}
+<!-- [Page Specific JS] start -->
+<script src="{{ url_for('static', filename='js/daterangepicker.js') }}"></script>
+<!-- [Page Specific JS] end -->
+
+<script type="text/javascript">
+    $(function () {
+        var table = new DataTable('#tbl-report', {
+            columnDefs: [
+                {
+                    targets: 6,
+                    render: function (data, type, row) {
+                        var d = $.fn.dataTable.render.text().display(data);
+                        d = d.replaceAll('\n', '<br>');
+                        return d;
+                    }
+                }
+            ]
+        });
+    });
+
+    const select = document.getElementById('log_type');
+    select.addEventListener('click', ({target}) => { // handler fires on root container click
+        if (target.getAttribute('name') === 'btnradio') { // check if user clicks right element
+            console.log('Filter by: ' + target.value);
+            $('#btn_refresh').attr("href", '/control-panel/event-log/' + target.value);
+        }
+    });
+
+</script>
+
+{% endblock extra_js %}

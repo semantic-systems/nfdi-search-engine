@@ -8,10 +8,12 @@ class thing:
     description: str = ""
     url: str = ""
     image: str = "" #url of the image
-    identifier: str = "" #doi or pid will be stored as identifier    
+    identifier: str = "" #doi or pid will be stored as identifier   
+    additionalType: str = "" 
     originalSource: str = ""
     source: list() = field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
+    partiallyLoaded: bool = False
 
     # @classmethod
     def __str__(self):
@@ -95,6 +97,9 @@ class Article(CreativeWork):
     pageStart: str = ""
     pagination: str = ""
     wordCount: str = ""
+    referenceCount: str = ""
+    citationCount: str = ""
+    reference: list() = field(default_factory=list) # this list will have "CreativeWork" or "Article" objects
 
 @dataclass
 class Dataset(CreativeWork): 
@@ -102,31 +107,25 @@ class Dataset(CreativeWork):
     issn: str = ""
 
 @dataclass
-class Author(Person):
-    orcid: str = "" # we should not have this attribute; orcid should be kept in 
+class Author(Person):    
     works_count: str = ""
     about: str = ""
     banner: str = ""
-    cited_by_count: str = ""
-    url: str = ""
+    cited_by_count: str = ""    
     researchAreas: List[str] = field(default_factory=list)
     works: List[Union[Article, Dataset]] = field(default_factory=list)
 
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
 @dataclass
-class Project(Organization): 
+class Project(CreativeWork): 
     dateStart: str = ""
-    dateEnd: str = ""
-    dateLastModified : str = ""
-    abstract: str = ""
-    inLanguage: List[str] = field(default_factory=list)
-    availableLanguages: List[str] = field(default_factory=list)
-    objective: str = ""
-    status: str = ""
-    author: List[Union[Organization, Person]] = field(default_factory=list)
-    funder: List[Union[
-        Organization, Person]] = field(
-        default_factory=list)  # Organization | Person # we can use pipe operator for Union in Python >= 3.10
+    dateEnd: str = ""   
+    duration: str = "" 
+    status: str = ""   
+    currency: str = ""
+    totalCost: str = ""
+    fundedAmount: str = ""
+    eu_contribution: str = ""     
 @dataclass
 class SoftwareApplication(CreativeWork):
     distribution: str = ""

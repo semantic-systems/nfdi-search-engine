@@ -1,0 +1,143 @@
+{% from 'partials/common/share-modal.html' import shareModal %}
+{% from 'partials/common/preview-modal.html' import previewModal %}
+{% from 'partials/common/download-modal.html' import downloadModal %}
+
+{% for publication in results.publications %}
+<div class="card mb-2 p-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-11 fs-6">
+                <div class="row mb-2">
+                    <div class="col-9 fs-6">
+                        {% if publication.identifier == '' %}
+                        <span class="text-secondary fw-bold publication_name">
+                            {{publication.name}}</span>
+                        {% else %}
+                        <a class="text-secondary fw-bold publication_name"
+                            href="/publication-details/{{publication | format_digital_obj_url('doi')}}"
+                            target='_blank'>{{publication.name}}</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-3 text-end ">
+                        <span
+                            class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-9 my-2 authors">
+                        {% set author_count = namespace(value=0) %}
+                        {% for author in publication.author %}
+                        {% if author_count.value == 5 %}
+                        <a href="#" class="tag_more_authors">and {{ (publication.author|count) - 5 }}
+                            more</a>
+                        {% endif %}
+                        {% if author.type == 'Person' %}
+                        <a href="{{author.identifier}}"
+                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                            tabindex="-1" role="button" aria-disabled="true"><i
+                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                        {% endif %}
+                        {% set author_count.value = author_count.value + 1 %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-3 text-end ">
+                        <!-- <span
+                            class="badge bg-pill bg-success text-wrap text-break">Score:{{publication.rankScore}}</span> -->
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <p class="card-text">{{publication.description|truncate(500)}}</p>
+                    </div>
+                </div>
+                <div class="row pt-3">
+                    <div class="col-9 text-start">
+                        {% for source in publication.source %}
+                        <a id="source_link" href="{{source.url}}" target=_blank>
+                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                        </a>
+                        {% endfor %}
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
+                        <span
+                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.additionalType}}</span>
+                        {% for language in publication.inLanguage %}
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
+                        {% endfor %}
+                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{publication.license}}</span>
+                    </div>
+                    <div class="col-3 text-end">
+                        <span class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
+                        <span class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-1">
+                <div class="row fs-5">
+                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
+                                                class="bi bi-bookmark"></i></a></div> -->
+                    {% if publication.identifier != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
+                            data-bs-target="#share-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-share"></i></a>
+                    </div>
+                    {% endif %}
+                    {% if publication.image != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Preview" class="preview_modal_link"
+                            data-bs-toggle="modal"
+                            data-bs-target="#preview-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-eye"></i></a>
+                    </div>
+                    {% endif %}
+                    {% if publication.encoding_contentUrl != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Download" class="download_modal_link"
+                            data-bs-toggle="modal"
+                            data-bs-target="#download-publication-{{publication.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-download"></i></a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
+            preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
+            download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
+            url = url_for('publication_details', identifier_with_type=(publication | format_digital_obj_url('doi')),
+            _external=True),
+            img_src = publication.image,
+            encoding_contentUrl = publication.encoding_contentUrl,
+            title = publication.name | trim
+            %}
+            {{ shareModal(share_modal_id, url, title) }}
+            {{ previewModal(preview_modal_id, title, img_src) }}
+            {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
+            {% endwith %}
+
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<div id="div_load_more_publications" class="row text-center my-2">
+    <div class="col">
+        {% if session.displayed_search_results.publications < session.total_search_results.publications %} <div>
+            Displaying top {{session.displayed_search_results.publications }} publications out of {{
+            session.total_search_results.publications }}
+    </div>
+    <br />
+    <button type="button" class="btn btn-secondary" aria-label="Load more publications"
+        id="btn_load_more_publications">Load more publications</button>
+    {% endif %}
+</div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        if (document.getElementById('btn_load_more_publications')) {
+            document.getElementById('btn_load_more_publications').addEventListener('click', function () {
+                console.log('load more publications button clicked')
+                load_more('publications');
+            });
+        }
+    });
+</script>

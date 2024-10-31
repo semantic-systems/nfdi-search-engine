@@ -1,124 +1,187 @@
-import requests
+import time
+from typing import List, Dict
+
 import utils
-from objects import CreativeWork, Organization
-import logging
-import xmltodict
-
-logger = logging.getLogger('nfdi_search_engine')
-
-
-@utils.timeit
-def search(search_string: str, results):
-    re3data_product_search(search_string, results)
-
-    logger.info(f"Got {len(results)} records from re3data")
-    return results
+from objects import Dataset, Organization
+from main import app
+from sources import data_retriever
+from objects import thing
 
 
-def re3data_product_search(search_string, results):
-    try:
-        api_url = 'https://www.re3data.org/api/beta/repositories'
-        response = requests.get(api_url,
-                                params={"query": search_string}, timeout=int(utils.config["request_timeout"])
-                                )
-        # Response comes as XML
-        data = xmltodict.parse(response.content)
+@utils.handle_exceptions
+def search(source: str, search_term: str, results: Dict, failed_sources: List):
+    """
+    Search for repositories in the Re3Data registry based on the search term. For re3data, the returned search results
+    are only short models of repositories and do not contain detailed information, since very limited information
+    is returned by the search-term-ready API and looping over all details is too time-consuming.
+    The detailed information is retrieved separately for each (list of ) repository in search_displayed_resources().
+    :param source: the source to search (re3data)
+    :param search_term: the search term
+    :param results: the dictionary to store the search results
+    :param failed_sources: the list to store the failed
 
-        logger.debug(f're3data product search response status code: {response.status_code}')
-        logger.debug(f're3data product search response headers: {response.headers}')
+    :return: None
+    """
+    # start_time = time.time()
+    search_url = app.config['DATA_SOURCES'][source].get('search-endpoint', '')
+    search_results = data_retriever.retrieve_data(
+        source=source,
+        base_url=search_url,
+        search_term=search_term,
+        failed_sources=failed_sources
+    )
 
-        if response.status_code == 200:
-            try:
-                hits = data.get('list', {}).get('repository', [])
-            except AttributeError:
-                hits = []  # Set hits as an empty list if the 'get' operation fails due to AttributeError
+    repositories = search_results['list'].get('repository', [])
+    if isinstance(repositories, dict):
+        repositories = [repositories]
 
-            for hit in hits:
-                repo_uri = hit.get('link', {}).get('@href', '')
-                try:
-                    # if repo_uri != "":
-                    hit_response = requests.get(repo_uri)
-                    hit_data = xmltodict.parse(hit_response.content)
-                    hit_details = hit_data.get('r3d:re3data', {}).get('r3d:repository', {})
-                    repository = CreativeWork()
-                    repository.source = 're3data'
-                    repo_id = hit_details.get('r3d:re3data.orgIdentifier', None)
-                    if repo_id is not None:
-                        repository.url = 'https://www.re3data.org/repository/' + repo_id
-                    repository.name = hit_details.get('r3d:repositoryName', {}).get('#text', '')
-                    alternate_names = hit_details.get('r3d:additionalName', None)
-                    if isinstance(alternate_names, dict):
-                        repository.alternateName = alternate_names.get('#text', '')
-                    elif isinstance(alternate_names, list):
-                        item_list = []
-                        for alternate_name in alternate_names:
-                            item_list.append(alternate_name.get('#text'))
-                        repository.alternateName = ' - '.join(item_list)
-                    repository.description = utils.remove_line_tags(
-                        hit_details.get('r3d:description', {}).get('#text', ''))
+    repositories_to_parse = repositories[:app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']]
+    utils.log_event(type="info", message=f"{source} - {len(repositories)} records matched; pulled top {len(repositories_to_parse)}")   
+    
+    for repo in repositories_to_parse:
+        repository = Dataset(
+            name=repo.get('name', ''),
+            identifier=repo.get('doi', '').partition('doi.org/')[2],
+            url=repo.get('link', {}).get('@href', ''),
+            source=[thing(name=source, url=repo.get('doi', ''), identifier=repo.get('link', {}).get('@href', '').partition('https://www.re3data.org/api/beta/repository/')[2])],
+            partiallyLoaded=True,
+        )
+        results['resources'].append(repository)         
 
-                    # Not showing identifiers on result page
-                    # repository.identifier = hit_details.get('r3d:repositoryIdentifier', '')
+@utils.handle_exceptions
+def search_displayed_resources(displayed_repos: List[Dataset], results: Dict, failed_sources: List):
+    """
+    Retrieve detailed information for each repository in the list of displayed repositories. Since a separate API call
+    is needed for each repository, this function is time-consuming, and the number of repositories should be limited.
 
-                    repository.dateCreated = hit_details.get('r3d:startDate', '')
-                    repository.datePublished = hit_details.get('r3d:entryDate', '')
-                    repository.dateModified = hit_details.get('r3d:lastUpdate''')
-                    repository.keywords = hit_details.get('r3d:keyword', '')
-                    repository.inLanguage = [hit_details.get('r3d:repositoryLanguage', '')]
+    :param displayed_repos: the list of repositories to retrieve detailed information for
+    :param results: the dictionary to store the search results
+    :param failed_sources: the list to store the failed
 
-                    # Not showing licenses on result page
-                    # licenses = hit_details.get('r3d:dataLicense', None)
-                    # if type(licenses) is dict:
-                    #     repository.license = licenses.get('r3d:dataLicenseURL', '')
-                    # elif type(licenses) is list:
-                    #     license_list = []
-                    #     for item in licenses:
-                    #         license_list.append(item.get('r3d:dataLicenseURL', ''))
-                    #         repository.license = license_list
+    :return: None
+    """
+    # start_time = time.time()
+    source_name = displayed_repos[0].source[0].name if displayed_repos else "re3data"
 
-                    institutions = hit_details.get('r3d:institution', None)
-                    if isinstance(institutions, dict):
-                        organization = Organization()
-                        organization.name = institutions.get('r3d:institutionName', {}).get('#text', '')
-                        organization.alternateName = institutions.get('r3d:institutionAdditionalName', {}).get(
-                            '#text', '')
-                        organization.location = institutions.get('r3d:institutionCountry', '')
-                        organization.url = institutions.get('r3d:institutionURL', '')
-                        if 'funding' in institutions.get('r3d:responsibilityType', []):
-                            repository.funder = organization
-                        else:
-                            repository.sourceOrganization = organization
+    counter_retrieved_resources = 0
+    for repo in displayed_repos:
+        base_url = app.config['DATA_SOURCES'][source_name].get('details-endpoint', '')
+        details = data_retriever.retrieve_data(
+            source=source_name,
+            base_url=base_url,
+            search_term=repo.url.partition('https://www.re3data.org/api/beta/repository/')[2],
+            failed_sources=failed_sources
+        ) if repo.source else None
 
-                    elif isinstance(institutions, list):
-                        funder_list, sourceOrga_list = [], []
-                        for institution in institutions:
-                            organization = Organization()
-                            organization.name = institution.get('r3d:institutionName', {}).get('#text', '')
-                            additional_names = institution.get('r3d:institutionAdditionalName', None)
-                            if isinstance(additional_names, list):
-                                name_list = []
-                                for additional_name in additional_names:
-                                    name_list.append(additional_name.get('#text', ''))
-                                organization.alternateName = ", ".join(name_list)
-                            elif isinstance(additional_names, str):
-                                organization.alternateName = additional_names
-                            organization.location = institution.get('r3d:institutionCountry', '')
-                            organization.url = institution.get('r3d:institutionURL', '')
-                            if 'funding' in institution.get('r3d:responsibilityType', None):
-                                funder_list.append(organization)
-                            else:
-                                sourceOrga_list.append(organization)
-                        repository.funder = funder_list
-                        repository.sourceOrganization = sourceOrga_list
-                    results['resources'].append(repository)
+        if details:
+            dataset = map_repository_to_dataset(source_name, repo.identifier, details)
+            results['resources'].append(dataset)
+            counter_retrieved_resources += 1
 
-                # Exception if no url to call Details API
-                except Exception as ex:
-                    logger.error(f'Exception: {str(ex)}')
+    utils.log_event(type="info", message=f"{source_name} - retrieved {counter_retrieved_resources} repository details")
+    # print(f"searching Re3Data details took {time.time() - start_time:.2f} seconds to execute")
 
-    except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('re3data')
+@utils.handle_exceptions
+def get_resource(source: str, source_identifier: str, doi: str):
+    """
+    Retrieve detailed information for the repository. 
 
-    except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
+    :param source: source label for the data source; in this case its re3data
+    :param source_identifier: the primay identifier in the source records
+    :param doi: digital identifier for the resource
+
+    :return: dataset
+    """
+    base_url = app.config['DATA_SOURCES'][source].get('get-resource-endpoint', '')     
+    search_result = data_retriever.retrieve_object(source=source, 
+                                                    base_url=base_url,
+                                                    doi=source_identifier) #source identifier will be passed on with the base url
+    if search_result:
+        dataset = map_repository_to_dataset(source, doi, search_result)
+        utils.log_event(type="info", message=f"{source} - retrieved repository details")
+        return dataset
+
+def map_repository_to_dataset(source: str, doi: str, repository_details: dict) -> Dataset:
+    """
+    Map the detailed information of a repository to a Dataset object.
+
+    :param source: the source of the information about the repository (re3data)
+    :param doi: the DOI of the repository
+    :param repository_details: the detailed information of the repository from the API
+
+    :return: Dataset - repository in the form of a dataset object
+    """
+    repository_data = repository_details.get('r3d:re3data', {}).get('r3d:repository', {})
+
+    institutions = repository_data.get('r3d:institution', [])
+    if isinstance(institutions, dict):
+        institutions = [institutions]
+
+    organizations = [
+        Organization(
+            name=inst.get('r3d:institutionName', {}).get('#text', ''),
+            alternateName=get_alternate_names(inst.get('r3d:institutionAdditionalName', {})),
+            additionalType=inst.get('r3d:institutionType', ''),
+            url=inst.get('r3d:institutionURL', ''),
+            identifier=inst.get('r3d:institutionIdentifier', ''),
+            location=inst.get('r3d:institutionCountry', ''),
+            email=inst.get('r3d:institutionContact', ''),
+            keywords=inst.get('r3d:responsibilityType', []),
+            source=[thing(name=source,
+                          url='https://www.re3data.org/repository/' +
+                              repository_data.get('r3d:re3data.orgIdentifier', ""))]
+        ) for inst in institutions
+    ]
+
+    funder = [org for org in organizations if 'funding' in org.keywords]
+
+    languages = repository_data.get('r3d:repositoryLanguage', [])
+    if isinstance(languages, str):
+        languages = [languages]
+
+    license_names = repository_data.get('r3d:dataLicense', {})
+    if isinstance(license_names, dict):
+        license_names = [license_names.get('r3d:dataLicenseName', '')]
+    else:
+        license_names = [item.get('r3d:dataLicenseName', '') for item in license_names]
+
+    content_types = repository_data.get('r3d:contentType', [])
+    if isinstance(content_types, dict):
+        content_types = [content_types.get('#text', '')]
+    else:
+        content_types = [ct.get('#text', '') for ct in content_types]
+
+    subjects = repository_data.get('r3d:subject', [])
+    if isinstance(subjects, dict):
+        subjects = [subjects.get('#text', '')]
+    else:
+        subjects = [subject.get('#text', '') for subject in subjects]
+
+    return Dataset(
+        name=repository_data.get('r3d:repositoryName', {}).get('#text', ''),
+        alternateName=get_alternate_names(repository_data.get('r3d:additionalName', {})),
+        description=repository_data.get('r3d:description', {}).get('#text', ''),
+        url=repository_data.get('r3d:repositoryURL', ""),
+        identifier=doi,
+        additionalType=', '.join(content_types),
+        source=[thing(name=source,
+                      url='https://www.re3data.org/repository/' +
+                          repository_data.get('r3d:re3data.orgIdentifier', ""))],
+        author=organizations,
+        sourceOrganization=organizations[0] if organizations else None,
+        funder=funder,
+        inLanguage=languages,
+        license=', '.join(set(license_names)),
+        keywords=repository_data.get('r3d:keyword', []),
+        dateCreated=repository_data.get('r3d:startDate', ""),
+        datePublished=repository_data.get('r3d:entryDate', ""),
+        dateModified=repository_data.get('r3d:lastUpdate', ""),
+        abstract=repository_data.get('r3d:description', {}).get('#text', ''),
+        genre=subjects,
+        text=repository_data.get('r3d:remarks', "")
+    )
+
+def get_alternate_names(additional_names) -> List[str]:
+    if isinstance(additional_names, dict):
+        return [additional_names.get('#text', '')]
+    return []

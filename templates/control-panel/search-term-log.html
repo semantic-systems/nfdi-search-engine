@@ -1,0 +1,86 @@
+{% extends 'layouts/cp-base.html' %}
+
+{% block title %} Search Term Report {% endblock title %}
+
+{% block extrastyle %}
+
+{% endblock extrastyle %}
+
+{% block content %}
+<!-- [ Main Content ] start -->
+<div class="pc-container">
+    <div class="pc-content">
+        <!-- [ Main Content ] start -->
+        <div class="d-flex justify-content-between">
+            <div class="">
+                <h3>Search Term Log</h3>
+                <p>All the user searches are listed here. User behaviours can be analyzed from this data.</p>
+            </div>
+            <div class="text-end">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-calendar-range"></i></span>
+                    <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
+                        aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
+                    &nbsp;
+                    <a href="{{url_for('search_term_log')}}" id="btn_refresh" class="btn btn-primary rounded"><span
+                            class="bi bi-arrow-repeat"></span></a>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <table id="tbl-report" class="display table-hover table-bordered table-sm" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <th>timestamp</th>
+                        <th>id</th>
+                        <th>user_email</th>
+                        <th>session_id</th>
+                        <th>visitor_id</th>
+                        <th>url</th>
+                        <th>search_term</th>
+                    </tr>
+                </thead>
+                <tfoot>
+                    <tr>
+                        <th>timestamp</th>
+                        <th>id</th>
+                        <th>user_email</th>
+                        <th>session_id</th>
+                        <th>visitor_id</th>
+                        <th>url</th>
+                        <th>search_term</th>
+                    </tr>
+                </tfoot>
+                <tbody>
+                    {% for search_term in search_terms %}
+                    <tr>
+                        <td>{{ search_term['_source']['timestamp'] }}</td>
+                        <td>{{ search_term['_id'] }}</td>
+                        <td>{{ search_term['_source']['user_email'] }}</td>
+                        <td>{{ search_term['_source']['session_id'] }}</td>
+                        <td>{{ search_term['_source']['visitor_id'] }}</td>
+                        <td>{{ search_term['_source']['url'] }}</td>
+                        <td>{{ search_term['_source']['search_term'] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+            </table>
+        </div>
+        <!-- [ Main Content ] end -->
+    </div>
+</div>
+<!-- [ Main Content ] end -->
+{% endblock content %}
+{% block extra_js %}
+<!-- [Page Specific JS] start -->
+<script src="{{ url_for('static', filename='js/daterangepicker.js') }}"></script>
+<!-- [Page Specific JS] end -->
+
+<script type="text/javascript">
+    $(function () {
+        var table = new DataTable('#tbl-report');
+    });
+</script>
+
+{% endblock extra_js %}

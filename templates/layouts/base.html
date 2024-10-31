@@ -55,11 +55,53 @@
 
         {% include 'includes/footer.html' %}
 
+
+
     </div>
 
     {% include 'includes/scripts.html' %}
 
-    <!-- Specific Page JS goes HERE -->
-    {% block javascripts %}{% endblock javascripts %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <script>
+        var notification = alertify.notify('{{ message }}', '{{ category }}', 60);
+    </script>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
 
+    <script>
+        // Initialize the agent at application startup.
+        const fpPromise = import("{{url_for('static', filename = 'js/fingerprint-v4.js')}}")
+            .then(FingerprintJS => FingerprintJS.load())
+        // Get the visitor identifier when you need it.
+        fpPromise
+            .then(fp => fp.get())
+            .then(result => {
+                // This is the visitor identifier:
+                const visitorId = result.visitorId
+                console.log(visitorId)
+
+                // update the visitor id in the repository
+                $.ajax({
+                    url: '/update-visitor-id',
+                    type: "GET",
+                    // async: false,
+                    data: {
+                        visitor_id: visitorId
+                    },
+                    success: function (data) {
+                        console.log('visitor id updated')
+                    },
+                    error: function (err) {
+                        console.log(err);
+                        return err
+                    }
+                });
+            })
+            .catch(error => console.error(error))
+    </script>
+
+    {% block javascripts %}{% endblock javascripts %}
 </body>

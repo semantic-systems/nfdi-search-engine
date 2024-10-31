@@ -109,17 +109,33 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        document.getElementById('btnShareLinkCopy-{{modal_id}}').addEventListener('click', function () {
+        document.getElementById('btnShareLinkCopy-{{modal_id}}').addEventListener('click', function (e) {
+            e = e || window.event;
+            var target = e.target || e.srcElement;
+
             var txtShareLink = document.getElementById('txtShareLink-{{modal_id}}');
             txtShareLink.select();
 
-            navigator.clipboard.writeText(txtShareLink.value)
-                .then(() => {
+            // Copy the text inside the text field using the Clipboard API if available
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(txtShareLink.value)
+                    .then(() => {
+                        var notification = alertify.notify('Link copied', 'success', 5);
+                        target.classList.add("bi-clipboard-check-fill").remove('bi-clipboard')
+                    })
+                    .catch((error) => {
+                        var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
+                    });
+            } else {
+                // Fallback method using document.execCommand('copy')
+                try {
+                    document.execCommand('copy');
                     var notification = alertify.notify('Link copied', 'success', 5);
-                })
-                .catch((error) => {
+                    target.classList.add("bi-clipboard-check-fill").remove('bi-clipboard')
+                } catch (error) {
                     var notification = alertify.notify('Copy operation failed: ' + error, 'error', 5);
-                });
+                }
+            }
         });
     });
 </script>

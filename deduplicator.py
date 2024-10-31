@@ -33,7 +33,7 @@ def convert_publications_to_csv(publications):
 
     
 @utils.timeit
-def perform_entity_resolution_publications(publications):
+def perform_entity_resolution_publications(app, publications):
 
     data_publications = {}
     for idx, publication in enumerate(publications):
@@ -71,7 +71,7 @@ def perform_entity_resolution_publications(publications):
 
         data_publications[idx] = row_publication
 
-    settings_file = utils.config['settings_file_publications']
+    settings_file = app.config["ENTITY_RESOLUTION"]['settings_file_publications']
     if os.path.exists(settings_file):
         print('reading from', settings_file)
         with open(settings_file, 'rb') as sf:
