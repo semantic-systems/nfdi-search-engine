@@ -8,4 +8,4 @@ services:
             - nfdi-search-engine_default
 networks:
     nfdi-search-engine_default:
-        external: true
+        external: false
