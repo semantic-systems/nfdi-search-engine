@@ -59,10 +59,10 @@ class Config:
             "module": "wikidata_researchers", 
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
-        "resodate": {
-            "module": "resodate", 
-            "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
+        # "resodate": {
+        #     "module": "resodate", 
+        #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
         "oersi": {
             "module": "oersi", 
             "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
@@ -167,8 +167,8 @@ class Config:
         # Google OAuth 2.0 documentation:
         # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
         'google': {
-            'client_id': os.environ.get('GOOGLE_CLIENT_ID'),
-            'client_secret': os.environ.get('GOOGLE_CLIENT_SECRET'),
+            'client_id': os.environ.get('CLIENT_ID_GOOGLE'),
+            'client_secret': os.environ.get('CLIENT_SECRET_GOOGLE'),
             'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
             'token_url': 'https://accounts.google.com/o/oauth2/token',
             'userinfo': {
@@ -181,8 +181,8 @@ class Config:
         # GitHub OAuth 2.0 documentation:
         # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
         'github': {
-            'client_id': os.environ.get('GITHUB_CLIENT_ID'),
-            'client_secret': os.environ.get('GITHUB_CLIENT_SECRET'),
+            'client_id': os.environ.get('CLIENT_ID_GITHUB'),
+            'client_secret': os.environ.get('CLIENT_SECRET_GITHUB'),
             'authorize_url': 'https://github.com/login/oauth/authorize',
             'token_url': 'https://github.com/login/oauth/access_token',
             'userinfo': {
@@ -195,8 +195,8 @@ class Config:
         # # ORCID OAuth 2.0 documentation:
         # # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/        
         # 'orcid': {
-        #     'client_id': os.environ.get('ORCID_CLIENT_ID'),
-        #     'client_secret': os.environ.get('ORCID_CLIENT_SECRET'),
+        #     'client_id': os.environ.get('CLIENT_ID_ORCID'),
+        #     'client_secret': os.environ.get('CLIENT_SECRET_ORCID'),
         #     'authorize_url': 'https://sandbox.orcid.org/oauth/authorize',
         #     'token_url': 'https://sandbox.orcid.org/oauth/token',
         #     'userinfo': {

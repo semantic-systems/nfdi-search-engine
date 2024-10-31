@@ -177,9 +177,9 @@ def ping():
 
     # check if all the environment variables are set
     for env_variable in ['SECRET_KEY', 'IEEE_API_KEY', 
-                         'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET',
-                         'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET',
-                         'ORCID_CLIENT_ID', 'ORCID_CLIENT_SECRET',
+                         'CLIENT_ID_GOOGLE', 'CLIENT_SECRET_GOOGLE',
+                         'CLIENT_ID_GITHUB', 'CLIENT_SECRET_GITHUB',
+                         'CLIENT_ID_ORCID', 'CLIENT_SECRET_ORCID',
                          'OPENAI_API_KEY', 
                          'LLAMA3_USERNAME', 'LLAMA3_PASSWORD',
                          'ELASTIC_SERVER', 'ELASTIC_USERNAME', #'ELASTIC_PASSWORD',
