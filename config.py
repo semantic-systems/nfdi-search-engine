@@ -35,27 +35,27 @@ class Config:
         #    "module": "dblp_researchers", 
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        "openalex - Publications": {
+        "OPENALEX - Publications": {
             "module": "openalex_publications", 
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-publication-endpoint": "https://api.openalex.org/works/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
-        "openalex - Researchers": {
+        "OPENALEX - Researchers": {
             "module": "openalex_researchers", 
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-researcher-endpoint": "https://api.openalex.org/authors/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
-        "zenodo": {
+        "ZENODO": {
             "module": "zenodo", 
             "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        "wikidata - Publications": {
+        "WIKIDATA - Publications": {
             "module": "wikidata_publications", 
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
-        "wikidata - Researchers": {
+        "WIKIDATA - Researchers": {
             "module": "wikidata_researchers", 
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
@@ -63,40 +63,40 @@ class Config:
         #     "module": "resodate", 
         #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        "oersi": {
+        "OERSI": {
             "module": "oersi", 
             "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        "ieee": {
+        "IEEE": {
             "module": "ieee", 
             "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
         },
-        "eudat": {
+        "EUDAT": {
             "module": "eudat", 
             "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
             "record-base-url": f"https://b2share.eudat.eu/records/"
         },
-        "openaire - Products": {
+        "OPENAIRE - Products": {
             "module": "openaire_products", 
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
         },
-        "openaire - Projects": {
+        "OPENAIRE - Projects": {
             "module": "openaire_projects", 
             "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
         },
-        "orcid": {
+        "ORCID": {
             "module": "orcid", 
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        "gesis": {
+        "GESIS": {
             "module": "gesis", 
             "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        "cordis": {
+        "CORDIS": {
             "module": "cordis", 
             "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
         },
-        "orkg": {
+        "ORKG": {
             "module": "orkg", 
             "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
@@ -104,25 +104,25 @@ class Config:
         #     "module": "gepris", 
         #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         # },
-        "crossref - Publications": {
+        "CROSSREF - Publications": {
             "module": "crossref_publications", 
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
             "get-publication-endpoint": "https://api.crossref.org/works/",
             "get-publication-references-endpoint": "https://api.crossref.org/works/",
         },
-        "semantic scholar - Publications": {
+        "SEMANTIC SCHOLAR - Publications": {
             "module": "semanticscholar_publications", 
             # "search-endpoint": f"",
             # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
             "citations-endpoint": f"https://api.semanticscholar.org/graph/v1/paper/",
             "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
         },
-        "semantic scholar - Researchers": {
+        "SEMANTIC SCHOLAR - Researchers": {
             "module": "semanticscholar_researchers", 
             # "search-endpoint": f"",
             # "get-researcher-endpoint": "https://api.semanticscholar.org/graph/v1/author/",            
         },
-        "re3data": {
+        "RE3DATA": {
             "module": "re3data",
             "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
             "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
@@ -143,7 +143,7 @@ class Config:
     }
 
     CHATBOT = {
-        "chatbot_enable": True,
+        "chatbot_enable": False,
         "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),        
         "endpoint_chat": "/chat",
         "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",

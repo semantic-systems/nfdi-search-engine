@@ -15,16 +15,22 @@
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
                             href="/publication-details/{{publication | format_digital_obj_url('doi')}}"
-                            target='_blank'>{{publication.name}}</a>
+                            target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{publication.name}}</a>
                         {% endif %}
                     </div>
                     <div class="col-3 text-end ">
-                        <span
-                            class="badge bg-pill bg-success text-wrap text-break">DOI:{{publication.identifier}}</span>
+                        {% for source in publication.source %}
+                        <a id="source_link" href="{{source.url}}" target=_blank>
+                            <span class="badge bg-pill text-wrap text-break">{{source.name}} &nbsp;<i
+                                    class="pull-right bi bi-box-arrow-up-right"></i></span>
+                        </a>
+                        {% endfor %}
+
+
                     </div>
                 </div>
                 <div class="row">
-                    <div class="col-9 my-2 authors">
+                    <div class="col-12 my-2 authors">
                         {% set author_count = namespace(value=0) %}
                         {% for author in publication.author %}
                         {% if author_count.value == 5 %}
@@ -32,17 +38,12 @@
                             more</a>
                         {% endif %}
                         {% if author.type == 'Person' %}
-                        <a href="{{author.identifier}}"
-                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                        <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
                             tabindex="-1" role="button" aria-disabled="true"><i
                                 class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
                         {% endif %}
                         {% set author_count.value = author_count.value + 1 %}
                         {% endfor %}
-                    </div>
-                    <div class="col-3 text-end ">
-                        <!-- <span
-                            class="badge bg-pill bg-success text-wrap text-break">Score:{{publication.rankScore}}</span> -->
                     </div>
                 </div>
                 <div class="row">
@@ -51,24 +52,23 @@
                     </div>
                 </div>
                 <div class="row pt-3">
-                    <div class="col-9 text-start">
-                        {% for source in publication.source %}
-                        <a id="source_link" href="{{source.url}}" target=_blank>
-                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
-                        </a>
-                        {% endfor %}
-                        <span
-                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.originalSource}}</span>
-                        <span
-                            class="badge bg-pill bg-secondary text-wrap text-break">{{publication.additionalType}}</span>
+                    <div class="col-12 text-start">
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="DOI">{{publication.identifier}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Source">{{publication.originalSource}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Type">{{publication.additionalType}}</span>
                         {% for language in publication.inLanguage %}
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Language">{{language|upper}}</span>
                         {% endfor %}
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{publication.license}}</span>
-                    </div>
-                    <div class="col-3 text-end">
-                        <span class="badge bg-pill text-wrap text-break">{{publication.publication}}</span>
-                        <span class="badge bg-pill text-wrap text-break">{{publication.datePublished}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="License">{{publication.license}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Publisher">{{publication.publication}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Publication Date">{{publication.datePublished}}</span>
                     </div>
                 </div>
             </div>

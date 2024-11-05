@@ -1,7 +1,6 @@
 {% from 'partials/common/share-modal.html' import shareModal %}
 {% from 'partials/common/preview-modal.html' import previewModal %}
 {% from 'partials/common/download-modal.html' import downloadModal %}
-
 <div class="card-body">
     <div class="row">
         <div class="col-11 fs-6">
@@ -12,13 +11,22 @@
                         {{resource.name}}</span>
                     {% else %}
                     <a class="text-secondary fw-bold"
-                        href="/resource-details/{{resource | format_digital_obj_url('doi')}}"
-                        target='_blank'>{{resource.name}}</a>
+                        href="/resource-details/{{resource | format_digital_obj_url('doi')}}" target='_blank'><i
+                            class="pull-left bi bi-link-45deg"></i>&nbsp;{{resource.name}}</a>
                     {% endif %}
                 </div>
                 <div class="col-3 text-end">
-                    <span
-                        class="badge bg-pill bg-success text-wrap text-break resource_doi">DOI:{{resource.identifier}}</span>
+                    {% for source in resource.source %}
+                    <a id="source_link" href="{{source.url}}" target=_blank>
+                        <span class="badge bg-pill text-wrap text-break">
+                            <span class="source_name">{{source.name}}</span>
+                            &nbsp;<i class="pull-right bi bi-box-arrow-up-right"></i></span>
+                    </a>
+                    <span class="badge bg-pill bg-secondary text-wrap text-break visually-hidden source_identifier"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="ID in source system">{{source.identifier}}</span>
+                    {% endfor %}
+
                 </div>
             </div>
             {% if resource.partiallyLoaded %}
@@ -27,7 +35,7 @@
             </div>
             {% endif %}
             <div class="row">
-                <div class="col-9 my-2 authors">
+                <div class="col-12 my-2 authors">
                     {% set author_count = namespace(value=0) %}
                     {% for author in resource.author %}
                     {% if author_count.value == 5 %}
@@ -35,14 +43,11 @@
                         more</a>
                     {% endif %}
                     <a href="{{author.identifier}}"
-                        class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                        class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
                         tabindex="-1" role="button" aria-disabled="true"><i
                             class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
                     {% set author_count.value = author_count.value + 1 %}
                     {% endfor %}
-                </div>
-                <div class="col-3 text-end ">
-                    <!-- <span class="badge bg-pill bg-success text-wrap text-break">Score:{{resource.rankScore}}</span> -->
                 </div>
             </div>
             <div class="row">
@@ -51,25 +56,24 @@
                 </div>
             </div>
             <div class="row pt-3">
-                <div class="col-9 text-start">
-                    {% for source in resource.source %}
-                    <a id="source_link" href="{{source.url}}" target=_blank>
-                        <span class="badge bg-pill text-wrap text-break source_name">{{source.name}}</span>
-                    </a>
-                    <span
-                        class="badge bg-pill bg-success text-wrap text-break source_identifier">{{source.identifier}}</span>
-                    {% endfor %}
-                    <span class="badge bg-pill bg-secondary text-wrap text-break">{{resource.originalSource}}</span>
-                    <span class="badge bg-pill bg-secondary text-wrap text-break">{{resource.additionalType}}</span>
-                    {% for language in resource.inLanguage %}
-                    <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
-                    {% endfor %}
-                    <span class="badge bg-pill bg-secondary text-wrap text-break">{{resource.license}}</span>
+                <div class="col-12 text-start">
+                    <span class="badge bg-pill bg-secondary text-wrap text-break resource_doi" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="DOI">{{resource.identifier}}</span>
 
-                </div>
-                <div class="col-3 text-end">
-                    <span class="badge bg-pill text-wrap text-break">{{resource.publication}}</span>
-                    <span class="badge bg-pill text-wrap text-break">{{resource.datePublished}}</span>
+                    <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Source">{{resource.originalSource}}</span>
+                    <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Type">{{resource.additionalType}}</span>
+                    {% for language in resource.inLanguage %}
+                    <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Language">{{language|upper}}</span>
+                    {% endfor %}
+                    <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="License">{{resource.license}}</span>
+                    <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Publisher">{{resource.publication}}</span>
+                    <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                        data-bs-placement="top" title="Publication Date">{{resource.datePublished}}</span>
                 </div>
             </div>
         </div>
