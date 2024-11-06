@@ -143,7 +143,7 @@ class Config:
     }
 
     CHATBOT = {
-        "chatbot_enable": False,
+        "chatbot_enable": True,
         "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),        
         "endpoint_chat": "/chat",
         "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",
