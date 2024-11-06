@@ -14,12 +14,18 @@
                             {{digitalObj.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href="/other-details/{{digitalObj | format_digital_obj_url('doi')}}"
-                            target='_blank'>{{digitalObj.name}}</a>
+                            href="/other-details/{{digitalObj | format_digital_obj_url('doi')}}" target='_blank'><i
+                                class="pull-left bi bi-link-45deg"></i>&nbsp;{{digitalObj.name}}</a>
                         {% endif %}
                     </div>
                     <div class="col-3 text-end ">
-                        <span class="badge bg-pill bg-success text-wrap text-break">DOI:{{digitalObj.identifier}}</span>
+                        {% for source in digitalObj.source %}
+                        <a id="source_link" href="{{source.url}}" target=_blank>
+                            <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
+                                    class="pull-right bi bi-box-arrow-up-right"></i></span>
+                        </a>
+                        {% endfor %}
+
                     </div>
                 </div>
                 <div class="row">
@@ -32,7 +38,7 @@
                         {% endif %}
                         {% if author.type == 'Person' %}
                         <a href="{{author.identifier}}"
-                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1"
+                            class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
                             tabindex="-1" role="button" aria-disabled="true"><i
                                 class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
                         {% endif %}
@@ -51,23 +57,22 @@
                 </div>
                 <div class="row pt-3">
                     <div class="col-9 text-start">
-                        {% for source in digitalObj.source %}
-                        <a id="source_link" href="{{source.url}}" target=_blank>
-                            <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
-                        </a>
-                        {% endfor %}
-                        <span
-                            class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.originalSource}}</span>
-                        <span
-                            class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.additionalType}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="DOI">{{digitalObj.identifier}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="DOI">{{digitalObj.originalSource}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Type">{{digitalObj.additionalType}}</span>
                         {% for language in digitalObj.inLanguage %}
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{language|upper}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Language">{{language|upper}}</span>
                         {% endfor %}
-                        <span class="badge bg-pill bg-secondary text-wrap text-break">{{digitalObj.license}}</span>
-                    </div>
-                    <div class="col-3 text-end">
-                        <span class="badge bg-pill text-wrap text-break">{{digitalObj.publication}}</span>
-                        <span class="badge bg-pill text-wrap text-break">{{digitalObj.datePublished}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="License">{{digitalObj.license}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Publisher">{{digitalObj.publication}}</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Publication Date">{{digitalObj.datePublished}}</span>
                     </div>
                 </div>
             </div>
