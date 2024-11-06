@@ -894,6 +894,7 @@ def generate_researcher_about_me(researcher_details_json):
     Generate an introductory paragraph (4-6 sentences) for the researcher whose affiliation, publications, research interests are provided in the form of key value pairs, 
     wherein the definitions of the keys are derived from schema.org. 
     The summary should briefly describe the researcher’s current affiliation, highlight notable publications, and outline their main research interests.
+    It should not include the researcher ORCID link in the generated summary.
     Generate the summary for the information provided, avoid including any external information or knowledge.
 
     """

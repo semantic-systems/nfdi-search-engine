@@ -53,7 +53,7 @@ def process_search_results(source: str, results, search_result):
 
             # getattr(publication, "source").clear()
             _source = thing()
-            _source.name = 'OPENALEX'
+            _source.name = source
             _source.identifier = hit.get("id", "").replace("https://openalex.org/", "") # remove the base url and only keep the ID
             _source.url = hit.get("id", "") # not a valid url, openalex is currently working on thier web interface.                                              
             publication.source.append(_source)
