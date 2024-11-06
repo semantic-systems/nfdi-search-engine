@@ -21,91 +21,92 @@
                 <a href="#"><i class="bi bi-arrow-left-circle-fill me-2"></i>Back to results</a>
             </div>
         </div> -->
-        <div
-            class="banner img-fluid d-flex justify-content-between align-items-center border border-1 border-dark rounded">
-            <div class="ps-3">
-                <i class="bi bi-person-circle" style="font-size:7vw;"></i>
-            </div>
-            <div class="p-4 bg-dark text-light">
+
+        <div class="row border-bottom pb-4">
+            <div class="col-7 text-start">
                 <h3>{{researcher.name}}</h3>
-                <!-- <p><i  class="px-1 bi-geo-alt-fill"></i>Lima, Peru</p> -->
+
+                <div class="fs-7 py-2">
+                    <!-- <span class="pe-4">
+                        <span class="fw-bold">Version:</span>
+                        <span>-</span>
+                    </span> -->
+                    <span class="pe-4">
+                        <span class="fw-bold">ORCID:</span>
+                        <span id="researcher_orcid">{{researcher.identifier}}</span>
+                    </span>
+
+                </div>
+                <div class="pe-3 align-self-start">
+                    <!-- <a href="#" class="btn p-1" tabindex="-1" role="button" aria-disabled="true"><i
+                                        class="bi-bookmark align-self-end fs-4"></i></a> -->
+                    <a href="#" class="btn p-1" tabindex="-1" data-bs-toggle="modal"
+                        data-bs-target="#researcher-{{researcher.identifier | regex_replace ('\W','') }}" role="button"
+                        aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
+                </div>
+                {% with modal_id='researcher-'+researcher.identifier | regex_replace ('\W',''),
+                url = '/researcher-details/'+ researcher | format_digital_obj_url('orcid'),
+                title=researcher.name | trim
+                %}
+                {{ shareModal(modal_id, url, title) }}
+                {% endwith %}
             </div>
-            <div class="pe-3 align-self-start">
-                <!-- <a href="#" class="btn p-1" tabindex="-1" role="button" aria-disabled="true"><i
-                        class="bi-bookmark align-self-end fs-4"></i></a> -->
-                <a href="#" class="btn p-1" tabindex="-1" data-bs-toggle="modal"
-                    data-bs-target="#researcher-{{researcher.identifier | regex_replace ('\W','') }}" role="button"
-                    aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
+            <div class="col-5 d-flex justify-content-end">
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-book fs-4"></i>
+                    <div class="fs-7 my-1">Publications</div>
+                    <div class="fs-5 fw-bold">{{researcher.works_count}}</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-chat-quote fs-4"></i>
+                    <div class="fs-7 my-1">Citations</div>
+                    <div class="fs-5 fw-bold">{{researcher.cited_by_count}}</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-eye fs-4"></i>
+                    <div class="fs-7 my-1">Views</div>
+                    <div class="fs-5 fw-bold">---</div>
+                </div>
+                <div class="summary-block p-2 ms-3">
+                    <i class="bi bi-bookmark fs-4"></i>
+                    <div class="fs-7 my-1">Saved</div>
+                    <div class="fs-5 fw-bold">---</div>
+                </div>
             </div>
-            {% with modal_id='researcher-'+researcher.identifier | regex_replace ('\W',''),
-            url = '/researcher-details/'+ researcher | format_digital_obj_url('orcid'),
-            title=researcher.name | trim
-            %}
-            {{ shareModal(modal_id, url, title) }}
-            {% endwith %}
+            <!-- <div class="row border-bottom mt-4"></div> -->
         </div>
-        <div class="row pt-4">
+        <div class="row pb-2">
+            <div class="d-flex p-2">
+                <span class="fs-6 fw-bold">About</span>
+            </div>
+            <div class="d-flex p-2 fs-6 researcher-about-me">
+                <div class='loader'>
+                    <div class='sp-3balls'></div>
+                </div>
+            </div>
+        </div>
 
-            <div class="col-3 px-2 justify-content-start">
-                <div class="d-flex p-2">
-                    <h5>ABOUT</h5>
+        <div class="row pt-2">
+            <div class="col-3 justify-content-start">
+                <div class="d-flex pt-4">
+                    <span class="fs-6 fw-bold">Contact & Profiles</span>
                 </div>
-                <div class="d-flex p-2 fs-6 pb-4 researcher-about-me">
-                    <div class='loader'>
-                        <div class='sp-3balls'></div>
-                    </div>
-                </div>
-                <div class="d-flex p-2 pb-4 justify-content-start">
-                    <div class="summary-block p-1">
-                        <i class="bi bi-book fs-4"></i>
-                        <div class="fs-7 my-1">Publications</div>
-                        <div class="fs-5 fw-bold">{{researcher.works_count}}</div>
-                    </div>
-                    <div class="summary-block p-1 ms-2">
-                        <i class="bi bi-chat-quote fs-4"></i>
-                        <div class="fs-7 my-1">Citations</div>
-                        <div class="fs-5 fw-bold">{{researcher.cited_by_count}}</div>
-                    </div>
-                    <div class="summary-block p-1 ms-2">
-                        <i class="bi bi-eye fs-4"></i>
-                        <div class="fs-7 my-1">Views</div>
-                        <div class="fs-5 fw-bold">-</div>
-                    </div>
-                    <div class="summary-block p-1 ms-2">
-                        <i class="bi bi-bookmark fs-4"></i>
-                        <div class="fs-7 my-1">Saved</div>
-                        <div class="fs-5 fw-bold">-</div>
-                    </div>
-                </div>
-
-                <div class="card m-2" style="border-radius: 10px; border: 2px solid #c9c9c9;">
-                    <div class="card-body">
-                        {% for topic in researcher.researchAreas %}
-                        <p class="badge bg-pill" style="display: block; white-space: normal; margin: 0.5vh;">{{topic}}
-                        </p>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <div class="d-flex px-2 pt-4">
-                    <h5>CONTACT & PROFILES</h5>
-                </div>
-                <div class="contacts p-2">
-                    <!-- <div class="d-flex p-1 bd-highlight">
+                <div class="contacts py-2">
+                    <!-- <div class="d-flex bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                            role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-envelope"></i>alberto@corona.com</a>
                     </div>
-                    <div class="d-flex p-1 bd-highlight">
+                    <div class="d-flex bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-globe"></i>www.alberto-corona.com</a>
                     </div>
-                    <div class="d-flex p-1 bd-highlight">
+                    <div class="d-flex bd-highlight">
                         <a href="{{researcher.orcid}}" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
                                             src="{{ url_for('static', filename='images/sources/orcid-id.png') }}"
                                             >{{researcher.orcid |replace('https://', '')}}</a>
                     </div> -->
-                    <div class="d-flex p-1 bd-highlight">
+                    <div class="d-flex bd-highlight">
                         <a href="https://openalex.org/{{researcher.source[0].identifier}}"
                             class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
                             aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
@@ -113,7 +114,7 @@
                             |replace('https://openalex.org/', '')}}</a>
                     </div>
                     {% if researcher.source | length > 1 %}
-                    <div class="d-flex p-1 bd-highlight">
+                    <div class="d-flex bd-highlight">
                         <a href="{{researcher.source[1].url}}"
                             class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
                             aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
@@ -121,22 +122,30 @@
                             |replace('https://', '')}}</a>
                     </div>
                     {% endif %}
-                    <!-- <div class="d-flex p-1 bd-highlight">
+                    <!-- <div class="d-flex bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-twitter"></i>@albertocorona</a>
                     </div>
-                    <div class="d-flex p-1 bd-highlight">
+                    <div class="d-flex bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-linkedin"></i>Alberto Corona</a>
                     </div>
-                    <div class="d-flex p-1 bd-highlight">
+                    <div class="d-flex bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-facebook"></i>Alberto Corona</a>
                     </div> -->
                 </div>
+                <div class="d-flex pt-4 pb-2">
+                    <span class="fs-6 fw-bold">Research Areas</span>
+                </div>
+                <ul class="list-group list-group-flush fs-7">
+                    {% for topic in researcher.researchAreas %}
+                    <li class="list-group-item list-group-item-action">{{topic}}</li>
+                    {% endfor %}
+                </ul>
             </div>
 
-            <div class="col mt-4">
+            <div class="col mt-2">
                 <div class="row">
                     <div class="col tab-scroller">
                         <i class="tab-scroller-arrow left-arrow d-none">
@@ -155,17 +164,17 @@
                         </i>
                         <ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link position-relative" id="affilitions-tab" data-bs-toggle="tab"
-                                    data-bs-target="#affiliations" type="button" role="tab" aria-controls="affiliations"
-                                    aria-selected="false"><i class="px-1 bi-bank"></i>Affiliations
+                                <button class="nav-link position-relative active" id="affilitions-tab"
+                                    data-bs-toggle="tab" data-bs-target="#affiliations" type="button" role="tab"
+                                    aria-controls="affiliations" aria-selected="true"><i
+                                        class="px-1 bi-bank"></i>Affiliations
                                     <span class="visually-hidden">Affiliations</span>
                                 </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <button class="nav-link active position-relative" id="publications-tab"
-                                    data-bs-toggle="tab" data-bs-target="#publications" type="button" role="tab"
-                                    aria-controls="publications" aria-selected="true"><i
-                                        class="px-1 bi-journal-album"></i>Publications
+                                <button class="nav-link position-relative" id="publications-tab" data-bs-toggle="tab"
+                                    data-bs-target="#publications" type="button" role="tab" aria-controls="publications"
+                                    aria-selected="false"><i class="px-1 bi-journal-album"></i>Publications
                                     <span class="visually-hidden">Publications</span>
                                 </button>
                             </li>
@@ -179,8 +188,9 @@
                         </ul>
                     </div>
                 </div>
-                <div class="tab-content mt-5" id="myTabContent">
-                    <div class="tab-pane fade" id="affiliations" role="tabpanel" aria-labelledby="affiliations-tab">
+                <div class="tab-content mt-2" id="myTabContent">
+                    <div class="tab-pane fade show active" id="affiliations" role="tabpanel"
+                        aria-labelledby="affiliations-tab">
                         {% for institution in researcher.affiliation %}
                         <div class="p-2 border-bottom">
                             <!-- <h4>Junior Professor (Computer Science)</h4> -->
@@ -190,8 +200,7 @@
                         </div>
                         {% endfor %}
                     </div>
-                    <div class="tab-pane fade show active" id="publications" role="tabpanel"
-                        aria-labelledby="publications-tab">
+                    <div class="tab-pane fade" id="publications" role="tabpanel" aria-labelledby="publications-tab">
                         {% for publication in researcher.works %}
                         <div class="card mb-2 p-3">
                             <div class="card-body">
@@ -304,19 +313,13 @@
                                     {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
                                     {% endwith %}
 
-
-
-
-
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
                     </div>
                     <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
-                        <h4>Coming Soon...</h4>
-                        <!-- <p>Leipzig University · Leipzig, DE · Education<br>
-                        <span style="color:#c9c9c9;">January 2013 - May 2017 · 2 years</span></p> -->
+                        <span class="fs-7">Coming Soon ... </span>
                     </div>
                 </div>
             </div>
@@ -344,20 +347,6 @@
             })
             .catch(error => console.error('Error while generating summary:', error));
     });
-
-    // JavaScript to fetch and update the banner after page load
-    document.addEventListener("DOMContentLoaded", function () {
-        fetch('/generate-researcher-banner/{{researcher.identifier}}')  // Endpoint to generate the image
-            .then(response => response.json())
-            .then(data => {
-                if (data.generated_banner) {
-                    document.querySelector('.banner').style.backgroundImage = `url(${data.generated_banner})`;
-                }
-            })
-            .catch(error => console.error('Error while fetching image:', error));
-    });
-
-
 
 </script>
 
