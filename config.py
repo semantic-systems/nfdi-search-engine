@@ -75,11 +75,12 @@ class Config:
         "EUDAT": {
             "module": "eudat", 
             "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
-            "record-base-url": f"https://b2share.eudat.eu/records/"
+            "record-base-url": f"https://b2share.eudat.eu/records/",
         },
         "OPENAIRE - Products": {
             "module": "openaire_products", 
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
+            "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
         },
         "OPENAIRE - Projects": {
             "module": "openaire_projects", 
