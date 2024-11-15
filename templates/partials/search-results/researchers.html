@@ -18,7 +18,7 @@
                             {{researcher.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold"
-                            href="/researcher-details/{{researcher | format_digital_obj_url('orcid')}}" target='_blank'>
+                            href="/researcher-details/{{researcher | format_digital_obj_url('orcid','source-id')}}" target='_blank'>
                             <i class="pull-left bi bi-link-45deg"></i>&nbsp;{{researcher.name}}</a>
                         {% endif %}
                     </div>
@@ -74,7 +74,7 @@
                     {% endif %}
                 </div>
                 {% with share_modal_id='share-researcher-'+researcher.identifier | regex_replace ('\W',''),
-                url = url_for('researcher_details', identifier_with_type=(researcher | format_digital_obj_url('orcid')),
+                url = url_for('researcher_details', identifier_with_type=(researcher | format_digital_obj_url('orcid','source-id')),
                 _external=True),
                 title = researcher.name | trim
                 %}

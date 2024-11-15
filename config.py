@@ -28,7 +28,6 @@ class Config:
         # "dblp - Publications": {
         #     "module": "dblp_publications", 
         #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-
         # }, 
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
         # "dblp-Researchers": { 
@@ -50,6 +49,7 @@ class Config:
         "ZENODO": {
             "module": "zenodo", 
             "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            "get-publication-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
             "module": "wikidata_publications", 
@@ -70,6 +70,7 @@ class Config:
         "IEEE": {
             "module": "ieee", 
             "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+            "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
         },
         "EUDAT": {
             "module": "eudat", 
@@ -120,7 +121,7 @@ class Config:
         "SEMANTIC SCHOLAR - Researchers": {
             "module": "semanticscholar_researchers", 
             # "search-endpoint": f"",
-            # "get-researcher-endpoint": "https://api.semanticscholar.org/graph/v1/author/",            
+            # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",            
         },
         "RE3DATA": {
             "module": "re3data",

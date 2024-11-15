@@ -14,7 +14,7 @@
                             {{publication.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href="/publication-details/{{publication | format_digital_obj_url('doi')}}"
+                            href="{{ url_for('publication_details', doi='doi:'+publication.identifier | quote, source_id='source-id:'+publication.source[0].identifier | quote, _external=True) }}"
                             target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{publication.name}}</a>
                         {% endif %}
                     </div>
@@ -25,8 +25,6 @@
                                     class="pull-right bi bi-box-arrow-up-right"></i></span>
                         </a>
                         {% endfor %}
-
-
                     </div>
                 </div>
                 <div class="row">
@@ -102,8 +100,8 @@
             {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
             download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
-            url = url_for('publication_details', identifier_with_type=(publication | format_digital_obj_url('doi')),
-            _external=True),
+            url = url_for('publication_details', doi='doi:'+publication.identifier | quote,
+            source_id='source-id:'+publication.source[0].identifier | quote, _external=True),
             img_src = publication.image,
             encoding_contentUrl = publication.encoding_contentUrl,
             title = publication.name | trim

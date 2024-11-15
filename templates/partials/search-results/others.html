@@ -14,7 +14,7 @@
                             {{digitalObj.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href="/other-details/{{digitalObj | format_digital_obj_url('doi')}}" target='_blank'><i
+                            href="/other-details/{{digitalObj | format_digital_obj_url('doi','source-id')}}" target='_blank'><i
                                 class="pull-left bi bi-link-45deg"></i>&nbsp;{{digitalObj.name}}</a>
                         {% endif %}
                     </div>
@@ -107,7 +107,7 @@
             {% with share_modal_id='share-other-'+digitalObj.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-other-'+digitalObj.identifier | regex_replace ('\W',''),
             download_modal_id='download-other-'+digitalObj.identifier | regex_replace ('\W',''),
-            url = url_for('digital_obj_details', identifier_with_type=(digitalObj | format_digital_obj_url('doi')),
+            url = url_for('digital_obj_details', identifier_with_type=(digitalObj | format_digital_obj_url('doi','source-id')),
             _external=True),
             img_src = digitalObj.image,
             encoding_contentUrl = digitalObj.encoding_contentUrl,

@@ -47,7 +47,7 @@ def search(source: str, search_term: str, results, failed_sources):
                     publication.author.append(_author)    
 
             _source = thing()
-            _source.name = 'DBLP'
+            _source.name = source
             _source.identifier = hit.get("@id", "")
             _source.url = info.get("url", "")                         
             publication.source.append(_source)

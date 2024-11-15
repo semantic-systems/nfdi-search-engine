@@ -5,7 +5,7 @@
         {{reference.text}}
         {% else %}
         <a class="text-secondary fw-bold publication_name"
-            href="/publication-details/{{reference | format_digital_obj_url('doi')}}"
+            href="/publication-details/{{reference | format_digital_obj_url('doi','source-id')}}"
             target='_blank'>{{reference.text}}</a>
         {% endif %}
     </li>

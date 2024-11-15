@@ -140,9 +140,13 @@ class PreferencesForm(FlaskForm):
 
 #region JINJA2 FILTERS
 from jinja2.filters import FILTERS
+
+from urllib.parse import quote, unquote    
+FILTERS["quote"] = lambda x: quote(str(x), safe='')
+
 import json
-def format_digital_obj_url(value, identifier_type):
-    return f"{identifier_type}:{value.identifier}"
+def format_digital_obj_url(value, identifier_type1, identifier_type2 = ''):
+    return f"{identifier_type1}:{value.identifier}/{identifier_type2}:{value.source[0].identifier}"
     # sources_list = []
     # for source in value.source:
     #     source_dict = {}
@@ -369,7 +373,7 @@ def preferences():
     form = PreferencesForm()
     # populate the forms dynamically with the values in the configuration and database
     data_sources_list = app.config['DATA_SOURCES']
-    form.data_sources.choices = [(source, source) for source in app.config['DATA_SOURCES'].keys()]
+    form.data_sources.choices = sorted([(source, source) for source in app.config['DATA_SOURCES'].keys()])
     # if it's a post request and we validated successfully
     if request.method == 'POST' and form.validate_on_submit():
         # get our choices again, could technically cache these in a list if we wanted but w/e
@@ -474,15 +478,7 @@ def search_results():
             threads.append(t)
 
         for t in threads:
-            t.join()
-
-        # results["publications"] = utils.sort_search_results(search_term, results["publications"])  
-        # results["researchers"] = utils.sort_search_results(search_term, results["researchers"])  
-        # results["resources"] = utils.sort_search_results(search_term, results["resources"]) 
-        # results["organizations"] = utils.sort_search_results(search_term, results["organizations"]) 
-        # results["events"] = utils.sort_search_results(search_term, results["events"]) 
-        # results["projects"] = utils.sort_search_results(search_term, results["projects"]) 
-        # results["others"] = utils.sort_search_results(search_term, results["others"])             
+            t.join()                   
         
         #store the search results in the session
         session['search-results'] = copy.deepcopy(results)        
@@ -582,20 +578,29 @@ def get_chatbot_answer():
     return answer
 
 
-@app.route('/publication-details/<path:identifier_with_type>', methods=['GET'])
+@app.route('/publication-details/<string:doi>/<string:source_id>', methods=['GET'])
 @utils.timeit
 @utils.set_cookies
-def publication_details(identifier_with_type):
+def publication_details(doi, source_id):
 
-    utils.log_activity(f"loading publication details page: {identifier_with_type}")    
-    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'doi'
-    identifier = identifier_with_type.split(':',1)[1]
-      
+    utils.log_activity(f"loading publication details page: {doi}/{source_id}") 
+    doi = unquote(doi.split(':',1)[1])
+    source_id = unquote(source_id.split(':',1)[1])
+
+    print(f"{doi=}")
+    print(f"{source_id=}")
+
     sources = []
-    for module in app.config['DATA_SOURCES']:
-        if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "":
-            sources.append(module)
-
+    if current_user.is_anonymous:
+        for module in app.config['DATA_SOURCES']:
+            if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "":
+                sources.append(module)
+    else:
+        excluded_data_sources = current_user.excluded_data_sources.split('; ')
+        for module in app.config['DATA_SOURCES']:
+            if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "" and module not in excluded_data_sources:
+                sources.append(module)
+    
     for source in sources:
         module_name = app.config['DATA_SOURCES'][source].get('module', '')              
 
@@ -604,7 +609,7 @@ def publication_details(identifier_with_type):
 
     for source in sources:
         module_name = app.config['DATA_SOURCES'][source].get('module', '')            
-        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_publication, args=(source, "https://doi.org/"+identifier, publications,))
+        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_publication, args=(source, doi, source_id, publications,))
         t.start()
         threads.append(t)
 

@@ -3,7 +3,7 @@
     <li class="list-group-item border-0">
         {{publication.author | format_authors_for_citations}}
         {{publication.name}}. ({{publication.datePublished}})
-        <a href="/publication-details/{{publication | format_digital_obj_url('doi')}}" class="text-dark"
+        <a href="/publication-details/{{publication | format_digital_obj_url('doi','source-id')}}" class="text-dark"
             target="_blank"><i class="bi bi-box-arrow-up-right"></i></a>
     </li>
     {% endfor %}

@@ -157,7 +157,7 @@ def get_researcher(source: str, orcid: str, researchers):
     }
     openalex_id = hit.get('id', '').replace('https://openalex.org/', '')
     url = app.config['DATA_SOURCES'][source].get('get-researcher-publications-endpoint', '') + openalex_id
-    openalex_publications.get_publications('openalex - Publications', url, researcher_publications, [])
+    openalex_publications.get_publications('OPENALEX - Publications', url, researcher_publications, [])
     researcher.works.extend(researcher_publications['publications'])
 
 
