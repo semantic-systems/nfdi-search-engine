@@ -64,10 +64,10 @@ def search(source: str, search_term: str, results, failed_sources):
 
     if int(total_hits) > 0:              
         for hit in hits:
-                
             author = Author()
             # info = hit.get('info',{})
             author.orcid = hit.get("orcid", {}).get("value", "")
+            author.identifier = author.orcid
             author.name = hit.get('itemLabel', '').get('value', '')
             affiliations = hit.get('employerSampleLabel', {})
             if isinstance(affiliations, dict):
@@ -77,7 +77,7 @@ def search(source: str, search_term: str, results, failed_sources):
 
             _source = thing()
             _source.name = 'WIKIDATA'
-            _source.identifier = hit.get("ids", {}).get("openalex", "")
+            _source.identifier = hit['item'].get('value', "").replace("http://www.wikidata.org/", "") # hit.get("ids", {}).get("openalex", "")
             _source.url = hit.get("item", {}).get("value", "")                       
             author.source.append(_source)
 
