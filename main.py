@@ -620,10 +620,12 @@ def publication_details(doi, source_id):
     # with open('publications.json', 'w', encoding='utf-8') as f:
     #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
 
+    print(f"Total number of publications {len(publications)}")
+
     if (len(publications) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('publication-details.html', publication=publications[0]))
     else: 
-        #merge more than one publications record into one publication
+        #merge more than one publication's records from various sources into one publication
         merged_publication = generate_response_with_openai(jsonify(publications).json)
         response = make_response(render_template('publication-details.html', publication=merged_publication))
 
@@ -633,7 +635,7 @@ def publication_details(doi, source_id):
 @utils.timeit
 def publication_details_references(doi):
     print("doi:", doi)  
-    source = "crossref - Publications" 
+    source = "CROSSREF - Publications" 
     module_name = "crossref_publications"     
     publication = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))    

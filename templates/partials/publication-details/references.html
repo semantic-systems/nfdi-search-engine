@@ -4,8 +4,8 @@
         {% if reference.identifier == "" %}
         {{reference.text}}
         {% else %}
-        <a class="text-secondary fw-bold publication_name"
-            href="/publication-details/{{reference | format_digital_obj_url('doi','source-id')}}"
+        <a class="text-secondary"
+            href="{{ url_for('publication_details', doi='doi:'+reference.identifier | quote, source_id='source-id:'+reference.source[0].identifier | quote, _external=True) }}"
             target='_blank'>{{reference.text}}</a>
         {% endif %}
     </li>

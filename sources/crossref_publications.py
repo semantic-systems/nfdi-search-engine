@@ -72,15 +72,22 @@ def get_publication(source: str, doi: str, source_id: str, publications):
 def get_publication_references(source: str, doi: str):
     search_result = data_retriever.retrieve_object(source=source, 
                                                     base_url=app.config['DATA_SOURCES'][source].get('get-publication-references-endpoint', ''),
-                                                    doi=doi)
+                                                    identifier=doi)
     if search_result:
         search_result = search_result.get('message',{})
+        digitalObj = map_digital_obj(source, search_result)    
         
-        publication = Article()  
         references = search_result.get("reference", [])                        
         for reference in references:
             referenced_publication = Article() 
             referenced_publication.identifier = reference.get("DOI", "") 
+
+            _source = thing()
+            _source.name = source
+            _source.identifier = referenced_publication.identifier
+            _source.url = referenced_publication.url                                          
+            referenced_publication.source.append(_source)
+
             structured_reference_text = []  
             structured_reference_text.append(reference.get("author", "")) 
             reference_year = reference.get("year", "")
@@ -91,7 +98,7 @@ def get_publication_references(source: str, doi: str):
             structured_reference_text.append(reference.get("journal-title", ""))
             structured_reference_text.append(reference.get("unstructured", ""))        
             referenced_publication.text = ('. ').join(filter(None, structured_reference_text))
-            publication.reference.append(referenced_publication)     
+            digitalObj.reference.append(referenced_publication)     
         
-        return publication
+        return digitalObj
     
