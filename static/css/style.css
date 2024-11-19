@@ -443,6 +443,17 @@ div.dataTables_info {
     /* width: 2rem; */
 }
 
+/***********************************************/
+/* Back to top styles */
+/***********************************************/
+
+.back-to-top {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    display: none;
+}
+
 
 /***********************************************/
 /* Publication Details styles */
