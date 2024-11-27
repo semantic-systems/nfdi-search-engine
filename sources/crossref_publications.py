@@ -25,7 +25,7 @@ def map_digital_obj(source: str, hit: dict) -> Article:
     titles = hit.get("title", [])    
     if len(titles) > 0:
         publication.name = utils.remove_html_tags(titles[0])       
-    publication.url = hit.get("url", "")
+    publication.url = hit.get("URL", "")
     publication.identifier = hit.get("DOI", "").replace("https://doi.org/", "")
     publication.datePublished = hit.get("created", {}).get("date-time","") 
     publication.inLanguage.append(hit.get("language", ""))

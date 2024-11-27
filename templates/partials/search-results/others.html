@@ -14,8 +14,8 @@
                             {{digitalObj.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                            href="/other-details/{{digitalObj | format_digital_obj_url('doi','source-id')}}" target='_blank'><i
-                                class="pull-left bi bi-link-45deg"></i>&nbsp;{{digitalObj.name}}</a>
+                            href="/other-details/{{digitalObj | format_digital_obj_url('doi','source-id')}}"
+                            target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{digitalObj.name}}</a>
                         {% endif %}
                     </div>
                     <div class="col-3 text-end ">
@@ -60,7 +60,7 @@
                         <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="DOI">{{digitalObj.identifier}}</span>
                         <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="DOI">{{digitalObj.originalSource}}</span>
+                            data-bs-placement="top" title="Source">{{digitalObj.originalSource}}</span>
                         <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
                             data-bs-placement="top" title="Type">{{digitalObj.additionalType}}</span>
                         {% for language in digitalObj.inLanguage %}
@@ -107,7 +107,8 @@
             {% with share_modal_id='share-other-'+digitalObj.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-other-'+digitalObj.identifier | regex_replace ('\W',''),
             download_modal_id='download-other-'+digitalObj.identifier | regex_replace ('\W',''),
-            url = url_for('digital_obj_details', identifier_with_type=(digitalObj | format_digital_obj_url('doi','source-id')),
+            url = url_for('digital_obj_details', identifier_with_type=(digitalObj |
+            format_digital_obj_url('doi','source-id')),
             _external=True),
             img_src = digitalObj.image,
             encoding_contentUrl = digitalObj.encoding_contentUrl,

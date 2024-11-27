@@ -95,7 +95,7 @@ def get_resource(source: str, source_identifier: str, doi: str):
     base_url = app.config['DATA_SOURCES'][source].get('get-resource-endpoint', '')     
     search_result = data_retriever.retrieve_object(source=source, 
                                                     base_url=base_url,
-                                                    doi=source_identifier) #source identifier will be passed on with the base url
+                                                    identifier=source_identifier) #source identifier will be passed on with the base url
     if search_result:
         dataset = map_repository_to_dataset(source, doi, search_result)
         utils.log_event(type="info", message=f"{source} - retrieved repository details")

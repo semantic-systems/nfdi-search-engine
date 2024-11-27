@@ -470,11 +470,19 @@ div.dataTables_info {
     border-radius: 1.0rem !important;
 }
 
-li.list-group-item::before {
-    font-size: 1.5rem;
-    color: #c9c9c9
-        /* content: counter(section, lower-roman) ". "; */
+.references>li.list-group-item {
+    padding-left: 0;
 }
+
+.references>li.list-group-item::before {
+    padding-right: 1rem;
+}
+
+/* li.list-group-item::before {
+    font-size: 1.5rem;
+    color: #c9c9c9;
+    content: counter(section, lower-roman) ". ";
+} */
 
 .authors-block {
     height: 300px;

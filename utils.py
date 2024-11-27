@@ -377,7 +377,7 @@ def update_visitor_id(visitor_id:str):
                                 } 
                             })                            
     result_rec_count = int(result["hits"]["total"]["value"])  
-    print(f"user_activity_log - {result_rec_count=}")     
+    # print(f"user_activity_log - {result_rec_count=}")     
     if result_rec_count > 0:
         hits = result["hits"]["hits"]
         for hit in hits:
@@ -399,7 +399,7 @@ def update_visitor_id(visitor_id:str):
                                 } 
                             })                            
     result_rec_count = int(result["hits"]["total"]["value"])  
-    print(f"search_term_log - {result_rec_count=}")     
+    # print(f"search_term_log - {result_rec_count=}")     
     if result_rec_count > 0:
         hits = result["hits"]["hits"]
         for hit in hits:
@@ -421,7 +421,7 @@ def update_visitor_id(visitor_id:str):
                                 } 
                             })   
     result_rec_count = int(result["hits"]["total"]["value"])  
-    print(f"user_agent_log - {result_rec_count=}")          
+    # print(f"user_agent_log - {result_rec_count=}")          
     if result_rec_count > 0:
         hits = result["hits"]["hits"]
         for hit in hits:

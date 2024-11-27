@@ -18,8 +18,9 @@
                             {{researcher.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold"
-                            href="/researcher-details/{{researcher | format_digital_obj_url('orcid','source-id')}}" target='_blank'>
-                            <i class="pull-left bi bi-link-45deg"></i>&nbsp;{{researcher.name}}</a>
+                            href="{{ url_for('researcher_details', orcid='orcid:'+researcher.identifier | quote, source_id='source-id:'+researcher.source[0].identifier | quote, _external=True) }}"
+                            target='_blank'></a>
+                        <i class="pull-left bi bi-link-45deg"></i>&nbsp;{{researcher.name}}</a>
                         {% endif %}
                     </div>
                     <div class="col-6 text-end">
@@ -74,8 +75,8 @@
                     {% endif %}
                 </div>
                 {% with share_modal_id='share-researcher-'+researcher.identifier | regex_replace ('\W',''),
-                url = url_for('researcher_details', identifier_with_type=(researcher | format_digital_obj_url('orcid','source-id')),
-                _external=True),
+                url = url_for('researcher_details', orcid='orcid:'+researcher.identifier | quote,
+                source_id='source-id:'+researcher.source[0].identifier | quote, _external=True),
                 title = researcher.name | trim
                 %}
                 {{ shareModal(share_modal_id, url, title) }}

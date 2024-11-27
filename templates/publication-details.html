@@ -19,7 +19,7 @@
             </div>
         </div>
         <div class="row border-bottom pb-4">
-            <div class="col-7 text-start">
+            <div class="col-9 text-start">
                 <h3>{{publication.name}}</h3>
                 <div class="py-2">
                     {% for keyword in publication.keywords %}
@@ -41,8 +41,8 @@
                     </span>
                 </div>
             </div>
-            <div class="col-5 d-flex justify-content-end">
-                <div class="summary-block p-2 ms-3">
+            <div class="col-3 d-flex justify-content-end">
+                <!-- <div class="summary-block p-2 ms-3">
                     <i class="bi bi-download fs-4"></i>
                     <div class="fs-7 my-1">Downloads</div>
                     <div class="fs-5 fw-bold">---</div>
@@ -61,7 +61,7 @@
                     <i class="bi bi-eye fs-4"></i>
                     <div class="fs-7 my-1">Views</div>
                     <div class="fs-5 fw-bold">---</div>
-                </div>
+                </div> -->
             </div>
             <!-- <div class="row border-bottom mt-4"></div> -->
         </div>
@@ -93,16 +93,14 @@
             </div>
             <div class="col-6 px-4">
                 <div class="d-flex p-2 bd-highlight" id="abstract">
-                    <span class="fw-bold fs-6">ABSTRACT <i class="bi bi-info-circle-fill text-secondary"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Retrieved from OpenAlex"></i></span>
+                    <span class="fw-bold fs-6">ABSTRACT</span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     {{publication.abstract}}
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4" id="supplemental-material">
-                    <span class="fw-bold fs-6">SUPPLEMENTAL MATERIAL <i class="bi bi-info-circle-fill text-secondary"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Retrieved from xxx"></i></span>
+                    <span class="fw-bold fs-6">SUPPLEMENTAL MATERIAL</span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="fw-lighter fst-italic">
@@ -167,14 +165,24 @@
                 <div class="d-flex p-2 bd-highlight">
                     <span class="fw-bold fs-6">EXTERNAL LINKS</span>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="recommendations_block">
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
                     {% for source in publication.source %}
-                    <a id="source_link" href="{{source.url}}" target=_blank>
+                    <a id="source_link" href="{{source.url}}" target=_blank class="mb-2">
                         <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
                                 class="pull-right bi bi-box-arrow-up-right"></i></span>
                     </a>
                     {% endfor %}
                 </div>
+
+                <div class="d-flex p-2 bd-highlight pt-4">
+                    <span class="fw-bold fs-6">PlumX Metrics</span>
+                </div>
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+                    <div class="fw-lighter fst-italic" id="plumx-metrics">
+
+                    </div>
+                </div>
+
                 <div class="d-flex p-2 bd-highlight pt-4">
                     <span class="fw-bold fs-6">RECOMMENDATIONS <i class="bi bi-info-circle-fill text-secondary"
                             data-bs-toggle="tooltip" data-bs-placement="top"
@@ -222,8 +230,10 @@
 {% block javascripts %}
 
 <script>
-
     $(document).ready(function () {
+
+        $('#plumx-metrics').html("<a href='https://plu.mx/plum/a/?doi={{publication.identifier}}' target='_blank' class='plumx-summary' data-orientation='vertical'>{{publication.name}}&nbsp;<i class='pull-right bi bi-box-arrow-up-right'></i></a>")
+        window.__plumX.widgets.init();
 
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -320,10 +330,8 @@
         });
 
     });
-
-
-
 </script>
+
 
 
 {% endblock javascripts %}

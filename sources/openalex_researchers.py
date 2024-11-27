@@ -97,14 +97,14 @@ def convert_to_string(value):
     return str(value)
 
 @utils.handle_exceptions
-def get_researcher(source: str, orcid: str, researchers):
+def get_researcher(source: str, orcid: str, source_id: str, researchers):
 
     if not orcid.startswith("https://orcid.org"):
         orcid = "https://orcid.org/"+orcid
 
     hit = data_retriever.retrieve_object(source=source, 
                                         base_url=app.config['DATA_SOURCES'][source].get('get-researcher-endpoint', ''),
-                                        doi=orcid)
+                                        identifier=orcid)
                 
     researcher = Author()    
     researcher.url = orcid
@@ -146,7 +146,7 @@ def get_researcher(source: str, orcid: str, researchers):
     #         researcher.researchAreas.append(name)
 
     _source = thing()
-    _source.name = 'OPENALEX'
+    _source.name = source
     _source.identifier = hit.get("ids", {}).get("openalex", "").replace('https://openalex.org/','')
     researcher.source.append(_source)
 
@@ -160,6 +160,9 @@ def get_researcher(source: str, orcid: str, researchers):
     openalex_publications.get_publications('OPENALEX - Publications', url, researcher_publications, [])
     researcher.works.extend(researcher_publications['publications'])
 
+    researchers.append(researcher)
+
+    #region search semantic scholar...
 
     # # search semantic scholar...
     # search_result = data_retriever.retrieve_data(source=source, 
@@ -226,45 +229,8 @@ def get_researcher(source: str, orcid: str, researchers):
     #             researcher.works.append(publication)
     #             a+=1
 
-    # researcher.about = get_researcher_about_us(researcher)    
-    researchers.append(researcher)
+    #endregion
 
-# @utils.handle_exceptions
-# def get_researcher_about_us(researcher: Author):
-#     ### uncomment to generate about section
-#     details = vars(researcher)
-#     # Convert the details into a string format
-#     details_str = "\n".join(f"{key}: {convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key not in ("works", "source","orcid")))
-#     prompt = f"Generate a 2-3 line 'About' section for a researcher based on the following details:\n{details_str}"
-#     client = OpenAI(
-#         api_key=utils.env_config["OPENAI_API_KEY"],
-#     )        
-#     chat_completion = client.chat.completions.create(
-#         messages=[
-#             {
-#                 "role": "user",
-#                 "content": f'{prompt}',
-#             }
-#         ],
-#         model="gpt-3.5-turbo",
-#     )
-#     # about_section = response.choices[0].text.strip()
-#     researcher.about = chat_completion.choices[0].message.content.strip()
+       
+    
 
-
-# @utils.handle_exceptions
-# def get_researcher_banner(researcher: Author):
-#     details = vars(researcher)
-#     details_str = "\n".join(f"{convert_to_string(value)}" for key, value in details.items() if (value not in ("", [], {}, None) and key in ("researchAreas")))
-#     prompt = f"A banner for researcher with following research areas:\n{researcher.about}"
-#     client = OpenAI(api_key=utils.env_config["OPENAI_API_KEY"])
-#     response = client.images.generate(
-#         model="dall-e-2",
-#         prompt=prompt,
-#         size="512x512",
-#         quality="standard",
-#         response_format="b64_json",
-#         n=1,
-#     )
-#     researcher.banner = response.data[0].b64_json
-#     return researcher

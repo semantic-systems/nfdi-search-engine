@@ -601,8 +601,7 @@ def publication_details(doi, source_id):
             if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "" and module not in excluded_data_sources:
                 sources.append(module)
     
-    for source in sources:
-        module_name = app.config['DATA_SOURCES'][source].get('module', '')              
+                
 
     threads = []  
     publications = []
@@ -641,25 +640,29 @@ def publication_details_references(doi):
     response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
     return response
 
-@app.route('/publication-details-recommendations/<path:doi>', methods=['GET'])
-@utils.timeit
-def publication_details_recommendations(doi):
-    print("DOI:", doi)    
-    module_name = "semanticscholar"
-    publications = importlib.import_module(f'sources.{module_name}').get_recommendations_for_publication(doi=doi)
-    response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
-    print("response:", response)
-    return response
-
 @app.route('/publication-details-citations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_citations(doi):
-    print("DOI:", doi)  
-    module_name = "semanticscholar"  
-    publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(doi=doi)
+    print("for citations - DOI:", doi)  
+    source = "SEMANTIC SCHOLAR - Publications" 
+    module_name = "semanticscholar_publications"     
+    publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(source=source, doi=doi)
     response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
-    print("response:", response)
+    # print("response:", response)
     return response
+
+@app.route('/publication-details-recommendations/<path:doi>', methods=['GET'])
+@utils.timeit
+def publication_details_recommendations(doi):
+    print("for recommendations - DOI:", doi)    
+    source = "SEMANTIC SCHOLAR - Publications" 
+    module_name = "semanticscholar_publications" 
+    publications = importlib.import_module(f'sources.{module_name}').get_recommendations_for_publication(source=source, doi=doi)
+    response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
+    # print("response:", response)
+    return response
+
+
 
 @app.route('/resource-details')
 @utils.timeit
@@ -668,30 +671,35 @@ def resource_details():
     response = make_response(render_template('resource-details.html'))  
     return response
 
-
-@app.route('/researcher-details/<path:identifier_with_type>', methods=['GET'])
+@app.route('/researcher-details/<string:orcid>/<string:source_id>', methods=['GET'])
 @utils.timeit
 @utils.set_cookies
-def researcher_details(identifier_with_type):
+def researcher_details(orcid, source_id):
 
-    utils.log_activity(f"loading researcher details page: {identifier_with_type}")    
-    identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'orcid'
-    identifier = identifier_with_type.split(':',1)[1]
-      
+    utils.log_activity(f"loading researcher details page: {orcid}/{source_id}") 
+    orcid = unquote(orcid.split(':',1)[1])
+    source_id = unquote(source_id.split(':',1)[1])
+
+    print(f"{orcid=}")
+    print(f"{source_id=}")
+
     sources = []
-    for module in app.config['DATA_SOURCES']:
-        if app.config['DATA_SOURCES'][module].get('get-researcher-endpoint','').strip() != "":
-            sources.append(module)
-
-    for source in sources:
-        module_name = app.config['DATA_SOURCES'][source].get('module', '')              
-
+    if current_user.is_anonymous:
+        for module in app.config['DATA_SOURCES']:
+            if app.config['DATA_SOURCES'][module].get('get-researcher-endpoint','').strip() != "":
+                sources.append(module)
+    else:
+        excluded_data_sources = current_user.excluded_data_sources.split('; ')
+        for module in app.config['DATA_SOURCES']:
+            if app.config['DATA_SOURCES'][module].get('get-researcher-endpoint','').strip() != "" and module not in excluded_data_sources:
+                sources.append(module)     
+     
     threads = []  
     researchers = []
 
     for source in sources:
         module_name = app.config['DATA_SOURCES'][source].get('module', '')            
-        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_researcher, args=(source, identifier, researchers,))
+        t = threading.Thread(target=(importlib.import_module(f'sources.{module_name}')).get_researcher, args=(source, orcid, source_id, researchers,))
         t.start()
         threads.append(t)
 
@@ -704,12 +712,12 @@ def researcher_details(identifier_with_type):
 
     if (len(researchers) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
-        session['researcher:'+identifier] = jsonify(researchers[0]).json
+        session['researcher:'+orcid] = jsonify(researchers[0]).json
     else: 
         #merge more than one researchers record into one researcher
         merged_researcher = generate_response_with_openai(jsonify(researchers).json)
         response = make_response(render_template('researcher-details.html', researcher=merged_researcher))
-        session['researcher:'+identifier] = merged_researcher
+        session['researcher:'+orcid] = merged_researcher
 
     return response
 
@@ -1035,11 +1043,11 @@ def event_log(log_type, report_date_range):
                            log_type=log_type,
                            report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}") 
 
-@app.route('/control-panel/event-log/delete-event/<string:event_id>')
-def delete_event(event_id):
+@app.route('/control-panel/event-log/delete-event', methods=['POST'])
+def delete_event():
+    event_id = request.values.get('event_id')
     utils.delete_event(event_id)
-    return "Event has been deleted" 
-
+    return jsonify({'message': "Event has been deleted"}), 200 
 
 @app.route('/control-panel/registered-users', defaults={'report_date_range': None})
 @app.route('/control-panel/registered-users/<report_date_range>')

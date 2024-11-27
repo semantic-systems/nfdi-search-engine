@@ -1,10 +1,16 @@
-<ol class="list-group list-group-numbered">
+<ol class="list-group list-group-numbered citations">
     {% for publication in publications %}
-    <li class="list-group-item border-0">
-        {{publication.author | format_authors_for_citations}}
-        {{publication.name}}. ({{publication.datePublished}})
-        <a href="/publication-details/{{publication | format_digital_obj_url('doi','source-id')}}" class="text-dark"
-            target="_blank"><i class="bi bi-box-arrow-up-right"></i></a>
+    <li class="list-group-item d-flex justify-content-between align-items-start border-0">
+        {% if publication.identifier == "" %}
+        <span class="text-secondary">{{publication.author | format_authors_for_citations}}
+            {{publication.name}}. ({{publication.datePublished}})</span>
+        {% else %}
+        <a class="text-secondary"
+            href="{{ url_for('publication_details', doi='doi:'+publication.identifier | quote, source_id='source-id:'+publication.source[0].identifier | quote, _external=True) }}"
+            target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{publication.author |
+            format_authors_for_citations}}
+            {{publication.name}}. ({{publication.datePublished}})</a>
+        {% endif %}
     </li>
     {% endfor %}
 </ol>

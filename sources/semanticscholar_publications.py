@@ -6,41 +6,46 @@ import time
 from random import randrange
 
 @utils.handle_exceptions
-def get_recommendations_for_publication(doi: str):
-     
-    source = "semantic scholar"
+def get_recommendations_for_publication(source: str, doi: str):     
+    
     recommended_publications = []
     
     reAttemptFlag = True
-    while(reAttemptFlag):
+    reAttemptCount = 0
+    while(reAttemptFlag and reAttemptCount < 10):    
         # first retrieve semantic scholar paper id against the doi 
+        # this end point will return semantic scholar paperId and the paper title
         search_result = data_retriever.retrieve_object(source=source, 
-                                                    base_url=app.config['DATA_SOURCES'][source].get('recommendations-endpoint', ''),
-                                                    doi=doi)
+                                                    base_url=app.config['DATA_SOURCES'][source].get('citations-endpoint', ''),
+                                                    identifier=doi)
         
-        if type(search_result) != dict and int(search_result) == 429:
+        if type(search_result) != dict:
             reAttemptFlag = True
-            print('Try again after few seconds')
-            #force few seconds delay before two consecutive requests
-            time.sleep(randrange(5))
+            print('Try again for SS paper ID')            
+            time.sleep(2) #force one second delay between two consecutive requests
+            reAttemptCount += 1
         else:      
             reAttemptFlag = False      
             paper_id = search_result.get('paperId',"")
             print("paper_id:", paper_id)
-            
+
+    if reAttemptFlag or paper_id == "": #this DOI does not exist in semantic scholar so we can't pull any recommendations
+        return recommended_publications
+
     reAttemptFlag = True
-    while(reAttemptFlag):
+    reAttemptCount = 0
+    while(reAttemptFlag and reAttemptCount < 10):    
         # now pull recommendations with this paper id
         search_result = data_retriever.retrieve_data(source=source, 
                                                         base_url=app.config['DATA_SOURCES'][source].get('recommendations-endpoint', ''),
                                                         search_term=paper_id+"?fields=title,publicationDate,externalIds&limit=10", 
-                                                        results={} )#pass empty dict in the results
+                                                        failed_sources=[] )#pass empty list
 
-        if type(search_result) != dict and int(search_result) == 429:
+        if type(search_result) != dict:
             reAttemptFlag = True
-            print('Try again after few seconds')
-            #force few seconds delay before two consecutive requests
-            time.sleep(randrange(5))
+            print('Try again for recommendations')            
+            time.sleep(2) #force one second delay between two consecutive requests
+            reAttemptCount += 1
         else: 
             reAttemptFlag = False
             recommended_papers = search_result.get('recommendedPapers', [])
@@ -59,23 +64,22 @@ def get_recommendations_for_publication(doi: str):
     return recommended_publications
 
 @utils.handle_exceptions
-def get_citations_for_publication(doi: str):
+def get_citations_for_publication(source: str, doi: str):
      
-    source = "semantic scholar"
     citations_list = []
 
     reAttemptFlag = True
-    while(reAttemptFlag):
-        # first retrieve semantic scholar paper id against the doi 
+    reAttemptCount = 0
+    while(reAttemptFlag and reAttemptCount < 10):         
         search_result = data_retriever.retrieve_object(source=source, 
-                                                    base_url=app.config['DATA_SOURCES'][source].get('get-publication-endpoint', ''),
-                                                    doi=doi+"?fields=citations.title,citations.year,citations.externalIds,citations.authors")
+                                                    base_url=app.config['DATA_SOURCES'][source].get('citations-endpoint', ''),
+                                                    identifier=doi+"?fields=citations.title,citations.year,citations.externalIds,citations.authors")
         
-        if type(search_result) != dict and int(search_result) == 429:
+        if type(search_result) != dict:    # and int(search_result) == 429:
             reAttemptFlag = True
-            print('Try again after few seconds')
-            #force few seconds delay before two consecutive requests
-            time.sleep(randrange(5))           
+            print('Try again for citations')            
+            time.sleep(2) #force one second delay between two consecutive requests        
+            reAttemptCount += 1
         else: 
             reAttemptFlag = False
             citations = search_result.get('citations', [])
@@ -95,10 +99,9 @@ def get_citations_for_publication(doi: str):
                 publication.datePublished = citation.get("year", "")
 
                 _source = thing()
-                _source.name = 'SEMANTIC SCHOLAR'
+                _source.name = source
                 publication.source.append(_source)
                 
                 citations_list.append(publication)   
-
     
     return citations_list 
