@@ -1,12 +1,12 @@
-<ol class="list-group list-group-numbered">
+<ol class="list-group list-group-numbered references">
     {% for reference in publication.reference %}
-    <li class="list-group-item border-0">
+    <li class="list-group-item d-flex justify-content-between align-items-start border-0">
         {% if reference.identifier == "" %}
-        {{reference.text}}
+        <span class="text-secondary">{{reference.text}}</span>
         {% else %}
-        <a class="text-secondary fw-bold publication_name"
-            href="/publication-details/{{reference | format_digital_obj_url('doi')}}"
-            target='_blank'>{{reference.text}}</a>
+        <a class="text-secondary"
+            href="{{ url_for('publication_details', doi='doi:'+reference.identifier | quote, source_id='source-id:'+reference.source[0].identifier | quote, _external=True) }}"
+            target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{reference.text}}</a>
         {% endif %}
     </li>
     {% endfor %}

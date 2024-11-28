@@ -44,10 +44,10 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
     except Exception as ex:
         raise ex
 
-def retrieve_object(source: str, base_url: str, doi: str):    
+def retrieve_object(source: str, base_url: str, identifier: str):    
     try:        
-        doi = urllib.parse.quote_plus(string=doi, safe='()?&=,')
-        url = base_url + doi
+        identifier = urllib.parse.quote_plus(string=identifier, safe='()?&=,')
+        url = base_url + identifier
         # print('url:', url)
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',

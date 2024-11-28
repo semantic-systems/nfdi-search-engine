@@ -9,7 +9,7 @@ from dateutil import parser
 @utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources): 
     query_template = Template('''
-                            SELECT DISTINCT ?item ?label ?date 
+                            SELECT DISTINCT ?item ?label ?date ?doi
                             (group_concat(DISTINCT ?authorsName; separator=",") as ?authorsLabel)
                             (group_concat(DISTINCT ?authors2; separator=",") as ?authorsString) 
                                 WHERE
@@ -27,11 +27,12 @@ def search(source: str, search_term: str, results, failed_sources):
                                 ?item rdfs:label ?label. FILTER( LANG(?label)="en" )
                                 ?item wdt:P31/wdt:P279* wd:Q11826511.
                                 ?item wdt:P577 ?date .
+                                ?item wdt:P356 ?doi .
                                 ?item wdt:P50 ?authors.
                                 ?authors rdfs:label ?authorsName . FILTER( LANG(?authorsName)="en" )
                                 optional {?item wdt:P2093 ?authors2.}
                                 }
-                            GROUP BY ?item ?label ?date 
+                            GROUP BY ?item ?label ?date ?doi 
                               LIMIT $number_of_records
                             
                                 ''')    
@@ -51,14 +52,15 @@ def search(source: str, search_term: str, results, failed_sources):
     total_hits = len(hits)
     utils.log_event(type="info", message=f"{source} - {total_hits} records matched; pulled top {total_hits}")
 
-    if int(total_hits) > 0:               
+    if int(total_hits) > 0:
         for hit in hits:
                 
             publication = Article()   
 
             publication.name = hit.get("label", {}).get("value","")
             publication.url = hit.get("item", {}).get("value","")
-            publication.identifier = "" #DOI is available for few; we need to update the sparql query to fetch this information
+            publication.identifier = hit.get("doi", {}).get("value","") #DOI is available for few; we need to update the sparql query to fetch this information
+            # print(publication.identifier)
             publication.datePublished = datetime.strftime(parser.parse(hit.get('date', {}).get('value', "")), '%Y-%m-%d')
                                 
             authorsLabels = hit.get("authorsLabel", {}).get("value","")                        

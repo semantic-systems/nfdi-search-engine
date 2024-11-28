@@ -73,7 +73,8 @@
                         <td>{{ event['_source']['method'] }}</td>
                         <td>{{ event['_source']['message'] }}</td>
                         <td>{{ event['_source']['traceback'] }}</td>
-                        <td><a href="{{url_for('delete_event', event_id=event['_id'])}}" target="_blank">Delete</a>
+                        <td><a href="javascript:void(0);" event_id="{{ event['_id'] }}" target="_blank"
+                                class="delete-event">Delete</a>
                         </td>
                     </tr>
                     {% endfor %}
@@ -105,6 +106,29 @@
                     }
                 }
             ]
+        });
+
+        $("body").on("click", ".delete-event", function (event) {
+            current_element = $(this)
+            // console.log(current_element.attr("event_id"))
+            jQuery.ajax({
+                url: '/control-panel/event-log/delete-event',
+                type: "POST",
+                dataType: 'json',
+                data: {
+                    event_id: current_element.attr("event_id")
+                },
+                success: function (data, state) {
+                    // console.log(data);
+                    // console.log(state);
+                    // console.log(current_element.attr("event_id"))
+                    current_element.hide();
+                },
+                error: function (err) {
+                    console.log(err);
+                }
+            });
+            return false;
         });
     });
 

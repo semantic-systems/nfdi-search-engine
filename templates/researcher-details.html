@@ -45,7 +45,7 @@
                         aria-disabled="true"><i class="bi-share align-self-end fs-4"></i></a>
                 </div>
                 {% with modal_id='researcher-'+researcher.identifier | regex_replace ('\W',''),
-                url = '/researcher-details/'+ researcher | format_digital_obj_url('orcid'),
+                url = '/researcher-details/'+ researcher | format_digital_obj_url('orcid','source-id'),
                 title=researcher.name | trim
                 %}
                 {{ shareModal(modal_id, url, title) }}
@@ -213,7 +213,7 @@
                                                     {{publication.name}}</span>
                                                 {% else %}
                                                 <a class="text-secondary fw-bold publication_name"
-                                                    href="/publication-details/{{publication | format_digital_obj_url('doi')}}"
+                                                    href="/publication-details/{{publication | format_digital_obj_url('doi','source-id')}}"
                                                     target='_blank'>{{publication.name}}</a>
                                                 {% endif %}
                                             </div>
@@ -303,7 +303,7 @@
                                     ('\W',''),
                                     download_modal_id='download-publication-'+publication.identifier | regex_replace
                                     ('\W',''),
-                                    url = '/publication-details/'+ publication | format_digital_obj_url('doi'),
+                                    url = '/publication-details/'+ publication | format_digital_obj_url('doi','source-id'),
                                     img_src = publication.image,
                                     encoding_contentUrl = publication.encoding_contentUrl,
                                     title = publication.name | trim

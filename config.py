@@ -28,7 +28,6 @@ class Config:
         # "dblp - Publications": {
         #     "module": "dblp_publications", 
         #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-
         # }, 
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
         # "dblp-Researchers": { 
@@ -50,6 +49,7 @@ class Config:
         "ZENODO": {
             "module": "zenodo", 
             "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            "get-publication-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
             "module": "wikidata_publications", 
@@ -63,22 +63,24 @@ class Config:
         #     "module": "resodate", 
         #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        "OERSI": {
-            "module": "oersi", 
-            "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
+        # "OERSI": {
+        #     "module": "oersi", 
+        #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
         "IEEE": {
             "module": "ieee", 
             "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+            "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
         },
-        "EUDAT": {
-            "module": "eudat", 
-            "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
-            "record-base-url": f"https://b2share.eudat.eu/records/"
-        },
+        # "EUDAT": {
+        #     "module": "eudat", 
+        #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
+        #     "record-base-url": f"https://b2share.eudat.eu/records/",
+        # },
         "OPENAIRE - Products": {
             "module": "openaire_products", 
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
+            "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
         },
         "OPENAIRE - Projects": {
             "module": "openaire_projects", 
@@ -92,14 +94,14 @@ class Config:
             "module": "gesis", 
             "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        "CORDIS": {
-            "module": "cordis", 
-            "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
-        },
-        "ORKG": {
-            "module": "orkg", 
-            "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
+        # "CORDIS": {
+        #     "module": "cordis", 
+        #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
+        # },
+        # "ORKG": {
+        #     "module": "orkg", 
+        #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
         # "gepris": {
         #     "module": "gepris", 
         #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
@@ -120,7 +122,7 @@ class Config:
         "SEMANTIC SCHOLAR - Researchers": {
             "module": "semanticscholar_researchers", 
             # "search-endpoint": f"",
-            # "get-researcher-endpoint": "https://api.semanticscholar.org/graph/v1/author/",            
+            # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",            
         },
         "RE3DATA": {
             "module": "re3data",
