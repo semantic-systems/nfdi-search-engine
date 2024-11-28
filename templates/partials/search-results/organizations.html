@@ -66,7 +66,7 @@
             {% with share_modal_id='share-other-'+organization.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-other-'+organization.identifier | regex_replace ('\W',''),
             download_modal_id='download-other-'+organization.identifier | regex_replace ('\W',''),
-            url = url_for('digital_obj_details', identifier_with_type=(organization | format_digital_obj_url('doi')),
+            url = url_for('digital_obj_details', identifier_with_type=(organization | format_digital_obj_url('doi','source-id')),
             _external=True),
             img_src = organization.image,
             encoding_contentUrl = organization.encoding_contentUrl,

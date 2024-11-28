@@ -55,7 +55,8 @@
 
         {% include 'includes/footer.html' %}
 
-
+        <a id="back-to-top" href="#" class="btn btn-secondary px-3 py-2 back-to-top" role="button"><i
+                class="bi bi-chevron-up"></i></a>
 
     </div>
 
@@ -101,7 +102,25 @@
                 });
             })
             .catch(error => console.error(error))
+
+        $(document).ready(function () {
+            $(window).scroll(function () {
+                if ($(this).scrollTop() > 50) {
+                    $('#back-to-top').fadeIn();
+                } else {
+                    $('#back-to-top').fadeOut();
+                }
+            });
+            // scroll body to 0px on click
+            $('#back-to-top').click(function () {
+                $('body,html').animate({
+                    scrollTop: 0
+                }, 200);
+                return false;
+            });
+        });
     </script>
+
 
     {% block javascripts %}{% endblock javascripts %}
 </body>

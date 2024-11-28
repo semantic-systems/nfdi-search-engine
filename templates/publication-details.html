@@ -19,18 +19,18 @@
             </div>
         </div>
         <div class="row border-bottom pb-4">
-            <div class="col-7 text-start">
+            <div class="col-9 text-start">
                 <h3>{{publication.name}}</h3>
                 <div class="py-2">
                     {% for keyword in publication.keywords %}
-                    <span class="badge bg-pill">{{keyword}}</span>
+                    <span class="badge bg-pill bg-secondary">{{keyword}}</span>
                     {% endfor %}
                 </div>
                 <div class="fs-7 py-2">
-                    <span class="pe-4">
+                    <!-- <span class="pe-4">
                         <span class="fw-bold">Version:</span>
                         <span>-</span>
-                    </span>
+                    </span> -->
                     <span class="pe-4">
                         <span class="fw-bold">DOI:</span>
                         <span id="publication_doi">{{publication.identifier}}</span>
@@ -41,8 +41,8 @@
                     </span>
                 </div>
             </div>
-            <div class="col-5 d-flex justify-content-end">
-                <div class="summary-block p-2 ms-3">
+            <div class="col-3 d-flex justify-content-end">
+                <!-- <div class="summary-block p-2 ms-3">
                     <i class="bi bi-download fs-4"></i>
                     <div class="fs-7 my-1">Downloads</div>
                     <div class="fs-5 fw-bold">---</div>
@@ -61,7 +61,7 @@
                     <i class="bi bi-eye fs-4"></i>
                     <div class="fs-7 my-1">Views</div>
                     <div class="fs-5 fw-bold">---</div>
-                </div>
+                </div> -->
             </div>
             <!-- <div class="row border-bottom mt-4"></div> -->
         </div>
@@ -78,14 +78,14 @@
                     </div>
                 </div>
                 <div class="d-flex p-2 pt-4 bd-highlight">
-                    <h5>AUTHORS ({{publication.author|length}})</h5>
+                    <span class="fw-bold fs-6">AUTHORS ({{publication.author|length}})</span>
                 </div>
                 <div class="authors-block authors">
                     {% for author in publication.author %}
                     <div class="d-flex p-2 bd-highlight">
-                        <a href="#" class="btn btn-outline-dark text-dark rounded-pill border-1" tabindex="-1"
-                            role="button" aria-disabled="true"><i
-                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name|truncate(10)}}
+                        <a class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7" tabindex="-1"
+                            role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>{{author.name |
+                            truncate(20,True,'...',0) }}
                         </a>
                     </div>
                     {% endfor %}
@@ -93,16 +93,14 @@
             </div>
             <div class="col-6 px-4">
                 <div class="d-flex p-2 bd-highlight" id="abstract">
-                    <h5>ABSTRACT <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from OpenAlex"></i></h5>
+                    <span class="fw-bold fs-6">ABSTRACT</span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     {{publication.abstract}}
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4" id="supplemental-material">
-                    <h5>SUPPLEMENTAL MATERIAL <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from xxx"></i></h5>
+                    <span class="fw-bold fs-6">SUPPLEMENTAL MATERIAL</span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="fw-lighter fst-italic">
@@ -132,16 +130,17 @@
                     </div>
                 </div> -->
                 <div class="d-flex p-2 bd-highlight pt-4" id="references">
-                    <h5>REFERENCES ({{publication.referenceCount}}) <i class="bi bi-info-circle-fill text-secondary"
-                            data-bs-toggle="tooltip" data-bs-placement="top" title="Retrieved from CrossRef"></i></h5>
+                    <span class="fw-bold fs-6">REFERENCES ({{publication.referenceCount}}) <i
+                            class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from CrossRef"></i></span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
                 </div>
                 <div class="d-flex p-2 bd-highlight pt-4" id="cited-by">
-                    <h5>CITATIONS ({{publication.citationCount}}) <i class="bi bi-info-circle-fill text-secondary"
-                            data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Retrieved from Semantic Scholar"></i></h5>
+                    <span class="fw-bold fs-6">CITATIONS ({{publication.citationCount}}) <i
+                            class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-citations">Load</button>
@@ -161,17 +160,40 @@
                     </div>
                 </div> -->
             </div>
+
             <div class="col-3 ps-5">
                 <div class="d-flex p-2 bd-highlight">
-                    <h5>RECOMMENDATIONS <i class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></h5>
+                    <span class="fw-bold fs-6">EXTERNAL LINKS</span>
+                </div>
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
+                    {% for source in publication.source %}
+                    <a id="source_link" href="{{source.url}}" target=_blank class="mb-2">
+                        <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
+                                class="pull-right bi bi-box-arrow-up-right"></i></span>
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <div class="d-flex p-2 bd-highlight pt-4">
+                    <span class="fw-bold fs-6">PlumX Metrics</span>
+                </div>
+                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
+                    <div class="fw-lighter fst-italic" id="plumx-metrics">
+
+                    </div>
+                </div>
+
+                <div class="d-flex p-2 bd-highlight pt-4">
+                    <span class="fw-bold fs-6">RECOMMENDATIONS <i class="bi bi-info-circle-fill text-secondary"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Retrieved from Semantic Scholar"></i></span>
                 </div>
                 <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="recommendations_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-recommendations">Load</button>
                 </div>
 
                 <div class=" d-flex p-2 bd-highlight pt-4">
-                    <h5>FAIR Assessment</h5>
+                    <span class="fw-bold fs-6">FAIR ASSESSMENT</span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="fw-lighter fst-italic">
@@ -182,7 +204,7 @@
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4">
-                    <h5>Jupyter Lab</h5>
+                    <span class="fw-bold fs-6">JUPYTER LAB</span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="fw-lighter fst-italic">
@@ -208,8 +230,10 @@
 {% block javascripts %}
 
 <script>
-
     $(document).ready(function () {
+
+        $('#plumx-metrics').html("<a href='https://plu.mx/plum/a/?doi={{publication.identifier}}' target='_blank' class='plumx-summary' data-orientation='vertical'>{{publication.name}}&nbsp;<i class='pull-right bi bi-box-arrow-up-right'></i></a>")
+        window.__plumX.widgets.init();
 
         var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
         var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
@@ -306,10 +330,8 @@
         });
 
     });
-
-
-
 </script>
+
 
 
 {% endblock javascripts %}

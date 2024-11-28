@@ -140,7 +140,8 @@ def parse_date_range_for_elastic(start_date, end_date):
 #     return sorted(results, key=custom_sort_key, reverse=True)
 
 from rank_bm25 import BM25Plus
-def sort_search_results(search_term, search_results):
+def sort_search_results(search_term, search_results):    
+
     tokenized_results = [str(result).lower().split(" ") for result in search_results]
     if len(tokenized_results) > 0:
         bm25 = BM25Plus(tokenized_results)
@@ -376,7 +377,7 @@ def update_visitor_id(visitor_id:str):
                                 } 
                             })                            
     result_rec_count = int(result["hits"]["total"]["value"])  
-    print(f"user_activity_log - {result_rec_count=}")     
+    # print(f"user_activity_log - {result_rec_count=}")     
     if result_rec_count > 0:
         hits = result["hits"]["hits"]
         for hit in hits:
@@ -398,7 +399,7 @@ def update_visitor_id(visitor_id:str):
                                 } 
                             })                            
     result_rec_count = int(result["hits"]["total"]["value"])  
-    print(f"search_term_log - {result_rec_count=}")     
+    # print(f"search_term_log - {result_rec_count=}")     
     if result_rec_count > 0:
         hits = result["hits"]["hits"]
         for hit in hits:
@@ -420,7 +421,7 @@ def update_visitor_id(visitor_id:str):
                                 } 
                             })   
     result_rec_count = int(result["hits"]["total"]["value"])  
-    print(f"user_agent_log - {result_rec_count=}")          
+    # print(f"user_agent_log - {result_rec_count=}")          
     if result_rec_count > 0:
         hits = result["hits"]["hits"]
         for hit in hits:

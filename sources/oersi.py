@@ -20,7 +20,7 @@ def search(source: str, search_term: str, results, failed_sources):
             publication = Article()                  
             publication.name = hit_source.get("name", "")             
             publication.url = hit_source.get("id", "")  
-            publication.identifier = hit_source.get("id", "").replace("https://doi.org/","") 
+            # publication.identifier = hit_source.get("id", "").replace("https://doi.org/","") 
             publication.datePublished = hit_source.get("datePublished", "") 
             publication.license = hit_source.get("license", {}).get("id", "")
             
@@ -65,4 +65,7 @@ def search(source: str, search_term: str, results, failed_sources):
                     publication.encoding_contentUrl = encoding.get("contentUrl", "")
                     publication.encodingFormat = encoding.get("encodingFormat", "")                
 
-            results['publications'].append(publication) 
+            if publication.identifier != "":
+                results['publications'].append(publication)
+            else:
+                results['others'].append(publication)
