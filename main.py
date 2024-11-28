@@ -29,10 +29,6 @@ app = Flask(__name__)
 app.config.from_object(Config)
 Session(app)
 
-app.config.update(dict(
-  PREFERRED_URL_SCHEME = os.environ.get('PREFERRED_URL_SCHEME', 'https')
-))
-
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'
 
@@ -270,7 +266,7 @@ def oauth2_authorize(provider):
     qs = urlencode({
         'client_id': provider_data['client_id'],
         'redirect_uri': url_for('oauth2_callback', provider=provider,
-                                _external=True),
+                                _external=True, _scheme=os.environ.get('PREFERRED_URL_SCHEME', 'https')),
         'response_type': 'code',
         'scope': ' '.join(provider_data['scopes']),
         'state': session['oauth2_state'],
@@ -311,7 +307,7 @@ def oauth2_callback(provider):
         'code': request.args['code'],
         'grant_type': 'authorization_code',
         'redirect_uri': url_for('oauth2_callback', provider=provider,
-                                _external=True),
+                                _external=True, _scheme=os.environ.get('PREFERRED_URL_SCHEME', 'https')),
     }, headers={'Accept': 'application/json'})
     if response.status_code != 200:
         abort(401)
