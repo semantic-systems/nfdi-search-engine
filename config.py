@@ -14,7 +14,7 @@ class Config:
     IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
-    REQUEST_TIMEOUT = 5
+    REQUEST_TIMEOUT = 500
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
@@ -34,95 +34,99 @@ class Config:
         #    "module": "dblp_researchers", 
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
+        "GESIS KG - Publications": {
+            "module": "gesis_kg",
+            "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
+        },
         "OPENALEX - Publications": {
-            "module": "openalex_publications", 
+            "module": "openalex_publications",
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-publication-endpoint": "https://api.openalex.org/works/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "OPENALEX - Researchers": {
-            "module": "openalex_researchers", 
+            "module": "openalex_researchers",
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-researcher-endpoint": "https://api.openalex.org/authors/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "ZENODO": {
-            "module": "zenodo", 
+            "module": "zenodo",
             "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
             "get-publication-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
-            "module": "wikidata_publications", 
+            "module": "wikidata_publications",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
         "WIKIDATA - Researchers": {
-            "module": "wikidata_researchers", 
+            "module": "wikidata_researchers",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
         # "resodate": {
-        #     "module": "resodate", 
+        #     "module": "resodate",
         #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         # "OERSI": {
-        #     "module": "oersi", 
+        #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         "IEEE": {
-            "module": "ieee", 
+            "module": "ieee",
             "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
             "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
         },
         # "EUDAT": {
-        #     "module": "eudat", 
+        #     "module": "eudat",
         #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
         #     "record-base-url": f"https://b2share.eudat.eu/records/",
         # },
         "OPENAIRE - Products": {
-            "module": "openaire_products", 
+            "module": "openaire_products",
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
             "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
         },
         "OPENAIRE - Projects": {
-            "module": "openaire_projects", 
+            "module": "openaire_projects",
             "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
         },
         "ORCID": {
-            "module": "orcid", 
+            "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
         "GESIS": {
-            "module": "gesis", 
+            "module": "gesis",
             "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
         # "CORDIS": {
-        #     "module": "cordis", 
+        #     "module": "cordis",
         #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
         # },
         # "ORKG": {
-        #     "module": "orkg", 
+        #     "module": "orkg",
         #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         # "gepris": {
-        #     "module": "gepris", 
+        #     "module": "gepris",
         #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         # },
         "CROSSREF - Publications": {
-            "module": "crossref_publications", 
+            "module": "crossref_publications",
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
             "get-publication-endpoint": "https://api.crossref.org/works/",
             "get-publication-references-endpoint": "https://api.crossref.org/works/",
         },
         "SEMANTIC SCHOLAR - Publications": {
-            "module": "semanticscholar_publications", 
+            "module": "semanticscholar_publications",
             # "search-endpoint": f"",
             # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
             "citations-endpoint": f"https://api.semanticscholar.org/graph/v1/paper/",
             "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
         },
         "SEMANTIC SCHOLAR - Researchers": {
-            "module": "semanticscholar_researchers", 
+            "module": "semanticscholar_researchers",
             # "search-endpoint": f"",
-            # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",            
+            # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",
         },
         "RE3DATA": {
             "module": "re3data",
