@@ -35,7 +35,7 @@ class Config:
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         "GESIS KG - Publications": {
-            "module": "gesis_kg",
+            "module": "gesis_kg_publication",
             "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
         },
         "OPENALEX - Publications": {
