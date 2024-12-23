@@ -11,7 +11,7 @@ def search(source: str, search_term: str, results, failed_sources):
                             PREFIX schema:<https://schema.org/>
                             PREFIX rdfs:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
                             
-                            SELECT ?publication ?title ?abstract
+                            SELECT ?publication ?title ?doi ?abstract
                                     (GROUP_CONCAT(DISTINCT ?linksURN; SEPARATOR=", ") AS ?linksURNs) 
                                     (GROUP_CONCAT(DISTINCT ?url; SEPARATOR=", ") AS ?urls)
                                     (GROUP_CONCAT(DISTINCT ?datePub; SEPARATOR=", ") AS ?datePublished)
@@ -24,6 +24,7 @@ def search(source: str, search_term: str, results, failed_sources):
                                 ?publication rdfs:type schema:ScholarlyArticle .
                                 ?publication schema:name ?title . FILTER(CONTAINS(?title, "$search_string"))
                                 
+                                OPTIONAL { ?publication <https://data.gesis.org/gesiskg/schema/doi> ?doi . }
                                 OPTIONAL { ?publication schema:abstract ?abstract . }
                                 OPTIONAL { ?publication <https://data.gesis.org/gesiskg/schema/linksURN> ?linksURN . }
                                 OPTIONAL { ?publication schema:url ?url . }
@@ -36,7 +37,7 @@ def search(source: str, search_term: str, results, failed_sources):
                                 OPTIONAL { ?publication schema:author ?author .
                                            ?author schema:name ?author_name . }
                             }
-                            GROUP BY ?publication ?title ?abstract
+                            GROUP BY ?publication ?title ?doi ?abstract
                             LIMIT $number_of_records
                             ''')
 
@@ -57,19 +58,18 @@ def search(source: str, search_term: str, results, failed_sources):
     if int(total_hits) > 0:
         for hit in hits:
             publication = Article()
-            publication.identifier = hit.get("publication", {}).get("value", "")
+            publication.identifier = hit.get("doi", {}).get("value", "")
             publication.name = hit.get("title", {}).get("value", "")
             publication.url =  hit.get("urls", {}).get("value", "").strip() #hit.get("urls", {}).get("value", "")
 
             #publication.identifier = hit.get("linksURNs", {}).get("value", "")  # DOI is available for few; we need to update the sparql query to fetch this information
-
+            publication.description = hit.get("abstract", {}).get("value", "")
             publication.datePublished = hit.get('datePublished', {}).get('value', "")
             languages = hit.get("languages", {}).get("value", "")
             if languages:
                 for language in languages.strip().split(" "):
                     publication.inLanguage.append(language)
             #publication.sourceOrganization = hit.get("providers", {}).get("value", "")
-            publication.abstract = hit.get("abstract", {}).get("value", "")
             publication.publisher = hit.get("sourceInfos", {}).get("value", "")
 
             authors = hit.get("authors", {}).get("value", "")
@@ -91,7 +91,7 @@ def search(source: str, search_term: str, results, failed_sources):
             _source.url = publication.url #hit['urls'].get('value', "").strip()
             publication.source.append(_source)
 
-            # if publication.identifier != "":
-            #     results['publications'].append(publication)
-            # else:
-            results['others'].append(publication)
+            if publication.identifier != "":
+                results['publications'].append(publication)
+            else:
+                results['others'].append(publication)
