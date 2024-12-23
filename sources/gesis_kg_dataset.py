@@ -1,4 +1,4 @@
-from objects import thing, Article, Author
+from objects import thing, Article, Author, Dataset
 from sources import data_retriever
 import utils
 from main import app
@@ -11,33 +11,43 @@ def search(source: str, search_term: str, results, failed_sources):
                             PREFIX schema:<https://schema.org/>
                             PREFIX rdfs:<http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 
-                            SELECT ?publication ?title ?doi ?abstract
-                                    (GROUP_CONCAT(DISTINCT ?linksURN; SEPARATOR=", ") AS ?linksURNs) 
-                                    (GROUP_CONCAT(DISTINCT ?url; SEPARATOR=", ") AS ?urls)
-                                    (GROUP_CONCAT(DISTINCT ?datePub; SEPARATOR=", ") AS ?datePublished)
+                            SELECT ?dataset ?title ?doi ?datePublished ?license ?version ?publisher ?dateModified ?dateCreated
                                     (GROUP_CONCAT(DISTINCT ?contributor_name; SEPARATOR="; ") AS ?contributors)
                                     (GROUP_CONCAT(DISTINCT ?author_name; SEPARATOR="; ") AS ?authors)
-                                    (GROUP_CONCAT(DISTINCT ?provider; SEPARATOR=", ") AS ?providers)
-                                    (GROUP_CONCAT(DISTINCT ?inLanguage; SEPARATOR=", ") AS ?languages)
-                                    (GROUP_CONCAT(DISTINCT ?sourceInfo; SEPARATOR=", ") AS ?sourceInfos)
+                                    (GROUP_CONCAT(DISTINCT ?provider; SEPARATOR="\n ") AS ?providers)
+                                    (GROUP_CONCAT(DISTINCT ?inLanguage; SEPARATOR="; ") AS ?languages)
+                                    (GROUP_CONCAT(DISTINCT ?sourceInfo; SEPARATOR="\n ") AS ?sourceInfos)
+                                    (GROUP_CONCAT(DISTINCT ?category; SEPARATOR="; ") AS ?categories)
+                                    (GROUP_CONCAT(DISTINCT ?abstract; SEPARATOR="\n ") AS ?abstracts) 
+                                    (GROUP_CONCAT(DISTINCT ?comment; SEPARATOR="\n ") AS ?comments) 
+                                    (GROUP_CONCAT(DISTINCT ?conditionsOfAccess; SEPARATOR="\n ") AS ?conditionsOfAccesses)
+                                    (GROUP_CONCAT(DISTINCT ?spatialCoverage_name; SEPARATOR="\n ") AS ?spatialCoverages)
                             WHERE {
-                                ?publication rdfs:type schema:ScholarlyArticle .
-                                ?publication schema:name ?title . FILTER(CONTAINS(?title, "$search_string"))
+                                ?dataset rdfs:type schema:Dataset .
+                                ?dataset schema:name ?title . FILTER(CONTAINS(?title, "$search_string"))
 
-                                OPTIONAL { ?publication <https://data.gesis.org/gesiskg/schema/doi> ?doi . }
-                                OPTIONAL { ?publication schema:abstract ?abstract . }
-                                OPTIONAL { ?publication <https://data.gesis.org/gesiskg/schema/linksURN> ?linksURN . }
-                                OPTIONAL { ?publication schema:url ?url . }
-                                OPTIONAL { ?publication schema:datePublished ?datePub . }
-                                OPTIONAL { ?publication schema:provider ?provider . }
-                                OPTIONAL { ?publication schema:inLanguage ?inLanguage . }
-                                OPTIONAL { ?publication <https://data.gesis.org/gesiskg/schema/sourceInfo> ?sourceInfo . }
-                                OPTIONAL { ?publication schema:contributor ?contributor . 
+                                OPTIONAL { ?dataset <https://data.gesis.org/gesiskg/schema/doi> ?doi . }
+                                OPTIONAL { ?dataset schema:abstract ?abstract . }
+                                OPTIONAL { ?dataset schema:datePublished ?datePublished . }
+                                OPTIONAL { ?dataset schema:provider ?provider . }
+                                OPTIONAL { ?dataset schema:publisher ?publisher . }
+                                OPTIONAL { ?dataset schema:inLanguage ?inLanguage . }
+                                OPTIONAL { ?dataset schema:version ?version . }
+                                OPTIONAL { ?dataset <https://data.gesis.org/gesiskg/schema/category> ?category . }
+                                OPTIONAL { ?dataset <https://data.gesis.org/gesiskg/schema/sourceInfo> ?sourceInfo . }
+                                OPTIONAL { ?dataset <https://data.gesis.org/gesiskg/schema/license> ?license . }
+                                OPTIONAL { ?dataset schema:comment ?comment . }
+                                OPTIONAL { ?dataset schema:conditionsOfAccess ?conditionsOfAccess . }
+                                OPTIONAL { ?dataset schema:dateModified ?dateModified .}
+                                OPTIONAL { ?dataset schema:dateCreated ?dateCreated .}
+                                OPTIONAL { ?dataset schema:spatialCoverage ?spatialCoverage .
+                                            ?spatialCoverage schema:name ?spatialCoverage_name .}
+                                OPTIONAL { ?dataset schema:contributor ?contributor . 
                                             ?contributor schema:name ?contributor_name .}
-                                OPTIONAL { ?publication schema:author ?author .
+                                OPTIONAL { ?dataset schema:author ?author .
                                            ?author schema:name ?author_name . }
                             }
-                            GROUP BY ?publication ?title ?doi ?abstract
+                            GROUP BY ?dataset ?title ?doi ?datePublished ?license ?version ?publisher ?dateModified ?dateCreated
                             LIMIT $number_of_records
                             ''')
 
@@ -58,27 +68,26 @@ def search(source: str, search_term: str, results, failed_sources):
     print(str(total_hits) + "from GESIS KG")
     if int(total_hits) > 0:
         for hit in hits:
-            publication = Article()
-            doi = hit.get("doi", {}).get("value", "")
-            print(doi)
-            if doi:
-                publication.identifier = "https://doi.org/" + doi
-            else:
-                publication.identifier = hit.get("publication", {}).get("value", "")
-            print(publication.identifier)
-            publication.name = hit.get("title", {}).get("value", "")
-            publication.url = hit.get("urls", {}).get("value", "").strip()  # hit.get("urls", {}).get("value", "")
+            dataset = Dataset()
+            dataset.additionalType = "DATASET"
+            dataset.identifier = hit.get("doi", {}).get("value", "")
+            dataset.name = hit.get("title", {}).get("value", "")
+            dataset.url = hit.get("dataset", {}).get("value", "").strip()
 
-            # publication.identifier = hit.get("linksURNs", {}).get("value", "")  # DOI is available for few; we need to update the sparql query to fetch this information
+            dataset.datePublished = hit.get('datePublished', {}).get('value', "")
+            dataset.dateCreated = hit.get('dateCreated', {}).get('value', "")
+            dataset.dateModified = hit.get('dateModified', {}).get('value', "")
+            dataset.version = hit.get('version', {}).get('value', "")
+            dataset.license = hit.get('license', {}).get('value', "")
+            dataset.publisher = hit.get('publisher', {}).get('value', "")
 
-            publication.datePublished = hit.get('datePublished', {}).get('value', "")
             languages = hit.get("languages", {}).get("value", "")
             if languages:
                 for language in languages.strip().split(" "):
-                    publication.inLanguage.append(language)
-            # publication.sourceOrganization = hit.get("providers", {}).get("value", "")
-            publication.description = hit.get("abstract", {}).get("value", "")
-            publication.publication = hit.get("sourceInfos", {}).get("value", "")
+                    dataset.inLanguage.append(language)
+            # dataset.sourceOrganization = hit.get("providers", {}).get("value", "")
+            dataset.description = hit.get("abstract", {}).get("value", "")
+            dataset.publication = hit.get("sourceInfos", {}).get("value", "")
 
             authors = hit.get("authors", {}).get("value", "")
             contributors = hit.get("contributors", {}).get("value", "")
@@ -90,16 +99,13 @@ def search(source: str, search_term: str, results, failed_sources):
                 _author.type = 'Person'
                 _author.name = authorsName
                 _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
-                publication.author.append(_author)
+                dataset.author.append(_author)
 
             _source = thing()
-            _source.name = 'GESIS KG'
-            _source.originalSource = publication.publisher
-            _source.identifier = publication.identifier  # hit['publication'].get('value', "") #.replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
-            _source.url = publication.url  # hit['urls'].get('value', "").strip()
-            publication.source.append(_source)
+            _source.name = 'GESIS KG - Dataset'
+            _source.originalSource = dataset.publisher
+            _source.identifier = dataset.identifier
+            _source.url = dataset.url
+            dataset.source.append(_source)
 
-            # if publication.identifier != "":
-            #     results['publications'].append(publication)
-            # else:
-            results['others'].append(publication)
+            results['resources'].append(dataset)
