@@ -14,7 +14,7 @@ class Config:
     IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
-    REQUEST_TIMEOUT = 500
+    REQUEST_TIMEOUT = 100
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
