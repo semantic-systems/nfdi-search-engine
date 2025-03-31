@@ -31,7 +31,7 @@ def search(source: str, search_term: str, results, failed_sources):
             else:
                 results['others'].append(digitalObj)   
 
-@utils.handle_exceptions
+# @utils.handle_exceptions
 def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Dataset, SoftwareApplication]:
     metadata = hit.get('metadata', {}).get("oaf:entity", {})
     resource_type = metadata.get('oaf:result', {}).get('resulttype', {}).get("@classname", "OTHER").upper()
