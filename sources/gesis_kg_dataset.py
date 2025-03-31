@@ -87,7 +87,7 @@ def search(source: str, search_term: str, results, failed_sources):
                     dataset.inLanguage.append(language)
             # dataset.sourceOrganization = hit.get("providers", {}).get("value", "")
             dataset.description = hit.get("abstract", {}).get("value", "")
-            dataset.publication = hit.get("sourceInfos", {}).get("value", "")
+            # dataset.publication = hit.get("sourceInfos", {}).get("value", "")
 
             authors = hit.get("authors", {}).get("value", "")
             contributors = hit.get("contributors", {}).get("value", "")
