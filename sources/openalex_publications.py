@@ -28,7 +28,7 @@ def process_search_results(source: str, results, search_result):
                 results['others'].append(digitalObj) 
 
 
-@utils.handle_exceptions
+# @utils.handle_exceptions
 def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork]:
     resource_type = hit.get("type", "")
     if resource_type.upper() in ('ARTICLE', 'PREPRINT'):

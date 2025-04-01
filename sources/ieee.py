@@ -26,7 +26,7 @@ def search(source: str, search_term: str, results, failed_sources):
             results['publications'].append(digitalObj)   
 
 
-@utils.handle_exceptions
+# @utils.handle_exceptions
 def map_digital_obj(source: str, hit: dict) -> Article:
     publication = Article()   
     publication.name = hit.get("title", "")             
