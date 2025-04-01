@@ -49,9 +49,15 @@ def search(source: str, search_term: str, results, failed_sources):
 
         digital_obj.originalSource = hit['_source'].get('setUrl', '')  
 
+        
         id = hit['_id']
         id = id.replace('.', '-')
         url = f"https://search.gesis.org/research_data/datasearch-{id}"
+
+        if len(identifier_list) > 1:
+            gesis_identifier = identifier_list[1].replace('ZA-No.: ','')
+            url = f"https://search.gesis.org/research_data/{gesis_identifier}"
+
         digital_obj.url=url
 
         _source = thing()

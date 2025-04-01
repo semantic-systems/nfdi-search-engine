@@ -692,12 +692,17 @@ def get_user_by_id(user):
         return None
 
 def get_user_by_email(user):
-    result = es_client.search(index=ES_Index.users.name, query={"match": {"email": {"query": user.email}}})
+    query={
+        "term": {
+            "email.keyword": user.email
+        }
+    }
+    result = es_client.search(index=ES_Index.users.name, query=query)
     result_rec_count = int(result["hits"]["total"]["value"])
     if result_rec_count == 1:
         hit = result["hits"]["hits"][0]
         user.id = hit['_id']
-        user.first_name = hit["_source"].get('first_name','')
+        user.first_name = hit["_source"].get('first_name.keyword','')
         user.last_name = hit["_source"].get('last_name','')
         user.email = hit["_source"].get('email','')
         user.password_hash = hit["_source"].get('password_hash','')
