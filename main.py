@@ -16,12 +16,10 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, curren
 from flask_session import Session
 
 from config import Config
-# from sources import crossref_publications, semanticscholar
 from chatbot import chatbot
 
 from sources.gepris import org_details
 import utils
-import deduplicator
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -401,8 +399,17 @@ def preferences():
 @app.route('/')
 @utils.set_cookies
 def index():  
-    response = make_response(render_template('index.html'))  
-    return response
+
+    sources = []
+    for module in app.config['DATA_SOURCES']:
+        sources.append(app.config['DATA_SOURCES'][module].get('logo',{}))
+    #remove duplicates
+    sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
+    template_response = render_template('index.html', sources=sources) 
+    return template_response
+
+    # response = make_response(render_template('index.html'))  
+    # return response
 
 @app.route('/update-visitor-id', methods=['GET'])
 @utils.timeit
@@ -466,9 +473,6 @@ def search_results():
 
         if len(failed_sources) > 0:
             flash(f"Following sources could not be harvested: { ', '.join(failed_sources)}", category='error')
-
-        # deduplicator.convert_publications_to_csv(results["publications"])
-        # results["publications"] = deduplicator.perform_entity_resolution_publications(results["publications"])
 
         # sort all the results in each category
         threads = [] 

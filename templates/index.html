@@ -53,75 +53,22 @@
                 <div class="lc-block">
                     <div id="carouselLogosSources" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
                         <div class="carousel-inner px-5" style="height: 6vw;">
-                            <div class="carousel-item active">
+                            {% set source_idx = namespace(value=0) %}
+                            {% for source in sources %}
+                            {% if source_idx.value % 5 == 0 %}
+                            <div class="carousel-item {% if source_idx.value == 0 %}active{% endif %}">
                                 <div class="row">
+                                    {% endif %}
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/DBLP_Logo_320x120.png') }}"
-                                            alt="DBLP">
+                                        <img class="d-block {{source.width}} {{source.height}} mx-auto px-3"
+                                            src="{{ url_for('static', filename='images/sources/'+source.src) }}" alt="">
                                     </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto"
-                                            src="{{ url_for('static', filename='images/sources/OpenAlex-logo.png') }}"
-                                            alt="OPENALEX">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/orcid.logo.svg') }}"
-                                            alt="ORCID">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/Wikidata-logo.png') }}"
-                                            alt="WIKIDATA">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto"
-                                            src="{{ url_for('static', filename='images/sources/zenodo-logo.png') }}"
-                                            alt="ZENODO">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/DataCite-Logo.png') }}"
-                                            alt="DATACITE">
-                                    </div>
+                                    {% if source_idx.value % 5 == 4 %}
                                 </div>
                             </div>
-                            <div class="carousel-item">
-                                <div class="row">
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 h-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/GEPRIS_Logo.png') }}"
-                                            alt="GEPRIS">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block h-70 w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/GESIS-Logo.svg') }}"
-                                            alt="GESIS">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block h-100 w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/oersi-logo.svg') }}"
-                                            alt="OERSI">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block h-70 w-70 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/resodate-logo.png') }}"
-                                            alt="RESODATE">
-                                        <!-- <div class="float-start" style="font-size: 2vw;">RESODATE</div> -->
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block h-100 w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/ieee.gif') }}"
-                                            alt="IEEE">
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mx-auto px-3"
-                                            src="{{ url_for('static', filename='images/sources/elg-logo.svg') }}"
-                                            alt="European Language Grid">
-                                    </div>
-                                </div>
-                            </div>
+                            {% endif %}
+                            {% set source_idx.value = source_idx.value + 1 %}
+                            {% endfor %}
                         </div>
                         <!--
                         <ol class="carousel-indicators position-relative mt-3">
