@@ -1003,8 +1003,8 @@ def generate_researcher_banner(researcher_details_json):
 # @utils.handle_exceptions
 def merge_objects(object_list, object_type):
     """
-    This function revieces a list of objects defined in objects.py, and returns a new object with the merged values of the publications.
-    The preference order for merging is defined in config.py.
+    This function revieces a list of objects defined in objects.py, and returns a new object with the merged values of the objects in object_list.
+    The preference order for merging is defined under MAPPING_PREFERENCE in config.py.
     """
 
     # the new object we create will have the type of the object in object_list which is furthest down in the inheritance hierarchy
@@ -1016,11 +1016,6 @@ def merge_objects(object_list, object_type):
     # sort object_list by mapping preference
     mapping_pref = app.config['MAPPING_PREFERENCE'].get(object_type, {})
 
-    # get the preference list from the config for a specific field
-    # if the field is not found, returns the __defaut__ list
-    def get_field_preference(field_name):
-        return mapping_pref.get(field_name, mapping_pref.get("__default__", []))
-
     # this function returns the index of the source in the preference list for the field
     # it returns float('inf') if the source is not in the preference list
     def get_preference_index(obj, field_name):
@@ -1031,9 +1026,12 @@ def merge_objects(object_list, object_type):
         source_name = getattr(source, 'name', None) if source else None
 
         # get the preference order for the field
-        pref_list = get_field_preference(field_name)
+        pref_list = mapping_pref.get(field_name, mapping_pref.get("__default__", []))
 
         return pref_list.index(source_name) if source_name in pref_list else float('inf')
+
+    # collect all sources that will be used in the merged object
+    sources = set()
 
     # iterate through the sorted objects and choose the first non-empty value for each field in the merged object
     for field in fields(merged_object):
@@ -1048,7 +1046,15 @@ def merge_objects(object_list, object_type):
 
             if val not in (None, "", [], {}):   # check if the value is empty or a placeholder
                 setattr(merged_object, field.name, val)
+
+                # add all sources to the merged object
+                source_list = set(getattr(obj, 'source', []))
+                sources.update(source_list)
+
                 break
+
+    # add the sources to the merged object
+    merged_object.source = list(sources)
 
     return merged_object
 
