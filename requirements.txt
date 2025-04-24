@@ -2,20 +2,11 @@ flask==3.1.0
 Flask-Login==0.6.3
 Flask-Session==0.8.0
 flask-wtf==1.2.2
-# extruct~=0.14.0 #I don't think this is being used
-# rdflib~=6.2.0 #required by extruct
-# diophila~=0.4.0 #I don't think this is being used
 requests==2.32.3
-# Wikipedia>=1.4.0 #I don't think this is being used
-beautifulsoup4==4.13.4 # latest 4.13.4
-# numpy==1.26.3 # required by pandas
-pandas==2.2.3 #latest 2.2.3
-# pydantic == 1.* # can be updated to V2 when package "elg" is compatible
-elg==0.6.0 # not compatible with pydantic V2 #latest 0.6.0
+beautifulsoup4==4.13.4 
+pandas==2.2.3 
+elg==0.6.0 
 gunicorn==23.0.0
-# PyYAML~=6.0
-# pylbfgs @ git+https://github.com/fzimmermann89/pylbfgs.git@fzimmermann89-cython
-# dedupe>=2.0.23
 xmltodict==0.14.2
 dateparser==1.2.1
 rank_bm25==0.2.2
@@ -23,5 +14,3 @@ python-dotenv==1.1.0
 openai==1.75.0
 elasticsearch==8.14.0
 ua_parser==1.0.1
-# google-re2==1.1.20240702
-# email-validator==2.2.0
