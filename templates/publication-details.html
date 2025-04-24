@@ -82,13 +82,43 @@
                 </div>
                 <div class="authors-block authors">
                     {% for author in publication.author %}
-                    <div class="d-flex p-2 bd-highlight">
-                        <a class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7" tabindex="-1"
-                            role="button" aria-disabled="true"><i class="ps-1 pe-1 bi-person-circle"></i>{{author.name |
-                            truncate(20,True,'...',0) }}
-                        </a>
-                    </div>
+                        <div class="d-flex p-2 bd-highlight">
+                            {% if author.type == 'Person' %}
+                                {% if author.identifier %}
+                                    {% set orcid_id = author.identifier.split('/')[-1] %}
+                                    {% if author.source and author.source[0].identifier %}
+                                        {% set source_id = author.source[0].identifier.split('/')[-1] %}
+                                        <!-- We have the ORCID and the source identifier -->
+                                        <a class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                        href="{{ url_for('researcher_details', orcid='orcid:' + orcid_id, source_id='source-id:' + source_id, _external=True) }}"
+                                        tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>{{ author.name | truncate(20, True, '...', 0) }}
+                                        </a>
+                                    {% else %}
+                                        <!-- Only ORCID available, use it for both -->
+                                        <a class="btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                        href="{{ url_for('researcher_details', orcid='orcid:' + orcid_id, source_id='source-id:' + orcid_id, _external=True) }}"
+                                        tabindex="-1" role="button" aria-disabled="true">
+                                            <i class="ps-1 pe-1 bi-person-circle"></i>{{ author.name | truncate(20, True, '...', 0) }}
+                                        </a>
+                                    {% endif %}
+                                {% else %}
+                                    <!-- No ORCID or source -->
+                                    <a class="btn btn-outline-secondary text-secondary rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                    tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Author could not be linked">
+                                        <i class="ps-1 pe-1 bi-person-circle"></i>{{ author.name | truncate(20, True, '...', 0) }}
+                                    </a>
+                                {% endif %}
+                            {% else %}
+                                <!-- Author is an organization -->
+                                <a class="btn btn-outline-secondary text-secondary rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Organization could not be linked">
+                                    <i class="ps-1 pe-1 bi-person-circle"></i>{{ author.name | truncate(20, True, '...', 0) }}
+                                </a>
+                            {% endif %}
+                        </div>
                     {% endfor %}
+
                 </div>
             </div>
             <div class="col-6 px-4">
@@ -175,7 +205,9 @@
                 </div>
 
                 <div class="d-flex p-2 bd-highlight pt-4">
-                    <span class="fw-bold fs-6">PlumX Metrics</span>
+                    <span class="fw-bold fs-6">PlumX Metrics <i class="bi bi-info-circle-fill text-secondary"
+                        data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="PlumX Metrics show research impact through citations, shares, and media mentions"></i></span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4">
                     <div class="fw-lighter fst-italic" id="plumx-metrics">

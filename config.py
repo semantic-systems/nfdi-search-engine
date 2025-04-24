@@ -242,6 +242,21 @@ class Config:
         "settings_file_publications": "static/weights/publications-settings.json",
     }
 
+    # MAPPING_PREFERENCE is used to map the fields from the platform responses to the objects in objects.py
+    # i.e. abstracts from publications are first taken from OPENALEX - Publications, then from CROSSREF - Publications, etc.
+    MAPPING_PREFERENCE = {
+        "researchers": {
+            "__default__": ["OPENALEX - Researchers", "ORCID"],
+            "identifier": ["ORCID", "OPENALEX - Researchers"],
+        },
+        "publications": {
+            "__default__": ["CROSSREF - Publications", "OPENALEX - Publications", "OPENAIRE - Products"],
+            "abstract": ["OPENALEX - Publications", "CROSSREF - Publications", "OPENAIRE - Products"],
+            "reference": ["CROSSREF - Publications"],
+            "citation": ["CROSSREF - Publications"],
+        }
+    }
+
     # ELASTIC = {
     #     "server": os.environ.get('ELASTIC_SERVER',""),
     #     "username": os.environ.get('ELASTIC_USERNAME',""), 

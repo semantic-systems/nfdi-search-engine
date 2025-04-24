@@ -239,9 +239,42 @@
                                                     more</a>
                                                 {% endif %}
                                                 {% if author.type == 'Person' %}
-                                                <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
-                                                    tabindex="-1" role="button" aria-disabled="true"><i
-                                                        class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+
+                                                    {% if author.identifier %}
+
+                                                        {% set orcid_id = author.identifier.split('/')[-1] %}
+
+                                                        {% if author.source and author.source[0].identifier %}
+
+                                                            <!-- We have the ORCID and the source identifier -->
+                                                            <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                                                href="{{ url_for('researcher_details', orcid='orcid:' + orcid_id | quote, source_id='source-id:' + author.source[0].identifier | quote, _external=True) }}"
+                                                                tabindex="-1" role="button" aria-disabled="true"><i
+                                                                    class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+
+                                                        {% else %}
+                                                            <!-- We only have the ORCID, use it for both fields -->
+                                                            <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                                                href="{{ url_for('researcher_details', orcid='orcid:' + orcid_id, source_id='source-id:' + orcid_id, _external=True) }}"
+                                                                tabindex="-1" role="button" aria-disabled="true"><i
+                                                                    class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+
+                                                        {% endif %}
+
+                                                    {% else %}
+                                                        <!-- No ORCID or source, we cannot link the author -->
+                                                        <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-secondary text-secondary rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                                            tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Author could not be linked"><i
+                                                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+
+                                                    {% endif %}
+
+                                                {% else %}
+                                                    <!-- This author is an organization -->
+                                                    <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-secondary text-secondary rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                                                        tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Organization could not be linked"><i
+                                                            class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
+                                                
                                                 {% endif %}
                                                 {% set author_count.value = author_count.value + 1 %}
                                                 {% endfor %}

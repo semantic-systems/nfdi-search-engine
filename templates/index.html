@@ -49,9 +49,12 @@
         <!--DATA SOURCES-->
         <div class="row mt-5">
             <h2 class="text-center text-dark fw-bold mt-5 mb-2">Data Sources</h2>
+            <div class="row mb-4 pt-2" style="padding-left: 10vw; padding-right: 10vw;">
+                <h4 class="text-secondary" style="text-align: center;">We source our data from the following platforms:</h4>
+            </div>
             <div class="col-md-12">
                 <div class="lc-block">
-                    <div id="carouselLogosSources" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
+                    <div id="carouselLogosSources" class="carousel slide pt-2 pb-4" data-bs-ride="carousel">
                         <div class="carousel-inner px-5" style="height: 6vw;">
                             {% set source_idx = namespace(value=0) %}
                             {% for source in sources %}
@@ -106,41 +109,67 @@
         <!--PARTNERS-->
         <div class="row mt-5">
             <h2 class="text-center text-dark fw-bold mt-5 mb-2">Partners</h2>
+            <div class="row mb-4 pt-2" style="padding-left: 10vw; padding-right: 10vw;">
+                <h4 class="text-secondary" style="text-align: center;">The NFDI4DS gateway is developed by:</h4>
+            </div>
             <div class="col-md-12">
                 <div class="lc-block">
-                    <div id="carouselLogosPartners" class="carousel slide pt-5 pb-4" data-bs-ride="carousel">
+                    <div id="carouselLogosPartners" class="carousel slide pt-2 pb-4" data-bs-ride="carousel">
                         <div class="carousel-inner px-5 style='height: 6vw;'">
                             <div class="carousel-item active">
                                 <div class="row text-center">
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/fokus.png') }}"
-                                            alt="Fraunhofer FOKUS">
+                                        <a href="https://www.fokus.fraunhofer.de/en.html" target="_blank" title="Fraunhofer FOKUS">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/fokus.png') }}"
+                                                alt="Fraunhofer FOKUS">
+                                        </a>
                                     </div>
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/luh.svg') }}"
-                                            alt="Leibniz University Hannover">
+                                        <a href="https://www.uni-hannover.de/en/" target="_blank" title="Leibniz University Hannover">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/luh.svg') }}"
+                                                alt="Leibniz University Hannover">
+                                        </a>
                                     </div>
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/LZI.jpg') }}"
-                                            alt="Leibniz Centre for Informatics (LZI)">
+                                        <a href="https://www.dagstuhl.de/en/" target="_blank" title="Leibniz Centre for Informatics (LZI)">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/LZI.jpg') }}"
+                                                alt="Leibniz Centre for Informatics (LZI)">
+                                        </a>
                                     </div>
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/tib.svg') }}"
-                                            alt="Leibniz Information Centre for Science and Technology (TIB)">
+                                        <a href="https://www.tib.eu/en/" target="_blank" title="Leibniz Information Centre for Science and Technology (TIB)">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/tib.svg') }}"
+                                                alt="Leibniz Information Centre for Science and Technology (TIB)">
+                                        </a>
                                     </div>
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/Universitaet-Koeln.jpg') }}"
-                                            alt="University of Cologne">
+                                        <a href="https://www.uni-koeln.de/en/" target="_blank" title="University of Cologne">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/Universitaet-Koeln.jpg') }}"
+                                                alt="University of Cologne">
+                                        </a>
                                     </div>
                                     <div class="col-2 align-self-center">
-                                        <img class="d-block w-100 mb-3"
-                                            src="{{ url_for('static', filename='images/partners/gesis.svg') }}"
-                                            alt="Leibniz Institute for the Social Sciences (GESIS)">
+                                        <a href="https://www.gesis.org/en/" target="_blank" title="Leibniz Institute for the Social Sciences (GESIS)">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/gesis.svg') }}"
+                                                alt="Leibniz Institute for the Social Sciences (GESIS)">
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="carousel-item">
+                                <div class="row text-center">
+                                    <div class="col-2 align-self-center" style="min-height: 148.883px; position: relative; top: 30px;">
+                                        <a href="https://www.leuphana.de/en/" target="_blank" title="Leuphana Universität Lüneburg">
+                                            <img class="d-block w-100 mb-3"
+                                                src="{{ url_for('static', filename='images/partners/uni-leuphana.png') }}"
+                                                alt="Leuphana Universität Lüneburg">
+                                        </a>
                                     </div>
                                 </div>
                             </div>

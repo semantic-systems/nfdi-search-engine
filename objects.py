@@ -23,6 +23,9 @@ class thing:
             # concatenate all the property values            
             strValue += f"{getattr(self, field.name)}###"
         return strValue
+    
+    def __hash__(self):
+        return hash((self.identifier, self.name, self.url, self.originalSource))
 
 @dataclass
 class Organization(thing):
