@@ -407,9 +407,7 @@ def index():
     sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
     template_response = render_template('index.html', sources=sources) 
     return template_response
-
-    # response = make_response(render_template('index.html'))  
-    # return response
+    
 
 @app.route('/update-visitor-id', methods=['GET'])
 @utils.timeit

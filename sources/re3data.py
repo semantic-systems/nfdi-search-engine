@@ -31,7 +31,9 @@ def search(source: str, search_term: str, results: Dict, failed_sources: List):
         failed_sources=failed_sources
     )
 
-    repositories = search_results['list'].get('repository', [])
+    print(f"{search_results=}")
+
+    repositories = search_results.get('list', {}).get('repository', [])
     if isinstance(repositories, dict):
         repositories = [repositories]
 

@@ -109,17 +109,17 @@ class Config:
         # "OERSI": {
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },        
+        # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
+        #     "logo": {
+        #         "src": "ieee.gif",
+        #         "width": "w-100",
+        #         "height": "h-70",
+        #     }, 
+        #     "module": "ieee",
+        #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+        #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
         # },
-        "IEEE": {
-            "logo": {
-                "src": "ieee.gif",
-                "width": "w-100",
-                "height": "h-70",
-            }, 
-            "module": "ieee",
-            "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-            "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
-        },
         # "EUDAT": {
         #     "module": "eudat",
         #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
@@ -152,11 +152,7 @@ class Config:
             }, 
             "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
-        # "GESIS": {
-        #     "module": "gesis",
-        #     "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
+        },        
         # "CORDIS": {
         #     "module": "cordis",
         #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
