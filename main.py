@@ -624,8 +624,10 @@ def publication_details(doi, source_id):
     if (len(publications) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('publication-details.html', publication=publications[0]))
     else: 
-        #merge more than one publication's records from various sources into one publication
-        merged_publication = generate_response_with_openai(jsonify(publications).json)
+        # we have multiple publications
+        # we merge their fields into one publication object
+        merged_publication = merge_objects(publications, "publications")
+
         response = make_response(render_template('publication-details.html', publication=merged_publication))
 
     return response
@@ -715,7 +717,7 @@ def researcher_details(orcid, source_id):
         session['researcher:'+orcid] = jsonify(researchers[0]).json
     else: 
         #merge more than one researchers record into one researcher
-        merged_researcher = generate_response_with_openai(jsonify(researchers).json)
+        merged_researcher = merge_objects(researchers, "researchers")
         response = make_response(render_template('researcher-details.html', researcher=merged_researcher))
         session['researcher:'+orcid] = merged_researcher
 
@@ -996,7 +998,67 @@ def generate_researcher_banner(researcher_details_json):
 
 #endregion
 
+#region MISC
 
+# @utils.handle_exceptions
+def merge_objects(object_list, object_type):
+    """
+    This function revieces a list of objects defined in objects.py, and returns a new object with the merged values of the objects in object_list.
+    The preference order for merging is defined under MAPPING_PREFERENCE in config.py.
+    """
+
+    # the new object we create will have the type of the object in object_list which is furthest down in the inheritance hierarchy
+    # => we search for the obj with the longest __mro__
+    target_obj = max(object_list, key=lambda x: len(type(x).__mro__))
+    target_cls = type(target_obj)
+    merged_object = target_cls()
+
+    # sort object_list by mapping preference
+    mapping_pref = app.config['MAPPING_PREFERENCE'].get(object_type, {})
+
+    # this function returns the index of the source in the preference list for the field
+    # it returns float('inf') if the source is not in the preference list
+    def get_preference_index(obj, field_name):
+
+        # get the name of the source of the object
+        source_list = getattr(obj, 'source', None)
+        source = source_list[0] if source_list else None
+        source_name = getattr(source, 'name', None) if source else None
+
+        # get the preference order for the field
+        pref_list = mapping_pref.get(field_name, mapping_pref.get("__default__", []))
+
+        return pref_list.index(source_name) if source_name in pref_list else float('inf')
+
+    # collect all sources that will be used in the merged object
+    sources = set()
+
+    # iterate through the sorted objects and choose the first non-empty value for each field in the merged object
+    for field in fields(merged_object):
+
+        # sort the objects by the current field
+        # if the field is not found, the objects are sorted with the __default__ list
+        sorted_objects = sorted(object_list, key=lambda obj: get_preference_index(obj, field.name))
+
+        # iterate through the sorted objects until one of them contains a non-empty value for the field
+        for obj in sorted_objects:
+            val = getattr(obj, field.name, None)
+
+            if val not in (None, "", [], {}):   # check if the value is empty or a placeholder
+                setattr(merged_object, field.name, val)
+
+                # add all sources to the merged object
+                source_list = set(getattr(obj, 'source', []))
+                sources.update(source_list)
+
+                break
+
+    # add the sources to the merged object
+    merged_object.source = list(sources)
+
+    return merged_object
+
+#endregion
 
 #region Control Panel
 
