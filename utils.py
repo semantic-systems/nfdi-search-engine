@@ -1,8 +1,8 @@
 import os
 import uuid
-import extruct
+# import extruct
 from objects import Article, Person, Author
-import wikipedia
+# import wikipedia
 from bs4 import BeautifulSoup
 import traceback
 import inspect
@@ -25,25 +25,25 @@ def clean_json(value):
     else:
         return value
 
-def extract_metadata(text):
-    """
-    Extract all metadata present in the page and return a dictionary of metadata lists.
+# def extract_metadata(text):
+#     """
+#     Extract all metadata present in the page and return a dictionary of metadata lists.
 
-        Initially authored by Ricardo Usbeck
+#         Initially authored by Ricardo Usbeck
 
-    Args:
+#     Args:
 
-    Returns:
-        metadata (dict): Dictionary of json-ld, microdata, and opengraph lists.
-        Each of the lists present within the dictionary contains multiple dictionaries.
-    """
+#     Returns:
+#         metadata (dict): Dictionary of json-ld, microdata, and opengraph lists.
+#         Each of the lists present within the dictionary contains multiple dictionaries.
+#     """
 
-    metadata = extruct.extract(text,
-                               uniform=True,
-                               syntaxes=['json-ld',
-                                         'microdata',
-                                         'opengraph'])
-    return metadata
+#     metadata = extruct.extract(text,
+#                                uniform=True,
+#                                syntaxes=['json-ld',
+#                                          'microdata',
+#                                          'opengraph'])
+#     return metadata
 
 def is_author_in(name, authors):
     """
@@ -81,13 +81,13 @@ def is_article_in(title, articles):
             return article
     return None
 
-def read_wikipedia(title):
-    wikipedia.set_lang("en")
-    try:
-        summary_text = wikipedia.summary(title, 3, redirect=True)
-    except:
-        return ""
-    return summary_text
+# def read_wikipedia(title):
+#     wikipedia.set_lang("en")
+#     try:
+#         summary_text = wikipedia.summary(title, 3, redirect=True)
+#     except:
+#         return ""
+#     return summary_text
 
 def remove_html_tags(text):
     soup = BeautifulSoup(text, "html.parser")

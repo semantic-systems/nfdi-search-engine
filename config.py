@@ -35,35 +35,70 @@ class Config:
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         "GESIS KG": {
+            "logo": {
+                "src": "gesis.svg",
+                "width": "w-100",
+                "height": "h-70",
+            },            
             "module": "gesis_kg_publication",
             "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
         },
         "GESIS KG - Dataset": {
+            "logo": {
+                "src": "gesis.svg",
+                "width": "w-100",
+                "height": "h-70",
+            },  
             "module": "gesis_kg_dataset",
             "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
         },
         "OPENALEX - Publications": {
+            "logo": {
+                "src": "openalex.png",
+                "width": "w-100",
+                "height": "h-100",
+            },  
             "module": "openalex_publications",
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-publication-endpoint": "https://api.openalex.org/works/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "OPENALEX - Researchers": {
+            "logo": {
+                "src": "openalex.png",
+                "width": "w-100",
+                "height": "h-100",
+            },   
             "module": "openalex_researchers",
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-researcher-endpoint": "https://api.openalex.org/authors/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "ZENODO": {
+            "logo": {
+                "src": "zenodo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },  
             "module": "zenodo",
             "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
             "get-publication-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
+            "logo": {
+                "src": "wikidata.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "wikidata_publications",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
         "WIKIDATA - Researchers": {
+            "logo": {
+                "src": "wikidata.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "wikidata_researchers",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
@@ -74,34 +109,50 @@ class Config:
         # "OERSI": {
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },        
+        # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
+        #     "logo": {
+        #         "src": "ieee.gif",
+        #         "width": "w-100",
+        #         "height": "h-70",
+        #     }, 
+        #     "module": "ieee",
+        #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+        #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
         # },
-        "IEEE": {
-            "module": "ieee",
-            "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-            "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
-        },
         # "EUDAT": {
         #     "module": "eudat",
         #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
         #     "record-base-url": f"https://b2share.eudat.eu/records/",
         # },
         "OPENAIRE - Products": {
+            "logo": {
+                "src": "openaire.webp",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "openaire_products",
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
             "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
         },
         "OPENAIRE - Projects": {
+            "logo": {
+                "src": "openaire.webp",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "openaire_projects",
             "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
         },
         "ORCID": {
+            "logo": {
+                "src": "orcid.svg",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
-        # "GESIS": {
-        #     "module": "gesis",
-        #     "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
+        },        
         # "CORDIS": {
         #     "module": "cordis",
         #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
@@ -115,12 +166,22 @@ class Config:
         #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         # },
         "CROSSREF - Publications": {
+            "logo": {
+                "src": "crossref.svg",
+                "width": "w-100",
+                "height": "h-60",
+            }, 
             "module": "crossref_publications",
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
             "get-publication-endpoint": "https://api.crossref.org/works/",
             "get-publication-references-endpoint": "https://api.crossref.org/works/",
         },
         "SEMANTIC SCHOLAR - Publications": {
+            "logo": {
+                "src": "semanticscholar.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "semanticscholar_publications",
             # "search-endpoint": f"",
             # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
@@ -128,11 +189,21 @@ class Config:
             "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
         },
         "SEMANTIC SCHOLAR - Researchers": {
+            "logo": {
+                "src": "semanticscholar.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "semanticscholar_researchers",
             # "search-endpoint": f"",
             # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",
         },
         "RE3DATA": {
+            "logo": {
+                "src": "re3data.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
             "module": "re3data",
             "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
             "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"

@@ -50,136 +50,33 @@
         <div class="row mt-5">
             <h2 class="text-center text-dark fw-bold mt-5 mb-2">Data Sources</h2>
             <div class="row mb-4 pt-2" style="padding-left: 10vw; padding-right: 10vw;">
-                <h4 class="text-secondary" style="text-align: center;">We source our data from the following platforms:</h4>
+                <h4 class="text-secondary" style="text-align: center;">We source our data from the following platforms:
+                </h4>
             </div>
             <div class="col-md-12">
-                <div class="lc-block">
-                    <div id="carouselLogosSources" class="carousel slide pt-2 pb-4" data-bs-ride="carousel">
-                        <div class="carousel-inner px-5" style="height: 6vw;">
-                            <div class="carousel-item active">
-                                <div class="row">
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://dblp.org/" target="_blank">
-                                            <img class="d-block w-100 mx-auto px-3" title="DBLP"
-                                                src="{{ url_for('static', filename='images/sources/DBLP_Logo_320x120.png') }}"
-                                                alt="DBLP">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://openalex.org/" target="_blank">
-                                            <img class="d-block w-100 mx-auto" title="OpenAlex"
-                                                src="{{ url_for('static', filename='images/sources/OpenAlex-logo.png') }}"
-                                                alt="OpenAlex">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://orcid.org/" target="_blank">
-                                            <img class="d-block w-100 mx-auto px-3" title="ORCID"
-                                                src="{{ url_for('static', filename='images/sources/orcid.logo.svg') }}"
-                                                alt="ORCID">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.wikidata.org/" target="_blank">
-                                            <img class="d-block w-100 mx-auto px-3" title="Wikidata"
-                                                src="{{ url_for('static', filename='images/sources/Wikidata-logo.png') }}"
-                                                alt="Wikidata">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://zenodo.org/" target="_blank">
-                                            <img class="d-block w-100 mx-auto" title="Zenodo"
-                                                src="{{ url_for('static', filename='images/sources/zenodo-logo.png') }}"
-                                                alt="Zenodo">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://datacite.org/" target="_blank">
-                                            <img class="d-block w-100 mx-auto px-3" title="DataCite"
-                                                src="{{ url_for('static', filename='images/sources/DataCite-Logo.png') }}"
-                                                alt="DataCite">
-                                        </a>
-                                    </div>
-                                </div>
+                <div id="dataSourcesCarousel" class="carousel">
+                    <div class="carousel-inner sourcesCarouselInner">
+                        {% for source in sources %}
+                        <div class="carousel-item {% if loop.first %}active{% endif %} d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <img class="d-block {{source.width}} {{source.height}} mx-auto"
+                                    src="{{ url_for('static', filename='images/sources/'+source.src) }}" alt="">
                             </div>
-                            <div class="carousel-item">
-                                <div class="row">
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://gepris.dfg.de/" target="_blank">
-                                            <img class="d-block w-100 h-100 mx-auto px-3" title="GEPRIS"
-                                                src="{{ url_for('static', filename='images/sources/GEPRIS_Logo.png') }}"
-                                                alt="GEPRIS">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.gesis.org/" target="_blank">
-                                            <img class="d-block h-70 w-100 mx-auto px-3" title="GESIS"
-                                                src="{{ url_for('static', filename='images/sources/GESIS-Logo.svg') }}"
-                                                alt="GESIS">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://oersi.org/" target="_blank">
-                                            <img class="d-block h-100 w-100 mx-auto px-3" title="OERSI"
-                                                src="{{ url_for('static', filename='images/sources/oersi-logo.svg') }}"
-                                                alt="OERSI">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://resodate.org/" target="_blank">
-                                            <img class="d-block h-70 w-70 mx-auto px-3" title="RESODATE"
-                                                src="{{ url_for('static', filename='images/sources/resodate-logo.png') }}"
-                                                alt="RESODATE">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.ieee.org/" target="_blank">
-                                            <img class="d-block h-100 w-100 mx-auto px-3" title="IEEE"
-                                                src="{{ url_for('static', filename='images/sources/ieee.gif') }}"
-                                                alt="IEEE">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.european-language-grid.eu/" target="_blank">
-                                            <img class="d-block w-100 mx-auto px-3" title="European Language Grid"
-                                                src="{{ url_for('static', filename='images/sources/elg-logo.svg') }}"
-                                                alt="European Language Grid">
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>                            
-                        <!--
-                        <ol class="carousel-indicators position-relative mt-3">
-                            <li data-bs-target="#carouselLogosSources" data-bs-slide-to="0" class="active bg-dark carousel-control-prev-icon"></li>
-                            <li data-bs-target="#carouselLogosSources" data-bs-slide-to="1" class="bg-dark"></li>
-                        </ol>
-                        -->
-                        <div class="w-100 px-3 text-center mt-4">
-                            <a class="carousel-control-prev position-relative d-inline me-4"
-                                href="#carouselLogosSources" data-bs-slide="prev">
-                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z">
-                                    </path>
-                                </svg>
-                                <span class="visually-hidden">Previous</span>
-                            </a>
-                            <a class="carousel-control-next position-relative d-inline" href="#carouselLogosSources"
-                                data-bs-slide="next">
-                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z">
-                                    </path>
-                                </svg>
-                                <span class="visually-hidden">Next</span>
-                            </a>
                         </div>
+                        {% endfor %}
                     </div>
-                </div><!-- /lc-block -->
-            </div><!-- /col -->
+                    <button class="carousel-control-prev sourcesCarouselPrev" type="button"
+                        data-bs-target="#dataSourcesCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next sourcesCarouselNext" type="button"
+                        data-bs-target="#dataSourcesCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!--PARTNERS-->
@@ -189,93 +86,91 @@
                 <h4 class="text-secondary" style="text-align: center;">The NFDI4DS gateway is developed by:</h4>
             </div>
             <div class="col-md-12">
-                <div class="lc-block">
-                    <div id="carouselLogosPartners" class="carousel slide pt-2 pb-4" data-bs-ride="carousel">
-                        <div class="carousel-inner px-5 style='height: 6vw;'">
-                            <div class="carousel-item active">
-                                <div class="row text-center">
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.fokus.fraunhofer.de/en.html" target="_blank" title="Fraunhofer FOKUS">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/fokus.png') }}"
-                                                alt="Fraunhofer FOKUS">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.uni-hannover.de/en/" target="_blank" title="Leibniz University Hannover">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/luh.svg') }}"
-                                                alt="Leibniz University Hannover">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.dagstuhl.de/en/" target="_blank" title="Leibniz Centre for Informatics (LZI)">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/LZI.jpg') }}"
-                                                alt="Leibniz Centre for Informatics (LZI)">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.tib.eu/en/" target="_blank" title="Leibniz Information Centre for Science and Technology (TIB)">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/tib.svg') }}"
-                                                alt="Leibniz Information Centre for Science and Technology (TIB)">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.uni-koeln.de/en/" target="_blank" title="University of Cologne">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/Universitaet-Koeln.jpg') }}"
-                                                alt="University of Cologne">
-                                        </a>
-                                    </div>
-                                    <div class="col-2 align-self-center">
-                                        <a href="https://www.gesis.org/en/" target="_blank" title="Leibniz Institute for the Social Sciences (GESIS)">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/gesis.svg') }}"
-                                                alt="Leibniz Institute for the Social Sciences (GESIS)">
-                                        </a>
-                                    </div>
-                                </div>
+                <div id="partnersCarousel" class="carousel">
+                    <div class="carousel-inner partnersCarouselInner">
+                        <div class="carousel-item active d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.leuphana.de/en/" target="_blank"
+                                    title="Leuphana Universität Lüneburg">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/uni-leuphana.png') }}"
+                                        alt="Leuphana Universität Lüneburg">
+                                </a>
                             </div>
-                            <div class="carousel-item">
-                                <div class="row text-center">
-                                    <div class="col-2 align-self-center" style="min-height: 148.883px; position: relative; top: 30px;">
-                                        <a href="https://www.leuphana.de/en/" target="_blank" title="Leuphana Universität Lüneburg">
-                                            <img class="d-block w-100 mb-3"
-                                                src="{{ url_for('static', filename='images/partners/uni-leuphana.png') }}"
-                                                alt="Leuphana Universität Lüneburg">
-                                        </a>
-                                    </div>
-                                </div>
+                        </div>
+                        <div class="carousel-item d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.fokus.fraunhofer.de/en.html" target="_blank"
+                                    title="Fraunhofer FOKUS">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/fokus.png') }}"
+                                        alt="Fraunhofer FOKUS">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="carousel-item d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.uni-hannover.de/en/" target="_blank"
+                                    title="Leibniz University Hannover">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/luh.svg') }}"
+                                        alt="Leibniz University Hannover">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="carousel-item d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.dagstuhl.de/en/" target="_blank"
+                                    title="Leibniz Centre for Informatics (LZI)">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/LZI.jpg') }}"
+                                        alt="Leibniz Centre for Informatics (LZI)">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="carousel-item d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.tib.eu/en/" target="_blank"
+                                    title="Leibniz Information Centre for Science and Technology (TIB)">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/tib.svg') }}"
+                                        alt="Leibniz Information Centre for Science and Technology (TIB)">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="carousel-item d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.uni-koeln.de/en/" target="_blank" title="University of Cologne">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/Universitaet-Koeln.jpg') }}"
+                                        alt="University of Cologne">
+                                </a>
+                            </div>
+                        </div>
+                        <div class="carousel-item d-flex justify-content-around">
+                            <div class="col-md-4 align-self-center">
+                                <a href="https://www.gesis.org/en/" target="_blank"
+                                    title="Leibniz Institute for the Social Sciences (GESIS)">
+                                    <img class="d-block w-100 mb-3"
+                                        src="{{ url_for('static', filename='images/partners/gesis.svg') }}"
+                                        alt="Leibniz Institute for the Social Sciences (GESIS)">
+                                </a>
                             </div>
                         </div>
 
-                        <div class="w-100 px-3 text-center mt-4">
-                            <a class="carousel-control-prev position-relative d-inline me-4"
-                                href="#carouselLogosPartners" data-bs-slide="prev">
-                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M11.354 1.646a.5.5 0 0 1 0 .708L5.707 8l5.647 5.646a.5.5 0 0 1-.708.708l-6-6a.5.5 0 0 1 0-.708l6-6a.5.5 0 0 1 .708 0z">
-                                    </path>
-                                </svg>
-                                <span class="visually-hidden">Previous</span>
-                            </a>
-                            <a class="carousel-control-next position-relative d-inline" href="#carouselLogosPartners"
-                                data-bs-slide="next">
-                                <svg width="2em" height="2em" viewBox="0 0 16 16" class="text-dark" fill="currentColor"
-                                    xmlns="http://www.w3.org/2000/svg">
-                                    <path fill-rule="evenodd"
-                                        d="M4.646 1.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1 0 .708l-6 6a.5.5 0 0 1-.708-.708L10.293 8 4.646 2.354a.5.5 0 0 1 0-.708z">
-                                    </path>
-                                </svg>
-                                <span class="visually-hidden">Next</span>
-                            </a>
-                        </div>
                     </div>
-                </div><!-- /lc-block -->
-            </div><!-- /col -->
+                    <button class="carousel-control-prev partnersCarouselPrev" type="button"
+                        data-bs-target="#partnersCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next partnersCarouselNext" type="button"
+                        data-bs-target="#partnersCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </main>
@@ -294,6 +189,73 @@
             return false;
         }
     }
+
+    $(document).ready(function () {
+
+        const carousel1 = document.querySelector("#dataSourcesCarousel");
+
+        if (window.matchMedia("(min-width:576px)").matches) {
+            const carousel = new bootstrap.Carousel(carousel1, {
+                interval: false
+            });
+
+            var carouselWidth = $(".sourcesCarouselInner")[0].scrollWidth;
+            var cardWidth = $(".carousel-item").width();
+
+            var scrollPosition = 0;
+
+            $(".sourcesCarouselNext").on("click", function () {
+                if (scrollPosition < carouselWidth - cardWidth * 3) {
+                    console.log("next");
+                    scrollPosition = scrollPosition + cardWidth;
+                    $(".sourcesCarouselInner").animate({scrollLeft: scrollPosition}, 800);
+                }
+            });
+            $(".sourcesCarouselPrev").on("click", function () {
+                if (scrollPosition > 0) {
+                    console.log("prev");
+                    scrollPosition = scrollPosition - cardWidth;
+                    $(".sourcesCarouselInner").animate({scrollLeft: scrollPosition}, 800);
+                }
+            });
+        } else {
+            $(carousel1).addClass("slide");
+        }
+
+
+        const carousel2 = document.querySelector("#partnersCarousel");
+
+        if (window.matchMedia("(min-width:576px)").matches) {
+            const carousel = new bootstrap.Carousel(carousel2, {
+                interval: false
+            });
+
+            var carouselWidth = $(".partnersCarouselInner")[0].scrollWidth;
+            var cardWidth = $(".carousel-item").width();
+
+            var scrollPosition = 0;
+
+            $(".partnersCarouselNext").on("click", function () {
+                if (scrollPosition < carouselWidth - cardWidth * 3) {
+                    console.log("next");
+                    scrollPosition = scrollPosition + cardWidth;
+                    $(".partnersCarouselInner").animate({scrollLeft: scrollPosition}, 800);
+                }
+            });
+            $(".partnersCarouselPrev").on("click", function () {
+                if (scrollPosition > 0) {
+                    console.log("prev");
+                    scrollPosition = scrollPosition - cardWidth;
+                    $(".partnersCarouselInner").animate({scrollLeft: scrollPosition}, 800);
+                }
+            });
+        } else {
+            $(carousel2).addClass("slide");
+        }
+
+    });
+
+
 
 </script>
 
