@@ -615,3 +615,8 @@ div.dataTables_info {
     top: 50%;
     transform: translateY(-50%);
 }
+
+.carousel-control-prev:disabled,
+.carousel-control-next:disabled {
+    background-color: lightgray;
+}

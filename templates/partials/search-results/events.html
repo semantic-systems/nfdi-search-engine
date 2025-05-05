@@ -3,34 +3,38 @@
 {% from 'partials/common/download-modal.html' import downloadModal %}
 
 {% for event in results.events %}
-
 <div class="card mb-2 p-3">
     <div class="card-body">
         <div class="row">
             <div class="col-11 fs-6">
                 <div class="row mb-2">
-                    <div class="col-lg-12 fs-5">
-                        <div class="d-flex bd-highlight">
-                            <a class="text-dark fw-bold" href='#' target='_blank' style="text-decoration: none">XChange
-                                Frankfurt</a>
-                        </div>
+                    <div class="col-9 fs-6">
+                        {% if event.identifier == '' %}
+                        <span class="text-secondary fw-bold publication_name">
+                            {{event.name}}</span>
+                        {% else %}
+                        <a class="text-secondary fw-bold publication_name" href="{{ event.url }}" target='_blank'><i
+                                class="pull-left bi bi-box-arrow-up-right"></i>&nbsp;{{event.name}}</a>
+                        {% endif %}
+                    </div>
+                    <div class="col-3 text-end ">
+                        {% for source in event.source %}
+                        <a id="source_link" href="{{source.url}}" target=_blank>
+                            <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
+                                    class="pull-right bi bi-box-arrow-up-right"></i></span>
+                        </a>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-12">
-                        <p class="card-text">
-                            <br>Date: 07 Nov 2023 - 09 Nov 2023
-                            <br>Location: Frankfurt am Main, Germany
-                            <br>www.xchange-frankfurt.de
-                        </p>
+                        <p class="card-text">{{event.description|truncate(500)}}</p>
                     </div>
                 </div>
                 <div class="row pt-3">
                     <div class="col-9 text-start">
-                        <span class="badge bg-pill">Computer Science</span>
-                        <span class="badge bg-pill">Europe</span>
-                        <span class="badge bg-pill">Germany</span>
-                        <span class="badge bg-pill">Conference</span>
+                        <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
+                            data-bs-placement="top" title="Type">{{event.additionalType}}</span>
                     </div>
                 </div>
             </div>
@@ -38,15 +42,22 @@
                 <div class="row fs-5">
                     <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
                                                 class="bi bi-bookmark"></i></a></div> -->
-                    <div class="text-end mb-3"><a target='_blank' href="#" title="Share"><i class="bi bi-share"></i></a>
+                    {% if event.identifier != '' %}
+                    <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
+                            data-bs-target="#share-event-{{event.identifier | regex_replace ('\W','') }}"><i
+                                class="bi bi-share"></i></a>
                     </div>
-                    <div class="text-end mb-3"><a target='_blank' href="#" title="Preview" data-bs-toggle="modal"
-                            data-bs-target="#full_size_image_dialog"><i class="bi bi-eye"></i></a></div>
-                    <div class="text-end mb-3"><a target='_blank' href="#" title="Download"><i
-                                class="bi bi-download"></i></a></div>
-
+                    {% endif %}
                 </div>
             </div>
+
+            {% with share_modal_id='share-event-'+event.identifier | regex_replace ('\W',''),
+            url = event.url,
+            title = event.name | trim
+            %}
+            {{ shareModal(share_modal_id, url, title) }}
+            {% endwith %}
+
         </div>
     </div>
 </div>
@@ -55,12 +66,12 @@
 <div id="div_load_more_events" class="row text-center my-2">
     <div class="col">
         {% if session.displayed_search_results.events < session.total_search_results.events %} <div>
-            Displaying top {{session.displayed_search_results.events }} digital objects out of {{
+            Displaying top {{session.displayed_search_results.events }} events out of {{
             session.total_search_results.events }}
     </div>
     <br />
-    <button type="button" class="btn btn-secondary" aria-label="Load more digital objects"
-        id="btn_load_more_events">Load more digital objects</button>
+    <button type="button" class="btn btn-secondary" aria-label="Load more events" id="btn_load_more_events">Load
+        more events</button>
     {% endif %}
 </div>
 </div>
@@ -74,4 +85,6 @@
             });
         }
     });
+
+
 </script>

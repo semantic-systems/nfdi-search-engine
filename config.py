@@ -18,22 +18,13 @@ class Config:
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
-
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
 
     DATE_FORMAT_FOR_REPORT = "%B %d, %Y"
     DATE_FORMAT_FOR_ELASTIC = "%Y-%m-%d"
 
     DATA_SOURCES = {
-        # "dblp - Publications": {
-        #     "module": "dblp_publications", 
-        #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # }, 
-        # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
-        # "dblp-Researchers": { 
-        #    "module": "dblp_researchers", 
-        #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
+        
         "GESIS KG": {
             "logo": {
                 "src": "gesis.svg",
@@ -101,30 +92,7 @@ class Config:
             }, 
             "module": "wikidata_researchers",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
-        },
-        # "resodate": {
-        #     "module": "resodate",
-        #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
-        # "OERSI": {
-        #     "module": "oersi",
-        #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },        
-        # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
-        #     "logo": {
-        #         "src": "ieee.gif",
-        #         "width": "w-100",
-        #         "height": "h-70",
-        #     }, 
-        #     "module": "ieee",
-        #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-        #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
-        # },
-        # "EUDAT": {
-        #     "module": "eudat",
-        #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
-        #     "record-base-url": f"https://b2share.eudat.eu/records/",
-        # },
+        },        
         "OPENAIRE - Products": {
             "logo": {
                 "src": "openaire.webp",
@@ -152,19 +120,7 @@ class Config:
             }, 
             "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },        
-        # "CORDIS": {
-        #     "module": "cordis",
-        #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
-        # },
-        # "ORKG": {
-        #     "module": "orkg",
-        #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
-        # "gepris": {
-        #     "module": "gepris",
-        #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
-        # },
+        },            
         "CROSSREF - Publications": {
             "logo": {
                 "src": "crossref.svg",
@@ -208,6 +164,61 @@ class Config:
             "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
             "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
         },
+        "DBLP - VENUES": {
+            "logo": {
+                "src": "dblp.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "dblp_venues", 
+            "search-endpoint": f"https://dblp.org/search/venue/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        
+        
+        # "dblp - Publications": {
+        #     "module": "dblp_publications", 
+        #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # }, 
+        # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
+        # "dblp-Researchers": { 
+        #    "module": "dblp_researchers", 
+        #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
+        # "resodate": {
+        #     "module": "resodate",
+        #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
+        # "OERSI": {
+        #     "module": "oersi",
+        #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },        
+        # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
+        #     "logo": {
+        #         "src": "ieee.gif",
+        #         "width": "w-100",
+        #         "height": "h-70",
+        #     }, 
+        #     "module": "ieee",
+        #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+        #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
+        # },
+        # "EUDAT": {
+        #     "module": "eudat",
+        #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
+        #     "record-base-url": f"https://b2share.eudat.eu/records/",
+        # },
+        # "CORDIS": {
+        #     "module": "cordis",
+        #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
+        # },
+        # "ORKG": {
+        #     "module": "orkg",
+        #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },
+        # "gepris": {
+        #     "module": "gepris",
+        #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
+        # },
     }
 
     LLMS = {

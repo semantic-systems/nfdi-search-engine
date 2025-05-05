@@ -18,7 +18,6 @@ from flask_session import Session
 from config import Config
 from chatbot import chatbot
 
-from sources.gepris import org_details
 import utils
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
@@ -207,7 +206,8 @@ def ping():
 def login():
     if current_user.is_authenticated:
         session["current-user-email"] = current_user.email
-        return redirect(url_for('index'))
+        return redirect(session.get('back-url',url_for('index')))
+        # return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
         user = User()
@@ -220,7 +220,7 @@ def login():
         session["current-user-email"] = user.email
         next_page = request.args.get('next')
         if not next_page or urlsplit(next_page).netloc != '':
-            next_page = url_for('index')
+            next_page = session.get('back-url', url_for('index')) #url_for('index')
         return redirect(next_page)
     return render_template('login.html', title='Login', form=form)
 
@@ -229,7 +229,7 @@ def login():
 def logout():
     logout_user()
     flash('You have been logged out.', 'info')
-    return redirect(url_for('index'))
+    return redirect(session.get('back-url', url_for('index')))
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -362,7 +362,7 @@ def profile():
         form.last_name.data = current_user.last_name
         form.email.data = current_user.email
     return render_template('profile.html', title='Profile',
-                           form=form)
+                           form=form, back_url=session.get('back-url',url_for('index')))
 
 @app.route('/preferences', methods=['GET', 'POST'])
 @login_required
@@ -394,16 +394,18 @@ def preferences():
     else:
         # tell the form what's already selected
         form.data_sources.data = [source for source in current_user.included_data_sources.split('; ')]
-    return render_template('preferences.html', title='Preferences', form=form)
+    return render_template('preferences.html', title='Preferences', form=form, back_url=session.get('back-url',url_for('index')))
 
 @app.route('/')
 @utils.set_cookies
 def index():  
 
+    session['back-url'] = request.url
+
     sources = []
     for module in app.config['DATA_SOURCES']:
         sources.append(app.config['DATA_SOURCES'][module].get('logo',{}))
-    #remove duplicates
+    #remove duplicates    
     sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
     template_response = render_template('index.html', sources=sources) 
     return template_response
@@ -426,6 +428,8 @@ def search_results():
     search_term = request.args.get('txtSearchTerm', '')
     utils.log_activity(f"loading search results for {search_term}")  
     utils.log_search_term(search_term) 
+
+    session['back-url'] = request.url
 
     results = {
         'publications': [],
@@ -601,9 +605,7 @@ def publication_details(doi, source_id):
         excluded_data_sources = current_user.excluded_data_sources.split('; ')
         for module in app.config['DATA_SOURCES']:
             if app.config['DATA_SOURCES'][module].get('get-publication-endpoint','').strip() != "" and module not in excluded_data_sources:
-                sources.append(module)
-    
-                
+                sources.append(module)                
 
     threads = []  
     publications = []
@@ -629,7 +631,6 @@ def publication_details(doi, source_id):
         # we have multiple publications
         # we merge their fields into one publication object
         merged_publication = merge_objects(publications, "publications")
-
         response = make_response(render_template('publication-details.html', publication=merged_publication))
 
     return response
@@ -664,15 +665,6 @@ def publication_details_recommendations(doi):
     publications = importlib.import_module(f'sources.{module_name}').get_recommendations_for_publication(source=source, doi=doi)
     response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
     # print("response:", response)
-    return response
-
-
-
-@app.route('/resource-details')
-@utils.timeit
-@utils.set_cookies
-def resource_details():
-    response = make_response(render_template('resource-details.html'))  
     return response
 
 @app.route('/researcher-details/<string:orcid>/<string:source_id>', methods=['GET'])
@@ -732,80 +724,80 @@ def generate_researcher_about_me(orcid):
     return jsonify(summary=f'{researcher_about_me}')
 
 
-@app.route('/generate-researcher-banner/<string:orcid>', methods=['GET'])
-@utils.handle_exceptions
-def generate_researcher_banner(orcid): 
-    generated_banner = generate_researcher_banner(session['researcher:'+orcid])
-    if generated_banner == "":
-        import base64
-        with open('static/images/researcher-default-banner.jpg', "rb") as fh:
-            generated_banner = base64.b64encode(fh.read()).decode()
-    return jsonify(generated_banner = f'data:image/jpeg;base64,{generated_banner}')
+# @app.route('/generate-researcher-banner/<string:orcid>', methods=['GET'])
+# @utils.handle_exceptions
+# def generate_researcher_banner(orcid): 
+#     generated_banner = generate_researcher_banner(session['researcher:'+orcid])
+#     if generated_banner == "":
+#         import base64
+#         with open('static/images/researcher-default-banner.jpg', "rb") as fh:
+#             generated_banner = base64.b64encode(fh.read()).decode()
+#     return jsonify(generated_banner = f'data:image/jpeg;base64,{generated_banner}')
 
 
 
-@app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
-@utils.timeit
-@utils.set_cookies
-def organization_details(organization_id, organization_name):
-    try:
+# @app.route('/organization-details/<string:organization_id>/<string:organization_name>', methods=['GET'])
+# @utils.timeit
+# @utils.set_cookies
+# def organization_details(organization_id, organization_name):
+#     try:
 
-        # Create a response object
-        """ response = make_response()
+#         # Create a response object
+#         """ response = make_response()
 
-        # Set search-session cookie to the session cookie value of the first visit
-        if request.cookies.get('search-session') is None:
-            if request.cookies.get('session') is None:
-                response.set_cookie('search-session', str(uuid.uuid4()))
-            else:
-                response.set_cookie('search-session', request.cookies['session'])"""
+#         # Set search-session cookie to the session cookie value of the first visit
+#         if request.cookies.get('search-session') is None:
+#             if request.cookies.get('session') is None:
+#                 response.set_cookie('search-session', str(uuid.uuid4()))
+#             else:
+#                 response.set_cookie('search-session', request.cookies['session'])"""
 
-        # Call the org_details function from the gepris module to fetch organization details by id
-        organization, sub_organization, sub_project = org_details(organization_id, organization_name)
+#         # Call the org_details function from the gepris module to fetch organization details by id
+#         organization, sub_organization, sub_project = org_details(organization_id, organization_name)
 
-        if organization or sub_organization or sub_project:
-            # Render the organization-details.html template
-            return render_template('organization-details.html', organization=organization,
-                                   sub_organization=sub_organization, sub_project=sub_project)
-        else:
-            # Handle the case where organization details are not found (e.g., return a 404 page)
-            return render_template('error.html', error_message='Organization details not found.')
+#         if organization or sub_organization or sub_project:
+#             # Render the organization-details.html template
+#             return render_template('organization-details.html', organization=organization,
+#                                    sub_organization=sub_organization, sub_project=sub_project)
+#         else:
+#             # Handle the case where organization details are not found (e.g., return a 404 page)
+#             return render_template('error.html', error_message='Organization details not found.')
 
-    except ValueError as ve:
-        return render_template('error.html', error_message=str(ve))
-    except Exception as e:
-        return render_template('error.html', error_message='An error occurred: ' + str(e))
-
-
-@app.route('/events-details')
-@utils.timeit
-@utils.set_cookies
-def events_details():
-    response = make_response(render_template('events-details.html'))
-
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
-
-    return response
+#     except ValueError as ve:
+#         return render_template('error.html', error_message=str(ve))
+#     except Exception as e:
+#         return render_template('error.html', error_message='An error occurred: ' + str(e))
 
 
-@app.route('/project-details')
-@utils.timeit
-@utils.set_cookies
-def project_details():
-    response = make_response(render_template('project-details.html'))
-    # Set search-session cookie to the session cookie value of the first visit
-    if request.cookies.get('search-session') is None:
-        if request.cookies.get('session') is None:
-            response.set_cookie('search-session', str(uuid.uuid4()))
-        else:
-            response.set_cookie('search-session', request.cookies['session'])
+# @app.route('/events-details')
+# @utils.timeit
+# @utils.set_cookies
+# def events_details():
+#     response = make_response(render_template('events-details.html'))
 
-    return response
+#     # Set search-session cookie to the session cookie value of the first visit
+#     if request.cookies.get('search-session') is None:
+#         if request.cookies.get('session') is None:
+#             response.set_cookie('search-session', str(uuid.uuid4()))
+#         else:
+#             response.set_cookie('search-session', request.cookies['session'])
+
+#     return response
+
+
+# @app.route('/project-details')
+# @utils.timeit
+# @utils.set_cookies
+# def project_details():
+#     response = make_response(render_template('project-details.html'))
+#     # Set search-session cookie to the session cookie value of the first visit
+#     if request.cookies.get('search-session') is None:
+#         if request.cookies.get('session') is None:
+#             response.set_cookie('search-session', str(uuid.uuid4()))
+#         else:
+#             response.set_cookie('search-session', request.cookies['session'])
+
+#     return response
 
 @app.route('/digital-obj-details/<path:identifier_with_type>', methods=['GET'])
 @utils.timeit
@@ -816,6 +808,7 @@ def digital_obj_details(identifier_with_type):
     identifier_type = identifier_with_type.split(':',1)[0] # as of now this is hardcoded as 'doi'
     identifier = identifier_with_type.split(':',1)[1]
     pass   
+
 
 for code, message in app.config['ERROR_MESSAGES'].items():
     @app.errorhandler(code)
