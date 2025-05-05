@@ -18,13 +18,163 @@ class Config:
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
-
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
 
     DATE_FORMAT_FOR_REPORT = "%B %d, %Y"
     DATE_FORMAT_FOR_ELASTIC = "%Y-%m-%d"
 
     DATA_SOURCES = {
+        
+        "GESIS KG": {
+            "logo": {
+                "src": "gesis.svg",
+                "width": "w-100",
+                "height": "h-70",
+            },            
+            "module": "gesis_kg_publication",
+            "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
+        },
+        "GESIS KG - Dataset": {
+            "logo": {
+                "src": "gesis.svg",
+                "width": "w-100",
+                "height": "h-70",
+            },  
+            "module": "gesis_kg_dataset",
+            "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
+        },
+        "OPENALEX - Publications": {
+            "logo": {
+                "src": "openalex.png",
+                "width": "w-100",
+                "height": "h-100",
+            },  
+            "module": "openalex_publications",
+            "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-publication-endpoint": "https://api.openalex.org/works/",
+            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
+        },
+        "OPENALEX - Researchers": {
+            "logo": {
+                "src": "openalex.png",
+                "width": "w-100",
+                "height": "h-100",
+            },   
+            "module": "openalex_researchers",
+            "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-researcher-endpoint": "https://api.openalex.org/authors/",
+            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
+        },
+        "ZENODO": {
+            "logo": {
+                "src": "zenodo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },  
+            "module": "zenodo",
+            "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            "get-publication-endpoint": f"https://zenodo.org/api/records/",
+        },
+        "WIKIDATA - Publications": {
+            "logo": {
+                "src": "wikidata.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "wikidata_publications",
+            "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
+        },
+        "WIKIDATA - Researchers": {
+            "logo": {
+                "src": "wikidata.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "wikidata_researchers",
+            "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
+        },        
+        "OPENAIRE - Products": {
+            "logo": {
+                "src": "openaire.webp",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "openaire_products",
+            "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
+            "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
+        },
+        "OPENAIRE - Projects": {
+            "logo": {
+                "src": "openaire.webp",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "openaire_projects",
+            "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
+        },
+        "ORCID": {
+            "logo": {
+                "src": "orcid.svg",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "orcid",
+            "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },            
+        "CROSSREF - Publications": {
+            "logo": {
+                "src": "crossref.svg",
+                "width": "w-100",
+                "height": "h-60",
+            }, 
+            "module": "crossref_publications",
+            "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
+            "get-publication-endpoint": "https://api.crossref.org/works/",
+            "get-publication-references-endpoint": "https://api.crossref.org/works/",
+        },
+        "SEMANTIC SCHOLAR - Publications": {
+            "logo": {
+                "src": "semanticscholar.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "semanticscholar_publications",
+            # "search-endpoint": f"",
+            # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
+            "citations-endpoint": f"https://api.semanticscholar.org/graph/v1/paper/",
+            "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
+        },
+        "SEMANTIC SCHOLAR - Researchers": {
+            "logo": {
+                "src": "semanticscholar.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "semanticscholar_researchers",
+            # "search-endpoint": f"",
+            # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",
+        },
+        "RE3DATA": {
+            "logo": {
+                "src": "re3data.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "re3data",
+            "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
+            "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
+        },
+        "DBLP - VENUES": {
+            "logo": {
+                "src": "dblp.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "dblp_venues", 
+            "search-endpoint": f"https://dblp.org/search/venue/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
+        
+        
         # "dblp - Publications": {
         #     "module": "dblp_publications", 
         #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
@@ -34,39 +184,6 @@ class Config:
         #    "module": "dblp_researchers", 
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        "GESIS KG": {
-            "module": "gesis_kg_publication",
-            "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
-        },
-        "GESIS KG - Dataset": {
-            "module": "gesis_kg_dataset",
-            "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
-        },
-        "OPENALEX - Publications": {
-            "module": "openalex_publications",
-            "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
-            "get-publication-endpoint": "https://api.openalex.org/works/",
-            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
-        },
-        "OPENALEX - Researchers": {
-            "module": "openalex_researchers",
-            "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
-            "get-researcher-endpoint": "https://api.openalex.org/authors/",
-            "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
-        },
-        "ZENODO": {
-            "module": "zenodo",
-            "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-            "get-publication-endpoint": f"https://zenodo.org/api/records/",
-        },
-        "WIKIDATA - Publications": {
-            "module": "wikidata_publications",
-            "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
-        },
-        "WIKIDATA - Researchers": {
-            "module": "wikidata_researchers",
-            "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
-        },
         # "resodate": {
         #     "module": "resodate",
         #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
@@ -74,33 +191,21 @@ class Config:
         # "OERSI": {
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        # },        
+        # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
+        #     "logo": {
+        #         "src": "ieee.gif",
+        #         "width": "w-100",
+        #         "height": "h-70",
+        #     }, 
+        #     "module": "ieee",
+        #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+        #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
         # },
-        "IEEE": {
-            "module": "ieee",
-            "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-            "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
-        },
         # "EUDAT": {
         #     "module": "eudat",
         #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
         #     "record-base-url": f"https://b2share.eudat.eu/records/",
-        # },
-        "OPENAIRE - Products": {
-            "module": "openaire_products",
-            "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
-            "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
-        },
-        "OPENAIRE - Projects": {
-            "module": "openaire_projects",
-            "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
-        },
-        "ORCID": {
-            "module": "orcid",
-            "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },
-        # "GESIS": {
-        #     "module": "gesis",
-        #     "search-endpoint": f"http://193.175.238.35:8089/dc/_search?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         # "CORDIS": {
         #     "module": "cordis",
@@ -114,29 +219,6 @@ class Config:
         #     "module": "gepris",
         #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         # },
-        "CROSSREF - Publications": {
-            "module": "crossref_publications",
-            "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
-            "get-publication-endpoint": "https://api.crossref.org/works/",
-            "get-publication-references-endpoint": "https://api.crossref.org/works/",
-        },
-        "SEMANTIC SCHOLAR - Publications": {
-            "module": "semanticscholar_publications",
-            # "search-endpoint": f"",
-            # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
-            "citations-endpoint": f"https://api.semanticscholar.org/graph/v1/paper/",
-            "recommendations-endpoint": f"https://api.semanticscholar.org/recommendations/v1/papers/forpaper/",
-        },
-        "SEMANTIC SCHOLAR - Researchers": {
-            "module": "semanticscholar_researchers",
-            # "search-endpoint": f"",
-            # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",
-        },
-        "RE3DATA": {
-            "module": "re3data",
-            "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
-            "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
-        },
     }
 
     LLMS = {
@@ -165,6 +247,21 @@ class Config:
 
     ENTITY_RESOLUTION = {
         "settings_file_publications": "static/weights/publications-settings.json",
+    }
+
+    # MAPPING_PREFERENCE is used to map the fields from the platform responses to the objects in objects.py
+    # i.e. abstracts from publications are first taken from OPENALEX - Publications, then from CROSSREF - Publications, etc.
+    MAPPING_PREFERENCE = {
+        "researchers": {
+            "__default__": ["OPENALEX - Researchers", "ORCID"],
+            "identifier": ["ORCID", "OPENALEX - Researchers"],
+        },
+        "publications": {
+            "__default__": ["CROSSREF - Publications", "OPENALEX - Publications", "OPENAIRE - Products"],
+            "abstract": ["OPENALEX - Publications", "CROSSREF - Publications", "OPENAIRE - Products"],
+            "reference": ["CROSSREF - Publications"],
+            "citation": ["CROSSREF - Publications"],
+        }
     }
 
     # ELASTIC = {

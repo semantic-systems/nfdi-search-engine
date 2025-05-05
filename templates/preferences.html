@@ -8,6 +8,13 @@
 {% block content %}
 
 <section class="py-3 py-md-5 py-xl-8">
+    <div class="container pb-3">
+        <div class="row">
+            <div class="col-12 text-start">
+                <a href="{{back_url}}">Back to search results</a>
+            </div>
+        </div>
+    </div>
     <div class="container">
         <p>
             Here is the list of all the data sources that are currently being scanned or "harvested" to
@@ -20,10 +27,15 @@
             control of your search
             parameters, allowing for more tailored and focused results.
         </p>
-        <form method="POST" action="">
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Data Sources</legend>
+        <fieldset class="form-group">
+            <legend class="border-bottom mb-4">Data Sources</legend>
+            <div class="mt-2 mb-3">
+                <a href="#" id="selectAllSources">Select All</a> | <a href="#" id="deselectSelectedSources">Unselect
+                    All</a>
+            </div>
+            <form method="POST" action="">
+                {{ form.hidden_tag() }}
+
                 {% if form.data_sources.errors %}
                 <div class="invalid-feedback">
                     {% for error in form.data_sources.errors %}
@@ -37,12 +49,42 @@
                     {{ data_source.label(class="form-check-label") }}
                 </div>
                 {% endfor %}
-            </fieldset>
-            <div class="form-group mt-3">
-                {{ form.submit(class="btn btn-primary") }}
-            </div>
-        </form>
+                <br>
+                <div class="form-group mt-3">
+                    {{ form.submit(class="btn btn-primary") }}
+                </div>
+            </form>
+        </fieldset>
     </div>
 </section>
 
 {% endblock %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectAllLink = document.getElementById('selectAllSources');
+        const deselectSelectedLink = document.getElementById('deselectSelectedSources');
+        const checkboxes = document.querySelectorAll('.form-check-input');
+
+        selectAllLink.addEventListener('click', function (event) {
+            event.preventDefault();
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+        });
+
+        deselectSelectedLink.addEventListener('click', function (event) {
+            event.preventDefault();
+            checkboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    checkbox.checked = false;
+                }
+            });
+        });
+    });
+
+</script>
+
+{% endblock javascripts %}
