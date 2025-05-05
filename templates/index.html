@@ -55,7 +55,7 @@
             </div>
             <div class="col-md-12">
                 <div id="dataSourcesCarousel" class="carousel">
-                    <div class="carousel-inner sourcesCarouselInner">
+                    <div class="carousel-inner">
                         {% for source in sources %}
                         <div class="carousel-item {% if loop.first %}active{% endif %} d-flex justify-content-around">
                             <div class="col-md-4 align-self-center">
@@ -159,13 +159,13 @@
                         </div>
 
                     </div>
-                    <button class="carousel-control-prev partnersCarouselPrev" type="button"
-                        data-bs-target="#partnersCarousel" data-bs-slide="prev">
+                    <button class="carousel-control-prev" type="button" data-bs-target="#partnersCarousel"
+                        data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
-                    <button class="carousel-control-next partnersCarouselNext" type="button"
-                        data-bs-target="#partnersCarousel" data-bs-slide="next">
+                    <button class="carousel-control-next" type="button" data-bs-target="#partnersCarousel"
+                        data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
                     </button>
@@ -192,70 +192,62 @@
 
     $(document).ready(function () {
 
-        const carousel1 = document.querySelector("#dataSourcesCarousel");
+        const dataSourcesCarousel = document.querySelector("#dataSourcesCarousel");
+        const partnersCarousel = document.querySelector("#partnersCarousel");
 
-        if (window.matchMedia("(min-width:576px)").matches) {
-            const carousel = new bootstrap.Carousel(carousel1, {
-                interval: false
-            });
-
-            var carouselWidth = $(".sourcesCarouselInner")[0].scrollWidth;
-            var cardWidth = $(".carousel-item").width();
+        var manageCarousel = function (ctlCarousel) {
+            var $carouselInner = $(ctlCarousel).find(".carousel-inner");
+            var $nextButton = $(ctlCarousel).find(".carousel-control-next");
+            var $prevButton = $(ctlCarousel).find(".carousel-control-prev");
+            var carouselWidth = $carouselInner[0].scrollWidth;
+            var cardWidth = $(ctlCarousel).find(".carousel-item").width();
 
             var scrollPosition = 0;
 
-            $(".sourcesCarouselNext").on("click", function () {
+            var updateButtonStates = function () {
+                if (scrollPosition <= 0) {
+                    $prevButton.prop("disabled", true);
+                } else {
+                    $prevButton.prop("disabled", false);
+                }
+
+                if (scrollPosition >= carouselWidth - cardWidth * 3) {
+                    $nextButton.prop("disabled", true);
+                } else {
+                    $nextButton.prop("disabled", false);
+                }
+            };
+
+            // Initialize button states on load
+            updateButtonStates();
+
+            $nextButton.on("click", function () {
                 if (scrollPosition < carouselWidth - cardWidth * 3) {
-                    console.log("next");
-                    scrollPosition = scrollPosition + cardWidth;
-                    $(".sourcesCarouselInner").animate({scrollLeft: scrollPosition}, 800);
+                    scrollPosition += cardWidth;
+                    $carouselInner.animate({scrollLeft: scrollPosition}, 800, updateButtonStates);
                 }
             });
-            $(".sourcesCarouselPrev").on("click", function () {
+
+            $prevButton.on("click", function () {
                 if (scrollPosition > 0) {
-                    console.log("prev");
-                    scrollPosition = scrollPosition - cardWidth;
-                    $(".sourcesCarouselInner").animate({scrollLeft: scrollPosition}, 800);
+                    scrollPosition -= cardWidth;
+                    $carouselInner.animate({scrollLeft: scrollPosition}, 800, updateButtonStates);
                 }
             });
-        } else {
-            $(carousel1).addClass("slide");
+
+
         }
 
-
-        const carousel2 = document.querySelector("#partnersCarousel");
-
         if (window.matchMedia("(min-width:576px)").matches) {
-            const carousel = new bootstrap.Carousel(carousel2, {
-                interval: false
-            });
-
-            var carouselWidth = $(".partnersCarouselInner")[0].scrollWidth;
-            var cardWidth = $(".carousel-item").width();
-
-            var scrollPosition = 0;
-
-            $(".partnersCarouselNext").on("click", function () {
-                if (scrollPosition < carouselWidth - cardWidth * 3) {
-                    console.log("next");
-                    scrollPosition = scrollPosition + cardWidth;
-                    $(".partnersCarouselInner").animate({scrollLeft: scrollPosition}, 800);
-                }
-            });
-            $(".partnersCarouselPrev").on("click", function () {
-                if (scrollPosition > 0) {
-                    console.log("prev");
-                    scrollPosition = scrollPosition - cardWidth;
-                    $(".partnersCarouselInner").animate({scrollLeft: scrollPosition}, 800);
-                }
-            });
-        } else {
-            $(carousel2).addClass("slide");
+            manageCarousel(dataSourcesCarousel);
+            manageCarousel(partnersCarousel);
+        }
+        else {
+            $(dataSourcesCarousel).addClass("slide");
+            $(partnersCarousel).addClass("slide");
         }
 
     });
-
-
 
 </script>
 
