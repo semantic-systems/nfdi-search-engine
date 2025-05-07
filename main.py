@@ -24,7 +24,7 @@ from flask_ipban import IpBan
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
-ip_ban = IpBan(ban_count=5)
+ip_ban = IpBan(ban_count=20)
 ip_ban.init_app(app)
 app.config.from_object(Config)
 Session(app)
