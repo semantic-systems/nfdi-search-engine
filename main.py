@@ -24,7 +24,7 @@ from flask_ipban import IpBan
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
-ip_ban = IpBan()
+ip_ban = IpBan(ban_count=5)
 ip_ban.init_app(app)
 app.config.from_object(Config)
 Session(app)
@@ -1078,7 +1078,7 @@ def get_block_list():
 @utils.timeit
 def ip_ban_block(ip_address):
     utils.log_activity(f"ip_ban_block: {ip_address}")    
-    ip_ban.block(ip=ip_address)
+    ip_ban.block(ip_list=[ip_address])
     return f"IP address {ip_address} has been blocked." 
 
 @app.route('/ip-ban-add/<string:ip_address>', methods=['GET'])
