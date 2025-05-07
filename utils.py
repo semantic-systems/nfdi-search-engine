@@ -197,6 +197,12 @@ from flask import request, current_app
 from flask_login import current_user
 from ua_parser import user_agent_parser
 
+def get_client_ip():
+    client_ip = request.remote_addr
+    if 'X-Forwarded-For' in request.headers:
+        client_ip = request.headers.getlist('X-Forwarded-For')[0]
+    return client_ip
+
 def log_activity(user_activity): 
     es_client.index(
         index=ES_Index.user_activity_log.name,        
@@ -275,7 +281,8 @@ def log_agent():
     else:
         #extract user agent details from the request headers
         user_agent_string = request.headers.get("user-agent") 
-        user_agent_parsed = user_agent_parser.Parse(user_agent_string)
+        user_agent_parsed = user_agent_parser.Parse(user_agent_string)        
+
         es_client.index(
             index=ES_Index.user_agent_log.name,        
             document={
@@ -285,7 +292,7 @@ def log_agent():
                 "session_id": session.get('gateway-session-id', ""),
                 "visitor_id": "", #this will be updated later via ajax call   
                 # "ip_address": request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
-                "ip_address": request.remote_addr,
+                "ip_address": get_client_ip(),
                 "user_agent": user_agent_string,
                 "device_family": user_agent_parsed.get('device',{}).get('family',""),
                 "device_brand":  user_agent_parsed.get('device',{}).get('major',""),

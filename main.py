@@ -14,6 +14,7 @@ import importlib
 from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_session import Session
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
 from chatbot import chatbot
@@ -25,9 +26,10 @@ from flask_limiter.util import get_remote_address
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1) # If you have one proxy
 
 limiter = Limiter(
-    get_remote_address,
+    utils.get_client_ip,
     app=app,
     default_limits=["500 per day", "120 per hour"],
     storage_uri="memory://",
