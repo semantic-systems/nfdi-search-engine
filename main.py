@@ -19,10 +19,13 @@ from config import Config
 from chatbot import chatbot
 
 import utils
+from flask_ipban import IpBan
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
+ip_ban = IpBan()
+ip_ban.init_app(app)
 app.config.from_object(Config)
 Session(app)
 
@@ -1050,6 +1053,64 @@ def merge_objects(object_list, object_type):
     return merged_object
 
 #endregion
+
+
+#region IP BAN
+
+@app.route('/get-block-list', methods=['GET'])
+@utils.timeit
+def get_block_list():
+    utils.log_activity("get_block_list")    
+    s = '<html><body>'
+    s += '<table class="table" style="width: 100%"><thead>\n'
+    s += '<tr><th>ip</th><th>count</th><th>permanent</th><th>url</th><th>timestamp</th></tr>\n'
+    s += '</thead><tbody>\n'
+    for k, r in ip_ban.get_block_list().items():
+        s += '<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>\n'.format(k, r['count'],
+                                                                                        r.get('permanent', ''),
+                                                                                        r.get('url', ''),
+                                                                                        r['timestamp'])
+        
+    s += '</body></html>'
+    return s
+
+@app.route('/ip-ban-block/<string:ip_address>', methods=['GET'])
+@utils.timeit
+def ip_ban_block(ip_address):
+    utils.log_activity(f"ip_ban_block: {ip_address}")    
+    ip_ban.block(ip=ip_address)
+    return f"IP address {ip_address} has been blocked." 
+
+@app.route('/ip-ban-add/<string:ip_address>', methods=['GET'])
+@utils.timeit
+def ip_ban_add(ip_address):
+    utils.log_activity(f"ip_ban_add: {ip_address}")    
+    ip_ban.add(ip=ip_address)
+    return f"IP address {ip_address} has been added to the list." 
+
+@app.route('/ip-ban-remove/<string:ip_address>', methods=['GET'])
+@utils.timeit
+def ip_ban_remove(ip_address):
+    utils.log_activity(f"ip_ban_remove: {ip_address}")    
+    ip_ban.remove(ip=ip_address)
+    return f"IP address {ip_address} has been removed from the list." 
+
+@app.route('/ip-whitelist-add/<string:ip_address>', methods=['GET'])
+@utils.timeit
+def ip_whitelist_add(ip_address):
+    utils.log_activity(f"ip_whitelist_add: {ip_address}")    
+    ip_ban.ip_whitelist_add(ip=ip_address)
+    return f"IP address {ip_address} has been added to the whitelist."
+
+@app.route('/ip-whitelist-remove/<string:ip_address>', methods=['GET'])
+@utils.timeit
+def ip_whitelist_remove(ip_address):
+    utils.log_activity(f"ip_whitelist_remove: {ip_address}")    
+    ip_ban.ip_whitelist_remove(ip=ip_address)
+    return f"IP address {ip_address} has been removed from the whitelist." 
+
+#endregion
+
 
 #region Control Panel
 
