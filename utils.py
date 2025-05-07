@@ -284,7 +284,8 @@ def log_agent():
                 "user_email": session.get('current-user-email', ""),
                 "session_id": session.get('gateway-session-id', ""),
                 "visitor_id": "", #this will be updated later via ajax call   
-                "ip_address": request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                # "ip_address": request.environ.get('HTTP_X_REAL_IP', request.remote_addr),
+                "ip_address": request.remote_addr,
                 "user_agent": user_agent_string,
                 "device_family": user_agent_parsed.get('device',{}).get('family',""),
                 "device_brand":  user_agent_parsed.get('device',{}).get('major',""),
