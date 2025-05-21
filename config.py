@@ -93,6 +93,24 @@ class Config:
             "module": "wikidata_researchers",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },        
+        "Huggingface - Models": {
+            "logo": {
+                "src": "huggingface.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "huggingface_models",
+            "search-endpoint": f"https://huggingface.co/api/models?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+        },
+        "Huggingface - Datasets": {
+            "logo": {
+                "src": "huggingface.png",
+                "width": "w-100",
+                "height": "h-100",
+            }, 
+            "module": "huggingface_datasets",
+            "search-endpoint": f"https://huggingface.co/api/datasets?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+        },
         "OPENAIRE - Products": {
             "logo": {
                 "src": "openaire.webp",
