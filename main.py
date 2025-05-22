@@ -8,7 +8,7 @@ import json
 import logging
 import logging.config
 import secrets
-from urllib.parse import urlsplit, urlencode
+from urllib.parse import urlsplit, urlencode, quote
 import importlib
 
 from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
@@ -165,17 +165,78 @@ from urllib.parse import quote, unquote
 FILTERS["quote"] = lambda x: quote(str(x), safe='')
 
 import json
-def format_digital_obj_url(value, identifier_type1, identifier_type2 = ''):
-    return f"{identifier_type1}:{value.identifier}/{identifier_type2}:{value.source[0].identifier}"
-    # sources_list = []
-    # for source in value.source:
-    #     source_dict = {}
-    #     source_dict['doi'] = value.identifier
-    #     source_dict['sname'] = source.name
-    #     source_dict['sid'] = source.identifier
-    #     sources_list.append(source_dict)
-    # return json.dumps(sources_list)
+
+
+
+# encode the value for the URL
+def url_encode(value: str | bytes | None) -> str:
+    if not value:
+        return ''
+    # ensure str for quote()
+    if isinstance(value, bytes):
+        value = value.decode()
+    encoded = quote(str(value), safe='')      # '/' -> %2F, space -> %20, ...
+    return encoded.replace('%2F', '%252F')    # double-encode slash
+
+def format_digital_obj_url(obj, *fields) -> str:
+    """
+    Jinja usage examples
+        {{ resource | format_digital_obj_url('identifier', 'source_id') }}
+        {{ resource | format_digital_obj_url(['identifier', 'source_id']) }}
+    """
+
+    # accept either *fields or a single iterable
+    if len(fields) == 1 and isinstance(fields[0], (list, tuple)):
+        fields = fields[0]
+
+    # implement special cases here
+    def _get(field: str) -> str | None:
+        match field:
+            case 'source-id':
+                val = obj.source[0].identifier if getattr(obj, 'source', '') else ''
+            case 'source-name':
+                val = obj.source[0].name if getattr(obj, 'source', '') else ''
+            case 'doi' | 'orcid':
+                val = obj.identifier if getattr(obj, 'identifier', '') else ''
+            case _:
+                val = getattr(obj, field, '')
+        # print(f"{field=}, {val=}")
+        return val
     
+    parts = [f"{f}:{url_encode(_get(f))}" for f in fields if _get(f)]
+
+    return "/".join(parts)
+
+
+def get_researcher_url(person, external=True) -> str:
+    """
+    Jinja usage example
+        {{ person | get_researcher_url }}
+    """
+
+    if getattr(person, 'type', '').lower() != 'person':
+        return ''
+    if not getattr(person, 'identifier', None):
+        return ''
+    orcid_id = str(person.identifier).split('/')[-1]
+
+    if getattr(person, 'source', None) and person.source and getattr(person.source[0], 'identifier', None):
+        src_name = person.source[0].name
+        src_id   = person.source[0].identifier
+    else:
+        src_name = 'na'     # source name is 'na' if not available
+        src_id   = orcid_id
+
+    return url_for(
+        'researcher_details',
+        source_name = f"source-name:{url_encode(src_name)}",
+        source_id   = f"source-id:{url_encode(src_id)}",
+        orcid       = f"orcid:{url_encode(orcid_id)}",
+        _external   = external
+    )
+
+# Flask‐Jinja registration
+FILTERS['get_researcher_url'] = get_researcher_url
 FILTERS["format_digital_obj_url"] = format_digital_obj_url
 
 def format_authors_for_citations(value):
@@ -614,15 +675,17 @@ def get_chatbot_answer():
     return answer
 
 
-@app.route('/publication-details/<string:doi>/<string:source_id>', methods=['GET'])
+@app.route('/publication-details/<string:source_name>/<string:source_id>/<string:doi>', methods=['GET'])
 @limiter.limit("10 per minute")
 @utils.timeit
 @utils.set_cookies
-def publication_details(doi, source_id):
+def publication_details(source_name, source_id, doi):
 
     utils.log_activity(f"loading publication details page: {doi}/{source_id}") 
-    doi = unquote(doi.split(':',1)[1])
-    source_id = unquote(source_id.split(':',1)[1])
+    
+    source_name = unquote(source_name.split(':',1)[1])
+    source_id   = unquote(source_id.split(':',1)[1])
+    doi         = unquote(doi.split(':',1)[1])
 
     print(f"{doi=}")
     print(f"{source_id=}")
@@ -698,18 +761,21 @@ def publication_details_recommendations(doi):
     # print("response:", response)
     return response
 
-@app.route('/researcher-details/<string:orcid>/<string:source_id>', methods=['GET'])
+@app.route('/researcher-details/<string:source_name>/<string:source_id>/<string:orcid>', methods=['GET'])
 @limiter.limit("10 per minute")
 @utils.timeit
 @utils.set_cookies
-def researcher_details(orcid, source_id):
+def researcher_details(source_name, source_id, orcid):
 
     utils.log_activity(f"loading researcher details page: {orcid}/{source_id}") 
-    orcid = unquote(orcid.split(':',1)[1])
-    source_id = unquote(source_id.split(':',1)[1])
 
-    print(f"{orcid=}")
+    source_name = unquote(source_name.split(':',1)[1])
+    source_id   = unquote(source_id.split(':',1)[1])
+    orcid       = unquote(orcid.split(':',1)[1])
+
+    print(f"{source_name=}")
     print(f"{source_id=}")
+    print(f"{orcid=}")
 
     sources = []
     if current_user.is_anonymous:
@@ -755,6 +821,48 @@ def generate_researcher_about_me(orcid):
     researcher_about_me = generate_researcher_about_me(session['researcher:'+orcid])
     return jsonify(summary=f'{researcher_about_me}')
 
+@app.route('/resource-details/<path:doi>/<string:source_id>', methods=['GET'])
+# @utils.handle_exceptions
+def resource_details(doi, source_id):
+
+    # doi may contain slashes, so use <path:doi>
+    doi = unquote(doi.split(':', 1)[1]) if ':' in doi else unquote(doi)
+    source_id = unquote(source_id.split(':', 1)[1]) if ':' in source_id else unquote(source_id)
+
+    # check if the doi contains a slash
+    if doi.count('/') > 0:
+        doi_id = doi.split('/', 1)[0]
+        source_name = doi.split('/', 1)[1]
+    
+        # the source_name can give an indication of the source if we dont have a source_id
+        if source_name.startswith('R3'):    # RE3Data
+            source_name = "RE3DATA"
+        elif source_name.startswith('zenodo'):  # Zenodo
+            source_name = "ZENODO"
+        elif source_name.startswith('m9'):  # Openaire - Products
+            source_name = "OPENAIRE - Products"
+        else:
+            # load 404 page
+            return make_response(render_template('error.html', error_message='Resource not found.'))
+    else:
+        # load 404 page
+        return make_response(render_template('error.html', error_message='Resource not found.'))
+
+
+    print(f"{doi=}")
+    print(f"{source_id=}")
+    print(f"{source_name=}")
+
+    # Find the source by matching source_id to DATA_SOURCES keys or another logic as needed
+    # Here, assuming source_id is the source key
+    module_name = app.config['DATA_SOURCES'][source_id].get('module', '')
+    resource = importlib.import_module(f'sources.{module_name}').get_resource(source_name, source_id, doi)
+    
+    print(resource)
+    
+    response = make_response(render_template('resource-details.html', resource=resource))
+
+    return response
 
 # @app.route('/generate-researcher-banner/<string:orcid>', methods=['GET'])
 # @utils.handle_exceptions

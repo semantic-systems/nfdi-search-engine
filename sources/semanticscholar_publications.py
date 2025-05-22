@@ -92,7 +92,13 @@ def get_citations_for_publication(source: str, doi: str):
 
                     _author = Author()
                     _author.type = 'Person'
-                    _author.name = author.get("name", "")                         
+                    _author.name = author.get("name", "")
+                    
+                    author_source = thing(
+                        name=source,
+                        identifier=author.get("externalIds", {}).get("ORCID", ""),
+                    )
+                    
                     publication.author.append(_author)
 
                 publication.identifier = citation.get("externalIds", {}).get("DOI", "")
