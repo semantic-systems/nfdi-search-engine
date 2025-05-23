@@ -193,11 +193,15 @@ def format_digital_obj_url(obj, *fields) -> str:
     def _get(field: str) -> str | None:
         match field:
             case 'source-id':
-                val = obj.source[0].identifier if getattr(obj, 'source', '') else ''
+                # if a source identifier is available, use it, otherwise 'na'
+                if getattr(obj, 'source', '') and getattr(obj.source[0], 'identifier', ''):
+                    val = obj.source[0].identifier
+                else:
+                    val = 'na'
             case 'source-name':
-                val = obj.source[0].name if getattr(obj, 'source', '') else ''
+                val = obj.source[0].name if getattr(obj, 'source', '') else 'na'
             case 'doi' | 'orcid':
-                val = obj.identifier if getattr(obj, 'identifier', '') else ''
+                val = obj.identifier if getattr(obj, 'identifier', '') else 'na'
             case _:
                 val = getattr(obj, field, '')
         # print(f"{field=}, {val=}")
@@ -821,45 +825,22 @@ def generate_researcher_about_me(orcid):
     researcher_about_me = generate_researcher_about_me(session['researcher:'+orcid])
     return jsonify(summary=f'{researcher_about_me}')
 
-@app.route('/resource-details/<path:doi>/<string:source_id>', methods=['GET'])
+@app.route('/resource-details/<string:source_name>/<string:source_id>/<string:doi>', methods=['GET'])
 # @utils.handle_exceptions
-def resource_details(doi, source_id):
+def resource_details(source_name, source_id, doi):
 
-    # doi may contain slashes, so use <path:doi>
-    doi = unquote(doi.split(':', 1)[1]) if ':' in doi else unquote(doi)
+    source_name = unquote(source_name.split(':', 1)[1]) if ':' in source_name else unquote(source_name)
     source_id = unquote(source_id.split(':', 1)[1]) if ':' in source_id else unquote(source_id)
+    doi = unquote(doi.split(':', 1)[1]) if ':' in doi else unquote(doi)
 
-    # check if the doi contains a slash
-    if doi.count('/') > 0:
-        doi_id = doi.split('/', 1)[0]
-        source_name = doi.split('/', 1)[1]
-    
-        # the source_name can give an indication of the source if we dont have a source_id
-        if source_name.startswith('R3'):    # RE3Data
-            source_name = "RE3DATA"
-        elif source_name.startswith('zenodo'):  # Zenodo
-            source_name = "ZENODO"
-        elif source_name.startswith('m9'):  # Openaire - Products
-            source_name = "OPENAIRE - Products"
-        else:
-            # load 404 page
-            return make_response(render_template('error.html', error_message='Resource not found.'))
-    else:
-        # load 404 page
-        return make_response(render_template('error.html', error_message='Resource not found.'))
-
-
-    print(f"{doi=}")
-    print(f"{source_id=}")
     print(f"{source_name=}")
+    print(f"{source_id=}")
+    print(f"{doi=}")
 
-    # Find the source by matching source_id to DATA_SOURCES keys or another logic as needed
-    # Here, assuming source_id is the source key
-    module_name = app.config['DATA_SOURCES'][source_id].get('module', '')
+    # search for the doi in only the source_name platform
+    module_name = app.config['DATA_SOURCES'][source_name].get('module', '')
     resource = importlib.import_module(f'sources.{module_name}').get_resource(source_name, source_id, doi)
-    
-    print(resource)
-    
+
     response = make_response(render_template('resource-details.html', resource=resource))
 
     return response

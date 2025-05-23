@@ -169,6 +169,7 @@ def map_repository_to_dataset(source: str, doi: str, repository_details: dict) -
         identifier=doi,
         additionalType=', '.join(content_types),
         source=[thing(name=source,
+                      identifier=repository_data.get('r3d:re3data.orgIdentifier', ""),
                       url='https://www.re3data.org/repository/' +
                           repository_data.get('r3d:re3data.orgIdentifier', ""))],
         author=organizations,
