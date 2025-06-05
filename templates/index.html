@@ -59,8 +59,11 @@
                         {% for source in sources %}
                         <div class="carousel-item {% if loop.first %}active{% endif %} d-flex justify-content-around">
                             <div class="col-md-4 align-self-center">
-                                <img class="d-block {{source.width}} {{source.height}} mx-auto"
-                                    src="{{ url_for('static', filename='images/sources/'+source.src) }}" alt="">
+                                <a href="{{source.link}}" target="_blank"
+                                    title="{{source.name}}">
+                                    <img class="d-block {{source.width}} {{source.height}} mx-auto"
+                                        src="{{ url_for('static', filename='images/sources/'+source.src) }}" alt="">
+                                </a>
                             </div>
                         </div>
                         {% endfor %}

@@ -1,12 +1,13 @@
 import os
 
-#load environment variables
+# load environment variables
 from dotenv import find_dotenv, load_dotenv
+
 _ = load_dotenv(find_dotenv())
 
+
 class Config:
-    
-    SECRET_KEY = os.environ.get('SECRET_KEY', '')
+    SECRET_KEY = os.environ.get("SECRET_KEY", "")
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
 
@@ -24,31 +25,36 @@ class Config:
     DATE_FORMAT_FOR_ELASTIC = "%Y-%m-%d"
 
     DATA_SOURCES = {
-        
         "GESIS KG": {
             "logo": {
+                "name": "GESIS",
+                "link": "https://www.gesis.org/",
                 "src": "gesis.svg",
                 "width": "w-100",
                 "height": "h-70",
-            },            
+            },
             "module": "gesis_kg_publication",
             "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
         },
         "GESIS KG - Dataset": {
             "logo": {
+                "name": "GESIS",
+                "link": "https://www.gesis.org/",
                 "src": "gesis.svg",
                 "width": "w-100",
                 "height": "h-70",
-            },  
+            },
             "module": "gesis_kg_dataset",
             "search-endpoint": f"https://data.gesis.org/gesiskg/sparql?default-graph-uri=&query=",
         },
         "OPENALEX - Publications": {
             "logo": {
+                "name": "OPENALEX",
+                "link": "https://openalex.org/",
                 "src": "openalex.png",
                 "width": "w-100",
                 "height": "h-100",
-            },  
+            },
             "module": "openalex_publications",
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-publication-endpoint": "https://api.openalex.org/works/",
@@ -56,10 +62,12 @@ class Config:
         },
         "OPENALEX - Researchers": {
             "logo": {
+                "name": "OPENALEX",
+                "link": "https://openalex.org/",
                 "src": "openalex.png",
                 "width": "w-100",
                 "height": "h-100",
-            },   
+            },
             "module": "openalex_researchers",
             "search-endpoint": f"https://api.openalex.org/authors?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-researcher-endpoint": "https://api.openalex.org/authors/",
@@ -67,66 +75,80 @@ class Config:
         },
         "ZENODO": {
             "logo": {
+                "name": "ZENODO",
+                "link": "https://zenodo.org/",
                 "src": "zenodo.png",
                 "width": "w-100",
                 "height": "h-100",
-            },  
+            },
             "module": "zenodo",
             "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
             "get-publication-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
             "logo": {
+                "name": "WIKIDATA",
+                "link": "https://www.wikidata.org/",
                 "src": "wikidata.png",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "wikidata_publications",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
         },
         "WIKIDATA - Researchers": {
             "logo": {
+                "name": "WIKIDATA",
+                "link": "https://www.wikidata.org/",
                 "src": "wikidata.png",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "wikidata_researchers",
             "search-endpoint": f"https://query.wikidata.org/sparql?format=json&query=",
-        },        
+        },
         "OPENAIRE - Products": {
             "logo": {
+                "name": "OPENAIRE",
+                "link": "https://www.openaire.eu/",
                 "src": "openaire.webp",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "openaire_products",
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
             "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
         },
         "OPENAIRE - Projects": {
             "logo": {
+                "name": "OPENAIRE",
+                "link": "https://www.openaire.eu/",
                 "src": "openaire.webp",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "openaire_projects",
             "search-endpoint": f"https://api.openaire.eu/search/projects?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
         },
         "ORCID": {
             "logo": {
+                "name": "ORCID",
+                "link": "https://orcid.org/",
                 "src": "orcid.svg",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        },            
+        },
         "CROSSREF - Publications": {
             "logo": {
+                "name": "CROSSREF",
+                "link": "https://www.crossref.org/",
                 "src": "crossref.svg",
                 "width": "w-100",
                 "height": "h-60",
-            }, 
+            },
             "module": "crossref_publications",
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
             "get-publication-endpoint": "https://api.crossref.org/works/",
@@ -134,10 +156,12 @@ class Config:
         },
         "SEMANTIC SCHOLAR - Publications": {
             "logo": {
+                "name": "SEMANTIC SCHOLAR",
+                "link": "https://www.semanticscholar.org/",
                 "src": "semanticscholar.png",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "semanticscholar_publications",
             # "search-endpoint": f"",
             # "get-publication-endpoint": "https://api.semanticscholar.org/graph/v1/paper/",
@@ -146,42 +170,46 @@ class Config:
         },
         "SEMANTIC SCHOLAR - Researchers": {
             "logo": {
+                "name": "SEMANTIC SCHOLAR",
+                "link": "https://www.semanticscholar.org/",
                 "src": "semanticscholar.png",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "semanticscholar_researchers",
             # "search-endpoint": f"",
             # "get-researcher-endpoint": f"https://api.semanticscholar.org/graph/v1/author/",
         },
         "RE3DATA": {
             "logo": {
+                "name": "RE3DATA",
+                "link": "https://www.re3data.org/",
                 "src": "re3data.png",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
+            },
             "module": "re3data",
             "search-endpoint": f"https://www.re3data.org/api/beta/repositories?query=",
-            "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/"
+            "get-resource-endpoint": f"https://www.re3data.org/api/v1/repository/",
         },
         "DBLP - VENUES": {
             "logo": {
+                "name": "DBLP",
+                "link": "https://dblp.org/",
                 "src": "dblp.png",
                 "width": "w-100",
                 "height": "h-100",
-            }, 
-            "module": "dblp_venues", 
+            },
+            "module": "dblp_venues",
             "search-endpoint": f"https://dblp.org/search/venue/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        
-        
         # "dblp - Publications": {
-        #     "module": "dblp_publications", 
+        #     "module": "dblp_publications",
         #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # }, 
+        # },
         # #######Though DBLP has an endpoint for researchers but their details are minimal hence should not be harvested.
-        # "dblp-Researchers": { 
-        #    "module": "dblp_researchers", 
+        # "dblp-Researchers": {
+        #    "module": "dblp_researchers",
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
         # "resodate": {
@@ -191,13 +219,13 @@ class Config:
         # "OERSI": {
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },        
+        # },
         # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
         #     "logo": {
         #         "src": "ieee.gif",
         #         "width": "w-100",
         #         "height": "h-70",
-        #     }, 
+        #     },
         #     "module": "ieee",
         #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
         #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
@@ -225,24 +253,24 @@ class Config:
         "openai": {
             "url_chat_completions": "https://api.openai.com/v1/chat/completions",
             "url_images_generations": "https://api.openai.com/v1/images/generations",
-            'open_api_key': os.environ.get("OPENAI_API_KEY", "")
+            "open_api_key": os.environ.get("OPENAI_API_KEY", ""),
         },
         "llama3": {
             "url": "https://llm-chat.skynet.coypu.org/generate_text",
             "username": os.environ.get("LLAMA3_USERNAME", ""),
             "password": os.environ.get("LLAMA3_PASSWORD", ""),
-        }
+        },
     }
 
     CHATBOT = {
         "chatbot_enable": True,
-        "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),        
+        "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),
         "endpoint_chat": "/chat",
         "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",
         "endpoint_are_embeddings_generated": "/are-embeddings-generated",
-        #open ai ... these two parameters should be passed onto chatbot
-        "openai_model_version": "gpt-3.5-turbo-0125", 
-        "openai_temperature": 2
+        # open ai ... these two parameters should be passed onto chatbot
+        "openai_model_version": "gpt-3.5-turbo-0125",
+        "openai_temperature": 2,
     }
 
     ENTITY_RESOLUTION = {
@@ -257,50 +285,56 @@ class Config:
             "identifier": ["ORCID", "OPENALEX - Researchers"],
         },
         "publications": {
-            "__default__": ["CROSSREF - Publications", "OPENALEX - Publications", "OPENAIRE - Products"],
-            "abstract": ["OPENALEX - Publications", "CROSSREF - Publications", "OPENAIRE - Products"],
+            "__default__": [
+                "CROSSREF - Publications",
+                "OPENALEX - Publications",
+                "OPENAIRE - Products",
+            ],
+            "abstract": [
+                "OPENALEX - Publications",
+                "CROSSREF - Publications",
+                "OPENAIRE - Products",
+            ],
             "reference": ["CROSSREF - Publications"],
             "citation": ["CROSSREF - Publications"],
-        }
+        },
     }
 
     # ELASTIC = {
     #     "server": os.environ.get('ELASTIC_SERVER',""),
-    #     "username": os.environ.get('ELASTIC_USERNAME',""), 
+    #     "username": os.environ.get('ELASTIC_USERNAME',""),
     #     "password": os.environ.get('ELASTIC_PASSWORD',""),
     # }
 
     OAUTH2_PROVIDERS = {
         # Google OAuth 2.0 documentation:
         # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
-        'google': {
-            'client_id': os.environ.get('CLIENT_ID_GOOGLE'),
-            'client_secret': os.environ.get('CLIENT_SECRET_GOOGLE'),
-            'authorize_url': 'https://accounts.google.com/o/oauth2/auth',
-            'token_url': 'https://accounts.google.com/o/oauth2/token',
-            'userinfo': {
-                'url': 'https://www.googleapis.com/oauth2/v3/userinfo',
-                'email': lambda json: json['email'],
+        "google": {
+            "client_id": os.environ.get("CLIENT_ID_GOOGLE"),
+            "client_secret": os.environ.get("CLIENT_SECRET_GOOGLE"),
+            "authorize_url": "https://accounts.google.com/o/oauth2/auth",
+            "token_url": "https://accounts.google.com/o/oauth2/token",
+            "userinfo": {
+                "url": "https://www.googleapis.com/oauth2/v3/userinfo",
+                "email": lambda json: json["email"],
             },
-            'scopes': ['https://www.googleapis.com/auth/userinfo.email'],
+            "scopes": ["https://www.googleapis.com/auth/userinfo.email"],
         },
-
         # GitHub OAuth 2.0 documentation:
         # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
-        'github': {
-            'client_id': os.environ.get('CLIENT_ID_GITHUB'),
-            'client_secret': os.environ.get('CLIENT_SECRET_GITHUB'),
-            'authorize_url': 'https://github.com/login/oauth/authorize',
-            'token_url': 'https://github.com/login/oauth/access_token',
-            'userinfo': {
-                'url': 'https://api.github.com/user/emails',
-                'email': lambda json: json[0]['email'],
+        "github": {
+            "client_id": os.environ.get("CLIENT_ID_GITHUB"),
+            "client_secret": os.environ.get("CLIENT_SECRET_GITHUB"),
+            "authorize_url": "https://github.com/login/oauth/authorize",
+            "token_url": "https://github.com/login/oauth/access_token",
+            "userinfo": {
+                "url": "https://api.github.com/user/emails",
+                "email": lambda json: json[0]["email"],
             },
-            'scopes': ['user:email'],
+            "scopes": ["user:email"],
         },
-
         # # ORCID OAuth 2.0 documentation:
-        # # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/        
+        # # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/
         # 'orcid': {
         #     'client_id': os.environ.get('CLIENT_ID_ORCID'),
         #     'client_secret': os.environ.get('CLIENT_SECRET_ORCID'),
