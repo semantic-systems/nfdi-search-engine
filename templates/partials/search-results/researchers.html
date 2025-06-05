@@ -18,7 +18,7 @@
                             {{researcher.name}}</span>
                         {% else %}
                         <a class="text-secondary fw-bold"
-                            href="{{ url_for('researcher_details', orcid='orcid:'+researcher.identifier | quote, source_id='source-id:'+researcher.source[0].identifier | quote, _external=True) }}"
+                            href="{{researcher | get_researcher_url(False)}}"
                             target='_blank'>
                             <i class="pull-left bi bi-link-45deg"></i>&nbsp;{{researcher.name}}</a>
                         {% endif %}
@@ -65,20 +65,20 @@
             </div>
             <div class="col-1 ">
                 <div class="row fs-5">
-                    <!-- <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="bookmark"><i
-                                                    class="bi bi-bookmark"></i></a></div> -->
-                    {% if researcher.identifier != '' %}
-                    <div class="text-end mb-3"><a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
-                            data-bs-target="#share-researcher-{{researcher.identifier | regex_replace ('\W','') }}"><i
-                                class="bi bi-share"></i></a>
+                    {% if researcher.identifier %}
+                    <div class="text-end mb-3">
+                        <a href="#" title="Share" class="share_modal_link" data-bs-toggle="modal"
+                        data-bs-target="#share-researcher-{{ researcher.identifier | regex_replace('\W','') }}">
+                            <i class="bi bi-share"></i>
+                        </a>
                     </div>
                     {% endif %}
                 </div>
-                {% with share_modal_id='share-researcher-'+researcher.identifier | regex_replace ('\W',''),
-                url = url_for('researcher_details', orcid='orcid:'+researcher.identifier | quote,
-                source_id='source-id:'+researcher.source[0].identifier | quote, _external=True),
-                title = researcher.name | trim
-                %}
+                                
+                {% with
+                    share_modal_id='share-researcher-' ~ (researcher.identifier | regex_replace('\W','')),
+                    url=researcher | get_researcher_url,
+                    title=researcher.name | trim %}
                 {{ shareModal(share_modal_id, url, title) }}
                 {% endwith %}
 

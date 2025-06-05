@@ -55,7 +55,14 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork]:
         _author = Author()
         _author.type = 'Person'
         _author.name = author.get("display_name", "")
-        _author.identifier = author.get("orcid", "")                            
+        _author.identifier = author.get("orcid", "")    
+        
+        author_source = thing(
+            name=source,
+            identifier=_author.identifier,
+        )
+        _author.source.append(author_source)
+                                
         publication.author.append(_author)
     
     keywords = hit.get("keywords", [])                        

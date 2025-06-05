@@ -11,7 +11,7 @@
                         {{resource.name}}</span>
                     {% else %}
                     <a class="text-secondary fw-bold"
-                        href="/resource-details/{{resource | format_digital_obj_url('doi','source-id')}}"
+                        href="/resource-details/{{resource | format_digital_obj_url('source-name','source-id','doi')}}"
                         target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{resource.name}}</a>
                     {% endif %}
                 </div>
@@ -43,44 +43,12 @@
                         more</a>
                     {% endif %}
 
-                    {% if author.type == 'Person' %}
-
-                        {% if author.identifier %}
-
-                            {% set orcid_id = author.identifier.split('/')[-1] %}
-
-                            {% if author.source and author.source[0].identifier %}
-
-                                <!-- We have the ORCID and the source identifier -->
-                                <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
-                                    href="{{ url_for('researcher_details', orcid='orcid:' + orcid_id | quote, source_id='source-id:' + author.source[0].identifier | quote, _external=True) }}"
-                                    tabindex="-1" role="button" aria-disabled="true"><i
-                                        class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
-
-                            {% else %}
-                                <!-- We only have the ORCID, use it for both fields -->
-                                <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-dark text-dark rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
-                                    href="{{ url_for('researcher_details', orcid='orcid:' + orcid_id, source_id='source-id:' + orcid_id, _external=True) }}"
-                                    tabindex="-1" role="button" aria-disabled="true"><i
-                                        class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
-
-                            {% endif %}
-
-                        {% else %}
-                            <!-- No ORCID or source, we cannot link the author -->
-                            <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-secondary text-secondary rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
-                                tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Author could not be linked"><i
-                                    class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
-
-                        {% endif %}
-
-                    {% else %}
-                        <!-- This author is an organization -->
-                        <a class="{% if author_count.value > 4 %}d-none{% endif %} btn btn-outline-secondary text-secondary rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
-                            tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Organization could not be linked"><i
-                                class="ps-1 pe-1 bi-person-circle"></i>{{author.name}}</a>
-                    
-                    {% endif %}
+                    {% set link = author | get_researcher_url %}
+                    <a class="{% if author_count.value > 4 %}d-none{% endif %} btn {{ 'btn-outline-dark text-dark' if link else 'btn-outline-secondary text-secondary' }} rounded-pill border-1 p-1 pe-2 mb-1 fs-7"
+                    {% if link %}href="{{ link }}"{% else %}tabindex="-1" role="button" aria-disabled="true" style="cursor: default;" title="Author could not be linked"{% endif %}>
+                        <i class="ps-1 pe-1 bi-person-circle"></i>{{ author.name }}
+                    </a>
+                    {% set author_count.value = author_count.value + 1 %}
 
                     {% set author_count.value = author_count.value + 1 %}
                     {% endfor %}
@@ -141,7 +109,7 @@
         {% with share_modal_id='share-resource-'+resource.identifier | regex_replace ('\W',''),
         preview_modal_id='preview-resource-'+resource.identifier | regex_replace ('\W',''),
         download_modal_id='download-resource-'+resource.identifier | regex_replace ('\W',''),
-        url = '/resource-details/'+ resource | format_digital_obj_url('doi','source-id'),
+        url = '/resource-details/'+ resource | format_digital_obj_url('doi','source-name','source-id'),
         img_src = resource.image,
         encoding_contentUrl = resource.encoding_contentUrl,
         title = resource.name | trim
