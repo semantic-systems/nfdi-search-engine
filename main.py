@@ -14,15 +14,38 @@ import importlib
 from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_session import Session
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
 from chatbot import chatbot
 
 import utils
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1) # If you have one proxy
+
+limiter = Limiter(
+    utils.get_client_ip,
+    app=app,
+    default_limits=["500 per day", "120 per hour"],
+    storage_uri="memory://",
+    # Redis
+    # storage_uri="redis://localhost:6379",
+    # Redis cluster
+    # storage_uri="redis+cluster://localhost:7000,localhost:7001,localhost:70002",
+    # Memcached
+    # storage_uri="memcached://localhost:11211",
+    # Memcached Cluster
+    # storage_uri="memcached://localhost:11211,localhost:11212,localhost:11213",
+    # MongoDB
+    # storage_uri="mongodb://localhost:27017",
+    strategy="fixed-window", # or "moving-window", or "sliding-window-counter"
+)
+
 app.config.from_object(Config)
 Session(app)
 
@@ -173,6 +196,7 @@ FILTERS["regex_replace"] = regex_replace
 #region ROUTES
 
 @app.route("/ping")
+@limiter.limit("1 per 15 seconds")
 def ping():
 
     # check if all the environment variables are set
@@ -203,6 +227,7 @@ def ping():
     return jsonify(ping="NFDI4DS Gateway is up and running :) ")
 
 @app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("1 per minute")
 def login():
     if current_user.is_authenticated:
         session["current-user-email"] = current_user.email
@@ -232,6 +257,7 @@ def logout():
     return redirect(session.get('back-url', url_for('index')))
 
 @app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("1 per minute")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -347,6 +373,7 @@ def oauth2_callback(provider):
     return redirect(url_for('index'))
 
 @app.route('/profile', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 @login_required
 def profile():
     form = ProfileForm()
@@ -365,6 +392,7 @@ def profile():
                            form=form, back_url=session.get('back-url',url_for('index')))
 
 @app.route('/preferences', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
 @login_required
 def preferences():
 
@@ -397,6 +425,7 @@ def preferences():
     return render_template('preferences.html', title='Preferences', form=form, back_url=session.get('back-url',url_for('index')))
 
 @app.route('/')
+@limiter.limit("10 per minute")
 @utils.set_cookies
 def index():  
 
@@ -421,6 +450,7 @@ def update_visitor_id():
 
 
 @app.route('/results', methods=['POST', 'GET'])
+@limiter.limit("3 per minute")
 @utils.timeit
 @utils.set_cookies
 def search_results():
@@ -585,6 +615,7 @@ def get_chatbot_answer():
 
 
 @app.route('/publication-details/<string:doi>/<string:source_id>', methods=['GET'])
+@limiter.limit("10 per minute")
 @utils.timeit
 @utils.set_cookies
 def publication_details(doi, source_id):
@@ -668,6 +699,7 @@ def publication_details_recommendations(doi):
     return response
 
 @app.route('/researcher-details/<string:orcid>/<string:source_id>', methods=['GET'])
+@limiter.limit("10 per minute")
 @utils.timeit
 @utils.set_cookies
 def researcher_details(orcid, source_id):
@@ -800,6 +832,7 @@ def generate_researcher_about_me(orcid):
 #     return response
 
 @app.route('/digital-obj-details/<path:identifier_with_type>', methods=['GET'])
+@limiter.limit("10 per minute")
 @utils.timeit
 @utils.set_cookies
 def digital_obj_details(identifier_with_type):
@@ -1057,6 +1090,68 @@ def merge_objects(object_list, object_type):
     return merged_object
 
 #endregion
+
+
+# #region IP BAN
+
+# @app.route('/get-block-list', methods=['GET'])
+# @utils.timeit
+# def get_block_list():
+#     utils.log_activity("get_block_list")    
+#     s = '<html><body>'
+#     s += '<table class="table" style="width: 100%"><thead>\n'
+#     s += '<tr><th>ip</th><th>count</th><th>permanent</th><th>url</th><th>timestamp</th></tr>\n'
+#     s += '</thead><tbody>\n'
+#     for k, r in ip_ban.get_block_list().items():
+#         s += '<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td></tr>\n'.format(k, r['count'],
+#                                                                                         r.get('permanent', ''),
+#                                                                                         r.get('url', ''),
+#                                                                                         r['timestamp'])
+        
+#     s += '</body></html>'
+#     return s
+
+# @app.route('/ip-ban-block/<string:ip_address>', methods=['GET'])
+# @utils.timeit
+# def ip_ban_block(ip_address):
+#     utils.log_activity(f"ip_ban_block: {ip_address}")    
+#     ip_ban.block(ip_list=[ip_address])
+#     return f"IP address {ip_address} has been blocked." 
+
+# @app.route('/ip-ban-add/<string:ip_address>', methods=['GET'])
+# @utils.timeit
+# def ip_ban_add(ip_address):
+#     utils.log_activity(f"ip_ban_add: {ip_address}")    
+#     ip_ban.add(ip=ip_address)
+#     return f"IP address {ip_address} has been added to the list." 
+
+# @app.route('/ip-ban-remove/<string:ip_address>', methods=['GET'])
+# @utils.timeit
+# def ip_ban_remove(ip_address):
+#     utils.log_activity(f"ip_ban_remove: {ip_address}")    
+#     ip_ban.remove(ip=ip_address)
+#     return f"IP address {ip_address} has been removed from the list." 
+
+# @app.route('/ip-whitelist-add/<string:ip_address>', methods=['GET'])
+# @utils.timeit
+# def ip_whitelist_add(ip_address):
+#     utils.log_activity(f"ip_whitelist_add: {ip_address}")    
+#     ip_ban.ip_whitelist_add(ip=ip_address)
+#     return f"IP address {ip_address} has been added to the whitelist."
+
+# @app.route('/ip-whitelist-remove/<string:ip_address>', methods=['GET'])
+# @utils.timeit
+# def ip_whitelist_remove(ip_address):
+#     utils.log_activity(f"ip_whitelist_remove: {ip_address}")    
+#     ip_ban.ip_whitelist_remove(ip=ip_address)
+#     return f"IP address {ip_address} has been removed from the whitelist." 
+
+# #endregion
+
+@limiter.request_filter
+def ip_whitelist():
+    return request.remote_addr == "127.0.0.1"
+
 
 #region Control Panel
 
