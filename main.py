@@ -195,6 +195,17 @@ FILTERS["regex_replace"] = regex_replace
 
 #region ROUTES
 
+@app.route("/_ipstack")
+def _ipstack():
+    utils.log_activity(f"[IP stack request] remote_addr: {request.remote_addr}, access_route: {list(request.access_route)}")
+    return {
+        "remote_addr": request.remote_addr,
+        "access_route": list(request.access_route),
+        "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
+        "Forwarded": request.headers.get("Forwarded")
+    }
+
+
 @app.route("/ping")
 @limiter.limit("1 per 15 seconds")
 def ping():
