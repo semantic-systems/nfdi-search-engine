@@ -369,3 +369,15 @@ class Config:
         #     'scopes': ['/read-limited'],
         # },
     }
+
+    ERROR_MESSAGES = {
+        400: "Error 400: Bad Request.",
+        401: "Error 401: Unauthorized.",
+        403: "Error 403: Forbidden.",
+        404: "Error 404: Page not found.",
+        405: "Error 405: Method Not Allowed.",
+        422: "Error 422: Unprocessable Entity.",
+        500: "Error 500: Internal Server Error.",
+        502: "Error 502: Bad Gateway.",
+        503: "Error 503: Service Unavailable.",
+    }

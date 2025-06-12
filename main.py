@@ -853,6 +853,13 @@ def digital_obj_details(identifier_with_type):
     identifier = identifier_with_type.split(':',1)[1]
     pass   
 
+
+for code, message in app.config['ERROR_MESSAGES'].items():
+    @app.errorhandler(code)
+    def handle_error(e, message=message, code=code):
+        # utils.log_activity(f"{message} Exception: {e}")
+        return render_template("error.html", error_message=message), code
+
 #endregion
 
 
@@ -1035,7 +1042,7 @@ def generate_researcher_banner(researcher_details_json):
 
 #region MISC
 
-# @utils.handle_exceptions
+@utils.handle_exceptions
 def merge_objects(object_list, object_type):
     """
     This function revieces a list of objects defined in objects.py, and returns a new object with the merged values of the objects in object_list.
