@@ -21,6 +21,7 @@ def search(source: str, search_term: str, results, failed_sources):
                 given_names = author.get('given-names', '')
                 family_names = author.get('family-names', '')
                 authorObj.name = given_names + " " + family_names
+                authorObj.type = 'Person'
                 
                 institution = author.get('institution-name', [])
                 for inst in institution:

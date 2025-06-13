@@ -44,6 +44,13 @@ def search(source: str, search_term: str, results, failed_sources):
                     _author.type = 'Person'
                     _author.name = author.get("text", "")
                     _author.identifier = author.get("@pid", "") #ideally this pid should be stored somewhere else
+                    
+                    author_source = thing(
+                        name=source,
+                        identifier=_author.identifier,
+                    )
+                    _author.source.append(author_source)
+
                     publication.author.append(_author)    
 
             _source = thing()

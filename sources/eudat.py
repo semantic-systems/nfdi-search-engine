@@ -68,6 +68,12 @@ def search(source: str, search_term: str, results, failed_sources):
                 _author.type = 'Person'
                 _author.name = author.get("creator_name", "")
 
+                author_source = thing(
+                    name=source
+                )
+
+                _author.source.append(author_source)
+
                 if ";" in _author.name:
                     authors_names = _author.name.split(";")
                     for author_name in authors_names:

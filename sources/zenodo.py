@@ -81,6 +81,11 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Data
         _author.name = author.get("name", "")
         _author.identifier = author.get("orcid", "")
         _author.affiliation = author.get("affiliation", "")
+        author_source = thing(
+            name=source,
+            identifier=_author.identifier,
+        )
+        _author.source.append(author_source)
         digitalObj.author.append(_author)  
 
     _source = thing()
