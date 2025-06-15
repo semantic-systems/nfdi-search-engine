@@ -76,13 +76,13 @@
             <!-- <div class="row border-bottom mt-4"></div> -->
         </div>
         <div class="row pb-2">
-            <div class="d-flex p-2">
-                <span class="fs-6 fw-bold">About</span>
-            </div>
-            <div class="d-flex p-2 fs-6 researcher-about-me">
-                <div class='loader'>
-                    <div class='sp-3balls'></div>
+            <div class="d-flex p-2 justify-content-between">
+                <div class="fs-6 fw-bold">About</div>
+                <div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btn-generate-about-me">Generate my summary</button>
                 </div>
+            </div>
+            <div class="d-flex p-2 fs-6 researcher-about-me">                
             </div>
         </div>
 
@@ -303,18 +303,28 @@
 
 <script>
 
-    // JavaScript to generate researcher 'about me' / summary after page load
-    document.addEventListener("DOMContentLoaded", function () {
-        // document.querySelector('.researcher-about-me').innerHTML = "<div class='loader'><div class='sp-3balls'></div></div>";
-        fetch('/generate-researcher-about-me/{{researcher.identifier}}')  // Endpoint to generate researcher 'about me' / summary
+    $(document).ready(function () {
+
+        generate_about_me = function () {
+            document.querySelector('.researcher-about-me').innerHTML = "<div class='loader'><div class='sp-3balls'></div></div>";
+            fetch('/generate-researcher-about-me/{{researcher.identifier}}')  // Endpoint to generate researcher 'about me' / summary
             .then(response => response.json())
             .then(data => {
                 if (data.summary) {
                     document.querySelector('.researcher-about-me').innerHTML = data.summary;
+                    document.getElementById('btn-generate-about-me').style.visibility = 'hidden';
                 }
             })
             .catch(error => console.error('Error while generating summary:', error));
+        }
+
+        $('#btn-generate-about-me').click(function () {
+            generate_about_me();
+        });
+
     });
+
+    
 
 </script>
 
