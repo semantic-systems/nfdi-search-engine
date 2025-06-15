@@ -69,6 +69,11 @@ def search(source: str, search_term: str, results, failed_sources):
                 _author.type = 'Person'
                 _author.name = authorsLabel
                 _author.identifier = "" #ORCID is available for few; we need to update the sparql query to pull this information                         
+                author_source = thing(
+                    name=source,
+                    identifier=_author.identifier,
+                )
+                _author.source.append(author_source)
                 publication.author.append(_author)
             
             authorsStrings = hit.get("authorsString", {}).get("value","")                        
@@ -76,7 +81,12 @@ def search(source: str, search_term: str, results, failed_sources):
                 _author = Author()
                 _author.type = 'Person'
                 _author.name = authorsString
-                _author.identifier = ""                         
+                _author.identifier = ""
+                author_source = thing(
+                    name=source,
+                    identifier=_author.identifier,
+                )
+                _author.source.append(author_source)
                 publication.author.append(_author)
             
             _source = thing()

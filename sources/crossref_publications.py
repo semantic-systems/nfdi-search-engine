@@ -45,7 +45,14 @@ def map_digital_obj(source: str, hit: dict) -> Article:
         _author = Author()
         _author.type = 'Person'
         _author.name = authorship.get("given", "") + " " + authorship.get("family", "")
-        _author.identifier = authorship.get("orcid", "")                            
+        _author.identifier = authorship.get("orcid", "")
+
+        author_source = thing(
+            name=source,
+            identifier=_author.identifier,
+        )
+
+        _author.source.append(author_source)
         publication.author.append(_author)
     
     _source = thing()
