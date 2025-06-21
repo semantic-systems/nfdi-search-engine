@@ -11,7 +11,7 @@ import secrets
 from urllib.parse import urlsplit, urlencode, quote
 import importlib
 
-from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort
+from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -260,16 +260,9 @@ FILTERS["regex_replace"] = regex_replace
 
 #region ROUTES
 
-@app.route("/_ipstack")
-def _ipstack():
-    utils.log_activity(f"[IP stack request] remote_addr: {request.remote_addr}, access_route: {list(request.access_route)}")
-    return {
-        "remote_addr": request.remote_addr,
-        "access_route": list(request.access_route),
-        "X-Forwarded-For": request.headers.get("X-Forwarded-For"),
-        "Forwarded": request.headers.get("Forwarded")
-    }
-
+@app.route("/robots.txt")
+def robots():
+    return send_from_directory(app.static_folder, "robots.txt", mimetype="text/plain")
 
 @app.route("/ping")
 @limiter.limit("1 per 15 seconds")
