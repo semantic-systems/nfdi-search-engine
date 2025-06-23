@@ -22,6 +22,7 @@ from chatbot import chatbot
 import utils
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+import llms
 
 logging.config.fileConfig(os.getenv('LOGGING_FILE_CONFIG', './logging.conf'))
 logger = logging.getLogger('nfdi_search_engine')
@@ -966,63 +967,41 @@ system_content_for_publications_merging = """
 @utils.handle_exceptions
 def generate_response_with_local_llm(publications_json):
 
-    url = app.config['LLMS']['llama3']['url']
-    llm_username = app.config['LLMS']['llama3']['username']
-    llm_password = app.config['LLMS']['llama3']['password']
-    payload = json.dumps({
-        "messages": [
-            {
-                "role": "system", 
-                "content": system_content_for_publications_merging
-            },
-            {
-                "role": "user", 
-                "content": f"{publications_json}"
-            }
-        ],
-        "temperature": 0.7,
-        "top_p": 0.9,
-        "max_new_tokens": 16384,
-        "max_seq_len": 1024,
-        "max_gen_len": 512
-    })
-    headers = {
-    'Content-Type': 'application/json'
-    }
-
-    response = requests.request("POST", url, auth=(llm_username, llm_password), headers=headers, data=payload)
-    response_json = json.loads(response.text)
-    generated_text = response_json['generated_text']
-    print(generated_text)
-    merged_publication = json.loads(generated_text)
+    # url = app.config['LLMS']['llama3']['url']
+    # llm_username = app.config['LLMS']['llama3']['username']
+    # llm_password = app.config['LLMS']['llama3']['password']
+    # payload = json.dumps({
+    #     "messages": [
+    #         {
+    #             "role": "system",
+    #             "content": system_content_for_publications_merging
+    #         },
+    #         {
+    #             "role": "user",
+    #             "content": f"{publications_json}"
+    #         }
+    #     ],
+    #     "temperature": 0.7,
+    #     "top_p": 0.9,
+    #     "max_new_tokens": 16384,
+    #     "max_seq_len": 1024,
+    #     "max_gen_len": 512
+    # })
+    # headers = {
+    # 'Content-Type': 'application/json'
+    # }
+    #
+    # response = requests.request("POST", url, auth=(llm_username, llm_password), headers=headers, data=payload)
+    # response_json = json.loads(response.text)
+    # generated_text = response_json['generated_text']
+    # print(generated_text)
+    merged_publication = llms.llama(publications_json,system_content_for_publications_merging)
     return merged_publication
 
 @utils.handle_exceptions
 def generate_response_with_openai(publications_json):
-    url = app.config['LLMS']['openai']['url_chat_completions']
-    payload = json.dumps({
-        "model": "gpt-4o-mini",
-        "messages": [
-            {
-                "role": "system", 
-                "content": system_content_for_publications_merging
-            },
-            {
-                "role": "user", 
-                "content": f"{publications_json}"
-            }
-        ],
-        "temperature": 0.7,
-    })
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {os.environ.get("OPENAI_API_KEY", "")}'
-    }
-
-    response = requests.request("POST", url, headers=headers, data=payload)    
-    response_json = json.loads(response.text)
-    merged_publication = json.loads(response_json['choices'][0]['message']['content'].replace("```json","").replace("```",""))    
-    print(merged_publication)
+    merged_publication = llms.chatgpt(publications_json, system_content_for_publications_merging)
+    # print(merged_publication)
     return merged_publication
 
 @utils.handle_exceptions
