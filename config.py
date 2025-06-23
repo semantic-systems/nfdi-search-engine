@@ -276,6 +276,7 @@ class Config:
             "url_chat_completions": "https://api.openai.com/v1/chat/completions",
             "url_images_generations": "https://api.openai.com/v1/images/generations",
             "open_api_key": os.environ.get("OPENAI_API_KEY", ""),
+            "openai_model_version": "gpt-4o-mini",
         },
         "llama3": {
             "url": "https://llm-chat.skynet.coypu.org/generate_text",
