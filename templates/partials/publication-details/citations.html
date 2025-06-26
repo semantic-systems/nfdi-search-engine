@@ -6,7 +6,7 @@
             {{publication.name}}. ({{publication.datePublished}})</span>
         {% else %}
         <a class="text-secondary"
-            href="{{ url_for('publication_details', doi='doi:'+publication.identifier | quote, source_id='source-id:'+publication.source[0].identifier | quote, _external=True) }}"
+            href="/publication-details/{{publication | format_digital_obj_url('source-name','source-id', 'doi')}}"
             target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{publication.author |
             format_authors_for_citations}}
             {{publication.name}}. ({{publication.datePublished}})</a>

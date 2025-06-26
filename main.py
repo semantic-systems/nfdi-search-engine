@@ -741,19 +741,70 @@ def publication_details(source_name, source_id, doi):
 @utils.timeit
 def publication_details_references(doi):
     print("doi:", doi)  
+
     source = "CROSSREF - Publications" 
-    module_name = "crossref_publications"     
-    publication = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
-    response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
+    module_name = "crossref_publications"    
+
+    reference_sources = {
+        "CROSSREF - Publications": "crossref_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    references = []
+
+    # this will be the base article to which we will add references
+    base_article = ''
+
+    for source, module_name in reference_sources.items():
+        print(f"requesting references from {source} for DOI: {doi}")
+        # request reference data from these endpoints
+        article = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
+
+        found_references = article.references if hasattr(article, 'references') else []
+
+        # add all references whose doi is not already in the references list
+        doi_list = [ref.identifier for ref in references]
+        name_list = [ref.name.lower() for ref in references]
+        for ref in found_references:
+            if ref.identifier not in doi_list and ref.name.lower() not in name_list:
+                references.append(ref)
+        
+        # change this to select another base article
+        if source == "CROSSREF - Publications":
+            base_article = article
+    
+    # set all references to the base article
+    base_article.references = references
+    response = make_response(render_template('partials/publication-details/references.html', publication=base_article))    
+
     return response
 
 @app.route('/publication-details-citations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_citations(doi):
-    print("for citations - DOI:", doi)  
-    source = "SEMANTIC SCHOLAR - Publications" 
-    module_name = "semanticscholar_publications"     
-    publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(source=source, doi=doi)
+    print("for citations - DOI:", doi)
+
+    # request citation data from these endpoints
+    # source: module_name
+    citation_sources = {
+        "SEMANTIC SCHOLAR - Publications": "semanticscholar_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    publications = []
+
+    for source, module_name in citation_sources.items():
+        
+        found_publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(source=source, doi=doi)
+
+        # add all publications whose doi is not already in the publications list
+        doi_list = [pub.identifier for pub in publications]
+        name_list = [pub.name.lower() for pub in publications]
+
+        for pub in found_publications:
+            if pub.identifier not in doi_list and pub.name.lower() not in name_list:
+                publications.append(pub)
+
     response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
     # print("response:", response)
     return response

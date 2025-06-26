@@ -13,6 +13,7 @@ class Config:
 
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
+    OPENCITATIONS_API_KEY= os.environ.get("OPENCITATIONS_API_KEY", "")
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 100
