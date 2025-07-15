@@ -49,6 +49,8 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork]:
     publication.description = utils.generate_string_from_keys(abstract_inverted_index) # Generate the string using keys from the dictionary
     publication.abstract = publication.description
 
+    publication.encoding_contentUrl = hit.get("primary_location", {}).get("pdf_url", "")
+
     authorships = hit.get("authorships", [])                        
     for authorship in authorships:
         author = authorship.get("author", {})
