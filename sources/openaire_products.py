@@ -86,8 +86,19 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Data
     children_instance = oaf_result.get('children', {}).get('instance', {})
     if isinstance(children_instance, dict):
         digitalObj.url = children_instance.get('webresource', {}).get('url', {}).get('$', '')
+        # Add direct PDF URL if access is open
+        access_right = children_instance.get('accessright', {}).get('@classid', '').upper()
+        pdf_url = children_instance.get('webresource', {}).get('url', {}).get('$', '')
+        if access_right in ['OPEN', 'OPEN ACCESS'] and pdf_url.endswith('.pdf'):
+            digitalObj.encoding_contentUrl = pdf_url
     if isinstance(children_instance, list):
         digitalObj.url = next(iter(children_instance)).get('webresource', {}).get('url', {}).get('$', '')
+        # Add direct PDF URL if access is open
+        first_instance = next(iter(children_instance))
+        access_right = first_instance.get('accessright', {}).get('@classid', '').upper()
+        pdf_url = first_instance.get('webresource', {}).get('url', {}).get('$', '')
+        if access_right in ['OPEN', 'OPEN ACCESS'] and pdf_url.endswith('.pdf'):
+            digitalObj.encoding_contentUrl = pdf_url
                             
     keywords = oaf_result.get('subject', [])
     if isinstance(keywords, list):
@@ -99,6 +110,8 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Data
 
     digitalObj.datePublished = oaf_result.get('dateofacceptance', {}).get("$", "")
     digitalObj.license = oaf_result.get('bestaccessright', {}).get('@classid', '')
+
+    
 
     authors = oaf_result.get("creator", [])  
     if isinstance(authors, dict): 
