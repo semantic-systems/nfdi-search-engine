@@ -20,7 +20,20 @@
         </div>
         <div class="row border-bottom pb-4">
             <div class="col-9 text-start">
-                <h3>{{publication.name}}</h3>
+                <h3 class="d-inline">{{publication.name}}</h3>
+                {% if publication.encoding_contentUrl %}
+                    <img src="{{ url_for('static', filename='images/icons/open_lock.png') }}"
+                         alt="PDF available"
+                         title="Full text PDF available"
+                         class="ms-2"
+                         style="height:1rem;position:relative; top:-4px;">
+                {% else %}
+                    <img src="{{ url_for('static', filename='images/icons/closed_lock.png') }}"
+                         alt="PDF not available"
+                         title="Full text PDF not available"
+                         class="ms-2"
+                         style="height:1rem;position:relative; top:-4px;">
+                {% endif %}
                 <div class="py-2">
                     {% for keyword in publication.keywords %}
                     <span class="badge bg-pill bg-secondary">{{keyword}}</span>
@@ -39,6 +52,12 @@
                         <span class="fw-bold">Publication Date:</span>
                         <span>{{publication.datePublished}}</span>
                     </span>
+                    {% if publication.encoding_contentUrl %}
+                    <span class="pe-4">
+                        <span class="fw-bold">PDF:</span>
+                        <a href="{{ publication.encoding_contentUrl }}" target="_blank">{{ publication.encoding_contentUrl }}</a>
+                    </span>
+                    {% endif %}
                 </div>
             </div>
             <div class="col-3 d-flex justify-content-end">
@@ -136,7 +155,7 @@
                 <div class="d-flex p-2 bd-highlight pt-4" id="references">
                     <span class="fw-bold fs-6">REFERENCES ({{publication.referenceCount}}) <i
                             class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from CrossRef"></i></span>
+                            data-bs-placement="top" title="Retrieved from CrossRef and OpenCitations"></i></span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
@@ -144,7 +163,7 @@
                 <div class="d-flex p-2 bd-highlight pt-4" id="cited-by">
                     <span class="fw-bold fs-6">CITATIONS ({{publication.citationCount}}) <i
                             class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from Semantic Scholar"></i></span>
+                            data-bs-placement="top" title="Retrieved from Semantic Scholar and OpenCitations"></i></span>
                 </div>
                 <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-citations">Load</button>
