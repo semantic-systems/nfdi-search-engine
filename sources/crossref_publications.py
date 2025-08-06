@@ -43,7 +43,7 @@ def map_digital_obj(source: str, hit: dict) -> Article:
     authorships = hit.get("author", [])                        
     for authorship in authorships:
         _author = Author()
-        _author.type = 'Person'
+        _author.additionalType = 'Person'
         _author.name = authorship.get("given", "") + " " + authorship.get("family", "")
         _author.identifier = authorship.get("orcid", "")
 
@@ -74,6 +74,35 @@ def get_publication(source: str, doi: str, source_id: str, publications):
         search_result = search_result.get('message',{})
         digitalObj = map_digital_obj(source, search_result)        
         publications.append(digitalObj)
+
+@utils.handle_exceptions
+def get_dois_references(source: str, doi: str) -> list:
+    """
+    Fetches the references for a given DOI from the specified source.
+
+    Args:
+        source (str): The source from which to fetch references.
+        doi (str): The DOI of the article to fetch references for.
+
+    Returns:
+        list: A list of DOIs that are referenced by the given DOI.
+    """
+    search_result = data_retriever.retrieve_object(source=source, 
+                                                    base_url=app.config['DATA_SOURCES'][source].get('get-publication-references-endpoint', ''),
+                                                    identifier=doi,
+                                                    quote=False)
+    
+    if search_result:
+        search_result = search_result.get('message',{})
+
+        if "reference" not in search_result:
+            return []
+
+        dois = [ref.get("DOI", "") for ref in search_result["reference"] if ref.get("DOI", "")]
+
+        return dois
+    
+    return []
 
 @utils.handle_exceptions
 def get_publication_references(source: str, doi: str):

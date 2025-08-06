@@ -470,10 +470,12 @@ div.dataTables_info {
     border-radius: 1.0rem !important;
 }
 
+.citations>li.list-group-item
 .references>li.list-group-item {
     padding-left: 0;
 }
 
+.citations>li.list-group-item::before,
 .references>li.list-group-item::before {
     padding-right: 1rem;
 }

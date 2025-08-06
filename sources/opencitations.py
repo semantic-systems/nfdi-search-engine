@@ -3,17 +3,67 @@ from typing import List
 from requests import get
 from objects import Person, Article, thing, Organization
 from config import Config
+from time import sleep
 
 _RX_DOI = re.compile(r"10\.\d{4,9}/\S+", re.I)
 _RX_ORCID = re.compile(r"orcid:([\d\-Xx]{15,19})")
 _RX_CROSSREF = re.compile(r"crossref:(\d+)")
 _RX_OMID = re.compile(r"omid:([\w\/]+)")
 
-API_CITATION  = "https://opencitations.net/index/api/v2/citations/doi:"
-API_REFERENCE = "https://opencitations.net/index/api/v2/references/doi:"
-API_METADATA  = "https://opencitations.net/meta/api/v1/metadata/doi:"
+API_CITATION  = Config.DATA_SOURCES['OpenCitations'].get('citations-endpoint', '')
+API_REFERENCE = Config.DATA_SOURCES['OpenCitations'].get('get-publication-references-endpoint', '')
+API_METADATA  = Config.DATA_SOURCES['OpenCitations'].get('metadata-endpoint', '')
 
-def fetch_citations(doi: str, access_token: str = None):
+USER_AGENT = Config.REQUEST_HEADER_USER_AGENT
+ACCESS_TOKEN = Config.OPENCITATIONS_API_KEY
+
+TIME_BETWEEN_REQUESTS = 0.5  # seconds, to avoid rate limiting
+
+# we specifically do not use the data_retriever here
+# as it does not allow passing in custom headers
+
+def get_dois_citations(source: str = None, doi: str = None, access_token: str = ACCESS_TOKEN) -> List[Article]:
+    """
+    Fetches the DOIs of citations for a given DOI from OpenCitations.
+
+    Args:
+        source (str): Unused, usually used for the data_retriever
+        doi (str): The DOI of the article to fetch citations for.
+        access_token (str, optional): Access token for OpenCitations API.
+
+    Returns:
+        List[Article]: A list of Article objects containing citation data.
+    """
+
+    if not doi:
+        return []
+
+    citations = fetch_citations(doi, access_token)
+    dois = [_extract_doi(citation["citing"]) for citation in citations if _extract_doi(citation["citing"])]
+    
+    return dois
+
+def get_dois_references(source: str = None, doi: str = None, access_token: str = ACCESS_TOKEN) -> List[Article]:
+    """
+    Fetches the DOIs of references for a given DOI from OpenCitations.
+
+    Args:
+        doi (str): The DOI of the article to fetch references for.
+        access_token (str, optional): Access token for OpenCitations API.
+
+    Returns:
+        List[Article]: A list of Article objects containing recommendation data.
+    """
+
+    if not doi:
+        return []
+
+    response = fetch_references(doi, access_token)
+    dois = [_extract_doi(reference["cited"]) for reference in response if _extract_doi(reference["cited"])]
+    
+    return dois
+
+def fetch_citations(doi: str, access_token: str = ACCESS_TOKEN):
 
     # add the access_token to the headers if provided
     access_token = Config.OPENCITATIONS_API_KEY
@@ -28,7 +78,7 @@ def fetch_citations(doi: str, access_token: str = None):
 
     return r.json()
 
-def fetch_references(doi: str, access_token: str = None):
+def fetch_references(doi: str, access_token: str = ACCESS_TOKEN):
 
     # add the access_token to the headers if provided
     access_token = Config.OPENCITATIONS_API_KEY
@@ -40,9 +90,10 @@ def fetch_references(doi: str, access_token: str = None):
 
     r = get(search_url, timeout=30, headers=HTTP_HEADERS)
     r.raise_for_status()
+
     return r.json()
 
-def fetch_metadata(dois: list[str], access_token: str = None):
+def fetch_metadata(dois: list[str], access_token: str = ACCESS_TOKEN):
     """
     Request the metadata for a list of DOIs from OpenCitations.
 
@@ -53,19 +104,25 @@ def fetch_metadata(dois: list[str], access_token: str = None):
     if len(dois) == 0:
         return []
     
-    # request in batches of 25 if too large
+    # request in batches of 10 if too large
     if len(dois) > 10:
         batches = [dois[i:i + 10] for i in range(0, len(dois), 10)]
         results = []
         for batch in batches:
             results.extend(fetch_metadata(batch, access_token))
+            sleep(TIME_BETWEEN_REQUESTS)  # avoid rate limiting
+            
         return results
 
     # add the access_token to the headers if provided
-    access_token = Config.OPENCITATIONS_API_KEY
+    if Config.OPENCITATIONS_API_KEY:
+        access_token = Config.OPENCITATIONS_API_KEY
+    else:
+        access_token = None
+    
     HTTP_HEADERS = {}
     if not (access_token is None or access_token == ""):
-        HTTP_HEADERS["authorization"] = access_token        
+        HTTP_HEADERS["authorization"] = access_token
 
     search_url = API_METADATA + "__doi:".join(dois)
 
@@ -105,17 +162,43 @@ def _parse_authors(raw: str) -> List[Person]:
     return people
 
 def _parse_publisher(raw: str) -> Organization | None:
+
     if not raw:
         return None
+
     if " [" in raw:
         name_part, meta_part = raw.split(" [", 1)
         meta_part = meta_part.rstrip("]")
     else:
         name_part, meta_part = raw, ""
-    crossref_match = _RX_CROSSREF.search(meta_part)
-    omid_match = _RX_OMID.search(meta_part)             # currently unused
-    identifier = crossref_match
+
+    m = _RX_CROSSREF.search(meta_part)
+    identifier = m.group(1) if m else ""
+
     return Organization(name=name_part.strip(), identifier=identifier)
+
+def get_batch_articles(dois: List[str], access_token: str = ACCESS_TOKEN) -> List[dict]:
+    """
+    Fetches metadata for a batch of DOIs from OpenCitations and transform them into Publication objects.
+
+    Args:
+        dois (List[str]): A list of DOIs to fetch metadata for.
+        access_token (str, optional): Access token for OpenCitations API.
+
+    Returns:
+        List[dict]: A list of metadata records for the given DOIs.
+    """
+    if not dois:
+        return []
+
+    metadata = fetch_metadata(dois, access_token)
+
+    if not metadata:
+        return []
+    
+    articles = metadata_to_articles(metadata)
+
+    return articles
 
 def metadata_to_articles(records: List[dict]) -> List[Article]:
 
@@ -148,7 +231,7 @@ def metadata_to_articles(records: List[dict]) -> List[Article]:
 
     return articles
 
-def get_citations_for_publication(source: str, doi: str, access_token: str = None) -> List[Article]:
+def get_citations_for_publication(source: str, doi: str, access_token: str = ACCESS_TOKEN) -> List[Article]:
     """
     Fetches the citation data for a given DOI from OpenCitations.
 
@@ -166,11 +249,12 @@ def get_citations_for_publication(source: str, doi: str, access_token: str = Non
     
     return objects
 
-def get_publication_references(source: str, doi: str, access_token: str = None) -> List[Article]:
+def get_publication_references(source: str, doi: str, access_token: str = ACCESS_TOKEN) -> List[Article]:
     """
     Fetches the references for a given DOI from OpenCitations.
 
     Args:
+        source (str): Unused, usually used for the data_retriever
         doi (str): The DOI of the article to fetch references for.
         access_token (str, optional): Access token for OpenCitations API.
 

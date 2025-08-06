@@ -89,7 +89,7 @@ def search(search_term, results):
                     for include in bundles_includes:
                         if include.get('id') == author_owner_id:
                             author = Person()
-                            author.type = "Person"
+                            author.additionalType = "Person"
 
                             owner_user_name = include.get('attributes', {}).get('user_name', "")
                             owner_givenName = include.get('attributes', {}).get('first_name', "")

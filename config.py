@@ -226,6 +226,19 @@ class Config:
             "module": "dblp_venues",
             "search-endpoint": f"https://dblp.org/search/venue/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
+        "OpenCitations":{
+            "logo": {
+                "name": "OpenCitations",
+                "link": "https://opencitations.net/",
+                "src": "opencitations.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "opencitations",
+            "citations-endpoint": "https://opencitations.net/index/api/v2/citations/doi:",
+            "get-publication-references-endpoint": "https://opencitations.net/index/api/v2/references/doi:",
+            "metadata-endpoint": "https://opencitations.net/meta/api/v1/metadata/doi:"
+        }
         # "dblp - Publications": {
         #     "module": "dblp_publications",
         #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",

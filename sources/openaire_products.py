@@ -103,7 +103,7 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Data
     authors = oaf_result.get("creator", [])  
     if isinstance(authors, dict): 
         _author = Author()
-        _author.type = 'Person'
+        _author.additionalType = 'Person'
         _author.name = authors.get("$", "")
         _author.identifier = authors.get("@orcid_pending", "")
         if ";" not in _author.name:
@@ -113,7 +113,7 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Data
     if isinstance(authors, list): 
         for author in authors:
             _author = Author()
-            _author.type = 'Person'
+            _author.additionalType = 'Person'
             _author.name = author.get("$", "")
             _author.identifier = author.get("@orcid_pending", "")
             author_source = thing(

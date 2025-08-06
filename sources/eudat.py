@@ -65,7 +65,7 @@ def search(source: str, search_term: str, results, failed_sources):
             authors = metadata.get("creators", [])                        
             for author in authors:
                 _author = Author()
-                _author.type = 'Person'
+                _author.additionalType = 'Person'
                 _author.name = author.get("creator_name", "")
 
                 author_source = thing(
@@ -78,7 +78,7 @@ def search(source: str, search_term: str, results, failed_sources):
                     authors_names = _author.name.split(";")
                     for author_name in authors_names:
                         __author = Author()
-                        __author.type = 'Person'
+                        __author.additionalType = 'Person'
                         __author.name = author_name
                     digitalObj.author.append(__author)  
                 else:

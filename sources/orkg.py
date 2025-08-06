@@ -44,7 +44,7 @@ def search(source: str, search_term: str, results, failed_sources):
             if paper.get('authors', []):
                 for item in paper.get('authors', []):
                     author = Author()
-                    author.type = 'Person'
+                    author.additionalType = 'Person'
                     author.name = item.get('name', '')
                     author.identifier = item.get('identifiers', {}).get('orcid', '')
                     if item.get('id', ''):

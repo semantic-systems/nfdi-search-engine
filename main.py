@@ -18,6 +18,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
 from chatbot import chatbot
+from objects import Article
 
 import utils
 from flask_limiter import Limiter
@@ -56,7 +57,8 @@ login_manager.login_view = 'login'
 
 from typing import Optional
 from werkzeug.security import generate_password_hash, check_password_hash
-from dataclasses import dataclass, fields, field
+from pydantic.dataclasses import dataclass
+from dataclasses import fields, field
 from flask_login import UserMixin
 # ...
 @dataclass
@@ -683,6 +685,120 @@ def get_chatbot_answer():
     return answer
 
 
+@app.route('/publication-details/get-dois-references/<path:doi>', methods=['POST'])
+@limiter.limit("10 per minute")
+def get_publication_dois_references(doi):
+    """
+    Endpoint to get a list of references for a given DOI.
+    Uses the .get_dois_references() method from the modules.
+    """
+
+    # uses get_dois_references() from these sources:
+    references_sources = {
+        "CROSSREF - Publications": "crossref_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    found_dois = set()
+
+    for source, module_name in references_sources.items():
+        # request reference data from these endpoints
+        dois = importlib.import_module(f'sources.{module_name}').get_dois_references(source=source, doi=doi)
+        dois = [d.lower() for d in dois]  # ensure DOIs are lowercase
+
+        print(f"found {len(dois)} DOIs in {source} for {doi}")
+
+        found_dois.update(dois)
+    
+    return jsonify({
+        'dois': list(found_dois)
+    })
+
+@app.route('/publication-details/get-dois-citations/<path:doi>', methods=['POST'])
+@limiter.limit("10 per minute")
+def get_publication_citations_dois(doi):
+    """
+    Endpoint to get a list of citations for a given DOI.
+    Uses the .get_dois_citations() method from the modules.
+    """
+
+    # uses get_dois_citations() from these sources:
+    citation_sources = {
+        "SEMANTIC SCHOLAR - Publications": "semanticscholar_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    found_dois = set()
+
+    for source, module_name in citation_sources.items():
+        # request citation data from these endpoints
+        dois = importlib.import_module(f'sources.{module_name}').get_dois_citations(source=source, doi=doi)
+        dois = [d.lower() for d in dois]  # ensure DOIs are lowercase
+
+        print(f"found {len(dois)} DOIs in {source} for {doi}")
+
+        found_dois.update(dois)
+    
+    return jsonify({
+        'dois': list(found_dois)
+    })
+
+@app.route('/publication-details/get-metadata/', methods=['POST'])
+@limiter.limit("10 per minute")
+def get_publication_metadata():
+    """
+    Endpoint to get metadata for a list of DOIs.
+    Uses the .get_publication_metadata() method from the modules.
+    """
+
+    # add more metadata sources here
+    # uses get_publication_metadata() from their modules
+    metadata_sources = {
+        "OpenCitations": "opencitations",
+    }
+
+    dois = request.json.get('dois', [])
+    print(f"Received {len(dois)} DOIs for metadata retrieval")
+
+    if not dois:
+        return jsonify({"error": "No DOIs provided"}), 400
+    
+    # collect articles keyed by DOI
+    collected: dict[str, Article] = {}
+
+    for module_name in metadata_sources.values():
+        articles = importlib.import_module(f'sources.{module_name}').get_batch_articles(dois=dois)
+
+        # get all lowercase titles and DOIs from the collected articles
+        list_title = [article.name.lower() for article in collected.values()]
+        list_doi = [article.identifier.lower() for article in collected.values()]
+
+        for article in articles:
+
+            # deduplicate and add to publication_list
+            # check if the article title or DOI already exists
+            if article.name.lower() not in list_title and article.identifier.lower() not in list_doi:
+
+                # article does not already exist, add it
+                doi = article.identifier.lower()
+                if doi and doi not in collected:
+                    collected[doi] = article
+
+    # create stub for every unresolved DOI
+    for doi in dois:
+        if doi not in collected:
+            stub = Article(identifier=doi, partiallyLoaded=True)   # only DOI, flag set
+            collected[doi.lower()] = stub
+
+    # serialize all Article objects to json
+    payload = [
+        art.model_dump(mode="python", exclude_none=True) for art in collected.values()
+    ]
+
+    return jsonify({
+        'publications': payload
+    })
+
 @app.route('/publication-details/<string:source_name>/<string:source_id>/<string:doi>', methods=['GET'])
 @limiter.limit("10 per minute")
 @utils.timeit
@@ -737,7 +853,7 @@ def publication_details(source_name, source_id, doi):
 
     return response
 
-@app.route('/publication-details-references/<path:doi>', methods=['GET'])
+@app.route('/disabled/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
     print("doi:", doi)  
@@ -881,7 +997,7 @@ def generate_researcher_about_me(orcid):
     return jsonify(summary=f'{researcher_about_me}')
 
 @app.route('/resource-details/<string:source_name>/<string:source_id>/<string:doi>', methods=['GET'])
-# @utils.handle_exceptions
+@utils.handle_exceptions
 def resource_details(source_name, source_id, doi):
 
     source_name = unquote(source_name.split(':', 1)[1]) if ':' in source_name else unquote(source_name)
@@ -1209,18 +1325,18 @@ def merge_objects(object_list, object_type):
     sources = set()
 
     # iterate through the sorted objects and choose the first non-empty value for each field in the merged object
-    for field in fields(merged_object):
+    for field in type(merged_object).model_fields.keys():
 
         # sort the objects by the current field
         # if the field is not found, the objects are sorted with the __default__ list
-        sorted_objects = sorted(object_list, key=lambda obj: get_preference_index(obj, field.name))
+        sorted_objects = sorted(object_list, key=lambda obj: get_preference_index(obj, field))
 
         # iterate through the sorted objects until one of them contains a non-empty value for the field
         for obj in sorted_objects:
-            val = getattr(obj, field.name, None)
+            val = getattr(obj, field, None)
 
             if val not in (None, "", [], {}):   # check if the value is empty or a placeholder
-                setattr(merged_object, field.name, val)
+                setattr(merged_object, field, val)
 
                 # add all sources to the merged object
                 source_list = set(getattr(obj, 'source', []))
