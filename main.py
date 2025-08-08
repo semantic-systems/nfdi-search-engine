@@ -220,7 +220,7 @@ def get_researcher_url(person, external=True) -> str:
         {{ person | get_researcher_url }}
     """
 
-    if getattr(person, 'type', '').lower() != 'person':
+    if getattr(person, 'additionalType', '').lower() != 'person':
         return ''
     if not getattr(person, 'identifier', None):
         return ''
@@ -787,7 +787,7 @@ def get_publication_metadata():
     # create stub for every unresolved DOI
     for doi in dois:
         if doi not in collected:
-            stub = Article(identifier=doi, partiallyLoaded=True)   # only DOI, flag set
+            stub = Article(identifier=doi, partiallyLoaded=True)   # an Article with only a DOI, set flag partiallyLoaded=True
             collected[doi.lower()] = stub
 
     # serialize all Article objects to json
@@ -981,7 +981,7 @@ def researcher_details(source_name, source_id, orcid):
 
     if (len(researchers) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
-        session['researcher:'+orcid] = jsonify(researchers[0]).json
+        session['researcher:'+orcid] = researchers[0].model_dump(mode="python", exclude_none=True)
     else: 
         #merge more than one researchers record into one researcher
         merged_researcher = merge_objects(researchers, "researchers")

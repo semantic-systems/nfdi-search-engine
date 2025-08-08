@@ -354,14 +354,24 @@ document.addEventListener("DOMContentLoaded", () => {
                 </li>`;
     }
 
+    const inflight = { references: false, citations: false };
+
     async function render(key, listId, btnId, isRef) {
+        const lockKey = listId === "references_list" ? "references" : "citations";
+        if (inflight[lockKey]) return;                  // another batch is running
+        inflight[lockKey] = true;
+
+        const btn = document.getElementById(btnId);
+        btn?.classList.add("d-none");                   // hide button immediately
+
         const dois = nextBatch(key);
         if (!dois.length) {
-            document.getElementById(btnId)?.remove();
+            btn?.remove();
+            inflight[lockKey] = false;
             return;
         }
 
-        showLoader(listId, btnId);
+        showLoader(listId);
 
         try {
             const r = await fetch("/publication-details/get-metadata/", {
@@ -376,13 +386,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     pubs.map(p => itemHTML(p, isRef)).join(""));
         } finally {
             hideLoader(listId);
+            inflight[lockKey] = false;
         }
 
-        const btn = document.getElementById(btnId);
-
-        if (load(key).length === 0) {        // no more items
+        // show button again only if more items remain
+        if (load(key).length === 0) {
             btn?.remove();
-        } else {                             // still items → show button
+        } else {
             btn?.classList.remove("d-none");
         }
     }
@@ -398,12 +408,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // buttons
     document.getElementById("btn-load-references")
-            .addEventListener("click", () =>
-                render(keyRef, "references_list", "btn-load-references", true));
+        .addEventListener("click", (e) => {
+            e.currentTarget.classList.add("d-none");
+            render(keyRef, "references_list", "btn-load-references", true);
+        });
 
     document.getElementById("btn-load-citations")
-            .addEventListener("click", () =>
-                render(keyCit, "citations_list", "btn-load-citations", false));
+        .addEventListener("click", (e) => {
+            e.currentTarget.classList.add("d-none");
+            render(keyCit, "citations_list", "btn-load-citations", false);
+        });
     
 });
 </script>
