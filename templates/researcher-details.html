@@ -52,16 +52,21 @@
                 {% endwith %}
             </div>
             <div class="col-5 d-flex justify-content-end">
+                {% if researcher.works_count %}
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-book fs-4"></i>
                     <div class="fs-7 my-1">Publications</div>
-                    <div class="fs-5 fw-bold">{{researcher.works_count}}</div>
+                    <div class="fs-5 fw-bold">{{ researcher.works_count }}</div>
                 </div>
-                <div class="summary-block p-2 ms-3">
+                {% endif %}
+                {% if researcher.cited_by_count %}
+                <div class="summary-block p-2 ms-3"></div>
                     <i class="bi bi-chat-quote fs-4"></i>
                     <div class="fs-7 my-1">Citations</div>
-                    <div class="fs-5 fw-bold">{{researcher.cited_by_count}}</div>
+                    <div class="fs-5 fw-bold">{{ researcher.cited_by_count }}</div>
                 </div>
+                {% endif %}
+                <!-- 
                 <div class="summary-block p-2 ms-3">
                     <i class="bi bi-eye fs-4"></i>
                     <div class="fs-7 my-1">Views</div>
@@ -72,9 +77,12 @@
                     <div class="fs-7 my-1">Saved</div>
                     <div class="fs-5 fw-bold">---</div>
                 </div>
+                -->
             </div>
             <!-- <div class="row border-bottom mt-4"></div> -->
         </div>
+
+        <!--
         <div class="row pb-2">
             <div class="d-flex p-2 justify-content-between">
                 <div class="fs-6 fw-bold">About</div>
@@ -85,6 +93,7 @@
             <div class="d-flex p-2 fs-6 researcher-about-me">                
             </div>
         </div>
+        -->
 
         <div class="row pt-2">
             <div class="col-3 justify-content-start">
@@ -178,6 +187,7 @@
                                     <span class="visually-hidden">Publications</span>
                                 </button>
                             </li>
+                            <!--
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link position-relative" id="projects-tab" data-bs-toggle="tab"
                                     data-bs-target="#projects" type="button" role="tab" aria-controls="projects"
@@ -185,6 +195,7 @@
                                     <span class="visually-hidden">Projects</span>
                                 </button>
                             </li>
+                            -->
                         </ul>
                     </div>
                 </div>
@@ -306,9 +317,11 @@
                         </div>
                         {% endfor %}
                     </div>
+                    <!-- 
                     <div class="tab-pane fade" id="projects" role="tabpanel" aria-labelledby="projects-tab">
                         <span class="fs-7">Coming Soon ... </span>
                     </div>
+                    -->
                 </div>
             </div>
 
