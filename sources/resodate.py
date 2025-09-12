@@ -39,7 +39,7 @@ def search(source: str, search_term: str, results, failed_sources):
             for author in hit_source.get("creator", []):
                 if author['type'] == 'Person':                
                     _author = Author()
-                    _author.type = 'Person'
+                    _author.additionalType = 'Person'
                     _author.name = author.get("name", "")
                     _author.identifier = author.get("id", "").replace('https://orcid.org/','')
                     author_source = thing(

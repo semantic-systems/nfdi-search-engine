@@ -77,7 +77,7 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork, Data
     authors = metadata.get("creators", [])                        
     for author in authors:
         _author = Author()
-        _author.type = 'Person'
+        _author.additionalType = 'Person'
         _author.name = author.get("name", "")
         _author.identifier = author.get("orcid", "")
         _author.affiliation = author.get("affiliation", "")

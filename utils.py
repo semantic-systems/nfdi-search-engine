@@ -159,7 +159,7 @@ def split_authors(authors_names, seperator, authors_list):
     authors = authors_names.split(seperator)
     for author in authors:
         _author = Author()
-        _author.type = 'Person'
+        _author.additionalType = 'Person'
         _author.name = author
         authors_list.append(_author)  
 

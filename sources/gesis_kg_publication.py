@@ -79,7 +79,7 @@ def search(source: str, search_term: str, results, failed_sources):
 
             for authorsName in authors_list:
                 _author = Author()
-                _author.type = 'Person'
+                _author.additionalType = 'Person'
                 _author.name = authorsName
                 _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
                 author_source = thing(

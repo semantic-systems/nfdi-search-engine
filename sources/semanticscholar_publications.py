@@ -5,6 +5,54 @@ from main import app
 import time
 from random import randrange
 
+
+@utils.handle_exceptions
+def get_dois_citations(source: str, doi: str):
+    """
+    Fetches the DOIs of citations for a given DOI.
+
+    Args:
+        doi (str): The DOI of the article to fetch citations for.
+
+    Returns:
+        List[str]: A list of DOIs of the citing articles.
+    """
+    response = data_retriever.retrieve_object(source=source, 
+                                              base_url=app.config['DATA_SOURCES'][source].get('citations-endpoint', ''),
+                                              identifier=doi+"?fields=citations.externalIds",
+                                              quote=False)
+
+    if not response or 'citations' not in response:
+        return []
+    
+    dois_citation = [citation.get('externalIds', {}).get('DOI', '') for citation in response['citations']]
+
+    return [doi for doi in dois_citation if doi]
+
+@utils.handle_exceptions
+def get_dois_recommendations(source: str, doi: str):
+    """
+    Fetches the DOIs of recommendations for a given DOI.
+
+    Args:
+        doi (str): The DOI of the article to fetch recommendations for.
+
+    Returns:
+        List[str]: A list of DOIs of the recommended articles.
+    """
+
+    response = data_retriever.retrieve_object(source=source, 
+                                              base_url=app.config['DATA_SOURCES'][source].get('recommendations-endpoint', ''),
+                                              identifier=doi+"?fields=externalIds",
+                                              quote=False)
+
+    if not response or 'recommendedPapers' not in response:
+        return []
+    
+    dois_reference = [reference.get('externalIds', {}).get('DOI', '') for reference in response['recommendedPapers']]
+
+    return [doi for doi in dois_reference if doi]
+
 @utils.handle_exceptions
 def get_recommendations_for_publication(source: str, doi: str):     
     
@@ -91,7 +139,7 @@ def get_citations_for_publication(source: str, doi: str):
                 for author in authors:
 
                     _author = Author()
-                    _author.type = 'Person'
+                    _author.additionalType = 'Person'
                     _author.name = author.get("name", "")
                     
                     author_source = thing(

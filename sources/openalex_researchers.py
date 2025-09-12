@@ -214,7 +214,7 @@ def get_researcher(source: str, orcid: str, source_id: str, researchers):
     #                 # authors = authorship.get("author", {})
 
     #                 _author = Author()
-    #                 _author.type = 'Person'
+    #                 _author.additionalType = 'Person'
     #                 _author.name = authorship.get("name", "")
     #                 # _author.identifier = authors.get("orcid", "")                            
     #                 publication.author.append(_author)
