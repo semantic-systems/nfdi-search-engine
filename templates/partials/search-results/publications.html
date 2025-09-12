@@ -9,14 +9,35 @@
             <div class="col-11 fs-6">
                 <div class="row mb-2">
                     <div class="col-9 fs-6">
-                        {% if publication.identifier == '' %}
+                    {% if publication.identifier == '' %}
                         <span class="text-secondary fw-bold publication_name">
-                            {{publication.name}}</span>
+                        {{ publication.name }}
+                        {% if publication.encoding_contentUrl %}
+                            <img src="{{ url_for('static', filename='images/icons/open_lock.png') }}"
+                                alt="open" class="ms-1"
+                                style="height:0.75rem;position:relative;top:-1px;">
                         {% else %}
-                        <a class="text-secondary fw-bold publication_name"
-                            href="/publication-details/{{publication | format_digital_obj_url('source-name','source-id', 'doi')}}"
-                            target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{publication.name}}</a>
+                            <img src="{{ url_for('static', filename='images/icons/closed_lock.png') }}"
+                                alt="closed" class="ms-1"
+                                style="height:0.75rem;position:relative;top:-1px;">
                         {% endif %}
+                        </span>
+                    {% else %}
+                        <a class="text-secondary fw-bold publication_name"
+                        href="/publication-details/{{ publication | format_digital_obj_url('source-name','source-id','doi') }}"
+                        target="_blank">
+                        <i class="pull-left bi bi-link-45deg"></i>&nbsp;{{ publication.name }}
+                        {% if publication.encoding_contentUrl %}
+                            <img src="{{ url_for('static', filename='images/icons/open_lock.png') }}"
+                                alt="open" class="ms-1"
+                                style="height:0.75rem;position:relative;top:-1px;">
+                        {% else %}
+                            <img src="{{ url_for('static', filename='images/icons/closed_lock.png') }}"
+                                alt="closed" class="ms-1"
+                                style="height:0.75rem;position:relative;top:-1px;">
+                        {% endif %}
+                        </a>
+                    {% endif %}
                     </div>
                     <div class="col-3 text-end ">
                         {% for source in publication.source %}

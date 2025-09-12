@@ -12,8 +12,6 @@ from main import app
 def map_entry_to_model(record) -> CreativeWork:
     """Convert a single Huggingface model record into a :class:`CreativeWork`."""
 
-    print(record)
-
     model = CreativeWork()  # thing -> CreativeWork
 
     model.identifier = record.get("id", "") or record.get("modelId", "")
