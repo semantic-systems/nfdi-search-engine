@@ -9,7 +9,7 @@
             <div class="col-11 fs-6">
                 <div class="row mb-2">
                     <div class="col-9 fs-6">
-                        {% if project.identifier == '' %}
+                        {% if not project.url %}
                         <span class="text-secondary fw-bold publication_name">
                             {{project.name}}</span>
                         {% else %}
@@ -19,10 +19,14 @@
                     </div>
                     <div class="col-3 text-end ">
                         {% for source in project.source %}
-                        <a id="source_link" href="{{source.url}}" target=_blank>
-                            <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
-                                    class="pull-right bi bi-box-arrow-up-right"></i></span>
-                        </a>
+                            {% if source.url %}
+                                <a id="source_link" href="{{source.url}}" target=_blank>
+                                    <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
+                                            class="pull-right bi bi-box-arrow-up-right"></i></span>
+                                </a>
+                            {% else %}
+                                <span class="badge bg-pill text-wrap text-break">{{source.name}}</span>
+                            {% endif %}
                         {% endfor %}
                     </div>
                 </div>
