@@ -146,6 +146,7 @@ def openaire_project_search(search_string, results):
                 project.dateStart = pro_result.get('startdate', {}).get('$', '')
                 project.dateEnd = pro_result.get('enddate', {}).get('$', '')
                 project.identifier = pro_result.get('callidentifier', {}).get('$', '')
+                project.url = pro_result.get('websiteurl', {}).get('$', '')
 
                 # fundingtree can be dict or list
                 # fundingtree = pro_result.get('fundingtree', {}) if pro_result.get('fundingtree') is not None else {}

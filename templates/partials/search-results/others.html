@@ -9,14 +9,7 @@
             <div class="col-11 fs-6">
                 <div class="row mb-2">
                     <div class="col-9 fs-6">
-                        {% if digitalObj.identifier == '' %}
-                        <span class="text-secondary fw-bold publication_name">
-                            {{digitalObj.name}}</span>
-                        {% else %}
-                        <a class="text-secondary fw-bold publication_name"
-                            href="/other-details/{{digitalObj | format_digital_obj_url('doi','source-id')}}"
-                            target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{digitalObj.name}}</a>
-                        {% endif %}
+                        <span class="text-secondary fw-bold publication_name">{{digitalObj.name}}</span>
                     </div>
                     <div class="col-3 text-end ">
                         {% for source in digitalObj.source %}
