@@ -4,7 +4,11 @@
 
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
-
+<style>
+  /* make the split citation button match the width of other side buttons */
+  #copy-citation-wrap.btn-group.w-100 > .btn:first-child { flex: 1 1 auto; }
+  #copy-citation-wrap.btn-group.w-100 > .dropdown-toggle  { flex: 0 0 2.5rem; }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -190,8 +194,25 @@
             </div>
 
             <div class="col-3 ps-5">
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="citation_block">
+                    <div id="copy-citation-wrap" class="btn-group w-100 mt-1">
+                        <button type="button" class="btn btn-outline-secondary" id="btn-copy-citation">Copy Citation</button>
+                        <button type="button"
+                                class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Toggle citation formats</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item cite-style" data-style="ieee" href="#">IEEE</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="apa" href="#">APA</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="modern-language-association" href="#">MLA</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="chicago-author-date" href="#">Chicago (author-date)</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="bibtex" href="#">BibTeX</a></li>
+                        </ul>
+                    </div>
+                </div>
                 <div class="d-flex p-2 bd-highlight">
-                    <span class="fw-bold fs-6">EXTERNAL LINKS</span>
+                    <span class="fw-bold fs-6 pt-4">EXTERNAL LINKS</span>
                 </div>
                 <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
                     {% for source in publication.source %}
@@ -443,7 +464,79 @@ document.addEventListener("DOMContentLoaded", () => {
             render(keyCit, "citations_list", "btn-load-citations", false);
         });
     
-});
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const defaultStyle = "ieee";
+        const doi = document.getElementById("publication_doi").textContent.trim().toLowerCase();
+
+        function cacheKey(style){ return `citation::${doi}::${style}`; }
+
+        async function fetchCitation(style) {
+            const key = cacheKey(style);
+            const cached = localStorage.getItem(key);
+            if (cached) return cached;
+
+            const url = `/publication-details/citation/format?doi=${encodeURIComponent(doi)}&style=${encodeURIComponent(style)}`;
+            console.log(url);
+            const res = await fetch(url, {method: "GET"});
+            if (!res.ok) throw new Error("citation fetch failed (${res.status})");
+            const data = await res.json();
+            localStorage.setItem(key, data.citation);
+            return data.citation;
+        }
+
+        // copy to clipboard with fallback
+        async function copyText(txt) {
+            try {
+            await navigator.clipboard.writeText(txt);
+            } catch {
+            // fallback
+            const ta = document.createElement("textarea");
+            ta.value = txt;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "absolute"; ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select(); document.execCommand("copy");
+            document.body.removeChild(ta);
+            }
+        }
+
+        // request, copy, and update button state
+        async function handleCopy(style) {
+            const btn = document.getElementById("btn-copy-citation");
+            const prev = btn.textContent;
+            btn.disabled = true; btn.textContent = "Copying...";
+            try {
+            const citation = await fetchCitation(style);
+            await copyText(citation);
+            btn.textContent = "Copied";
+            setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 900);
+            } catch (e) {
+            await copyText(`https://doi.org/${doi}`); // graceful fallback
+            btn.textContent = "DOI copied";
+            setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 1200);
+            console.error(e);
+            }
+        }
+
+        // copy the "default" style on main button click
+        document.getElementById("btn-copy-citation")
+                .addEventListener("click", () => handleCopy(defaultStyle));
+
+        // open the dropdown menu to select style
+        document.querySelectorAll(".cite-style").forEach(a => {
+            a.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            const style = ev.currentTarget.getAttribute("data-style");
+            handleCopy(style);
+            });
+        });
+
+        // prefetch the default style on page load
+        fetchCitation(defaultStyle).catch(()=>{ /* ignore */ });
+    });
+
 </script>
 
 {% endblock javascripts %}
