@@ -936,6 +936,35 @@ def publication_details_recommendations(doi):
     # print("response:", response)
     return response
 
+@app.get("/publication-details/citation/format")
+@limiter.limit("10 per minute")
+def get_citation():
+    """
+    Get the citation string of a given DOI from the DOI Citation Formatter (https://citation.doi.org/).
+    Query: ?doi=<doi>&style=<style>   (lang is fixed to en-US)
+    Returns: { doi, style, citation }
+    """
+
+    # get the parameters for the request
+    doi = (request.args.get("doi") or "").strip().lower()
+    style = (request.args.get("style") or "ieee").strip()
+
+    if not doi:
+        return jsonify({"error": "missing doi"}), 400
+
+    try:
+        # send the request to citation.doi.org
+        r = requests.get(
+            "https://citation.doi.org/format",
+            params={"doi": doi, "style": style, "lang": "en-US"},
+            headers={"Accept": "text/plain; charset=utf-8"},
+            timeout=10,
+        )
+        r.raise_for_status()
+        return jsonify({"doi": doi, "style": style, "citation": r.text.strip()}), 200
+    except requests.RequestException as e:
+        return jsonify({"error": "citation service failed", "detail": str(e)}), 502
+
 @app.route('/researcher-details/<string:source_name>/<string:source_id>/<string:orcid>', methods=['GET'])
 @limiter.limit("10 per minute")
 @utils.timeit
