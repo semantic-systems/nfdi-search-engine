@@ -235,9 +235,9 @@ class Config:
                 "height": "h-100",
             },
             "module": "opencitations",
-            "citations-endpoint": "https://opencitations.net/index/api/v2/citations/doi:",
-            "get-publication-references-endpoint": "https://opencitations.net/index/api/v2/references/doi:",
-            "metadata-endpoint": "https://opencitations.net/meta/api/v1/metadata/doi:"
+            "citations-endpoint": "https://api.opencitations.net/index/v2/citations/doi:",
+            "get-publication-references-endpoint": "https://api.opencitations.net/index/v2/references/doi:",
+            "metadata-endpoint": "https://api.opencitations.net/meta/v1/metadata/doi:"
         }
         # "dblp - Publications": {
         #     "module": "dblp_publications",
