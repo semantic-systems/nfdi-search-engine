@@ -14,6 +14,7 @@ class Config:
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
     OPENCITATIONS_API_KEY= os.environ.get("OPENCITATIONS_API_KEY", "")
+    CORE_API_KEY= os.environ.get("CORE_API_KEY", "")
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 100
@@ -238,6 +239,17 @@ class Config:
             "citations-endpoint": "https://opencitations.net/index/api/v2/citations/doi:",
             "get-publication-references-endpoint": "https://opencitations.net/index/api/v2/references/doi:",
             "metadata-endpoint": "https://opencitations.net/meta/api/v1/metadata/doi:"
+        },
+        "CORE":{
+            "logo": {
+                "name": "CORE",
+                "link": "https://core.ac.uk/",
+                "src": "core.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "core",
+            "search-endpoint": f"https://api.core.ac.uk/v3/search/works/?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         }
         # "dblp - Publications": {
         #     "module": "dblp_publications",
