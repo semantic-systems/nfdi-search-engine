@@ -17,3 +17,4 @@ ua_parser==1.0.1
 email-validator==2.2.0
 # flask-ipban==1.1.5
 Flask-Limiter==3.12
+pydantic==2.11.7
