@@ -18,6 +18,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
 from chatbot import chatbot
+from objects import Article
 
 import utils
 from flask_limiter import Limiter
@@ -56,7 +57,8 @@ login_manager.login_view = 'login'
 
 from typing import Optional
 from werkzeug.security import generate_password_hash, check_password_hash
-from dataclasses import dataclass, fields, field
+from pydantic.dataclasses import dataclass
+from dataclasses import fields, field
 from flask_login import UserMixin
 # ...
 @dataclass
@@ -218,7 +220,7 @@ def get_researcher_url(person, external=True) -> str:
         {{ person | get_researcher_url }}
     """
 
-    if getattr(person, 'type', '').lower() != 'person':
+    if getattr(person, 'additionalType', '').lower() != 'person':
         return ''
     if not getattr(person, 'identifier', None):
         return ''
@@ -683,6 +685,120 @@ def get_chatbot_answer():
     return answer
 
 
+@app.route('/publication-details/get-dois-references/<path:doi>', methods=['POST'])
+@limiter.limit("10 per minute")
+def get_publication_dois_references(doi):
+    """
+    Endpoint to get a list of references for a given DOI.
+    Uses the .get_dois_references() method from the modules.
+    """
+
+    # uses get_dois_references() from these sources:
+    references_sources = {
+        "CROSSREF - Publications": "crossref_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    found_dois = set()
+
+    for source, module_name in references_sources.items():
+        # request reference data from these endpoints
+        dois = importlib.import_module(f'sources.{module_name}').get_dois_references(source=source, doi=doi)
+        dois = [d.lower() for d in dois]  # ensure DOIs are lowercase
+
+        print(f"found {len(dois)} DOIs in {source} for {doi}")
+
+        found_dois.update(dois)
+    
+    return jsonify({
+        'dois': list(found_dois)
+    })
+
+@app.route('/publication-details/get-dois-citations/<path:doi>', methods=['POST'])
+@limiter.limit("10 per minute")
+def get_publication_citations_dois(doi):
+    """
+    Endpoint to get a list of citations for a given DOI.
+    Uses the .get_dois_citations() method from the modules.
+    """
+
+    # uses get_dois_citations() from these sources:
+    citation_sources = {
+        "SEMANTIC SCHOLAR - Publications": "semanticscholar_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    found_dois = set()
+
+    for source, module_name in citation_sources.items():
+        # request citation data from these endpoints
+        dois = importlib.import_module(f'sources.{module_name}').get_dois_citations(source=source, doi=doi)
+        dois = [d.lower() for d in dois]  # ensure DOIs are lowercase
+
+        print(f"found {len(dois)} DOIs in {source} for {doi}")
+
+        found_dois.update(dois)
+    
+    return jsonify({
+        'dois': list(found_dois)
+    })
+
+@app.route('/publication-details/get-metadata/', methods=['POST'])
+@limiter.limit("10 per minute")
+def get_publication_metadata():
+    """
+    Endpoint to get metadata for a list of DOIs.
+    Uses the .get_publication_metadata() method from the modules.
+    """
+
+    # add more metadata sources here
+    # uses get_publication_metadata() from their modules
+    metadata_sources = {
+        "OpenCitations": "opencitations",
+    }
+
+    dois = request.json.get('dois', [])
+    print(f"Received {len(dois)} DOIs for metadata retrieval")
+
+    if not dois:
+        return jsonify({"error": "No DOIs provided"}), 400
+    
+    # collect articles keyed by DOI
+    collected: dict[str, Article] = {}
+
+    for module_name in metadata_sources.values():
+        articles = importlib.import_module(f'sources.{module_name}').get_batch_articles(dois=dois)
+
+        # get all lowercase titles and DOIs from the collected articles
+        list_title = [article.name.lower() for article in collected.values()]
+        list_doi = [article.identifier.lower() for article in collected.values()]
+
+        for article in articles:
+
+            # deduplicate and add to publication_list
+            # check if the article title or DOI already exists
+            if article.name.lower() not in list_title and article.identifier.lower() not in list_doi:
+
+                # article does not already exist, add it
+                doi = article.identifier.lower()
+                if doi and doi not in collected:
+                    collected[doi] = article
+
+    # create stub for every unresolved DOI
+    for doi in dois:
+        if doi not in collected:
+            stub = Article(identifier=doi, partiallyLoaded=True)   # an Article with only a DOI, set flag partiallyLoaded=True
+            collected[doi.lower()] = stub
+
+    # serialize all Article objects to json
+    payload = [
+        art.model_dump(mode="python", exclude_none=True) for art in collected.values()
+    ]
+
+    return jsonify({
+        'publications': payload
+    })
+
 @app.route('/publication-details/<string:source_name>/<string:source_id>/<string:doi>', methods=['GET'])
 @limiter.limit("10 per minute")
 @utils.timeit
@@ -737,23 +853,74 @@ def publication_details(source_name, source_id, doi):
 
     return response
 
-@app.route('/publication-details-references/<path:doi>', methods=['GET'])
+@app.route('/disabled/publication-details-references/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_references(doi):
     print("doi:", doi)  
+
     source = "CROSSREF - Publications" 
-    module_name = "crossref_publications"     
-    publication = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
-    response = make_response(render_template('partials/publication-details/references.html', publication=publication))    
+    module_name = "crossref_publications"    
+
+    reference_sources = {
+        "CROSSREF - Publications": "crossref_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    references = []
+
+    # this will be the base article to which we will add references
+    base_article = ''
+
+    for source, module_name in reference_sources.items():
+        print(f"requesting references from {source} for DOI: {doi}")
+        # request reference data from these endpoints
+        article = importlib.import_module(f'sources.{module_name}').get_publication_references(source=source, doi=doi)
+
+        found_references = article.references if hasattr(article, 'references') else []
+
+        # add all references whose doi is not already in the references list
+        doi_list = [ref.identifier for ref in references]
+        name_list = [ref.name.lower() for ref in references]
+        for ref in found_references:
+            if ref.identifier not in doi_list and ref.name.lower() not in name_list:
+                references.append(ref)
+        
+        # change this to select another base article
+        if source == "CROSSREF - Publications":
+            base_article = article
+    
+    # set all references to the base article
+    base_article.references = references
+    response = make_response(render_template('partials/publication-details/references.html', publication=base_article))    
+
     return response
 
 @app.route('/publication-details-citations/<path:doi>', methods=['GET'])
 @utils.timeit
 def publication_details_citations(doi):
-    print("for citations - DOI:", doi)  
-    source = "SEMANTIC SCHOLAR - Publications" 
-    module_name = "semanticscholar_publications"     
-    publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(source=source, doi=doi)
+    print("for citations - DOI:", doi)
+
+    # request citation data from these endpoints
+    # source: module_name
+    citation_sources = {
+        "SEMANTIC SCHOLAR - Publications": "semanticscholar_publications",
+        "OpenCitations": "opencitations",
+    }
+
+    publications = []
+
+    for source, module_name in citation_sources.items():
+        
+        found_publications = importlib.import_module(f'sources.{module_name}').get_citations_for_publication(source=source, doi=doi)
+
+        # add all publications whose doi is not already in the publications list
+        doi_list = [pub.identifier for pub in publications]
+        name_list = [pub.name.lower() for pub in publications]
+
+        for pub in found_publications:
+            if pub.identifier not in doi_list and pub.name.lower() not in name_list:
+                publications.append(pub)
+
     response = make_response(render_template('partials/publication-details/citations.html', publications=publications))
     # print("response:", response)
     return response
@@ -768,6 +935,35 @@ def publication_details_recommendations(doi):
     response = make_response(render_template('partials/publication-details/recommendations.html', publications=publications))
     # print("response:", response)
     return response
+
+@app.get("/publication-details/citation/format")
+@limiter.limit("10 per minute")
+def get_citation():
+    """
+    Get the citation string of a given DOI from the DOI Citation Formatter (https://citation.doi.org/).
+    Query: ?doi=<doi>&style=<style>   (lang is fixed to en-US)
+    Returns: { doi, style, citation }
+    """
+
+    # get the parameters for the request
+    doi = (request.args.get("doi") or "").strip().lower()
+    style = (request.args.get("style") or "ieee").strip()
+
+    if not doi:
+        return jsonify({"error": "missing doi"}), 400
+
+    try:
+        # send the request to citation.doi.org
+        r = requests.get(
+            "https://citation.doi.org/format",
+            params={"doi": doi, "style": style, "lang": "en-US"},
+            headers={"Accept": "text/plain; charset=utf-8"},
+            timeout=10,
+        )
+        r.raise_for_status()
+        return jsonify({"doi": doi, "style": style, "citation": r.text.strip()}), 200
+    except requests.RequestException as e:
+        return jsonify({"error": "citation service failed", "detail": str(e)}), 502
 
 @app.route('/researcher-details/<string:source_name>/<string:source_id>/<string:orcid>', methods=['GET'])
 @limiter.limit("10 per minute")
@@ -814,7 +1010,7 @@ def researcher_details(source_name, source_id, orcid):
 
     if (len(researchers) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
-        session['researcher:'+orcid] = jsonify(researchers[0]).json
+        session['researcher:'+orcid] = researchers[0].model_dump(mode="python", exclude_none=True)
     else: 
         #merge more than one researchers record into one researcher
         merged_researcher = merge_objects(researchers, "researchers")
@@ -830,7 +1026,7 @@ def generate_researcher_about_me(orcid):
     return jsonify(summary=f'{researcher_about_me}')
 
 @app.route('/resource-details/<string:source_name>/<string:source_id>/<string:doi>', methods=['GET'])
-# @utils.handle_exceptions
+@utils.handle_exceptions
 def resource_details(source_name, source_id, doi):
 
     source_name = unquote(source_name.split(':', 1)[1]) if ':' in source_name else unquote(source_name)
@@ -1158,18 +1354,18 @@ def merge_objects(object_list, object_type):
     sources = set()
 
     # iterate through the sorted objects and choose the first non-empty value for each field in the merged object
-    for field in fields(merged_object):
+    for field in type(merged_object).model_fields.keys():
 
         # sort the objects by the current field
         # if the field is not found, the objects are sorted with the __default__ list
-        sorted_objects = sorted(object_list, key=lambda obj: get_preference_index(obj, field.name))
+        sorted_objects = sorted(object_list, key=lambda obj: get_preference_index(obj, field))
 
         # iterate through the sorted objects until one of them contains a non-empty value for the field
         for obj in sorted_objects:
-            val = getattr(obj, field.name, None)
+            val = getattr(obj, field, None)
 
             if val not in (None, "", [], {}):   # check if the value is empty or a placeholder
-                setattr(merged_object, field.name, val)
+                setattr(merged_object, field, val)
 
                 # add all sources to the merged object
                 source_list = set(getattr(obj, 'source', []))

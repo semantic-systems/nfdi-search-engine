@@ -43,7 +43,7 @@ def search(source: str, search_term: str, results, failed_sources):
         
         for creator in dc_fields.get('creator', {}).get("all", []):
             author = Author()
-            author.type = "Person" # there is not type for creator in Gesis it's jus for now
+            author.additionalType = "Person" # there is not type for creator in Gesis it's jus for now
             author.name = creator
             digital_obj.author.append(author)
 

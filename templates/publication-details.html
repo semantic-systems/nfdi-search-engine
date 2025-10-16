@@ -4,7 +4,11 @@
 
 <!-- Specific CSS goes HERE  -->
 {% block stylesheets %}
-
+<style>
+  /* make the split citation button match the width of other side buttons */
+  #copy-citation-wrap.btn-group.w-100 > .btn:first-child { flex: 1 1 auto; }
+  #copy-citation-wrap.btn-group.w-100 > .dropdown-toggle  { flex: 0 0 2.5rem; }
+</style>
 {% endblock stylesheets %}
 
 {% block content %}
@@ -155,21 +159,23 @@
                         </div>
                     </div>
                 </div> -->
-                <div class="d-flex p-2 bd-highlight pt-4" id="references">
-                    <span class="fw-bold fs-6">REFERENCES ({{publication.referenceCount}}) <i
-                            class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from CrossRef and OpenCitations"></i></span>
+                <div class="p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
+                    <span class="fw-bold fs-6">
+                        REFERENCES&nbsp;(<span id="references_count">0</span>)
+                    </span>
+                    <ol id="references_list" class="list-group list-group-numbered references mb-2"></ol>
+                    <button id="btn-load-references" class="btn btn-outline-secondary w-100 mt-2 d-none">
+                        Load more
+                    </button>
                 </div>
-                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="references_block">
-                    <button type="button" class="btn btn-outline-secondary" id="btn-load-references">Load</button>
-                </div>
-                <div class="d-flex p-2 bd-highlight pt-4" id="cited-by">
-                    <span class="fw-bold fs-6">CITATIONS ({{publication.citationCount}}) <i
-                            class="bi bi-info-circle-fill text-secondary" data-bs-toggle="tooltip"
-                            data-bs-placement="top" title="Retrieved from Semantic Scholar and OpenCitations"></i></span>
-                </div>
-                <div class="d-flex p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
-                    <button type="button" class="btn btn-outline-secondary" id="btn-load-citations">Load</button>
+                <div class="p-2 bd-highlight fs-6 border-bottom pb-4" id="citations_block">
+                    <span class="fw-bold fs-6">
+                        CITATIONS&nbsp;(<span id="citations_count">0</span>)
+                    </span>
+                    <ol id="citations_list" class="list-group list-group-numbered citations mb-2"></ol>
+                    <button id="btn-load-citations" class="btn btn-outline-secondary w-100 mt-2 d-none">
+                        Load more
+                    </button>
                 </div>
             </div>
             <div class="col-auto">
@@ -188,8 +194,25 @@
             </div>
 
             <div class="col-3 ps-5">
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="citation_block">
+                    <div id="copy-citation-wrap" class="btn-group w-100 mt-1">
+                        <button type="button" class="btn btn-outline-secondary" id="btn-copy-citation">Copy Citation</button>
+                        <button type="button"
+                                class="btn btn-outline-secondary dropdown-toggle dropdown-toggle-split"
+                                data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="visually-hidden">Toggle citation formats</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item cite-style" data-style="ieee" href="#">IEEE</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="apa" href="#">APA</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="modern-language-association" href="#">MLA</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="chicago-author-date" href="#">Chicago (author-date)</a></li>
+                        <li><a class="dropdown-item cite-style" data-style="bibtex" href="#">BibTeX</a></li>
+                        </ul>
+                    </div>
+                </div>
                 <div class="d-flex p-2 bd-highlight">
-                    <span class="fw-bold fs-6">EXTERNAL LINKS</span>
+                    <span class="fw-bold fs-6 pt-4">EXTERNAL LINKS</span>
                 </div>
                 <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4">
                     {% for source in publication.source %}
@@ -262,105 +285,258 @@
 {% block javascripts %}
 
 <script>
-    $(document).ready(function () {
+document.addEventListener("DOMContentLoaded", () => {
+    const doiPage = document.getElementById("publication_doi").textContent.trim();
+    const keyRef  = `refs_${doiPage}`;
+    const keyCit  = `cits_${doiPage}`;
+    const batch   = 10;     // how many items to load on load and on "Load more" button click
 
-        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        })
+    const save = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+    const load =  k    => JSON.parse(localStorage.getItem(k) || "[]");
 
-        load_references = function () {
-            let doi = document.getElementById('publication_doi').innerHTML
-            $.ajax({
-                url: '/publication-details-references/' + doi,
-                type: "GET",
-                data: {
-                },
-                beforeSend: function () {
-                    $('#references_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
-                },
-                complete: function () {
-                    // $('.loader').remove();
-                },
-                success: function (data) {
-                    $('#references_block').html(data);
-                    // console.log(data)
-                    console.log('references have been loaded.')
-                    $('.loader').remove();
-                },
-                error: function (err) {
-                    console.log(err);
-                    return err
-                }
-            });
+    // encode a value for URL usage
+    function urlEncode(val) {
+        if (!val) return "";
+        let enc = encodeURIComponent(String(val));   // '/' -> %2F , space -> %20 …
+        return enc.replace(/%2F/gi, "%252F");        // double-encode slash
+    }
+
+    // format a digital object URL from the publication object
+    // same functionality as in the Python template filter format_digital_obj_url() (see main.py)
+    function formatDigitalObjUrl(obj, fields = ["source-name", "source-id", "doi"]) {
+        const get = (field) => {
+            switch (field) {
+                case "source-id":
+                    return obj.source?.[0]?.identifier || "na";
+                case "source-name":
+                    return obj.source?.[0]?.name       || "na";
+                case "doi":
+                case "orcid":
+                    return obj.identifier              || "na";
+                default:
+                    return obj[field]                  || "";
+            }
+        };
+
+        return fields
+            .map(f => `${f}:${urlEncode(get(f))}`)
+            .join("/");
+    }
+
+    // functions to show/hide the loading indicator of a specific list (listId = 'references_list' or 'citations_list')
+    // also hides/shows the buttons to load more
+    function showLoader(listId) {
+        if (document.querySelector(`#${listId} ~ .throbber`)) return;
+        const div = document.createElement("div");
+        div.className = "throbber text-center my-2";
+        div.innerHTML = "<div class='loader'><div class='sp-3balls'></div></div>";
+        document.getElementById(listId).after(div);
+    }
+    function hideLoader(listId) {
+        document.querySelector(`#${listId} ~ .throbber`)?.remove();
+    }
+
+    async function cacheList(endpoint, key, countElmId) {
+        let dois = load(key);                       // check if we already have cached DOIs
+
+        if (!dois.length) {                         // cache is empty -> fetch from server
+            const res  = await fetch(
+                `/publication-details/${endpoint}/${encodeURIComponent(doiPage)}`,
+                { method: "POST" }
+            );
+            dois = (await res.json()).dois;
+            save(key, dois);
+            console.log(`Cached ${dois.length} DOIs for ${endpoint}`);
+        } else {                                    // cache is not empty -> use cached DOIs
+            console.log(`Using ${dois.length} cached DOIs for ${endpoint}`);
         }
 
-        load_recommendations = function () {
-            let doi = document.getElementById('publication_doi').innerHTML
-            $.ajax({
-                url: '/publication-details-recommendations/' + doi,
-                type: "GET",
-                data: {
-                },
-                beforeSend: function () {
-                    $('#recommendations_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
-                },
-                complete: function () {
-                    $('.loader').remove();
-                },
-                success: function (data) {
-                    console.log(data)
-                    $('#recommendations_block').html(data);
-                    console.log('recommendations have been loaded.')
+        // set count in the brackets (i.e. "REFERENCES (10)")
+        document.getElementById(countElmId).textContent = String(dois.length);
+    }
+    
+    function nextBatch(key) {
+        const all = load(key);
+        const slice = all.slice(0, batch);
+        save(key, all.slice(batch));
+        return slice;
+    }
 
-                },
-                error: function (err) {
-                    console.log(err);
-                    return err
-                }
-            });
+    // render a single item in the list
+    // a is the Article object, as returned from main.py > get_publication_metadata()
+    // isRef indicates if the item is a reference (true) or a citation (false)
+    function itemHTML(a, isRef) {
+
+        // build the display text
+        const authors = (a.author || []).map(o => o.name).join(", ");
+        const year    = (a.datePublished || "").slice(0,4);
+        const text    = `${authors} <b>${a.name}</b>. (${year})`;
+
+        if (!a.identifier) // if there is no identifier, we dont create a link
+            return `<li class="list-group-item border-0">${text}</li>`;
+        
+        // if articles have no metadata (a.partiallyLoaded is true), we only show the DOI with a note
+        // this happens if we do not find any metadata for a DOI (see main.py > get_publication_metadata())
+        // we also do this if we do not have any authors or a name (else it would show as "  . ()")
+        const hasMetadata = a.name || a.author?.length;
+        if (a.partiallyLoaded || !hasMetadata) {
+            return `<li class="list-group-item border-0">
+                        <a class="text-secondary"
+                            href="/publication-details/source-name:na/source-id:${urlEncode(a.identifier)}/doi:${urlEncode(a.identifier)}"
+                            <i class="bi bi-link-45deg"></i>&nbsp;${a.identifier} <i>(No metadata found)</i>
+                        </a>
+                    </li>`;
+            }
+        
+        // build the URL to the external publication details page
+        const href = `/publication-details/${formatDigitalObjUrl(a, ['source-name', 'source-id', 'doi'])}`;
+
+        return `<li class="list-group-item border-0">
+                  <a class="text-secondary"
+                     href="${href}"
+                     <i class="bi bi-link-45deg"></i>&nbsp;${text}
+                  </a>
+                </li>`;
+    }
+
+    const inflight = { references: false, citations: false };
+
+    async function render(key, listId, btnId, isRef) {
+        const lockKey = listId === "references_list" ? "references" : "citations";
+        if (inflight[lockKey]) return;                  // another batch is running
+        inflight[lockKey] = true;
+
+        const btn = document.getElementById(btnId);
+        btn?.classList.add("d-none");                   // hide button immediately
+
+        const dois = nextBatch(key);
+        if (!dois.length) {
+            btn?.remove();
+            inflight[lockKey] = false;
+            return;
         }
 
-        load_citations = function () {
-            let doi = document.getElementById('publication_doi').innerHTML
-            $.ajax({
-                url: '/publication-details-citations/' + doi,
-                type: "GET",
-                data: {
-                },
-                beforeSend: function () {
-                    $('#citations_block').html("<div class='loader'><div class='sp-3balls'></div></div>");
-                },
-                complete: function () {
-                    $('.loader').remove();
-                },
-                success: function (data) {
-                    console.log(data)
-                    $('#citations_block').html(data);
-                    console.log('citations have been loaded.')
-                },
-                error: function (err) {
-                    console.log(err);
-                    return err
-                }
+        showLoader(listId);
+
+        try {
+            const r = await fetch("/publication-details/get-metadata/", {
+                method :"POST",
+                headers:{"Content-Type":"application/json"},
+                body   : JSON.stringify({dois})
             });
+            const pubs = (await r.json()).publications;
+
+            document.getElementById(listId)
+                .insertAdjacentHTML("beforeend",
+                    pubs.map(p => itemHTML(p, isRef)).join(""));
+        } finally {
+            hideLoader(listId);
+            inflight[lockKey] = false;
         }
 
-        $('#btn-load-references').click(function () {
-            load_references();
-        });
+        // show button again only if more items remain
+        if (load(key).length === 0) {
+            btn?.remove();
+        } else {
+            btn?.classList.remove("d-none");
+        }
+    }
 
-        $('#btn-load-recommendations').click(function () {
-            load_recommendations();
-        });
-
-        $('#btn-load-citations').click(function () {
-            load_citations();
-        });
-
+    // initial cache + first batch
+    Promise.all([
+        cacheList("get-dois-references", keyRef, "references_count"),
+        cacheList("get-dois-citations" , keyCit, "citations_count")
+    ]).then(() => {
+        render(keyRef, "references_list", "btn-load-references", true);
+        render(keyCit, "citations_list" , "btn-load-citations" , false);
     });
+
+    // buttons
+    document.getElementById("btn-load-references")
+        .addEventListener("click", (e) => {
+            e.currentTarget.classList.add("d-none");
+            render(keyRef, "references_list", "btn-load-references", true);
+        });
+
+    document.getElementById("btn-load-citations")
+        .addEventListener("click", (e) => {
+            e.currentTarget.classList.add("d-none");
+            render(keyCit, "citations_list", "btn-load-citations", false);
+        });
+    
+    });
+
+    document.addEventListener("DOMContentLoaded", () => {
+        const defaultStyle = "ieee";
+        const doi = document.getElementById("publication_doi").textContent.trim().toLowerCase();
+
+        function cacheKey(style){ return `citation::${doi}::${style}`; }
+
+        async function fetchCitation(style) {
+            const key = cacheKey(style);
+            const cached = localStorage.getItem(key);
+            if (cached) return cached;
+
+            const url = `/publication-details/citation/format?doi=${encodeURIComponent(doi)}&style=${encodeURIComponent(style)}`;
+            console.log(url);
+            const res = await fetch(url, {method: "GET"});
+            if (!res.ok) throw new Error("citation fetch failed (${res.status})");
+            const data = await res.json();
+            localStorage.setItem(key, data.citation);
+            return data.citation;
+        }
+
+        // copy to clipboard with fallback
+        async function copyText(txt) {
+            try {
+            await navigator.clipboard.writeText(txt);
+            } catch {
+            // fallback
+            const ta = document.createElement("textarea");
+            ta.value = txt;
+            ta.setAttribute("readonly", "");
+            ta.style.position = "absolute"; ta.style.left = "-9999px";
+            document.body.appendChild(ta);
+            ta.select(); document.execCommand("copy");
+            document.body.removeChild(ta);
+            }
+        }
+
+        // request, copy, and update button state
+        async function handleCopy(style) {
+            const btn = document.getElementById("btn-copy-citation");
+            const prev = btn.textContent;
+            btn.disabled = true; btn.textContent = "Copying...";
+            try {
+            const citation = await fetchCitation(style);
+            await copyText(citation);
+            btn.textContent = "Copied";
+            setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 900);
+            } catch (e) {
+            await copyText(`https://doi.org/${doi}`); // graceful fallback
+            btn.textContent = "DOI copied";
+            setTimeout(() => { btn.textContent = prev; btn.disabled = false; }, 1200);
+            console.error(e);
+            }
+        }
+
+        // copy the "default" style on main button click
+        document.getElementById("btn-copy-citation")
+                .addEventListener("click", () => handleCopy(defaultStyle));
+
+        // open the dropdown menu to select style
+        document.querySelectorAll(".cite-style").forEach(a => {
+            a.addEventListener("click", (ev) => {
+            ev.preventDefault();
+            const style = ev.currentTarget.getAttribute("data-style");
+            handleCopy(style);
+            });
+        });
+
+        // prefetch the default style on page load
+        fetchCitation(defaultStyle).catch(()=>{ /* ignore */ });
+    });
+
 </script>
-
-
 
 {% endblock javascripts %}

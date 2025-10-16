@@ -4,12 +4,14 @@ import urllib.parse
 from main import app
 import xmltodict
 
-def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url:str=""):    
+def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url:str="", quote:bool=True):    
     try:
         # Either the request will have base url and search then the url will be formed concatenating both of them 
         # otherwise the url will be used as is.
         if url == "":
-            search_term = urllib.parse.quote_plus(string=search_term, safe='()?&=,')
+            if quote:
+                # encode the search term
+                search_term = urllib.parse.quote_plus(string=search_term, safe='()?&=,')
             url = base_url + search_term
         # encode the url
         # url = urllib.parse.quote_plus(string=url, safe=';/?:@&=+$,')
@@ -19,6 +21,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
                     'Content-Type': 'application/json',
                     'User-Agent': app.config['REQUEST_HEADER_USER_AGENT'],
                     }
+        
         response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))                
 
         if response.status_code == 200:
@@ -44,16 +47,18 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
     except Exception as ex:
         raise ex
 
-def retrieve_object(source: str, base_url: str, identifier: str):    
+def retrieve_object(source: str, base_url: str, identifier: str, quote:bool=True):    
     try:        
-        identifier = urllib.parse.quote_plus(string=identifier, safe='()?&=,')
+        if quote:
+            # encode the identifier
+            identifier = urllib.parse.quote_plus(string=identifier, safe='()?&=,')
         url = base_url + identifier
         # print('url:', url)
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',
                     'User-Agent': app.config['REQUEST_HEADER_USER_AGENT'], 
                     }
-        response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))        
+        response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))
 
         if response.status_code == 200:
             if 'xml' in response.headers.get('content-type'):

@@ -70,13 +70,13 @@ def search(search_term, results):
                         applicant_names_list = applicant_names.split(',')
                         for applicant_name in applicant_names_list:
                             author = Person()
-                            author.type = "Person"
+                            author.additionalType = "Person"
                             author.name = applicant_name.strip()
                             project.author.append(author)
                     else:
                         # If there is a single applicant, add it to the project.author list
                         author = Person()
-                        author.type = "Person"
+                        author.additionalType = "Person"
                         author.name = applicant_names
                         project.author.append(author)
 

@@ -55,7 +55,7 @@ def map_digital_obj(source: str, hit: dict) -> Union[Article, CreativeWork]:
     for authorship in authorships:
         author = authorship.get("author", {})
         _author = Author()
-        _author.type = 'Person'
+        _author.additionalType = 'Person'
         _author.name = author.get("display_name", "")
         _author.identifier = author.get("orcid", "")    
         

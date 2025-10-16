@@ -50,7 +50,7 @@ def search(source: str, search_term: str, results, failed_sources):
         # # This need a review. Type 'Organization' ?
         # for rel in relations:
         #     author_obj = Author()
-        #     author_obj.type = 'Organization'
+        #     author_obj.additionalType = 'Organization'
         #     author_obj.name = (rel.get('legalname', {}).get('$', ''))
         #     project.author.append(author_obj)
         

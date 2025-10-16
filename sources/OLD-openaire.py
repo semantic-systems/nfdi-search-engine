@@ -96,13 +96,13 @@ def openaire_product_search(search_string, results):
                 creators = pro_result.get('creator', None)
                 if type(creators) is dict:
                     creator = Author()
-                    creator.type = 'Person'
+                    creator.additionalType = 'Person'
                     creator.name = creators.get('$', '')
                     product.author.append(creator)
                 elif type(creators) is list:
                     for item in creators:
                         creator = Author()
-                        creator.type = 'Person'
+                        creator.additionalType = 'Person'
                         creator.name = item.get('$', '')
                         product.author.append(creator)
 
@@ -146,6 +146,7 @@ def openaire_project_search(search_string, results):
                 project.dateStart = pro_result.get('startdate', {}).get('$', '')
                 project.dateEnd = pro_result.get('enddate', {}).get('$', '')
                 project.identifier = pro_result.get('callidentifier', {}).get('$', '')
+                project.url = pro_result.get('websiteurl', {}).get('$', '')
 
                 # fundingtree can be dict or list
                 # fundingtree = pro_result.get('fundingtree', {}) if pro_result.get('fundingtree') is not None else {}
@@ -168,7 +169,7 @@ def openaire_project_search(search_string, results):
                 # This need a review. Type 'Organization' ?
                 for rel in relations:
                     author_obj = Author()
-                    author_obj.type = 'Organization'
+                    author_obj.additionalType = 'Organization'
                     author_obj.name = (rel.get('legalname', {}).get('$', ''))
                     project.author.append(author_obj)
                 results['others'].append(project)

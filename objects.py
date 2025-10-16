@@ -1,33 +1,34 @@
 from typing import Union, List
-import dataclasses
-from dataclasses import dataclass, fields, field
-@dataclass
-class thing:
+from pydantic.dataclasses import dataclass
+from pydantic import Field, BaseModel
+from dataclasses import fields
+
+class thing(BaseModel):
     name: str = ""
-    alternateName: List[str] = field(default_factory=list)
+    alternateName: List[str] = Field(default_factory=list)
     description: str = ""
     url: str = ""
     image: str = "" #url of the image
     identifier: str = "" #doi or pid will be stored as identifier   
     additionalType: str = "" 
     originalSource: str = ""
-    source: list() = field(default_factory=list) # this list will have "thing" objects
+    source: List["thing"] = Field(default_factory=list) # this list will have "thing" objects
     rankScore: float = 0 #bm25 ranking score for sorting the search results
     partiallyLoaded: bool = False
 
     # @classmethod
     def __str__(self):
         strValue = ""
-        for field in fields(self):
+        for field in self.model_fields.keys():
             # print(field.type)
             # concatenate all the property values            
-            strValue += f"{getattr(self, field.name)}###"
+            strValue += f"{getattr(self, field)}###"
         return strValue
     
     def __hash__(self):
         return hash((self.identifier, self.name, self.url, self.originalSource))
 
-@dataclass
+
 class Organization(thing):
     address: str = ""
     email: str = ""
@@ -37,13 +38,13 @@ class Organization(thing):
     numberOfEmployees: str = ""
     telephone: str = ""
     foundingDate: str = ""
-    keywords: List[str] = field(default_factory=list)
-@dataclass
+    keywords: List[str] = Field(default_factory=list)
+
 class Person(thing):
     additionalName: str = ""
     address: str = "" #this should be a list
-    affiliation: List[Organization] = field(default_factory=list)  #this should be a list
-    alumniOf: List[Organization] = field(default_factory=list)  #this should be a list
+    affiliation: List[Organization] = Field(default_factory=list)  #this should be a list
+    alumniOf: List[Organization] = Field(default_factory=list)  #this should be a list
     birthDate: str = ""
     birthPlace: str = ""
     deathDate: str = ""
@@ -65,12 +66,12 @@ Organization.founder = List[Person]
 Organization.parentOrganization = Organization()
 
 
-@dataclass
+
 class CreativeWork(thing):
     abstract: str = ""
     alternativeHeadline: str = ""
-    author: List[Union[Organization, Person]] = field(default_factory=list)
-    citation: list() = field(default_factory=list) # this list will have "CreativeWork" objects
+    author: List[Union[Organization, Person]] = Field(default_factory=list)
+    citation: List["CreativeWork"] = Field(default_factory=list) # this list will have "CreativeWork" objects
     countryOfOrigin: str = ""
     creativeWorkStatus: str = ""
     dateCreated: str = ""
@@ -82,8 +83,8 @@ class CreativeWork(thing):
     funding: str = "" # we can change this to Grant
     genre: str = ""
     headline: str = ""
-    inLanguage: List[str] = field(default_factory=list)
-    keywords: List[str] = field(default_factory=list)
+    inLanguage: List[str] = Field(default_factory=list)
+    keywords: List[str] = Field(default_factory=list)
     license: str = "" # url or license type
     publication: str = "" #publication event
     publisher: Union[Organization, Person] = None
@@ -92,9 +93,10 @@ class CreativeWork(thing):
     text: str = ""
     thumbnail: str = "" #ImageObject
     thumbnailUrl: str = "" #url
-    version: str = ""   
-@dataclass
-class Article(CreativeWork):    
+    version: str = ""
+
+
+class Article(CreativeWork):
     articleBody: str = ""
     pageEnd: str = ""
     pageStart: str = ""
@@ -102,24 +104,24 @@ class Article(CreativeWork):
     wordCount: str = ""
     referenceCount: str = ""
     citationCount: str = ""
-    reference: list() = field(default_factory=list) # this list will have "CreativeWork" or "Article" objects
+    reference: List[Union["Article", CreativeWork]] = Field(default_factory=list) # this list will have "CreativeWork" or "Article" objects
 
-@dataclass
+
 class Dataset(CreativeWork): 
     distribution: str = ""
     issn: str = ""
 
-@dataclass
+
 class Author(Person):    
     works_count: str = ""
     about: str = ""
     banner: str = ""
     cited_by_count: str = ""    
-    researchAreas: List[str] = field(default_factory=list)
-    works: List[Union[Article, Dataset]] = field(default_factory=list)
+    researchAreas: List[str] = Field(default_factory=list)
+    works: List[Union[Article, Dataset]] = Field(default_factory=list)
 
 #The 'Project' is a new addition to schema.org, and as of now, there are no defined properties for it
-@dataclass
+
 class Project(CreativeWork): 
     dateStart: str = ""
     dateEnd: str = ""   
@@ -129,11 +131,11 @@ class Project(CreativeWork):
     totalCost: str = ""
     fundedAmount: str = ""
     eu_contribution: str = ""     
-@dataclass
+
 class SoftwareApplication(CreativeWork):
     distribution: str = ""
     issn: str = ""
-@dataclass
+
 class LearningResource(CreativeWork): 
     assesses: str = ""  #The item being described is intended to assess the competency or learning outcome defined by the referenced term.
     competencyRequired: str = ""
@@ -143,7 +145,7 @@ class LearningResource(CreativeWork):
     learningResourceType:str = ""
     teaches:str = ""   #The item being described is intended to help a person learn the competency or learning outcome defined by the referenced term.
 
-@dataclass
+
 class MediaObject(CreativeWork): 
     associatedArticle: str = ""
     bitrate: str = ""
@@ -165,7 +167,7 @@ class MediaObject(CreativeWork):
     uploadDate: str = ""
     width: str = ""
     
-@dataclass
+
 class VideoObject(MediaObject): 
     actor: str = ""
     caption: str = ""
@@ -175,14 +177,14 @@ class VideoObject(MediaObject):
     transcript: str = ""
     videoFrameSize: str = ""
     videoQuality: str = ""
-@dataclass
+
 class ImageObject(MediaObject): 
     caption: str = ""
     embeddedTextCaption: str = ""
     exifData: str = ""  #exif data for this object
     representativeOfPage: str = ""   #Indicates whether this image is representative of the content of the page
 
-@dataclass
+
 class Place(thing): 
     additionalProperty: str = ""
     address: str = ""
@@ -231,7 +233,7 @@ class Place(thing):
 # classes defined below should not be used, as they are not mapped to schema.org
 # ###############################################################################
 
-@dataclass
+
 class Zenodo:
     resource_type: str
     url: str
@@ -240,7 +242,7 @@ class Zenodo:
     description: str
     author: str
 
-# @dataclass
+# 
 # class Zenodo:
 #     resource_type: str
 #     url: str
@@ -249,7 +251,7 @@ class Zenodo:
 #     description: str
 #     author: str
 
-@dataclass
+
 class Institute:
     name: str
     id: str
@@ -261,7 +263,7 @@ class Institute:
 
 
 
-@dataclass
+
 class Presentation:
     title: str
     url: str
@@ -270,7 +272,7 @@ class Presentation:
     date: str
 
 
-@dataclass
+
 class Poster:
     title: str
     url: str
@@ -279,7 +281,7 @@ class Poster:
     date: str
 
 
-# @dataclass
+# 
 # class Dataset:
 #     title: str
 #     url: str
@@ -289,7 +291,7 @@ class Poster:
 
 
 '''
-@dataclass
+
 class Software:
     title: str
     url: str
@@ -300,7 +302,7 @@ class Software:
 '''
 
 
-@dataclass
+
 class Image:
     title: str
     authors: str
@@ -308,7 +310,7 @@ class Image:
     date: str
 
 
-@dataclass
+
 class Video:
     title: str
     url: str
@@ -316,7 +318,7 @@ class Video:
     date: str
 
 
-@dataclass
+
 class Lesson:
     title: str
     url: str
@@ -325,7 +327,7 @@ class Lesson:
     date: str
 
     
-@dataclass
+
 class Publisher:
     id: str
     name: str
@@ -336,7 +338,7 @@ class Publisher:
     description: str
 
 
-@dataclass
+
 class Funder:
     name: str
     id: str
@@ -347,7 +349,7 @@ class Funder:
     works_count: str
 
 
-@dataclass
+
 class Gesis:
     resource_type: str
     url: str
@@ -357,7 +359,7 @@ class Gesis:
     authors: str
 
 
-@dataclass
+
 class Cordis:
     id: str
     url: str
@@ -366,14 +368,14 @@ class Cordis:
     description: str
 
 
-@dataclass
+
 class Orcid:
     id: str
     url: str
     name: str
 
 
-@dataclass
+
 class Gepris:
     url: str
     title: str

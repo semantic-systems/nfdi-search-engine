@@ -33,7 +33,7 @@ def search(source: str, search_term: str, results, failed_sources):
             authors = info.get("authors", {}).get("author", [])     
             if isinstance(authors, dict):
                 _author = Author()
-                _author.type = 'Person'
+                _author.additionalType = 'Person'
                 _author.name = authors.get("text", "")
                 _author.identifier = authors.get("@pid", "") #ideally this pid should be stored somewhere else
                 publication.author.append(_author)    
@@ -41,7 +41,7 @@ def search(source: str, search_term: str, results, failed_sources):
             if isinstance(authors, list):
                 for author in authors:
                     _author = Author()
-                    _author.type = 'Person'
+                    _author.additionalType = 'Person'
                     _author.name = author.get("text", "")
                     _author.identifier = author.get("@pid", "") #ideally this pid should be stored somewhere else
                     
