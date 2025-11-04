@@ -1,0 +1,64 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Error {% endblock title %}
+
+<!-- Specific CSS for the error page goes here -->
+{% block stylesheets %}
+<style>
+    /* Add your custom error page styles here */
+    .error-container {
+        text-align: center;
+        margin-top: 50px;
+    }
+
+    .error-message {
+        font-size: 18px;
+        margin-top: 20px;
+    }
+
+    .error-description {
+        font-size: 24px;
+        margin-top: 10px;
+    }
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+<!-- ### main content ### -->
+<main class=''>
+    <div id='mainContent' class="container">
+        <div class="row justify-content-center">
+            <div class="col-8 error-container">
+                {% if type == 'researcher' %}
+                    <h2 class="text-dark fs-1 fw-bold error-message">We weren't able to find information about the&nbsp;researcher</h2>
+                    <p class="text-secondary error-description">View their ORCID page here:</p>
+
+                    <p class="error-message">
+                        <a href="https://orcid.org/{{ identifier }}" target="_blank" rel="noopener noreferrer">
+                            https://orcid.org/{{ identifier }}
+                        </a>
+                    </p>
+                {% elif type == 'publication' %}
+                    <h2 class="text-dark fs-1 fw-bold error-message">We weren't able to find information about the&nbsp;publication</h2>
+                    <p class="text-secondary error-description">View its DOI page here:</p>
+                    <p class="error-message">
+                        <a href="https://doi.org/{{ identifier }}" target="_blank" rel="noopener noreferrer">
+                            https://doi.org/{{ identifier }}
+                        </a>
+                    </p>
+                {% else %}
+                    <h2 class="text-dark fs-1 fw-bold error-message">No results found</h2>
+                    <p class="text-secondary error-description">We couldn't find any information matching your request.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE -->
+{% block javascripts %}
+<script>
+    // You can add JavaScript specific to the error page here.
+</script>
+{% endblock javascripts %}
