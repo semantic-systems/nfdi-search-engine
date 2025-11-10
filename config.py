@@ -16,6 +16,9 @@ class Config:
     OPENCITATIONS_API_KEY= os.environ.get("OPENCITATIONS_API_KEY", "")
     CORE_API_KEY= os.environ.get("CORE_API_KEY", "")
 
+    DASHBOARD_USERNAME = os.environ.get("DASHBOARD_USERNAME")
+    DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD")
+
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 100
 

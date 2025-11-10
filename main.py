@@ -10,8 +10,9 @@ import logging.config
 import secrets
 from urllib.parse import urlsplit, urlencode, quote
 import importlib
+import hmac
 
-from flask import Flask, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort, send_from_directory
+from flask import Flask, Response, render_template, request, make_response, session, jsonify, redirect, flash, url_for, abort, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user, login_required
 from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -1455,6 +1456,43 @@ def ip_whitelist():
 
 
 #region Control Panel
+
+def _check_auth() -> bool:
+    """
+    Check if the request contains valid basic auth credentials.
+    Compared against the DASHBOARD_USERNAME and DASHBOARD_PASSWORD environment variables.
+    """
+
+    dashboard_username = os.environ.get("DASHBOARD_USERNAME")
+    dashboard_password = os.environ.get("DASHBOARD_PASSWORD")
+
+    if not dashboard_username or not dashboard_password:
+        print("Dashboard username or password not set in environment variables.")
+        return False
+
+    auth = request.authorization
+
+    if not auth or auth.type.lower() != "basic":
+        return False
+    
+    return (
+        hmac.compare_digest(auth.username, dashboard_username) and
+        hmac.compare_digest(auth.password, dashboard_password)
+    )
+
+@app.before_request
+def dashboard_auth():
+    """
+    Enforce basic auth for all /control-panel/* routes.
+    """
+
+    # allow OPTIONS requests and non-control-panel paths
+    if request.method == "OPTIONS" or not request.path.startswith("/control-panel"):
+        return
+    
+    # gate everything under /control-panel/*
+    if not _check_auth():
+        return Response("Authentication required", 401, {"WWW-Authenticate": 'Basic realm="Control Panel"'})
 
 @app.route('/control-panel/dashboard')
 def dashboard():
