@@ -843,8 +843,14 @@ def publication_details(source_name, source_id, doi):
 
     print(f"Total number of publications {len(publications)}")
 
+    if (len(publications) == 0):
+        # none of our sources found anything about the publication!
+        # show a dummy page for the user
+        response = make_response(render_template('no-results.html', type="publication", identifier=doi))
+
     if (len(publications) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('publication-details.html', publication=publications[0]))
+
     else: 
         # we have multiple publications
         # we merge their fields into one publication object
@@ -1008,9 +1014,15 @@ def researcher_details(source_name, source_id, orcid):
     # with open('publications.json', 'w', encoding='utf-8') as f:
     #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
 
-    if (len(researchers) == 1): #forward the only publication record received from one of the sources
+    if (len(researchers) == 0):
+        # none of our sources found anything about the researcher!
+        # show a dummy page for the user
+        response = make_response(render_template('no-results.html', type="researcher", identifier=orcid))
+
+    elif (len(researchers) == 1): #forward the only publication record received from one of the sources
         response = make_response(render_template('researcher-details.html', researcher=researchers[0]))
         session['researcher:'+orcid] = researchers[0].model_dump(mode="python", exclude_none=True)
+        
     else: 
         #merge more than one researchers record into one researcher
         merged_researcher = merge_objects(researchers, "researchers")

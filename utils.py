@@ -497,14 +497,19 @@ def generate_visitors_summaries():
     df_current_year_visitors = pd.json_normalize(current_year_visitors)
     df_current_year_visitors = df_current_year_visitors[['_source.visitor_id', '_source.timestamp_created']]
     df_current_year_visitors = df_current_year_visitors.rename(columns={'_source.visitor_id': 'id', '_source.timestamp_created': 'timestamp'})    
+
     # Convert timestamp to datetime object
     df_current_year_visitors['timestamp'] = pd.to_datetime(df_current_year_visitors['timestamp'], format='ISO8601')
+
     # Create a new column for the month
     df_current_year_visitors['month'] = df_current_year_visitors['timestamp'].dt.month_name()
+
     # Group the data by month and count the unique ID's
     grouped_df = df_current_year_visitors.groupby('month')['id'].nunique()
+
     # Turn series into DataFrame
     result_df = pd.DataFrame(grouped_df).reset_index().rename(columns={'id': 'Unique ID count'})
+
     # Handling months with no data
     all_months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
     result_df.set_index('month', inplace = True)
@@ -515,14 +520,18 @@ def generate_visitors_summaries():
 
     # generate daily summary for current month 
     month_start_date = pd.to_datetime(datetime.today().replace(day=1, hour=0, minute=0, second=0, microsecond=0), utc=True)
-    df_current_month_visitors = df_current_year_visitors[(df_current_year_visitors['timestamp'] > month_start_date)]
+    df_current_month_visitors = df_current_year_visitors[(df_current_year_visitors['timestamp'] > month_start_date)].copy()
+
     # Create a new column for the day of the month
     df_current_month_visitors['day'] = df_current_month_visitors['timestamp'].dt.day
     df_current_month_visitors['day'] = df_current_month_visitors['day'].apply(str)
+
     # Group the data by day and count the unique ID's
     grouped_df = df_current_month_visitors.groupby('day')['id'].nunique()
+
     # Turn series into DataFrame
     result_df = pd.DataFrame(grouped_df).reset_index().rename(columns={'id': 'Unique ID count'})
+
     # Handling months with no data
     all_days = [str(i).zfill(2) for i in range(1, 32)] # this should actually be limited to the number of days in the current month.
     result_df.set_index('day', inplace = True)
