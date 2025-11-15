@@ -1,6 +1,3 @@
-"""Simple wrappers for Hugging Face model search/detail retrieval that mirror
-Dataset‑handlers style (single mapping helper + thin search/get functions).
-"""
 from __future__ import annotations
 
 from objects import thing, CreativeWork, Author
@@ -8,9 +5,11 @@ from sources import data_retriever
 import utils
 from main import app
 
+import requests
 
-def map_entry_to_model(record) -> CreativeWork:
-    """Convert a single Huggingface model record into a :class:`CreativeWork`."""
+
+def map_entry_to_model(record, request_readme: bool = False) -> CreativeWork:
+    """Convert a single Huggingface model record into a `CreativeWork` object."""
 
     model = CreativeWork()  # thing -> CreativeWork
 
@@ -19,7 +18,20 @@ def map_entry_to_model(record) -> CreativeWork:
     model.additionalType = "MODEL"
     model.url = f"https://huggingface.co/{model.name}"
 
-    model.description = utils.remove_html_tags(record.get("description", ""))
+    # model descriptions are usually contained in a README file, which we will request separately
+    if request_readme:
+        readme_url = f"https://huggingface.co/{model.name}/raw/main/README.md"
+        try:
+            response = requests.get(readme_url, timeout=5)
+            if response.status_code == 200:
+                model.description = utils.remove_html_tags(response.text)
+            else:
+                model.description = utils.remove_html_tags(record.get("description", ""))
+        except requests.RequestException:
+            model.description = utils.remove_html_tags(record.get("description", ""))
+    else:
+        model.description = utils.remove_html_tags(record.get("description", ""))
+    
     model.abstract = model.description
     model.dateCreated = record.get("createdAt", "")
     model.datePublished = model.dateCreated
@@ -59,7 +71,7 @@ def map_entry_to_model(record) -> CreativeWork:
 
 @utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources):
-    """Populate *results['resources']* with models matching *search_term*."""
+    """Populate results['resources'] with models matching *search_term*."""
     search_result = data_retriever.retrieve_data(
         source=source,
         base_url=app.config["DATA_SOURCES"][source].get("search-endpoint", ""),
@@ -74,7 +86,8 @@ def search(source: str, search_term: str, results, failed_sources):
     utils.log_event(type="info", message=f"{source} - {total_hits} records matched")
 
     for hit in search_result:
-        model = map_entry_to_model(hit)
+        # here we do not request the README to keep search fast and API volume low
+        model = map_entry_to_model(hit, request_readme=False)
         results["resources"].append(model)
 
 
@@ -89,7 +102,7 @@ def get_resource(source: str, source_id: str, identifier: str):
     )
 
     if search_result:
-        model = map_entry_to_model(search_result)
+        model = map_entry_to_model(search_result, request_readme=True)
         utils.log_event(type="info", message=f"{source} - retrieved model details")
         return model
     else:
