@@ -13,8 +13,8 @@ class Config:
 
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
     IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
-    OPENCITATIONS_API_KEY= os.environ.get("OPENCITATIONS_API_KEY", "")
-    CORE_API_KEY= os.environ.get("CORE_API_KEY", "")
+    OPENCITATIONS_API_KEY = os.environ.get("OPENCITATIONS_API_KEY", "")
+    CORE_API_KEY = os.environ.get("CORE_API_KEY", "")
 
     DASHBOARD_USERNAME = os.environ.get("DASHBOARD_USERNAME")
     DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD")
@@ -230,7 +230,7 @@ class Config:
             "module": "dblp_venues",
             "search-endpoint": f"https://dblp.org/search/venue/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         },
-        "OpenCitations":{
+        "OpenCitations": {
             "logo": {
                 "name": "OpenCitations",
                 "link": "https://opencitations.net/",
@@ -241,9 +241,9 @@ class Config:
             "module": "opencitations",
             "citations-endpoint": "https://opencitations.net/index/api/v2/citations/doi:",
             "get-publication-references-endpoint": "https://opencitations.net/index/api/v2/references/doi:",
-            "metadata-endpoint": "https://opencitations.net/meta/api/v1/metadata/doi:"
+            "metadata-endpoint": "https://opencitations.net/meta/api/v1/metadata/doi:",
         },
-        "CORE":{
+        "CORE": {
             "logo": {
                 "name": "CORE",
                 "link": "https://core.ac.uk/",
@@ -253,7 +253,7 @@ class Config:
             },
             "module": "core",
             "search-endpoint": f"https://api.core.ac.uk/v3/search/works/?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        }
+        },
         # "dblp - Publications": {
         #     "module": "dblp_publications",
         #     "search-endpoint": f"https://dblp.org/search/publ/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
