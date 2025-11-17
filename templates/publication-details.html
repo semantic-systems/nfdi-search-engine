@@ -318,9 +318,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         };
 
-        return fields
-            .map(f => `${f}:${urlEncode(get(f))}`)
-            .join("/");
+        parts = fields.map(f => `${f}:${urlEncode(get(f))}`)
+
+        // timestamp calculation, same as in main.py > format_digital_obj_url()
+        const currentTimestamp = String(Date.now() / 1000);
+        const ts = btoa(unescape(currentTimestamp)).replace(/=+$/g, "");
+        parts.push(`ts:${ts}`);
+
+        return parts.join("/");
     }
 
     // functions to show/hide the loading indicator of a specific list (listId = 'references_list' or 'citations_list')
@@ -375,6 +380,9 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!a.identifier) // if there is no identifier, we dont create a link
             return `<li class="list-group-item border-0">${text}</li>`;
         
+        // build the URL to the external publication details page
+        const href = `/publication-details/${formatDigitalObjUrl(a, ['source-name', 'source-id', 'doi'])}`;
+
         // if articles have no metadata (a.partiallyLoaded is true), we only show the DOI with a note
         // this happens if we do not find any metadata for a DOI (see main.py > get_publication_metadata())
         // we also do this if we do not have any authors or a name (else it would show as "  . ()")
@@ -382,15 +390,13 @@ document.addEventListener("DOMContentLoaded", () => {
         if (a.partiallyLoaded || !hasMetadata) {
             return `<li class="list-group-item border-0">
                         <a class="text-secondary"
-                            href="/publication-details/source-name:na/source-id:${urlEncode(a.identifier)}/doi:${urlEncode(a.identifier)}"
+                            href=${href}
                             <i class="bi bi-link-45deg"></i>&nbsp;${a.identifier} <i>(No metadata found)</i>
                         </a>
                     </li>`;
             }
         
         // build the URL to the external publication details page
-        const href = `/publication-details/${formatDigitalObjUrl(a, ['source-name', 'source-id', 'doi'])}`;
-
         return `<li class="list-group-item border-0">
                   <a class="text-secondary"
                      href="${href}"
