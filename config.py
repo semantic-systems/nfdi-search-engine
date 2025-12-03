@@ -181,6 +181,18 @@ class Config:
             "get-publication-endpoint": "https://api.crossref.org/works/",
             "get-publication-references-endpoint": "https://api.crossref.org/works/",
         },
+        "DataCite": {
+            "logo": {
+                "name": "DataCite",
+                "link": "https://datacite.org/",
+                "src": "DataCite-Logo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "datacite",
+            "search-endpoint": "https://api.datacite.org/dois?query=titles.title:",
+            "get-publication-endpoint": "https://api.datacite.org/dois/"
+        },
         "SEMANTIC SCHOLAR - Publications": {
             "logo": {
                 "name": "SEMANTIC SCHOLAR",
