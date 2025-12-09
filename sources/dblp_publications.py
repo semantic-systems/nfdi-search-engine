@@ -1,65 +1,105 @@
 from objects import thing, Article, Author
 from sources import data_retriever
+from typing import Iterable, Dict, Any, List
 import utils
 from main import app
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources): 
-    search_result = data_retriever.retrieve_data(source=source, 
-                                                base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
-                                                search_term=search_term,
-                                                failed_sources=failed_sources)      
+from sources.base import BaseSource
 
-    hits = search_result['result']['hits']
-    total_records_found = hits['@total']
-    total_hits = hits['@sent']
+class DBLP_Publications(BaseSource):
 
-    utils.log_event(type="info", message=f"{source} - {total_records_found} records matched; pulled top {total_hits}")
+    SOURCE = 'dblp - Publications'
 
-    if int(total_hits) > 0:
-        hits = hits['hit']  
-        for hit in hits:
-                
-            publication = Article()   
+    @utils.handle_exceptions
+    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+        """
+        Fetch raw json from the source using the given search term.
+        """
 
-            info = hit['info']
-            publication.name = info.get("title", "")             
-            publication.url = info.get("url", "")
-            publication.identifier = info.get("doi", "")
-            publication.datePublished = info.get("year", "") 
-            publication.license = info.get("access", "")
-            publication.publication = info.get("venue", "") 
+        search_result =  data_retriever.retrieve_data(source=self.SOURCE, 
+                                                        base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                        search_term=search_term,
+                                                        failed_sources=failed_sources)
+        
+        return search_result
+    
+    @utils.handle_exceptions
+    def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
+        """
+        Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
+        """
+        hits = raw['result']['hits']
+        total_records_found = hits['@total']
+        total_hits = hits['@sent']
 
-            authors = info.get("authors", {}).get("author", [])     
-            if isinstance(authors, dict):
+        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
+
+        return hits
+    
+    @utils.handle_exceptions
+    def map_hit(self, hit: Dict[str, Any]) -> Article:
+        """
+        Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
+        """
+        publication = Article()   
+
+        info = hit['info']
+        publication.name = info.get("title", "")             
+        publication.url = info.get("url", "")
+        publication.identifier = info.get("doi", "")
+        publication.datePublished = info.get("year", "") 
+        publication.license = info.get("access", "")
+        publication.publication = info.get("venue", "") 
+
+        authors = info.get("authors", {}).get("author", [])     
+        if isinstance(authors, dict):
+            _author = Author()
+            _author.additionalType = 'Person'
+            _author.name = authors.get("text", "")
+            _author.identifier = authors.get("@pid", "") #ideally this pid should be stored somewhere else
+            publication.author.append(_author)    
+
+        if isinstance(authors, list):
+            for author in authors:
                 _author = Author()
                 _author.additionalType = 'Person'
-                _author.name = authors.get("text", "")
-                _author.identifier = authors.get("@pid", "") #ideally this pid should be stored somewhere else
+                _author.name = author.get("text", "")
+                _author.identifier = author.get("@pid", "") #ideally this pid should be stored somewhere else
+                
+                author_source = thing(
+                    name=self.SOURCE,
+                    identifier=_author.identifier,
+                )
+                _author.source.append(author_source)
+
                 publication.author.append(_author)    
 
-            if isinstance(authors, list):
-                for author in authors:
-                    _author = Author()
-                    _author.additionalType = 'Person'
-                    _author.name = author.get("text", "")
-                    _author.identifier = author.get("@pid", "") #ideally this pid should be stored somewhere else
-                    
-                    author_source = thing(
-                        name=source,
-                        identifier=_author.identifier,
-                    )
-                    _author.source.append(author_source)
+        _source = thing()
+        _source.name = self.SOURCE
+        _source.identifier = hit.get("@id", "")
+        _source.url = info.get("url", "")                         
+        publication.source.append(_source)
 
-                    publication.author.append(_author)    
+        return publication
+    
+    @utils.handle_exceptions
+    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+        """
+        Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
+        """
+        raw = self.fetch(search_term, failed_sources)
+        hits = self.extract_hits(raw)
 
-            _source = thing()
-            _source.name = source
-            _source.identifier = hit.get("@id", "")
-            _source.url = info.get("url", "")                         
-            publication.source.append(_source)
+        for hit in hits:
+            digitalObj = self.map_hit(hit)
 
-            if publication.identifier != "":
-                results['publications'].append(publication)
+            if digitalObj.identifier != "":
+                results['publications'].append(digitalObj)
             else:
-                results['others'].append(publication)
+                results['others'].append(digitalObj)
+
+def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+    """
+    Entrypoint to search DBLP publications.
+    """
+    DBLP_Publications().search(source_name, search_term, results, failed_sources)

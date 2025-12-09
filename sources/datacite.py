@@ -5,26 +5,32 @@ import utils
 from main import app
 import requests
 
-source = 'DataCite'
+from sources.base import BaseSource
 
-class DataCite:
+class DataCite(BaseSource):
+
+    SOURCE = 'DataCite'
+
+    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=source, 
-                                                     base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
+                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
                                                      search_term=search_term,
                                                      failed_sources=failed_sources) 
         
         return search_result
 
+    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
         """
         return raw['data']
 
+    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -71,7 +77,7 @@ class DataCite:
                     _author.identifier = _authorIdentifier.get('nameIdentifier')
 
             author_source = thing(
-                name=source,
+                name=self.SOURCE,
                 identifier=_author.identifier,
             )
 
@@ -79,7 +85,7 @@ class DataCite:
             publication.author.append(_author)
         
         _source = thing()
-        _source.name = source
+        _source.name = self.SOURCE
         _source.identifier = publication.identifier
         _source.url = publication.url                                          
         publication.source.append(_source)
@@ -87,6 +93,7 @@ class DataCite:
         return publication
 
 
+    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -106,13 +113,14 @@ class DataCite:
                 titles.add(pub.name)
                 publications.append(pub)
 
-        results['publications'] = publications
+        results['publications'].extend(publications)
     
+    @utils.handle_exceptions
     def get_publication(self, doi: str) -> Article | None:
         """
         Fetch a single publication by its DOI and map it to an Article object.
         """
-        url = app.config['DATA_SOURCES'][source].get('get-publication-endpoint', '') + doi
+        url = app.config['DATA_SOURCES'][self.SOURCE].get('get-publication-endpoint', '') + doi
 
         headers = {'Accept': 'application/json',
                 'Content-Type': 'application/json',
@@ -127,10 +135,13 @@ class DataCite:
             publication = self.map_hit(hit['attributes'])
             return publication
         else:
-            utils.log_event(type="error", message=f"{source} - Get Publication response status code: {str(response.status_code)} (Requesting URL: {url})")            
+            utils.log_event(type="error", message=f"{self.SOURCE} - Get Publication response status code: {str(response.status_code)} (Requesting URL: {url})")            
             return None
 
 def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+    """
+    Entrypoint to search DataCite publications.
+    """
     DataCite().search(source_name, search_term, results, failed_sources)
 
 def get_publication(source, doi, source_id, publications) -> None:
