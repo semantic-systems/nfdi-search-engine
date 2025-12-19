@@ -114,6 +114,22 @@ class WIKIDATA_Publication(BaseSource):
         _source.url = hit['item'].get('value', "")
         publication.source.append(_source)
 
+    @utils.handle_exceptions
+    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+        """
+        Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
+        """
+        raw = self.fetch(search_term, failed_sources)
+        hits = self.extract_hits(raw)
+
+        if hits:
+            for hit in hits:
+                publication = self.map_hit(hit)
+                if publication.identifier != "":
+                    results["publications"].append(publication)
+                else:
+                    results['others'].append(publication)
+
 
     # @utils.handle_exceptions
 # def search(source: str, search_term: str, results, failed_sources):
