@@ -70,10 +70,52 @@ class WIKIDATA_Publication(BaseSource):
             return hits
         return None
 
+    @utils.handle_exceptions
+    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+        """
+        Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
+        """
+        publication = Article()
+
+        publication.name = hit.get("label", {}).get("value", "")
+        publication.url = hit.get("item", {}).get("value", "")
+        publication.identifier = hit.get("doi", {}).get("value", "")
+        # DOI is available for few; we need to update the sparql query to fetch this information
+        # print(publication.identifier)
+        publication.datePublished = datetime.strftime(parser.parse(hit.get('date', {}).get('value', "")), '%Y-%m-%d')
+        authorsLabels = hit.get("authorsLabel", {}).get("value", "")
+        for authorsLabel in authorsLabels.rstrip(",").split(","):
+            _author = Author()
+            _author.additionalType = 'Person'
+            _author.name = authorsLabel
+            _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
+            author_source = thing(
+                name=source,
+                identifier=_author.identifier,
+            )
+            _author.source.append(author_source)
+            publication.author.append(_author)
+
+        authorsStrings = hit.get("authorsString", {}).get("value", "")
+        for authorsString in authorsStrings.rstrip(",").split(","):
+            _author = Author()
+            _author.additionalType = 'Person'
+            _author.name = authorsString
+            _author.identifier = ""
+            author_source = thing(
+                name=source,
+                identifier=_author.identifier,
+            )
+            _author.source.append(author_source)
+            publication.author.append(_author)
+        _source = thing()
+        _source.name = self.SOURCE #'WIKIDATA'
+        _source.identifier = hit['item'].get('value', "").replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
+        _source.url = hit['item'].get('value', "")
+        publication.source.append(_source)
 
 
-
-# @utils.handle_exceptions
+    # @utils.handle_exceptions
 # def search(source: str, search_term: str, results, failed_sources):
 #     query_template = Template('''
 #                             SELECT DISTINCT ?item ?label ?date ?doi
@@ -119,50 +161,50 @@ class WIKIDATA_Publication(BaseSource):
 #     total_hits = len(hits)
 #     utils.log_event(type="info", message=f"{source} - {total_hits} records matched; pulled top {total_hits}")
 #
-#     if int(total_hits) > 0:
-#         for hit in hits:
-#
-#             publication = Article()
-#
-#             publication.name = hit.get("label", {}).get("value","")
-#             publication.url = hit.get("item", {}).get("value","")
-#             publication.identifier = hit.get("doi", {}).get("value","") #DOI is available for few; we need to update the sparql query to fetch this information
-#             # print(publication.identifier)
-#             publication.datePublished = datetime.strftime(parser.parse(hit.get('date', {}).get('value', "")), '%Y-%m-%d')
-#
-#             authorsLabels = hit.get("authorsLabel", {}).get("value","")
-#             for authorsLabel in authorsLabels.rstrip(",").split(","):
-#                 _author = Author()
-#                 _author.additionalType = 'Person'
-#                 _author.name = authorsLabel
-#                 _author.identifier = "" #ORCID is available for few; we need to update the sparql query to pull this information
-#                 author_source = thing(
-#                     name=source,
-#                     identifier=_author.identifier,
-#                 )
-#                 _author.source.append(author_source)
-#                 publication.author.append(_author)
-#
-#             authorsStrings = hit.get("authorsString", {}).get("value","")
-#             for authorsString in authorsStrings.rstrip(",").split(","):
-#                 _author = Author()
-#                 _author.additionalType = 'Person'
-#                 _author.name = authorsString
-#                 _author.identifier = ""
-#                 author_source = thing(
-#                     name=source,
-#                     identifier=_author.identifier,
-#                 )
-#                 _author.source.append(author_source)
-#                 publication.author.append(_author)
-#
-#             _source = thing()
-#             _source.name = 'WIKIDATA'
-#             _source.identifier = hit['item'].get('value', "").replace("http://www.wikidata.org/", "") # remove the base url and only keep the ID
-#             _source.url = hit['item'].get('value', "")
-#             publication.source.append(_source)
-#
-#             if publication.identifier != "":
-#                 results['publications'].append(publication)
-#             else:
-#                 results['others'].append(publication)
+    # if int(total_hits) > 0:
+    #     for hit in hits:
+    #
+    #         publication = Article()
+    #
+    #         publication.name = hit.get("label", {}).get("value","")
+    #         publication.url = hit.get("item", {}).get("value","")
+    #         publication.identifier = hit.get("doi", {}).get("value","") #DOI is available for few; we need to update the sparql query to fetch this information
+    #         # print(publication.identifier)
+    #         publication.datePublished = datetime.strftime(parser.parse(hit.get('date', {}).get('value', "")), '%Y-%m-%d')
+    #
+    #         authorsLabels = hit.get("authorsLabel", {}).get("value","")
+    #         for authorsLabel in authorsLabels.rstrip(",").split(","):
+    #             _author = Author()
+    #             _author.additionalType = 'Person'
+    #             _author.name = authorsLabel
+    #             _author.identifier = "" #ORCID is available for few; we need to update the sparql query to pull this information
+    #             author_source = thing(
+    #                 name=source,
+    #                 identifier=_author.identifier,
+    #             )
+    #             _author.source.append(author_source)
+    #             publication.author.append(_author)
+    #
+    #         authorsStrings = hit.get("authorsString", {}).get("value","")
+    #         for authorsString in authorsStrings.rstrip(",").split(","):
+    #             _author = Author()
+    #             _author.additionalType = 'Person'
+    #             _author.name = authorsString
+    #             _author.identifier = ""
+    #             author_source = thing(
+    #                 name=source,
+    #                 identifier=_author.identifier,
+    #             )
+    #             _author.source.append(author_source)
+    #             publication.author.append(_author)
+    #
+    #         _source = thing()
+    #         _source.name = 'WIKIDATA'
+    #         _source.identifier = hit['item'].get('value', "").replace("http://www.wikidata.org/", "") # remove the base url and only keep the ID
+    #         _source.url = hit['item'].get('value', "")
+    #         publication.source.append(_source)
+    #
+    #         if publication.identifier != "":
+    #             results['publications'].append(publication)
+    #         else:
+    #             results['others'].append(publication)
