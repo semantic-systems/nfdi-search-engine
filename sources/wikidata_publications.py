@@ -1,13 +1,12 @@
-from objects import thing, Article, Author
+from objects import thing, Article, Author, Organization
 from sources import data_retriever
+from typing import Iterable, Dict, Any, List
+import utils
 from string import Template
 from datetime import datetime
 from dateutil import parser
-from typing import Iterable, Dict, Any, List
-import utils
-from main import app
-
 from sources.base import BaseSource
+
 class WIKIDATA_Publication(BaseSource):
 
     SOURCE = 'WIKIDATA - Publications'
@@ -42,7 +41,7 @@ class WIKIDATA_Publication(BaseSource):
                                         optional {?item wdt:P2093 ?authors2.}
                                         }
                                     GROUP BY ?item ?label ?date ?doi 
-                                      LIMIT $number_of_records
+                                    LIMIT $number_of_records
 
                                         ''')
         replacement_dict = {
@@ -81,7 +80,6 @@ class WIKIDATA_Publication(BaseSource):
         publication.url = hit.get("item", {}).get("value", "")
         publication.identifier = hit.get("doi", {}).get("value", "")
         # DOI is available for few; we need to update the sparql query to fetch this information
-        # print(publication.identifier)
         publication.datePublished = datetime.strftime(parser.parse(hit.get('date', {}).get('value', "")), '%Y-%m-%d')
         authorsLabels = hit.get("authorsLabel", {}).get("value", "")
         for authorsLabel in authorsLabels.rstrip(",").split(","):
@@ -90,7 +88,7 @@ class WIKIDATA_Publication(BaseSource):
             _author.name = authorsLabel
             _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
             author_source = thing(
-                name=source,
+                name=self.SOURCE,
                 identifier=_author.identifier,
             )
             _author.source.append(author_source)
@@ -101,18 +99,20 @@ class WIKIDATA_Publication(BaseSource):
             _author = Author()
             _author.additionalType = 'Person'
             _author.name = authorsString
-            _author.identifier = ""
+            _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
             author_source = thing(
-                name=source,
+                name=self.SOURCE,
                 identifier=_author.identifier,
             )
             _author.source.append(author_source)
             publication.author.append(_author)
+
         _source = thing()
         _source.name = self.SOURCE #'WIKIDATA'
         _source.identifier = hit['item'].get('value', "").replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
         _source.url = hit['item'].get('value', "")
         publication.source.append(_source)
+        return publication
 
     @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
@@ -121,10 +121,9 @@ class WIKIDATA_Publication(BaseSource):
         """
         raw = self.fetch(search_term, failed_sources)
         hits = self.extract_hits(raw)
-
-        if hits:
+        if len(hits)> 0:
             for hit in hits:
-                publication = self.map_hit(hit)
+                publication = self.map_hit(hit=hit)
                 if publication.identifier != "":
                     results["publications"].append(publication)
                 else:
