@@ -133,6 +133,7 @@ class Config:
             },
             "module": "huggingface_datasets",
             "search-endpoint": f"https://huggingface.co/api/datasets?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-resource-endpoint": f"https://huggingface.co/api/datasets/",
         },
         "OPENAIRE - Products": {
             "logo": {
