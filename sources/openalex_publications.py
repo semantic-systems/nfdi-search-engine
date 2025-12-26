@@ -130,6 +130,39 @@ class OpenAlexPublications(BaseSource):
                 results["publications"].append(obj)
             else:
                 results["others"].append(obj)
+    
+    @utils.handle_exceptions
+    def get_publications(self, source: str, url: str, results, failed_sources):
+        
+        base_url = Config.DATA_SOURCES[SOURCE].get("search-endpoint", "")
+
+        raw = data_retriever.retrieve_data(source=source, 
+                                            base_url=base_url,
+                                            search_term="",
+                                            failed_sources=failed_sources,
+                                            url=url)
+        
+        # 2. extract the hits
+        hits = list(self.extract_hits(raw))
+
+        # log the number of records found
+        total_records_found = (
+            (raw.get("meta", {}) or {}).get("count")
+            or len(hits)
+            or 0
+        )
+        utils.log_event(
+            type="info",
+            message=f"{source} - {total_records_found} records matched; pulled top {len(hits)}",
+        )
+
+        # 3. map each hit and append to results
+        for hit in hits:
+            obj = self.map_hit(source, hit)
+            if (hit.get("type", "") or "").upper() in ("ARTICLE", "PREPRINT") and getattr(obj, "identifier", ""):
+                results["publications"].append(obj)
+            else:
+                results["others"].append(obj)
 
 
 @utils.handle_exceptions
@@ -153,3 +186,7 @@ def get_publication(source: str, doi: str, source_id: str, publications):
     if search_result:
         obj = OpenAlexPublications().map_hit(source, search_result)
         publications.append(obj)
+
+@utils.handle_exceptions
+def get_publications(source: str, url: str, results, failed_sources):
+    OpenAlexPublications().get_publications(source, url, results, failed_sources)
