@@ -141,4 +141,4 @@ def get_resource(source: str, source_id: str, doi: str) -> CreativeWork | None:
 
     :return: CreativeWork
     """
-    return HuggingFaceModels().get_resource(doi)
+    return HuggingFaceModels().get_resource(doi, request_readme=True)
