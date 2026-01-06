@@ -122,6 +122,7 @@ class Config:
             },
             "module": "huggingface_models",
             "search-endpoint": f"https://huggingface.co/api/models?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-resource-endpoint": f"https://huggingface.co/api/models/",
         },
         "Huggingface - Datasets": {
             "logo": {
@@ -133,6 +134,7 @@ class Config:
             },
             "module": "huggingface_datasets",
             "search-endpoint": f"https://huggingface.co/api/datasets?limit={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
+            "get-resource-endpoint": f"https://huggingface.co/api/datasets/",
         },
         "OPENAIRE - Products": {
             "logo": {
@@ -180,6 +182,18 @@ class Config:
             "search-endpoint": f"https://api.crossref.org/works?rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&query=",
             "get-publication-endpoint": "https://api.crossref.org/works/",
             "get-publication-references-endpoint": "https://api.crossref.org/works/",
+        },
+        "DataCite": {
+            "logo": {
+                "name": "DataCite",
+                "link": "https://datacite.org/",
+                "src": "DataCite-Logo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "datacite",
+            "search-endpoint": "https://api.datacite.org/dois?query=titles.title:",
+            "get-publication-endpoint": "https://api.datacite.org/dois/"
         },
         "SEMANTIC SCHOLAR - Publications": {
             "logo": {
