@@ -30,6 +30,8 @@ jobs:
           echo "CLIENT_ID_ORCID=${{ secrets.CLIENT_ID_ORCID }}" >> ./.env
           echo "CLIENT_SECRET_ORCID=${{ secrets.CLIENT_SECRET_ORCID }}" >> ./.env
           echo "OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}" >> ./.env
+          echo "DASHBOARD_USERNAME=${{ secrets.DASHBOARD_USERNAME }}" >> ./.env
+          echo "DASHBOARD_PASSWORD=${{ secrets.DASHBOARD_PASSWORD }}" >> ./.env
           echo "LLAMA3_USERNAME=${{ secrets.LLAMA3_USERNAME }}" >> ./.env
           echo "LLAMA3_PASSWORD=${{ secrets.LLAMA3_PASSWORD }}" >> ./.env
           echo "ELASTIC_SERVER=${{ secrets.ELASTIC_SERVER }}" >> ./.env
