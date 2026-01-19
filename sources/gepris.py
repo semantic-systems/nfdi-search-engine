@@ -4,12 +4,15 @@ import logging
 from bs4 import BeautifulSoup
 from objects import Project, Person, Organization, Place, Author, thing
 import utils
+import re
+from main import app
 
 logger = logging.getLogger('nfdi_search_engine')
 
 
 @utils.timeit
-def search(search_term, results):
+@utils.handle_exceptions
+def search(source: str, search_term: str, results, failed_sources):
     try:
         
         # function call to retrive author or researchers from GEPRIS
@@ -33,14 +36,26 @@ def search(search_term, results):
         soup = BeautifulSoup(response.content, 'html.parser')
         result = soup.find("span", id="result-info")
 
-        total_reocrds = result.text
-        logger.info(f'GEPRIS - {total_reocrds} records found')
+        if not result:
+            logger.info(f'GEPRIS - No results found for projects')
+            return
+
+        total_records_text = result.text.strip()
+        logger.info(f'GEPRIS - {total_records_text} records found')
         
-        if result:
-            url = f"{base_url}?context=projekt&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
-            # response = requests.get(url)
-            response = requests.get(url, timeout=3)
-            response.raise_for_status()
+        # Extract number from result text (e.g., "1-10 of 50" or just "50")
+        # Use max records from config, but don't exceed what's available
+        max_records = app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+        numbers = re.findall(r'\d+', total_records_text)
+        if numbers:
+            total_available = int(numbers[-1])  # Get the last number (total count)
+            hits_per_page = min(max_records, total_available)
+        else:
+            hits_per_page = max_records
+        
+        url = f"{base_url}?context=projekt&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
             
         soup = BeautifulSoup(response.content, 'html.parser')
         projects = soup.find("div", id="liste")
@@ -51,50 +66,77 @@ def search(search_term, results):
             for entry in entries:
                 try:
                     project = Project()
-                    project.source = 'GEPRIS'
                     project_link = entry.find("a")["href"]
+                    project_identifier = project_link.split("/")[-1] if "/" in project_link else project_link
+                    
+                    # Create source thing object
+                    _source = thing()
+                    _source.name = 'GEPRIS'
+                    _source.identifier = project_identifier
+                    project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
+                    _source.url = project_url
+                    project.source.append(_source)
+                    
                     project_description = ''.join(entry.find("div", class_="beschreibung").find_all(string=True, recursive=False)).strip()
                     project.description = project_description
                     project.abstract = project_description
                     title = entry.find("h2").text.strip()
                     project.name = title
-                    term = entry.find("div", class_="two_columns").find("span", class_="value2").text.strip()
-                    project.dateLastModified = term
-                    project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
+                    
+                    # Try to get date modified, but don't fail if it doesn't exist
+                    try:
+                        term = entry.find("div", class_="two_columns").find("span", class_="value2").text.strip()
+                        project.dateModified = term
+                    except (AttributeError, KeyError):
+                        pass  # dateModified is optional
+                    
                     project.url = project_url
-                    applicants_element = entry.find("div", class_="details").find("span", class_="value")
-                    applicant_names = applicants_element.text.strip()
-                    #check if there is more than one applicant 
-                    if "," in applicant_names:
-                        # If there are comma-separated names, split them and add each one to the project.author list
-                        applicant_names_list = applicant_names.split(',')
-                        for applicant_name in applicant_names_list:
+                    
+                    # Try to get applicants, but don't fail if it doesn't exist
+                    try:
+                        applicants_element = entry.find("div", class_="details").find("span", class_="value")
+                        applicant_names = applicants_element.text.strip()
+                        #check if there is more than one applicant 
+                        if "," in applicant_names:
+                            # If there are comma-separated names, split them and add each one to the project.author list
+                            applicant_names_list = applicant_names.split(',')
+                            for applicant_name in applicant_names_list:
+                                author = Person()
+                                author.additionalType = "Person"
+                                author.name = applicant_name.strip()
+                                project.author.append(author)
+                        else:
+                            # If there is a single applicant, add it to the project.author list
                             author = Person()
                             author.additionalType = "Person"
-                            author.name = applicant_name.strip()
+                            author.name = applicant_names
                             project.author.append(author)
-                    else:
-                        # If there is a single applicant, add it to the project.author list
-                        author = Person()
-                        author.additionalType = "Person"
-                        author.name = applicant_names
-                        project.author.append(author)
+                    except (AttributeError, KeyError):
+                        pass  # authors are optional
 
                     
                     results['projects'].append(project)
 
-                except KeyError:
-                    logger.warning("Key 'href' not found in 'a' tag. Skipping project.")
-                # except AttributeError:
-                #     logger.warning("Unable to find project details. Skipping project.")
+                except KeyError as e:
+                    logger.warning(f"GEPRIS - Key error while processing project: {e}. Skipping project.")
+                except AttributeError as e:
+                    logger.warning(f"GEPRIS - Attribute error while processing project: {e}. Skipping project.")
+                except Exception as e:
+                    logger.warning(f"GEPRIS - Error while processing project: {e}. Skipping project.")
         
-        # logger.info(f'Got {len(results)} records from Gepris')
+            logger.info(f'GEPRIS - Got {len(entries)} project records')
+        else:
+            logger.info(f'GEPRIS - No projects found in results')
+            
     except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('GEPRIS')
+        logger.error(f'GEPRIS - Timed out Exception: {str(ex)}')
+        if failed_sources is not None:
+            failed_sources.append(source)
         
     except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
+        logger.error(f'GEPRIS - Exception: {str(ex)}')
+        if failed_sources is not None:
+            failed_sources.append(source)
 
 
 
@@ -112,14 +154,25 @@ def find_author(search_term, results):
         soup = BeautifulSoup(response.content, 'html.parser')
         result = soup.find("span", id="result-info")
 
-        total_reocrds = result.text
-        logger.info(f'GEPRIS - {total_reocrds} records found')
-        
-        if result:
-            url = f"{base_url}?context=person&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        if not result:
+            logger.info(f'GEPRIS - No results found for authors')
+            return
 
-            response = requests.get(url)
-            response.raise_for_status()
+        total_records_text = result.text.strip()
+        logger.info(f'GEPRIS - {total_records_text} records found for authors')
+        
+        # Extract number from result text
+        max_records = app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+        numbers = re.findall(r'\d+', total_records_text)
+        if numbers:
+            total_available = int(numbers[-1])
+            hits_per_page = min(max_records, total_available)
+        else:
+            hits_per_page = max_records
+
+        url = f"{base_url}?context=person&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
             
         soup = BeautifulSoup(response.content, 'html.parser')
         aurhtors_element = soup.find("div", id="liste")
@@ -129,33 +182,42 @@ def find_author(search_term, results):
             for author in authors:
                 try:
                     authorObj = Author()
-                    authorObj.source.append(thing(name='GEPRIS', identifier=author.find("a")["href"], url=f'https://gepris.dfg.de{authorObj.identifier}'))
+                    author_link = author.find("a")["href"]
+                    author_identifier = author_link.split("/")[-1] if "/" in author_link else author_link
+                    _source = thing()
+                    _source.name = 'GEPRIS'
+                    _source.identifier = author_identifier
+                    _source.url = f'https://gepris.dfg.de{author_link}'
+                    authorObj.source.append(_source)
                     # authorObj.identifier = author.find("a")["href"]
                     # authorObj.url = f'https://gepris.dfg.de{authorObj.identifier}'
                     author_names = author.find("h2").text.strip()
                     if "," in author_names:
                         authorObj.name = author_names.replace(",", " ")
+                    else:
+                        authorObj.name = author_names
 
                     for inst in author.find("div", class_="beschreibung").find_all(string=True, recursive=False):
                         authorObj.affiliation.append(Organization(name=inst))
                     results['researchers'].append(authorObj)
 
                 except KeyError:
-                    logger.warning("Key 'href' not found in 'a' tag. Skipping project.")
+                    logger.warning("GEPRIS - Key 'href' not found in 'a' tag. Skipping author.")
                 except AttributeError:
-                    logger.warning("Unable to find author for the search term")
+                    logger.warning("GEPRIS - Unable to find author for the search term")
             
-            # logger.info(f'Got {len(results)} records from Gepris')
+            logger.info(f'GEPRIS - Got {len(authors)} author records')
+        else:
+            logger.info(f'GEPRIS - No authors found in results')
     
     except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('GEPRIS')
+        logger.error(f'GEPRIS - Timed out Exception: {str(ex)}')
 
     except requests.exceptions.RequestException as e:
-        logger.error(f'Error occurred while making a request to Gepris authors: {e}')
+        logger.error(f'GEPRIS - Error occurred while making a request to Gepris authors: {e}')
            
     except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
+        logger.error(f'GEPRIS - Exception: {str(ex)}')
 
 
 def find_organization(search_term, results):
@@ -173,57 +235,77 @@ def find_organization(search_term, results):
         soup = BeautifulSoup(response.content, 'html.parser')
         result = soup.find("span", id="result-info")
 
-        total_reocrds = result.text
-        logger.info(f'GEPRIS - {total_reocrds} records found')
-        
-        # logger.info(f'Got {len(results)} records from Gepris')
+        if not result:
+            logger.info(f'GEPRIS - No results found for organizations')
+            return
 
-        if result:
-            url = f"{base_url}?context=institution&hitsPerPage={result.text}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        total_records_text = result.text.strip()
+        logger.info(f'GEPRIS - {total_records_text} records found for organizations')
 
-            response = requests.get(url)
-            response.raise_for_status()
+        # Extract number from result text
+        max_records = app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+        numbers = re.findall(r'\d+', total_records_text)
+        if numbers:
+            total_available = int(numbers[-1])
+            hits_per_page = min(max_records, total_available)
+        else:
+            hits_per_page = max_records
+
+        url = f"{base_url}?context=institution&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
             
-            soup = BeautifulSoup(response.content, 'html.parser')
-            organization_list = soup.find("div", id="liste")
-            try:
-                if organization_list:
-                    organizations = organization_list.find_all("div", class_=["eintrag_alternate","eintrag"])
-                    
-                    for organization in organizations:
-                        try:
+        soup = BeautifulSoup(response.content, 'html.parser')
+        organization_list = soup.find("div", id="liste")
+        try:
+            if organization_list:
+                organizations = organization_list.find_all("div", class_=["eintrag_alternate","eintrag"])
+                
+                for organization in organizations:
+                    try:
+                        orgObj = Organization()
+                        id_link = organization.find("a")["href"]
+                        id = id_link.split("/")[-1]
+                        orgObj.identifier = id
+                        orgObj.url = f'https://gepris.dfg.de/gepris/institution/{id}'
+                        
+                        # Create source thing object
+                        _source = thing()
+                        _source.name = 'GEPRIS'
+                        _source.identifier = id
+                        _source.url = orgObj.url
+                        orgObj.source.append(_source)
+                        id_link = organization.find("a")["href"]
+                        id = id_link.split("/")[-1]
+                        orgObj.identifier = id
+                        orgObj.url = f'https://gepris.dfg.de/gepris/institution/{id}'
+                        orgObj.name = organization.find("h2").text.strip()
+                        # Find the organizations address and retrieve text after <br> tag
+                        sub_organization = organization.find("div", class_="subInstitution")
+                        if sub_organization:
+                            orgObj.address = ','.join(sub_organization.find_all("br")[0].find_next_siblings(string=True)).strip()
+                        else:
+                            orgObj.address = " "
 
-                            orgObj = Organization()
-                            orgObj.source = 'GEPRIS'
-                            id_link = organization.find("a")["href"]
-                            id = id_link.split("/")[-1]
-                            orgObj.identifier = id
-                            orgObj.url = f'https://gepris.dfg.de/gepris/institution/{id}'
-                            orgObj.name = organization.find("h2").text.strip()
-                            # Find the organizations address and retrieve text after <br> tag
-                            sub_organization = organization.find("div", class_="subInstitution")
-                            if sub_organization:
-                                orgObj.address = ','.join(sub_organization.find_all("br")[0].find_next_siblings(string=True)).strip()
-                            else:
-                                orgObj.address = " "
-
-                            results['organizations'].append(orgObj)
-                        except Exception as e:
-                            logger.warning(e)
-            except KeyError:
-                logger.warning("Key not found.")
-            except AttributeError:
-                logger.warning("Unable to find organization details")
+                        results['organizations'].append(orgObj)
+                    except Exception as e:
+                        logger.warning(f"GEPRIS - Error processing organization: {e}")
+                logger.info(f'GEPRIS - Got {len(organizations)} organization records')
+            else:
+                logger.info(f'GEPRIS - No organizations found in results')
+        except KeyError:
+            logger.warning("GEPRIS - Key not found.")
+        except AttributeError:
+            logger.warning("GEPRIS - Unable to find organization details")
 
     except requests.exceptions.Timeout as ex:
-        logger.error(f'Timed out Exception: {str(ex)}')
-        results['timedout_sources'].append('GEPRIS')        
+        logger.error(f'GEPRIS - Timed out Exception: {str(ex)}')
     
     except requests.exceptions.RequestException as e:
-        logger.error(f'Error occurred while making a request to Gepris institutions: {e}')
+        logger.error(f'GEPRIS - Error occurred while making a request to Gepris institutions: {e}')
         
     except Exception as ex:
-        logger.error(f'Exception: {str(ex)}')
+        logger.error(f'GEPRIS - Exception: {str(ex)}')
 
 
 def org_details(organization_id, organization_name):
