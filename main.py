@@ -1020,51 +1020,53 @@ def publication_details(source_name, source_id, doi, ts):
     except Exception as ex:
         abort(404)
 
-    sources = []
-    if current_user.is_anonymous:
-        for module in app.config["DATA_SOURCES"]:
-            if (
-                app.config["DATA_SOURCES"][module]
-                .get("get-publication-endpoint", "")
-                .strip()
-                != ""
-            ):
-                sources.append(module)
-    else:
-        excluded_data_sources = current_user.excluded_data_sources.split("; ")
-        for module in app.config["DATA_SOURCES"]:
-            if (
-                app.config["DATA_SOURCES"][module]
-                .get("get-publication-endpoint", "")
-                .strip()
-                != ""
-                and module not in excluded_data_sources
-            ):
-                sources.append(module)
-
-    threads = []
     publications = []
+    sources = []
+    excluded_sources = set()
 
-    for source in sources:
-        module_name = app.config["DATA_SOURCES"][source].get("module", "")
-        t = threading.Thread(
-            target=(importlib.import_module(f"sources.{module_name}")).get_publication,
-            args=(
-                source,
-                doi,
-                source_id,
-                publications,
-            ),
-        )
-        t.start()
-        threads.append(t)
+    if not current_user.is_anonymous:
+        excluded_sources = set((current_user.excluded_data_sources or "").split('; '))
 
-    for t in threads:
-        t.join()
+    # Load all the sources from config.py used to harvest data related to search term
+    for module in app.config["DATA_SOURCES"]:
+        if (
+            app.config["DATA_SOURCES"][module]
+            .get("get-publication-endpoint", "")
+            .strip() != ""
+            and module not in excluded_sources
+        ):
+            sources.append(module)
 
-    # publications_json = jsonify(publications)
-    # with open('publications.json', 'w', encoding='utf-8') as f:
-    #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
+    def get_publication(source, module_name, doi, source_id) -> tuple[Optional[list], Optional[Exception]]:
+        mod = importlib.import_module(f"sources.{module_name}")
+        partial = []
+
+        try:
+            mod.get_publication(source, doi, source_id, partial)
+            return partial, None
+        except Exception as e:
+            return None, e
+
+    max_workers = min(16, len(sources) or 1)
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {
+            ex.submit(
+                get_publication, 
+                source, 
+                app.config["DATA_SOURCES"][source]["module"], 
+                doi, 
+                source_id
+            ): source
+            for source in sources
+        }
+        for fut in as_completed(futures):
+            source = futures[fut]
+            partial, err = fut.result()
+            if err:
+                logger.warning("Source failed: %s: %s", source, err)
+                continue
+
+            publications.extend(partial)
 
     print(f"Total number of publications {len(publications)}")
 
