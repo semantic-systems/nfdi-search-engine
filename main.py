@@ -745,29 +745,30 @@ def search_results():
         # Convert a UUID to a 32-character hexadecimal string
         search_uuid = uuid.uuid4().hex
         session["search_uuid"] = search_uuid
+        chatbot_server = app.config["CHATBOT"]["chatbot_server"]
+        save_docs_with_embeddings = app.config["CHATBOT"][
+            "endpoint_save_docs_with_embeddings"
+        ]
+        request_url = (
+            f"{chatbot_server}{save_docs_with_embeddings}/{search_uuid}"
+        )
+        results_json = json.dumps(results, default=vars)
 
-        def send_search_results_to_chatbot(search_uuid: str):
-            print("request is about to start")
-            chatbot_server = app.config["CHATBOT"]["chatbot_server"]
-            save_docs_with_embeddings = app.config["CHATBOT"][
-                "endpoint_save_docs_with_embeddings"
-            ]
-            request_url = (
-                f"{chatbot_server}{save_docs_with_embeddings}/{search_uuid}"
-            )
+        def send_search_results_to_chatbot(request_url: str, payload_json: str):
             response = requests.post(
-                request_url, json=json.dumps(results, default=vars)
+                request_url, 
+                json=payload_json,
             )
             response.raise_for_status()
             print("request completed")
 
         # create a new daemon thread
         chatbot_thread = threading.Thread(
-            target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True
+            target=send_search_results_to_chatbot, args=(request_url,results_json), 
+            daemon=True,
         )
         # start the new thread
         chatbot_thread.start()
-        # sleep(1)
 
     # on the first page load, only push top XX records in each category
     n = int(app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])
