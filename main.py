@@ -41,9 +41,28 @@ from config import Config
 from chatbot import chatbot
 from objects import Article
 
-import utils
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
+
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import (
+    BatchSpanProcessor,
+    ConsoleSpanExporter,
+)
+
+provider = TracerProvider()
+processor = BatchSpanProcessor(ConsoleSpanExporter())
+provider.add_span_processor(processor)
+
+# Sets the global default tracer provider
+trace.set_tracer_provider(provider)
+
+# Creates a tracer from the global tracer provider
+tracer = trace.get_tracer("nfdi-se")
+
+import utils
+from tracing import traced
 
 logging.config.fileConfig(os.getenv("LOGGING_FILE_CONFIG", "./logging.conf"))
 logger = logging.getLogger("nfdi_search_engine")
@@ -653,6 +672,7 @@ def update_visitor_id():
     return str(True)
 
 
+@traced()
 @app.route("/results", methods=["POST", "GET"])
 @limiter.limit("3 per minute")
 @utils.timeit
@@ -757,6 +777,7 @@ def search_results():
             search_uuid = uuid.uuid4().hex
             session["search_uuid"] = search_uuid
 
+            @traced()
             def send_search_results_to_chatbot(search_uuid: str):
                 print("request is about to start")
                 chatbot_server = app.config["CHATBOT"]["chatbot_server"]
@@ -807,6 +828,7 @@ def search_results():
         return template_response
 
 
+@traced()
 @app.route(
     "/update_search_result/<string:source>/<string:source_identifier>/<path:doi>",
     methods=["GET"],
@@ -821,6 +843,7 @@ def update_search_result(source: str, source_identifier: str, doi):
     )
 
 
+@traced()
 @app.route("/load-more/<string:object_type>", methods=["GET"])
 def load_more(object_type):
     utils.log_activity(f"loading more {object_type}")
@@ -878,6 +901,7 @@ def get_chatbot_answer():
     return answer
 
 
+@traced()
 @app.route("/publication-details/get-dois-references/<path:doi>", methods=["POST"])
 @limiter.limit("10 per minute")
 def get_publication_dois_references(doi):
@@ -908,6 +932,7 @@ def get_publication_dois_references(doi):
     return jsonify({"dois": list(found_dois)})
 
 
+@traced()
 @app.route("/publication-details/get-dois-citations/<path:doi>", methods=["POST"])
 @limiter.limit("10 per minute")
 def get_publication_citations_dois(doi):
@@ -938,6 +963,7 @@ def get_publication_citations_dois(doi):
     return jsonify({"dois": list(found_dois)})
 
 
+@traced()
 @app.route("/publication-details/get-metadata/", methods=["POST"])
 @limiter.limit("10 per minute")
 def get_publication_metadata():
@@ -998,6 +1024,7 @@ def get_publication_metadata():
     return jsonify({"publications": payload})
 
 
+@traced()
 @app.route(
     "/publication-details/<string:source_name>/<string:source_id>/<string:doi>/<string:ts>",
     methods=["GET"],
@@ -1105,6 +1132,7 @@ def publication_details(source_name, source_id, doi, ts):
     return response
 
 
+@traced()
 @app.route("/disabled/publication-details-references/<path:doi>", methods=["GET"])
 @utils.timeit
 def publication_details_references(doi):
@@ -1154,6 +1182,7 @@ def publication_details_references(doi):
     return response
 
 
+@traced()
 @app.route("/publication-details-citations/<path:doi>", methods=["GET"])
 @utils.timeit
 def publication_details_citations(doi):
@@ -1190,6 +1219,7 @@ def publication_details_citations(doi):
     return response
 
 
+@traced()
 @app.route("/publication-details-recommendations/<path:doi>", methods=["GET"])
 @utils.timeit
 def publication_details_recommendations(doi):
@@ -1239,6 +1269,7 @@ def get_citation():
         return jsonify({"error": "citation service failed", "detail": str(e)}), 502
 
 
+@traced()
 @app.route(
     "/researcher-details/<string:source_name>/<string:source_id>/<string:orcid>/<string:ts>",
     methods=["GET"],
@@ -1348,6 +1379,7 @@ def researcher_details(source_name, source_id, orcid, ts):
     return response
 
 
+@traced()
 @app.route("/generate-researcher-about-me/<string:orcid>", methods=["GET"])
 @utils.handle_exceptions
 def generate_researcher_about_me(orcid):
@@ -1355,6 +1387,7 @@ def generate_researcher_about_me(orcid):
     return jsonify(summary=f"{researcher_about_me}")
 
 
+@traced()
 @app.route(
     "/resource-details/<string:source_name>/<string:source_id>/<string:doi>/<string:ts>",
     methods=["GET"],
@@ -1977,4 +2010,4 @@ def search_term_log(report_date_range):
 # endregion
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=5002, debug=True, use_reloader=False)

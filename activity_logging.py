@@ -1,175 +1,12 @@
 import os
-import uuid
-# import extruct
-from objects import Article, Person, Author
-# import wikipedia
-from bs4 import BeautifulSoup
-import traceback
 import inspect
 from flask import Flask, request, session
 import pandas as pd
-from flask_login import current_user
-from datetime import datetime, timezone
-from flask import request, current_app
+from datetime import timedelta
 
+from elasticsearch import Elasticsearch, exceptions
 from tracing import traced
 
-def clean_json(value):
-    """
-    Recursively remove all None values from dictionaries and lists, and returns
-    the result as a new dictionary or list.
-    """
-    if isinstance(value, list):
-        return [clean_json(x) for x in value if x is not None]
-    elif isinstance(value, dict):
-        return {
-            key: clean_json(val)
-            for key, val in value.items()
-            if val is not None
-        }
-    else:
-        return value
-
-# def extract_metadata(text):
-#     """
-#     Extract all metadata present in the page and return a dictionary of metadata lists.
-
-#         Initially authored by Ricardo Usbeck
-
-#     Args:
-
-#     Returns:
-#         metadata (dict): Dictionary of json-ld, microdata, and opengraph lists.
-#         Each of the lists present within the dictionary contains multiple dictionaries.
-#     """
-
-#     metadata = extruct.extract(text,
-#                                uniform=True,
-#                                syntaxes=['json-ld',
-#                                          'microdata',
-#                                          'opengraph'])
-#     return metadata
-
-def is_author_in(name, authors):
-    """
-    Verifies if the author is already in the results
-    Args:
-        name: name of the author
-        authors: list of the results
-
-    Returns:
-        True if it's already there and False if not
-
-    """
-    for author in authors:
-        if type(author) is not Person:
-            continue
-        if author.name == name:
-            return author
-    return None
-
-def is_article_in(title, articles):
-    """
-        Verifies if the paper is already in the results
-        Args:
-            title: name of the paper
-            articles: list of the results
-
-        Returns:
-            True if it's already there and False if not
-
-        """
-    for article in articles:
-        if type(article) is not Article:
-            continue
-        if article.title == title:
-            return article
-    return None
-
-# def read_wikipedia(title):
-#     wikipedia.set_lang("en")
-#     try:
-#         summary_text = wikipedia.summary(title, 3, redirect=True)
-#     except:
-#         return ""
-#     return summary_text
-
-def remove_html_tags(text):
-    soup = BeautifulSoup(text, "html.parser")
-    return soup.text.strip()
-
-def remove_line_tags(text):
-    return text.replace('\n', ' ').replace('\t', ' ')
-
-def generate_string_from_keys(dictionary):
-    keys_list = list(dictionary.keys())
-    keys_string = " ".join(keys_list)
-    return keys_string
-
-from dateparser import parse
-from datetime import timedelta
-def parse_date(date_str):
-    try:
-        parsed_date_str = parse(date_str).strftime("%Y-%m-%d")
-        return parsed_date_str
-    except (TypeError, ValueError):
-        print(f"original date str: {date_str}")
-        return ""
-
-def parse_report_date_range(report_date_range):
-    if report_date_range:
-        start_date =  datetime.strptime(report_date_range.partition(' - ')[0], current_app.config['DATE_FORMAT_FOR_REPORT'])
-        end_date =  datetime.strptime(report_date_range.partition(' - ')[2], current_app.config['DATE_FORMAT_FOR_REPORT'])      
-    else:
-        # default the date range filter to last 7 days
-        # start_date = (datetime.now()+timedelta(days=-6))
-        start_date = datetime.now()
-        end_date = datetime.now()
-    return start_date, end_date 
-
-def parse_date_range_for_elastic(start_date, end_date):
-    start_date = start_date.strftime(current_app.config['DATE_FORMAT_FOR_ELASTIC'])
-    # Add a day to end-date so it can include that the documents for that day too
-    end_date = (end_date+timedelta(days=0)).strftime(current_app.config['DATE_FORMAT_FOR_ELASTIC'])
-    return start_date, end_date  
-
-
-# def sort_results_publications(results):
-#     def custom_sort_key(obj):    
-#         desc = getattr(obj, 'description', '') 
-#         pub_date = getattr(obj, 'datePublished', '0000-00-00') 
-#         if desc == '':
-#             return (0, pub_date)
-#         return (1, pub_date)
-
-#     return sorted(results, key=custom_sort_key, reverse=True)
-
-from rank_bm25 import BM25Plus
-def sort_search_results(search_term, search_results):    
-
-    tokenized_results = [str(result).lower().split(" ") for result in search_results]
-    if len(tokenized_results) > 0:
-        bm25 = BM25Plus(tokenized_results)
-    
-        tokenized_query = search_term.lower().split(" ")
-        doc_scores = bm25.get_scores(tokenized_query)
-        
-        for idx, doc_score in enumerate(doc_scores):
-            search_results[idx].rankScore = doc_score
-
-    search_results = sorted(search_results, key=lambda x: x.rankScore, reverse=True)
-    # return sorted(search_results, key=lambda x: x.rankScore, reverse=True)
-
-def split_authors(authors_names, seperator, authors_list):
-    authors = authors_names.split(seperator)
-    for author in authors:
-        _author = Author()
-        _author.additionalType = 'Person'
-        _author.name = author
-        authors_list.append(_author)  
-
-#region User Activity Logging
-from elasticsearch import Elasticsearch, exceptions
 es_client = Elasticsearch(
     os.environ.get("ELASTIC_SERVER", ""),  # Elasticsearch endpoint
     basic_auth=(os.environ.get("ELASTIC_USERNAME", ""), os.environ.get("ELASTIC_PASSWORD", "")),
@@ -199,8 +36,15 @@ for idx in ES_Index:
 
 from datetime import datetime, timezone
 from flask import request, current_app
-from flask_login import current_user
+
 from ua_parser import user_agent_parser
+
+def parse_date_range_for_elastic(start_date, end_date):
+    start_date = start_date.strftime(current_app.config['DATE_FORMAT_FOR_ELASTIC'])
+    # Add a day to end-date so it can include that the documents for that day too
+    end_date = (end_date+timedelta(days=0)).strftime(current_app.config['DATE_FORMAT_FOR_ELASTIC'])
+    return start_date, end_date  
+
 
 def get_client_ip():
     client_ip = request.remote_addr
@@ -241,7 +85,6 @@ def get_user_activities(start_date, end_date):
                                 sort=[{ "timestamp" : "desc" }])   
     return result["hits"]["hits"]
 
-@traced()
 def log_search_term(search_term): 
     es_client.index(
         index=ES_Index.search_term_log.name,        
@@ -767,68 +610,5 @@ def get_users(start_date, end_date):
 
 def delete_user(user_id:str):
     es_client.delete(index=ES_Index.users.name, id=user_id)
-
-#endregion
-
-
-#region DECORATORS
-
-from functools import wraps
-from time import time
-import inspect
-import os
-
-def timeit(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        ts = time()
-        result = f(*args, **kwargs)
-        te = time()
-        filename = os.path.basename(inspect.getfile(f))
-        # print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
-        log_event(type="info", filename=filename, method=f.__name__, message=f"execution time: {(te-ts):2.4f} sec")
-        return result
-    return decorated_function
-
-def handle_exceptions(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        try:
-            ts = time()
-            result = f(*args, **kwargs)
-            te = time()
-            filename = os.path.basename(inspect.getfile(f))            
-            log_event(type="info", filename=filename, method=f.__name__, message=f"execution time: {(te-ts):2.4f} sec")
-            return result
-        except Exception as ex:
-            filename = os.path.basename(inspect.getfile(f))
-            log_event(type="error", filename=filename, method=f.__name__, message=str(ex), traceback= traceback.format_exc())
-    return decorated_function
-
-def set_cookies(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        # first set the session id
-        if request.cookies.get('session') is None:
-            session_id = str(uuid.uuid4())
-        else:
-            session_id = request.cookies['session']        
-        session['gateway-session-id'] = session_id
-
-        if current_user.is_authenticated:
-            session["current-user-email"] = current_user.email
-
-        response = f(*args, **kwargs)
-
-        log_agent()
-        log_activity(f"loading route: {f.__name__}")
-
-        # Set 'nfdi4ds-gateway-search-session' cookie to the session_id
-        # response.set_cookie('session', session_id)
-        
-        return response
-    return decorated_function
-
-
 
 #endregion

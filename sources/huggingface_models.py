@@ -1,6 +1,7 @@
 from typing import Union, Dict, Any, List, Iterable
 
 import utils
+import tracing
 from config import Config
 from sources import data_retriever
 from sources.base import BaseSource
@@ -122,6 +123,7 @@ class HuggingFaceModels(BaseSource):
             return None
 
 
+@tracing.traced("hf-models.search")
 @utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources) -> None:
     """
@@ -130,6 +132,7 @@ def search(source: str, search_term: str, results, failed_sources) -> None:
     HuggingFaceModels().search(source, search_term, results, failed_sources)
 
 
+@tracing.traced("hf-models.details")
 @utils.handle_exceptions
 def get_resource(source: str, source_id: str, doi: str) -> CreativeWork | None:
     """
