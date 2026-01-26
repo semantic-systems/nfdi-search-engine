@@ -328,9 +328,20 @@ import re
 
 
 def regex_replace(s, find, replace):
-    """A non-optimal implementation of a regex filter"""
-    return re.sub(find, replace, s)
+    """A less non-optimal implementation of a regex filter"""
+    if s is None:
+        s_str = ""
+    elif isinstance(s, (bytes, bytearray)):
+        s_str = s.decode("utf-8", errors="replace")
+    else:
+        s_str = str(s)
 
+    try:
+        out = re.sub(find, replace, s_str)
+    except re.error:
+        out = s_str
+
+    return out
 
 FILTERS["regex_replace"] = regex_replace
 
