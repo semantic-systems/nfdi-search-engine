@@ -27,12 +27,12 @@
                 </div>
 
                 <div class="row px-2 pt-3">
-                    <div class="col-lg-9 text-start">
-                        <span class="badge bg-pill">{{organization.source}}</span>
-                    </div>
-                    <div class="col-lg-3 text-end">
-                        <span class="badge bg-pill"></span>
-                    </div>
+                    {% for source in organization.source %}
+                    <a id="source_link" href="{{source.url}}" target=_blank>
+                        <span class="badge bg-pill text-wrap text-break">{{source.name}}&nbsp;<i
+                                class="pull-right bi bi-box-arrow-up-right"></i></span>
+                    </a>
+                    {% endfor %}
                 </div>
             </div>
 

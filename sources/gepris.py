@@ -16,8 +16,7 @@ class GEPRIS(BaseSource):
     GEPRIS source implementation for searching projects, researchers, and organizations.
     """
 
-    SOURCE = 'GEPRIS'
-    BASE_URL = 'https://gepris.dfg.de/gepris/OCTOPUS'
+    SOURCE = "gepris"
 
     @utils.handle_exceptions
     def fetch(self, search_term: str, context: str = 'projekt', failed_sources: list = None) -> Dict[str, Any]:
@@ -32,15 +31,14 @@ class GEPRIS(BaseSource):
         Returns:
             Dictionary containing the HTML response and metadata
         """
+        endpoint = app.config["DATA_SOURCES"][self.SOURCE].get("search-endpoint", "")
+        base_url = endpoint.split("?")[0] if "?" in endpoint else endpoint
         # First request to get total count
-        url = f"{self.BASE_URL}?context={context}&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        url = f"{base_url}?context={context}&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
         
         try:
             response = requests.get(url, timeout=3)
             response.raise_for_status()
-            
-            logger.debug(f'{self.SOURCE} response status code: {response.status_code}')
-            logger.debug(f'{self.SOURCE} response headers: {response.headers}')
             
             soup = BeautifulSoup(response.content, 'html.parser')
             result = soup.find("span", id="result-info")
@@ -63,7 +61,7 @@ class GEPRIS(BaseSource):
                 total_available = 0
             
             # Second request to get actual results
-            url = f"{self.BASE_URL}?context={context}&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+            url = f"{base_url}?context={context}&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
             response = requests.get(url, timeout=10)
             response.raise_for_status()
             
@@ -128,7 +126,7 @@ class GEPRIS(BaseSource):
             
             # Create source thing object
             _source = thing()
-            _source.name = self.SOURCE
+            _source.name = app.config["DATA_SOURCES"][self.SOURCE]["logo"]["name"]
             _source.identifier = project_identifier
             project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
             _source.url = project_url
@@ -239,7 +237,7 @@ class GEPRIS(BaseSource):
             author_identifier = author_link.split("/")[-1] if "/" in author_link else author_link
             
             _source = thing()
-            _source.name = self.SOURCE
+            _source.name = app.config["DATA_SOURCES"][self.SOURCE]["logo"]["name"]
             _source.identifier = author_identifier
             _source.url = f'https://gepris.dfg.de{author_link}'
             authorObj.source.append(_source)
@@ -324,7 +322,7 @@ class GEPRIS(BaseSource):
             
             # Create source thing object
             _source = thing()
-            _source.name = self.SOURCE
+            _source.name = app.config["DATA_SOURCES"][self.SOURCE]["logo"]["name"]
             _source.identifier = org_id
             _source.url = orgObj.url
             orgObj.source.append(_source)

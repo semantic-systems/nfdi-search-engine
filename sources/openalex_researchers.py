@@ -53,7 +53,8 @@ class OpenAlexResearchers(BaseSource):
         
         # Identifier (ORCID)
         author.identifier = hit.get("ids", {}).get("orcid", "").replace("https://orcid.org/", "")
-        
+        author.additionalType = "Person"
+
         # Name
         author.name = hit.get("display_name", "")
         
