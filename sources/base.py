@@ -5,7 +5,7 @@ from typing import Iterable, Dict, Any
 class BaseSource(ABC):
 
     @abstractmethod
-    def fetch(self, search_term: str) -> Dict[str, Any]:
+    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -19,7 +19,7 @@ class BaseSource(ABC):
         ...
 
     @abstractmethod
-    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+    def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
