@@ -10,6 +10,7 @@ import secrets
 from urllib.parse import urlsplit, urlencode, quote
 import importlib
 import hmac
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from flask import (
     Flask,
@@ -327,9 +328,20 @@ import re
 
 
 def regex_replace(s, find, replace):
-    """A non-optimal implementation of a regex filter"""
-    return re.sub(find, replace, s)
+    """A less non-optimal implementation of a regex filter"""
+    if s is None:
+        s_str = ""
+    elif isinstance(s, (bytes, bytearray)):
+        s_str = s.decode("utf-8", errors="replace")
+    else:
+        s_str = str(s)
 
+    try:
+        out = re.sub(find, replace, s_str)
+    except re.error:
+        out = s_str
+
+    return out
 
 FILTERS["regex_replace"] = regex_replace
 
@@ -653,158 +665,145 @@ def update_visitor_id():
     return str(True)
 
 
-@app.route("/results", methods=["POST", "GET"])
+@app.route("/results", methods=["GET"])
 @limiter.limit("3 per minute")
 @utils.timeit
 @utils.set_cookies
 def search_results():
     search_term = request.args.get("txtSearchTerm", "")
+    session["search-term"] = search_term
+    session["back-url"] = request.url
+
     utils.log_activity(f"loading search results for {search_term}")
     utils.log_search_term(search_term)
 
-    session["back-url"] = request.url
-
-    results = {
-        "publications": [],
-        "researchers": [],
-        "resources": [],
-        "organizations": [],
-        "events": [],
-        "projects": [],
-        "others": [],
-        "timedout_sources": [],  ### this should be removed. no longer used
-    }
-
+    CATEGORIES = [
+        "publications",
+        "researchers",
+        "resources",
+        "organizations",
+        "events",
+        "projects",
+        "others",
+    ]
+    results = {c: [] for c in CATEGORIES}
+    sources = []
     failed_sources = []
+    excluded_sources = set()
 
-    if request.method == "GET":
-        # search_term = request.args.get('txtSearchTerm')
-        session["search-term"] = search_term
+    if not current_user.is_anonymous:
+        excluded_sources = set((current_user.excluded_data_sources or "").split('; '))
 
-        for k in results.keys():
-            results[k] = []
-        threads = []
+    # Load all the sources from config.py used to harvest data related to search term
+    for module in app.config["DATA_SOURCES"]:
+        if (
+            app.config["DATA_SOURCES"][module]
+            .get("search-endpoint", "")
+            .strip() != ""
+            and module not in excluded_sources
+        ):
+            sources.append(module)
 
-        # Load all the sources from config.py used to harvest data related to search term
-        sources = []
-        if current_user.is_anonymous:
-            for module in app.config["DATA_SOURCES"]:
-                if (
-                    app.config["DATA_SOURCES"][module]
-                    .get("search-endpoint", "")
-                    .strip()
-                    != ""
-                ):
-                    sources.append(module)
-        else:
-            excluded_data_sources = current_user.excluded_data_sources.split("; ")
-            for module in app.config["DATA_SOURCES"]:
-                if (
-                    app.config["DATA_SOURCES"][module]
-                    .get("search-endpoint", "")
-                    .strip()
-                    != ""
-                    and module not in excluded_data_sources
-                ):
-                    sources.append(module)
+    # for now this wraps the in-reference editing
+    # can be simplified once the refactoring is completed,
+    # including having the modules return values
+    # and handling failing sources outside the retriever
+    def search_source(source, module_name, search_term) -> tuple[Optional[dict], Optional[Exception]]:
+        mod = importlib.import_module(f"sources.{module_name}")
+        partial = {c: [] for c in CATEGORIES}
+        failed_sources = []
 
-        for source in sources:
-            module_name = app.config["DATA_SOURCES"][source].get("module", "")
-            t = threading.Thread(
-                target=(importlib.import_module(f"sources.{module_name}")).search,
-                args=(
-                    source,
-                    search_term,
-                    results,
-                    failed_sources,
-                ),
-            )
-            t.start()
-            threads.append(t)
+        try:
+            mod.search(source, search_term, partial, failed_sources)
+            if failed_sources:
+                return None, Exception(f"Failed to harvest {source}")
+            return partial, None
+        except Exception as e:
+            return None, e
 
-        for t in threads:
-            t.join()
-            # print(t.is_alive())
+    max_workers = min(16, len(sources) or 1)
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {
+            ex.submit(search_source, source, app.config["DATA_SOURCES"][source]["module"], search_term): source
+            for source in sources
+        }
+        for fut in as_completed(futures):
+            source = futures[fut]
+            partial, err = fut.result()
+            if err:
+                failed_sources.append(source)
+                logger.warning("Source failed: %s: %s", source, err)
+                continue
 
-        if len(failed_sources) > 0:
-            flash(
-                f"Following sources could not be harvested: {', '.join(failed_sources)}",
-                category="error",
-            )
+            for k in CATEGORIES:
+                results[k].extend(partial[k])
 
-        # sort all the results in each category
-        threads = []
-        for k in results.keys():
-            t = threading.Thread(
-                target=utils.sort_search_results,
-                args=(
-                    search_term,
-                    results[k],
-                ),
-            )
-            t.start()
-            threads.append(t)
+    # sort all the results in each category
+    for k in CATEGORIES:
+        results[k] = utils.sort_search_results(search_term, results[k])
 
-        for t in threads:
-            t.join()
-
-        # store the search results in the session
-        session["search-results"] = copy.deepcopy(results)
-
-        # Chatbot - push search results to chatbot server for embeddings generation
-        if app.config["CHATBOT"]["chatbot_enable"]:
-            # Convert a UUID to a 32-character hexadecimal string
-            search_uuid = uuid.uuid4().hex
-            session["search_uuid"] = search_uuid
-
-            def send_search_results_to_chatbot(search_uuid: str):
-                print("request is about to start")
-                chatbot_server = app.config["CHATBOT"]["chatbot_server"]
-                save_docs_with_embeddings = app.config["CHATBOT"][
-                    "endpoint_save_docs_with_embeddings"
-                ]
-                request_url = (
-                    f"{chatbot_server}{save_docs_with_embeddings}/{search_uuid}"
-                )
-                response = requests.post(
-                    request_url, json=json.dumps(results, default=vars)
-                )
-                response.raise_for_status()
-                print("request completed")
-
-            # create a new daemon thread
-            chatbot_thread = threading.Thread(
-                target=send_search_results_to_chatbot, args=(search_uuid,), daemon=True
-            )
-            # start the new thread
-            chatbot_thread.start()
-            # sleep(1)
-
-        # on the first page load, only push top XX records in each category
-        number_of_records_to_show_on_page_load = int(
-            app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"]
+    if len(failed_sources) > 0:
+        flash(
+            f"Following sources could not be harvested: {', '.join(failed_sources)}",
+            category="error",
         )
-        total_results = {}  # the dict to keep the all the search results
-        displayed_results = {}  # the dict to keep the search results currently displayed to the user
 
-        for k, v in results.items():
-            logger.info(f"Got {len(v)} {k}")
-            total_results[k] = len(v)
-            results[k] = v[:number_of_records_to_show_on_page_load]
-            displayed_results[k] = len(results[k])
+    # store the search results in the session
+    session["search-results"] = copy.deepcopy(results)
 
-        session["total_search_results"] = total_results
-        session["displayed_search_results"] = displayed_results
-
-        template_response = render_template(
-            "results.html",
-            results=results,
-            total_results=total_results,
-            search_term=search_term,
+    # Chatbot - push search results to chatbot server for embeddings generation
+    if app.config["CHATBOT"]["chatbot_enable"]:
+        # Convert a UUID to a 32-character hexadecimal string
+        search_uuid = uuid.uuid4().hex
+        session["search_uuid"] = search_uuid
+        chatbot_server = app.config["CHATBOT"]["chatbot_server"]
+        save_docs_with_embeddings = app.config["CHATBOT"][
+            "endpoint_save_docs_with_embeddings"
+        ]
+        request_url = (
+            f"{chatbot_server}{save_docs_with_embeddings}/{search_uuid}"
         )
-        logger.info("search server call completed - after render call")
+        results_json = json.dumps(results, default=vars)
 
-        return template_response
+        def send_search_results_to_chatbot(request_url: str, payload_json: str):
+            response = requests.post(
+                request_url, 
+                json=payload_json,
+            )
+            response.raise_for_status()
+            print("request completed")
+
+        # create a new daemon thread
+        chatbot_thread = threading.Thread(
+            target=send_search_results_to_chatbot, args=(request_url,results_json), 
+            daemon=True,
+        )
+        # start the new thread
+        chatbot_thread.start()
+
+    # on the first page load, only push top XX records in each category
+    n = int(app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])
+    total_results = {}  # the dict to keep the number of search results
+    displayed_results = {}  # the dict to keep the number of search results currently displayed to the user
+
+    for k, v in results.items():
+        logger.info(f"Got {len(v)} {k}")
+        total_results[k] = len(v)
+        results[k] = v[:n]
+        displayed_results[k] = len(results[k])
+
+    session["total_search_results"] = total_results
+    session["displayed_search_results"] = displayed_results
+
+    template_response = render_template(
+        "results.html",
+        results=results,
+        total_results=total_results,
+        search_term=search_term,
+    )
+    logger.info("search server call completed - after render call")
+
+    return template_response
 
 
 @app.route(
@@ -1032,51 +1031,53 @@ def publication_details(source_name, source_id, doi, ts):
     except Exception as ex:
         abort(404)
 
-    sources = []
-    if current_user.is_anonymous:
-        for module in app.config["DATA_SOURCES"]:
-            if (
-                app.config["DATA_SOURCES"][module]
-                .get("get-publication-endpoint", "")
-                .strip()
-                != ""
-            ):
-                sources.append(module)
-    else:
-        excluded_data_sources = current_user.excluded_data_sources.split("; ")
-        for module in app.config["DATA_SOURCES"]:
-            if (
-                app.config["DATA_SOURCES"][module]
-                .get("get-publication-endpoint", "")
-                .strip()
-                != ""
-                and module not in excluded_data_sources
-            ):
-                sources.append(module)
-
-    threads = []
     publications = []
+    sources = []
+    excluded_sources = set()
 
-    for source in sources:
-        module_name = app.config["DATA_SOURCES"][source].get("module", "")
-        t = threading.Thread(
-            target=(importlib.import_module(f"sources.{module_name}")).get_publication,
-            args=(
-                source,
-                doi,
-                source_id,
-                publications,
-            ),
-        )
-        t.start()
-        threads.append(t)
+    if not current_user.is_anonymous:
+        excluded_sources = set((current_user.excluded_data_sources or "").split('; '))
 
-    for t in threads:
-        t.join()
+    # Load all the sources from config.py used to harvest data related to search term
+    for module in app.config["DATA_SOURCES"]:
+        if (
+            app.config["DATA_SOURCES"][module]
+            .get("get-publication-endpoint", "")
+            .strip() != ""
+            and module not in excluded_sources
+        ):
+            sources.append(module)
 
-    # publications_json = jsonify(publications)
-    # with open('publications.json', 'w', encoding='utf-8') as f:
-    #     json.dump(jsonify(publications).json, f, ensure_ascii=False, indent=4)
+    def get_publication(source, module_name, doi, source_id) -> tuple[Optional[list], Optional[Exception]]:
+        mod = importlib.import_module(f"sources.{module_name}")
+        partial = []
+
+        try:
+            mod.get_publication(source, doi, source_id, partial)
+            return partial, None
+        except Exception as e:
+            return None, e
+
+    max_workers = min(16, len(sources) or 1)
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {
+            ex.submit(
+                get_publication, 
+                source, 
+                app.config["DATA_SOURCES"][source]["module"], 
+                doi, 
+                source_id
+            ): source
+            for source in sources
+        }
+        for fut in as_completed(futures):
+            source = futures[fut]
+            partial, err = fut.result()
+            if err:
+                logger.warning("Source failed: %s: %s", source, err)
+                continue
+
+            publications.extend(partial)
 
     print(f"Total number of publications {len(publications)}")
 
@@ -1274,47 +1275,53 @@ def researcher_details(source_name, source_id, orcid, ts):
     except Exception as ex:
         abort(404)
 
-    sources = []
-    if current_user.is_anonymous:
-        for module in app.config["DATA_SOURCES"]:
-            if (
-                app.config["DATA_SOURCES"][module]
-                .get("get-researcher-endpoint", "")
-                .strip()
-                != ""
-            ):
-                sources.append(module)
-    else:
-        excluded_data_sources = current_user.excluded_data_sources.split("; ")
-        for module in app.config["DATA_SOURCES"]:
-            if (
-                app.config["DATA_SOURCES"][module]
-                .get("get-researcher-endpoint", "")
-                .strip()
-                != ""
-                and module not in excluded_data_sources
-            ):
-                sources.append(module)
-
-    threads = []
     researchers = []
+    sources = []
+    excluded_sources = set()
 
-    for source in sources:
-        module_name = app.config["DATA_SOURCES"][source].get("module", "")
-        t = threading.Thread(
-            target=(importlib.import_module(f"sources.{module_name}")).get_researcher,
-            args=(
-                source,
-                orcid,
-                source_id,
-                researchers,
-            ),
-        )
-        t.start()
-        threads.append(t)
+    if not current_user.is_anonymous:
+        excluded_sources = set((current_user.excluded_data_sources or "").split('; '))
 
-    for t in threads:
-        t.join()
+    # Load all the sources from config.py used to harvest data related to search term
+    for module in app.config["DATA_SOURCES"]:
+        if (
+            app.config["DATA_SOURCES"][module]
+            .get("get-researcher-endpoint", "")
+            .strip() != ""
+            and module not in excluded_sources
+        ):
+            sources.append(module)
+
+    def get_researcher(source, module_name, orcid, source_id) -> tuple[Optional[list], Optional[Exception]]:
+        mod = importlib.import_module(f"sources.{module_name}")
+        partial = []
+
+        try:
+            mod.get_researcher(source, orcid, source_id, partial)
+            return partial, None
+        except Exception as e:
+            return None, e
+
+    max_workers = min(16, len(sources) or 1)
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        futures = {
+            ex.submit(
+                get_researcher, 
+                source, 
+                app.config["DATA_SOURCES"][source]["module"], 
+                orcid, 
+                source_id
+            ): source
+            for source in sources
+        }
+        for fut in as_completed(futures):
+            source = futures[fut]
+            partial, err = fut.result()
+            if err:
+                logger.warning("Source failed: %s: %s", source, err)
+                continue
+
+            researchers.extend(partial)
 
     # publications_json = jsonify(publications)
     # with open('publications.json', 'w', encoding='utf-8') as f:
