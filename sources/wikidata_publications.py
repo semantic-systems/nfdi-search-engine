@@ -6,6 +6,7 @@ from string import Template
 from datetime import datetime
 from dateutil import parser
 from sources.base import BaseSource
+from main import app
 
 class WIKIDATA_Publication(BaseSource):
 
@@ -67,10 +68,10 @@ class WIKIDATA_Publication(BaseSource):
         print(str(total_hits) + "from WIKIDATA Publications")
         if int(total_hits) > 0:
             return hits
-        return None
+        return []
 
     @utils.handle_exceptions
-    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+    def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
