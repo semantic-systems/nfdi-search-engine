@@ -182,8 +182,8 @@ def get_publication(source, doi, source_id, publications) -> None:
     if publication:
         publications.append(publication)
 
-def get_dois_references(self, source: str, doi: str):
+def get_dois_references(source: str, doi: str):
     return CROSSREF_Publications().get_dois_references(source, doi)
 
-def get_publication_references(self, source: str, doi: str):
+def get_publication_references(source: str, doi: str):
     return CROSSREF_Publications().get_publication_references(source, doi)

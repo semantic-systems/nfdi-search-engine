@@ -285,15 +285,18 @@ class Config:
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        # "IEEE": { #IEEE API key is not working, therefore this has been disabled for now.
+        # "IEEE": {
         #     "logo": {
+        #         "name": "IEEE",
+        #         "link": "https://ieeexplore.ieee.org/",
         #         "src": "ieee.gif",
         #         "width": "w-100",
         #         "height": "h-70",
         #     },
         #     "module": "ieee",
-        #     "search-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-        #     "get-publication-endpoint": f"http://ieeexploreapi.ieee.org/api/v1/search/articles?apikey={IEEE_API_KEY}&doi=",
+        #     "search-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+        #     "get-publication-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?doi=",
+        #     "api-key-param": "apikey",
         # },
         # "EUDAT": {
         #     "module": "eudat",
@@ -308,10 +311,17 @@ class Config:
         #     "module": "orkg",
         #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        # "gepris": {
-        #     "module": "gepris",
-        #     "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
-        # },
+        "gepris": {
+            "logo": {
+                "name": "GEPRIS",
+                "link": "https://gepris.dfg.de/",
+                "src": "GEPRIS_Logo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "gepris",
+            "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
+        },
     }
 
     LLMS = {
@@ -328,7 +338,7 @@ class Config:
     }
 
     CHATBOT = {
-        "chatbot_enable": True,
+        "chatbot_enable": False,
         "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),
         "endpoint_chat": "/chat",
         "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",

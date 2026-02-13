@@ -1,21 +1,45 @@
 from objects import thing, Project, Author, Organization
 from sources import data_retriever
+from typing import Iterable, Dict, Any
 import utils
 from main import app
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources): 
-    search_result = data_retriever.retrieve_data(source=source, 
-                                                base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+from sources.base import BaseSource
+
+class OpenAIRE_Projects(BaseSource):
+
+    SOURCE = 'OPENAIRE - Projects'
+
+    @utils.handle_exceptions
+    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+        """
+        Fetch raw json from the source using the given search term.
+        """
+        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
+                                                base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
                                                 search_term=search_term,
                                                 failed_sources=failed_sources) 
-    response = search_result.get("response", {})
-    total_records_found = response.get("header", {}).get("total", "").get("$", "")
-    hits = response.get("results", {}).get("result",[])
-    total_hits = len(hits)
-    utils.log_event(type="info", message=f"{source} - {total_records_found} records matched; pulled top {total_hits}")    
 
-    for hit in hits:
+        return search_result
+
+    @utils.handle_exceptions
+    def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
+        """
+        Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
+        """
+        response = raw.get("response", {})
+        total_records_found = response.get("header", {}).get("total", "").get("$", "")
+        hits = response.get("results", {}).get("result",[])
+        total_hits = len(hits)
+        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")    
+
+        return hits
+
+    @utils.handle_exceptions
+    def map_hit(self, hit: Dict[str, Any]) -> Project:
+        """
+        Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
+        """
         pro_result = hit.get('metadata', {}).get('oaf:entity', {}).get('oaf:project', {})
         
         project = Project()     
@@ -58,6 +82,25 @@ def search(source: str, search_term: str, results, failed_sources):
         _source.name = 'OPENAIRE'
         _source.identifier = hit.get("header", {}).get("dri:objIdentifier", {}).get("$", "")
         # _source.url = digitalObj.url                   
-        project.source.append(_source)  
-        
-        results['projects'].append(project)
+        project.source.append(_source)
+
+        return project
+
+    @utils.handle_exceptions
+    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+        """
+        Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
+        """
+        raw = self.fetch(search_term, failed_sources)
+        hits = self.extract_hits(raw)
+
+        for hit in hits:
+            project = self.map_hit(hit)
+            results['projects'].append(project)
+
+@utils.handle_exceptions
+def search(source: str, search_term: str, results, failed_sources): 
+    """
+    Entrypoint to search OpenAIRE Projects.
+    """
+    OpenAIRE_Projects().search(source, search_term, results, failed_sources)
