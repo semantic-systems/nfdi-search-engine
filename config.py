@@ -307,10 +307,17 @@ class Config:
         #     "module": "cordis",
         #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
         # },
-        # "ORKG": {
-        #     "module": "orkg",
-        #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
+        "ORKG": {
+            "logo": {
+                "name": "ORKG",
+                "link": "https://orkg.org/",
+                "src": "orkg.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "orkg",
+            "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&base_class=Paper&q=",
+        },
         "gepris": {
             "logo": {
                 "name": "GEPRIS",
