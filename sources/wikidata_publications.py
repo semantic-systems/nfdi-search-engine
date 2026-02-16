@@ -65,7 +65,7 @@ class WIKIDATA_Publication(BaseSource):
         hits = raw.get("results", {}).get("bindings", [])
         total_hits = len(hits)
         utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
-        print(str(total_hits) + "from WIKIDATA Publications")
+        # print(str(total_hits) + " from WIKIDATA Publications")
         if int(total_hits) > 0:
             return hits
         return []
