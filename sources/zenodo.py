@@ -24,8 +24,6 @@ class ZENODO(BaseSource):
         total_records_found = raw.get("hits", {}).get("total", 0)
         hits = raw.get("hits", {}).get("hits", [])
         total_hits = len(hits)
-        message = f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}"
-        print(message)
         utils.log_event(type="info",
                         message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
         if int(total_hits) > 0:
