@@ -277,10 +277,17 @@ class Config:
         #    "module": "dblp_researchers",
         #    "search-endpoint": f"https://dblp.org/search/author/api?format=json&h={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        # "resodate": {
-        #     "module": "resodate",
-        #     "search-endpoint": f"https://resodate.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
+        "resodate": {
+            "logo": {
+                "name": "resodate",
+                "link": "https://resodate.org/",
+                "src": "resodate-logo.png",
+                "width": "w-100",
+                "height": "h-100",
+                },
+            "module": "resodate",
+            "search-endpoint": f"https://resodate.org/api/search/resource_metadata/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+        },
         # "OERSI": {
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
