@@ -43,38 +43,13 @@ from chatbot import chatbot
 from objects import Article
 
 import utils
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
 
-logging.config.fileConfig(os.getenv("LOGGING_FILE_CONFIG", "./logging.conf"))
-logger = logging.getLogger("nfdi_search_engine")
-app = Flask(__name__)
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)  # If you have one proxy
+from nfdi_search_engine.extensions import limiter, login_manager
+from app import create_app
 
-limiter = Limiter(
-    utils.get_client_ip,
-    app=app,
-    default_limits=["500 per day", "120 per hour"],
-    storage_uri="memory://",
-    # Redis
-    # storage_uri="redis://localhost:6379",
-    # Redis cluster
-    # storage_uri="redis+cluster://localhost:7000,localhost:7001,localhost:70002",
-    # Memcached
-    # storage_uri="memcached://localhost:11211",
-    # Memcached Cluster
-    # storage_uri="memcached://localhost:11211,localhost:11212,localhost:11213",
-    # MongoDB
-    # storage_uri="mongodb://localhost:27017",
-    strategy="fixed-window",  # or "moving-window", or "sliding-window-counter"
-)
-
-app.config.from_object(Config)
-Session(app)
-
-login_manager = LoginManager(app)
-login_manager.login_view = "login"
-
+app = create_app()
+logger = app.extensions["logger"]
+utils.log_event(message="TEST")
 # region MODELS
 
 from typing import Optional
@@ -82,7 +57,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pydantic.dataclasses import dataclass
 from dataclasses import fields, field
 from flask_login import UserMixin
-
+from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
+from nfdi_search_engine.infra.jobs.inprocess import InProcessDispatcher
+from nfdi_search_engine.services.user_service import UserService
+from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings
+from nfdi_search_engine.services.tracking_service import TrackingService
+from nfdi_search_engine.services.analytics_service import AnalyticsService
+from nfdi_search_engine.services.tracking_task_proc import TrackingTaskProcessor
+from nfdi_search_engine.web import decorators
+from nfdi_search_engine.common import user
 
 # ...
 @dataclass
@@ -663,186 +646,6 @@ def update_visitor_id():
     print(f"{visitor_id=}")
     utils.update_visitor_id(visitor_id)
     return str(True)
-
-
-@app.route("/results", methods=["GET"])
-@limiter.limit("3 per minute")
-@utils.timeit
-@utils.set_cookies
-def search_results():
-    search_term = request.args.get("txtSearchTerm", "")
-    session["search-term"] = search_term
-    session["back-url"] = request.url
-
-    utils.log_activity(f"loading search results for {search_term}")
-    utils.log_search_term(search_term)
-
-    CATEGORIES = [
-        "publications",
-        "researchers",
-        "resources",
-        "organizations",
-        "events",
-        "projects",
-        "others",
-    ]
-    results = {c: [] for c in CATEGORIES}
-    sources = []
-    failed_sources = []
-    excluded_sources = set()
-
-    if not current_user.is_anonymous:
-        excluded_sources = set((current_user.excluded_data_sources or "").split('; '))
-
-    # Load all the sources from config.py used to harvest data related to search term
-    for module in app.config["DATA_SOURCES"]:
-        if (
-            app.config["DATA_SOURCES"][module]
-            .get("search-endpoint", "")
-            .strip() != ""
-            and module not in excluded_sources
-        ):
-            sources.append(module)
-
-    # for now this wraps the in-reference editing
-    # can be simplified once the refactoring is completed,
-    # including having the modules return values
-    # and handling failing sources outside the retriever
-    def search_source(source, module_name, search_term) -> tuple[Optional[dict], Optional[Exception]]:
-        mod = importlib.import_module(f"sources.{module_name}")
-        partial = {c: [] for c in CATEGORIES}
-        failed_sources = []
-
-        try:
-            mod.search(source, search_term, partial, failed_sources)
-            if failed_sources:
-                return None, Exception(f"Failed to harvest {source}")
-            return partial, None
-        except Exception as e:
-            return None, e
-
-    max_workers = min(16, len(sources) or 1)
-    with ThreadPoolExecutor(max_workers=max_workers) as ex:
-        futures = {
-            ex.submit(search_source, source, app.config["DATA_SOURCES"][source]["module"], search_term): source
-            for source in sources
-        }
-        for fut in as_completed(futures):
-            source = futures[fut]
-            partial, err = fut.result()
-            if err:
-                failed_sources.append(source)
-                logger.warning("Source failed: %s: %s", source, err)
-                continue
-
-            for k in CATEGORIES:
-                results[k].extend(partial[k])
-
-    # sort all the results in each category
-    for k in CATEGORIES:
-        results[k] = utils.sort_search_results(search_term, results[k])
-
-    if len(failed_sources) > 0:
-        flash(
-            f"Following sources could not be harvested: {', '.join(failed_sources)}",
-            category="error",
-        )
-
-    # store the search results in the session
-    session["search-results"] = copy.deepcopy(results)
-
-    # Chatbot - push search results to chatbot server for embeddings generation
-    if app.config["CHATBOT"]["chatbot_enable"]:
-        # Convert a UUID to a 32-character hexadecimal string
-        search_uuid = uuid.uuid4().hex
-        session["search_uuid"] = search_uuid
-        chatbot_server = app.config["CHATBOT"]["chatbot_server"]
-        save_docs_with_embeddings = app.config["CHATBOT"][
-            "endpoint_save_docs_with_embeddings"
-        ]
-        request_url = (
-            f"{chatbot_server}{save_docs_with_embeddings}/{search_uuid}"
-        )
-        results_json = json.dumps(results, default=vars)
-
-        def send_search_results_to_chatbot(request_url: str, payload_json: str):
-            response = requests.post(
-                request_url, 
-                json=payload_json,
-            )
-            response.raise_for_status()
-            print("request completed")
-
-        # create a new daemon thread
-        chatbot_thread = threading.Thread(
-            target=send_search_results_to_chatbot, args=(request_url,results_json), 
-            daemon=True,
-        )
-        # start the new thread
-        chatbot_thread.start()
-
-    # on the first page load, only push top XX records in each category
-    n = int(app.config["NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD"])
-    total_results = {}  # the dict to keep the number of search results
-    displayed_results = {}  # the dict to keep the number of search results currently displayed to the user
-
-    for k, v in results.items():
-        logger.info(f"Got {len(v)} {k}")
-        total_results[k] = len(v)
-        results[k] = v[:n]
-        displayed_results[k] = len(results[k])
-
-    session["total_search_results"] = total_results
-    session["displayed_search_results"] = displayed_results
-
-    template_response = render_template(
-        "results.html",
-        results=results,
-        total_results=total_results,
-        search_term=search_term,
-    )
-    logger.info("search server call completed - after render call")
-
-    return template_response
-
-
-@app.route(
-    "/update_search_result/<string:source>/<string:source_identifier>/<path:doi>",
-    methods=["GET"],
-)
-def update_search_result(source: str, source_identifier: str, doi):
-    module_name = app.config["DATA_SOURCES"][source].get("module", "")
-    resource = importlib.import_module(f"sources.{module_name}").get_resource(
-        source, source_identifier, doi.replace("DOI:", "")
-    )
-    return render_template(
-        f"partials/search-results/resource-block.html", resource=resource
-    )
-
-
-@app.route("/load-more/<string:object_type>", methods=["GET"])
-def load_more(object_type):
-    utils.log_activity(f"loading more {object_type}")
-
-    # define a new results dict for publications to take new publications from the search results stored in the session
-    results = {}
-    results[object_type] = session["search-results"][object_type]
-
-    total_search_results = session["total_search_results"][object_type]
-    displayed_search_results = session["displayed_search_results"][object_type]
-    number_of_records_to_append_on_lazy_load = int(
-        app.config["NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD"]
-    )
-    results[object_type] = results[object_type][
-        displayed_search_results : displayed_search_results
-        + number_of_records_to_append_on_lazy_load
-    ]
-    session["displayed_search_results"][object_type] = (
-        displayed_search_results + number_of_records_to_append_on_lazy_load
-    )
-    return render_template(
-        f"partials/search-results/{object_type}.html", results=results
-    )
 
 
 @app.route("/are-embeddings-generated", methods=["GET"])
@@ -1816,169 +1619,6 @@ def ip_whitelist():
 
 
 # region Control Panel
-
-
-def _check_auth() -> bool:
-    """
-    Check if the request contains valid basic auth credentials.
-    Compared against the DASHBOARD_USERNAME and DASHBOARD_PASSWORD environment variables.
-    """
-
-    dashboard_username = os.environ.get("DASHBOARD_USERNAME")
-    dashboard_password = os.environ.get("DASHBOARD_PASSWORD")
-
-    if not dashboard_username or not dashboard_password:
-        print("Dashboard username or password not set in environment variables.")
-        return False
-
-    auth = request.authorization
-
-    if not auth or auth.type.lower() != "basic":
-        return False
-
-    return hmac.compare_digest(
-        auth.username, dashboard_username
-    ) and hmac.compare_digest(auth.password, dashboard_password)
-
-
-@app.before_request
-def dashboard_auth():
-    """
-    Enforce basic auth for all /control-panel/* routes.
-    """
-
-    # allow OPTIONS requests and non-control-panel paths
-    if request.method == "OPTIONS" or not request.path.startswith("/control-panel"):
-        return
-
-    # gate everything under /control-panel/*
-    if not _check_auth():
-        return Response(
-            "Authentication required",
-            401,
-            {"WWW-Authenticate": 'Basic realm="Control Panel"'},
-        )
-
-
-@app.route("/control-panel/dashboard")
-def dashboard():
-    (
-        current_month_users,
-        current_month_users_count,
-        current_year_users,
-        current_year_users_count,
-    ) = utils.generate_registered_users_summaries()
-    (
-        current_month_visitors,
-        current_month_visitors_count,
-        current_year_visitors,
-        current_year_visitors_count,
-    ) = utils.generate_visitors_summaries()
-    current_year_ua_series, current_year_ua_labels, current_year_ua_count = (
-        utils.generate_user_agent_family_summary()
-    )
-    current_year_os_series, current_year_os_labels, current_year_os_count = (
-        utils.generate_operating_system_family_summary()
-    )
-    current_year_search_terms = utils.generate_search_term_summary()
-    current_year_traffic_registered_users, current_year_traffic_visitors = (
-        utils.generate_traffic_summary()
-    )
-
-    return render_template(f"control-panel/dashboard.html", **locals())
-
-
-@app.route("/control-panel/activity-log", defaults={"report_date_range": None})
-@app.route("/control-panel/activity-log/<report_date_range>")
-def activity_log(report_date_range):
-    print(f"{report_date_range=}")
-    start_date, end_date = utils.parse_report_date_range(report_date_range)
-    user_activities = utils.get_user_activities(start_date, end_date)
-    return render_template(
-        f"control-panel/activity-log.html",
-        user_activities=user_activities,
-        report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}",
-    )
-
-
-@app.route("/control-panel/user-agent-log", defaults={"report_date_range": None})
-@app.route("/control-panel/user-agent-log/<report_date_range>")
-def user_agent_log(report_date_range):
-    print(f"{report_date_range=}")
-    start_date, end_date = utils.parse_report_date_range(report_date_range)
-    user_agents = utils.get_user_agents(start_date, end_date)
-    return render_template(
-        f"control-panel/agent-log.html",
-        user_agents=user_agents,
-        report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}",
-    )
-
-
-@app.route("/control-panel/event-log/<log_type>", defaults={"report_date_range": None})
-@app.route("/control-panel/event-log/<log_type>/<report_date_range>")
-def event_log(log_type, report_date_range):
-    print(f"{report_date_range=}")
-    print(f"{log_type=}")
-    start_date, end_date = utils.parse_report_date_range(report_date_range)
-    events = utils.get_events(start_date, end_date, log_type)
-    return render_template(
-        f"control-panel/event-log.html",
-        events=events,
-        log_type=log_type,
-        report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}",
-    )
-
-
-@app.route("/control-panel/event-log/delete-event", methods=["POST"])
-def delete_event():
-    event_id = request.values.get("event_id")
-    utils.delete_event(event_id)
-    return jsonify({"message": "Event has been deleted"}), 200
-
-
-@app.route("/control-panel/registered-users", defaults={"report_date_range": None})
-@app.route("/control-panel/registered-users/<report_date_range>")
-def registered_users(report_date_range):
-    print(f"{report_date_range=}")
-    start_date, end_date = utils.parse_report_date_range(report_date_range)
-    users = utils.get_users(start_date, end_date)
-    return render_template(
-        f"control-panel/registered-users.html",
-        users=users,
-        report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}",
-    )
-
-
-@app.route("/control-panel/registered-users/delete-user/<string:user_id>")
-def delete_user(user_id):
-    utils.delete_user(user_id)
-    return "User has been deleted"
-
-
-# @app.route('/control-panel/load-test-users')
-# def load_test_users():
-#     for i in range(101,500):
-#         user = User()
-#         user.first_name = "First Name " +str(i)
-#         user.last_name = "Last Name " +str(i)
-#         user.email = "user.email."+str(i)+"@example.com"
-#         user.set_password("1234")
-#         utils.add_user(user)
-
-#     return "users created"
-
-
-@app.route("/control-panel/search-term-log", defaults={"report_date_range": None})
-@app.route("/control-panel/search-term-log/<report_date_range>")
-def search_term_log(report_date_range):
-    print(f"{report_date_range=}")
-    start_date, end_date = utils.parse_report_date_range(report_date_range)
-    search_terms = utils.get_search_terms(start_date, end_date)
-    return render_template(
-        f"control-panel/search-term-log.html",
-        search_terms=search_terms,
-        report_daterange=f"{start_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])} - {end_date.strftime(app.config['DATE_FORMAT_FOR_REPORT'])}",
-    )
 
 
 # endregion
