@@ -107,13 +107,19 @@ def create_app() -> Flask:
         "analytics": analytics_service,
     }
 
+    # register user loader
+    from nfdi_search_engine.web.auth.login import init_login_loader
+    init_login_loader()
+
     # register blueprints
     from nfdi_search_engine.web.public import bp as public_bp
     from nfdi_search_engine.web.search import bp as search_bp
     from nfdi_search_engine.web.control_panel import bp as control_panel_bp
+    from nfdi_search_engine.web.auth import bp as auth_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(search_bp)
     app.register_blueprint(control_panel_bp)
+    app.register_blueprint(auth_bp)
 
     return app

@@ -97,15 +97,6 @@ class User(UserMixin):
     def get_id(self):
         return self.id
 
-
-@login_manager.user_loader
-def load_user(id):
-    user = User()
-    user.id = id
-    user = utils.get_user_by_id(user)
-    return user
-
-
 # endregion
 
 
@@ -122,23 +113,6 @@ from wtforms.validators import (
 )
 from wtforms.fields import SelectMultipleField
 
-
-class LoginForm(FlaskForm):
-    email = StringField("Email", validators=[DataRequired()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    remember_me = BooleanField("Remember Me")
-    submit = SubmitField("Login")
-
-
-class RegistrationForm(FlaskForm):
-    first_name = StringField("First Name", validators=[DataRequired()])
-    last_name = StringField("Last Name", validators=[DataRequired()])
-    email = StringField("Email", validators=[DataRequired(), Email()])
-    password = PasswordField("Password", validators=[DataRequired()])
-    password2 = PasswordField(
-        "Repeat Password", validators=[DataRequired(), EqualTo("password")]
-    )
-    submit = SubmitField("Register")
 
     # def validate_username(self, username):
     #     user = db.session.scalar(sa.select(User).where(
@@ -241,176 +215,6 @@ def ping():
     return jsonify(ping="NFDI4DS Gateway is up and running :) ")
 
 
-@app.route("/login", methods=["GET", "POST"])
-@limiter.limit("1 per minute")
-def login():
-    if current_user.is_authenticated:
-        session["current-user-email"] = current_user.email
-        return redirect(session.get("back-url", url_for("index")))
-        # return redirect(url_for('index'))
-    form = LoginForm()
-    if form.validate_on_submit():
-        user = User()
-        user.email = form.email.data
-        res_flag, user = utils.get_user_by_email(user)
-        if not res_flag or not user.check_password(form.password.data):
-            flash("Invalid email or password", "danger")
-            return redirect(url_for("login"))
-        login_user(user, remember=form.remember_me.data)
-        session["current-user-email"] = user.email
-        next_page = request.args.get("next")
-        if not next_page or urlsplit(next_page).netloc != "":
-            next_page = session.get("back-url", url_for("index"))  # url_for('index')
-        return redirect(next_page)
-    return render_template("login.html", title="Login", form=form)
-
-
-@app.route("/logout")
-@login_required
-def logout():
-    logout_user()
-    flash("You have been logged out.", "info")
-    return redirect(session.get("back-url", url_for("index")))
-
-
-@app.route("/register", methods=["GET", "POST"])
-@limiter.limit("1 per minute")
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for("index"))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User()
-        user.first_name = form.first_name.data
-        user.last_name = form.last_name.data
-        user.email = form.email.data
-        user.set_password(form.password.data)
-        utils.add_user(user)
-        flash("Congratulations, you are now a registered user!", "success")
-        return redirect(url_for("login"))
-    return render_template("register.html", title="Register", form=form)
-
-
-# authization code copied from https://github.com/miguelgrinberg/flask-oauth-example
-@app.route("/authorize/<provider>")
-def oauth2_authorize(provider):
-    if not current_user.is_anonymous:
-        return redirect(url_for("index"))
-
-    provider_data = app.config["OAUTH2_PROVIDERS"].get(provider)
-    if provider_data is None:
-        abort(404)
-
-    # generate a random string for the state parameter
-    session["oauth2_state"] = secrets.token_urlsafe(16)
-
-    # create a query string with all the OAuth2 parameters
-    qs = urlencode(
-        {
-            "client_id": provider_data["client_id"],
-            "redirect_uri": url_for(
-                "oauth2_callback",
-                provider=provider,
-                _external=True,
-                _scheme=os.environ.get("PREFERRED_URL_SCHEME", "https"),
-            ),
-            "response_type": "code",
-            "scope": " ".join(provider_data["scopes"]),
-            "state": session["oauth2_state"],
-        }
-    )
-
-    # redirect the user to the OAuth2 provider authorization URL
-    return redirect(provider_data["authorize_url"] + "?" + qs)
-
-
-@app.route("/callback/<provider>")
-def oauth2_callback(provider):
-    if not current_user.is_anonymous:
-        return redirect(url_for("index"))
-
-    provider_data = app.config["OAUTH2_PROVIDERS"].get(provider)
-    if provider_data is None:
-        abort(404)
-
-    # if there was an authentication error, flash the error messages and exit
-    if "error" in request.args:
-        for k, v in request.args.items():
-            if k.startswith("error"):
-                flash(f"{k}: {v}")
-        return redirect(url_for("index"))
-
-    # make sure that the state parameter matches the one we created in the
-    # authorization request
-    if request.args["state"] != session.get("oauth2_state"):
-        abort(401)
-
-    # make sure that the authorization code is present
-    if "code" not in request.args:
-        abort(401)
-
-    # exchange the authorization code for an access token
-    response = requests.post(
-        provider_data["token_url"],
-        data={
-            "client_id": provider_data["client_id"],
-            "client_secret": provider_data["client_secret"],
-            "code": request.args["code"],
-            "grant_type": "authorization_code",
-            "redirect_uri": url_for(
-                "oauth2_callback",
-                provider=provider,
-                _external=True,
-                _scheme=os.environ.get("PREFERRED_URL_SCHEME", "https"),
-            ),
-        },
-        headers={"Accept": "application/json"},
-    )
-    if response.status_code != 200:
-        abort(401)
-    oauth2_token = response.json().get("access_token")
-    if not oauth2_token:
-        abort(401)
-
-    # use the access token to get the user's email address
-    response = requests.get(
-        provider_data["userinfo"]["url"],
-        headers={
-            "Authorization": "Bearer " + oauth2_token,
-            "Accept": "application/json",
-        },
-    )
-    if response.status_code != 200:
-        abort(401)
-    email = provider_data["userinfo"]["email"](response.json())
-
-    # find or create the user in the database
-    user = User()
-    user.email = email
-    # extract the local part of the email and derive the name from it
-    full_name = email.split("@")[0]
-    full_name_with_spaces = (
-        full_name.replace("-", " ").replace(".", " ").replace("_", " ")
-    )
-    full_name_tokens = full_name_with_spaces.split(" ")
-    if len(full_name_tokens) > 1:
-        user.first_name = full_name_tokens[0]
-        user.last_name = full_name_tokens[1]
-    else:
-        user.first_name = full_name
-    response_flag, user = utils.get_user_by_email(user)
-    if response_flag:  # user (email) already exists
-        if provider != user.oauth_source:
-            user.oauth_source = provider
-            utils.update_user(user)
-    else:
-        utils.add_user(user)
-
-    # log the user in
-    login_user(user)
-    return redirect(url_for("index"))
-
-
 @app.route("/profile", methods=["GET", "POST"])
 @limiter.limit("10 per minute")
 @login_required
@@ -431,7 +235,7 @@ def profile():
         "profile.html",
         title="Profile",
         form=form,
-        back_url=session.get("back-url", url_for("index")),
+        back_url=session.get("back-url", url_for("public.index")),
     )
 
 
@@ -473,7 +277,7 @@ def preferences():
         "preferences.html",
         title="Preferences",
         form=form,
-        back_url=session.get("back-url", url_for("index")),
+        back_url=session.get("back-url", url_for("public.index")),
     )
 
 
@@ -1394,7 +1198,7 @@ def merge_objects(object_list, object_type):
 # endregion
 
 
-# #region IP BAN
+#region IP BAN
 
 # @app.route('/get-block-list', methods=['GET'])
 # @utils.timeit
@@ -1448,7 +1252,7 @@ def merge_objects(object_list, object_type):
 #     ip_ban.ip_whitelist_remove(ip=ip_address)
 #     return f"IP address {ip_address} has been removed from the whitelist."
 
-# #endregion
+#endregion
 
 
 @limiter.request_filter
