@@ -57,7 +57,7 @@
                 <div class="d-inline-block" style="vertical-align: super;">
                     <div class="dropdown">
                         {% if current_user.is_anonymous %}
-                        <a class="btn btn-success px-4 py-0" href="{{ url_for('login') }}">Login</a>
+                        <a class="btn btn-success px-4 py-0" href="{{ url_for('auth.login') }}">Login</a>
                         {% else %}
                         <button class="btn btn-success dropdown-toggle px-4 py-0" type="button" id="dropdownMenuButton2"
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -69,7 +69,7 @@
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Log out</a></li>
                         </ul>
                         {% endif %}
 
