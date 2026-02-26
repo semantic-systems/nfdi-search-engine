@@ -1,0 +1,222 @@
+from __future__ import annotations
+
+import importlib
+from dataclasses import dataclass, asdict
+from typing import Any, Dict, List, Optional, Set, Tuple
+from rank_bm25 import BM25Plus
+
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
+from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
+from nfdi_search_engine.common.search_settings import SearchSettings
+from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
+from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
+from nfdi_search_engine.services.tracking_service import TrackingService
+
+
+CATEGORIES: List[str] = [
+    "publications",
+    "researchers",
+    "resources",
+    "organizations",
+    "events",
+    "projects",
+    "others",
+]
+
+
+@dataclass(frozen=True)
+class SearchContext:
+    search_id: str
+    search_term: str
+    excluded_sources: Set[str]
+    request_meta: RequestMeta
+    user_id: Optional[str] = None
+    object_type: Optional[str] = None
+
+
+@dataclass(frozen=True)
+class SearchPage:
+    search_id: str
+    search_term: str
+    results: Dict[str, List[Any]]
+    total_results: Dict[str, int]
+    failed_sources: List[str]
+
+
+class SearchService:
+    def __init__(
+        self,
+        settings: SearchSettings,
+        chatbot: ChatbotSettings,
+        store: InMemoryTTLResultStore,
+        jobs: JobDispatcher,
+        activity: TrackingService,
+    ) -> None:
+        self.settings = settings
+        self.chatbot = chatbot
+        self.store = store
+        self.jobs = jobs
+        self.activity = activity
+
+    def run_search(self, ctx: SearchContext) -> SearchPage:
+        # async logging and no Flask globals in worker
+        self.activity.log_activity_async(
+            description=f"loading search results for {ctx.search_term}",
+            request_meta=ctx.request_meta,
+            user_id=ctx.user_id,
+        )
+        self.activity.log_search_term_async(
+            search_term=ctx.search_term,
+            request_meta=ctx.request_meta,
+            user_id=ctx.user_id,
+        )
+
+        active_sources: List[str] = []
+        for src in self.settings.data_sources:
+            cfg = self.settings.data_sources[src]
+            has_endpoint = str(cfg.get("search-endpoint", "")).strip() != ""
+            if has_endpoint and src not in ctx.excluded_sources:
+                active_sources.append(src)
+
+        results_full, failed_sources = self._harvest(
+            active_sources,
+            ctx.search_term
+        )
+
+        # sort per category
+        for k in CATEGORIES:
+            results_full[k] = self._sort_search_results(
+                ctx.search_term, results_full[k]
+            )
+
+        total_results = {k: len(v) for k, v in results_full.items()}
+        displayed = {
+            k: min(self.settings.first_page_n, total_results[k])
+            for k in CATEGORIES
+        }
+
+        # store full results + meta in store
+        self.store.put(
+            search_id=ctx.search_id,
+            results=results_full,
+            meta={
+                "search_term": ctx.search_term,
+                "total_results": total_results,
+                "displayed": displayed,
+            },
+            ttl_s=self.settings.results_ttl_s,
+        )
+
+        # chatbot indexing async
+        if self.chatbot.enabled:
+            self.jobs.enqueue("chatbot_index_results", {
+                "search_id": ctx.search_id,
+                "chatbot_server": self.chatbot.server,
+                "endpoint": self.chatbot.endpoint_save_docs_with_embeddings,
+            })
+
+        # first page slice
+        page_results = {
+            k: results_full[k][: self.settings.first_page_n] for k in CATEGORIES
+        }
+
+        return SearchPage(
+            search_id=ctx.search_id,
+            search_term=ctx.search_term,
+            results=page_results,
+            total_results=total_results,
+            failed_sources=failed_sources,
+        )
+
+    def load_more(self, ctx: SearchContext) -> List[Any]:
+        if ctx.object_type not in CATEGORIES:
+            raise KeyError(f"Invalid object_type: {ctx.object_type}")
+
+        rec = self.store.get(ctx.search_id)
+        if rec is None:
+            raise KeyError("search_id not found or expired")
+
+        results_full: Dict[str, List[Any]] = rec.results
+        meta = rec.meta
+
+        total = int(meta["total_results"][ctx.object_type])
+        displayed = int(meta["displayed"][ctx.object_type])
+
+        n = self.settings.lazy_load_n
+        chunk = results_full[ctx.object_type][displayed: min(
+            displayed + n, total)]
+
+        new_displayed = min(displayed + len(chunk), total)
+        meta["displayed"][ctx.object_type] = new_displayed
+        self.store.update_meta(ctx.search_id, {"displayed": meta["displayed"]})
+
+        self.activity.log_activity_async(
+            description=f"loading more {ctx.object_type}",
+            request_meta=ctx.request_meta,
+            user_id=ctx.user_id,
+        )
+
+        return chunk
+
+    def update_search_result_block(self, source: str, source_identifier: str, doi: str) -> Any:
+        if source not in self.settings.data_sources:
+            raise KeyError(f"Unknown source: {source}")
+
+        module_name = self.settings.data_sources[source].get("module", "")
+        if not module_name:
+            raise KeyError(f"No module configured for source: {source}")
+
+        mod = importlib.import_module(f"sources.{module_name}")
+        clean_doi = doi.replace("DOI:", "")
+        return mod.get_resource(source, source_identifier, clean_doi)
+
+    def _harvest(self, sources: List[str], search_term: str) -> Tuple[Dict[str, List[Any]], List[str]]:
+        results: Dict[str, List[Any]] = {c: [] for c in CATEGORIES}
+        failed: List[str] = []
+
+        def search_source(source: str, module_name: str, term: str) -> tuple[Optional[dict], Optional[Exception]]:
+            mod = importlib.import_module(f"sources.{module_name}")
+            partial = {c: [] for c in CATEGORIES}
+            failed_sources: List[str] = []
+            try:
+                mod.search(source, term, partial, failed_sources)
+                if failed_sources:
+                    return None, Exception(f"Failed to harvest {source}")
+                return partial, None
+            except Exception as e:
+                return None, e
+
+        max_workers = min(self.settings.max_workers, len(sources) or 1)
+        with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            futures = {
+                ex.submit(search_source, src, self.settings.data_sources[src]["module"], search_term): src
+                for src in sources
+            }
+            for fut in as_completed(futures):
+                src = futures[fut]
+                partial, err = fut.result()
+                if err:
+                    failed.append(src)
+                    continue
+                for k in CATEGORIES:
+                    results[k].extend(partial[k])
+
+        return results, failed
+
+    def _sort_search_results(self, search_term, search_results) -> list:
+        tokenized_results = [
+            str(result).lower().split(" ")
+            for result in search_results
+        ]
+        if len(tokenized_results) > 0:
+            bm25 = BM25Plus(tokenized_results)
+
+            tokenized_query = search_term.lower().split(" ")
+            doc_scores = bm25.get_scores(tokenized_query)
+
+            for idx, doc_score in enumerate(doc_scores):
+                search_results[idx].rankScore = doc_score
+
+        return sorted(search_results, key=lambda x: x.rankScore, reverse=True)
