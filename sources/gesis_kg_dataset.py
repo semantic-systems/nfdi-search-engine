@@ -69,7 +69,7 @@ class GESIS_KG_Dataset(BaseSource):
         search_result = data_retriever.retrieve_data(source=self.SOURCE,
                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
                                                     search_term=query,
-                                                    failed_sources=failed_sources)
+                                                    failed_sources=failed_sources) or {}
         
         return search_result
 
