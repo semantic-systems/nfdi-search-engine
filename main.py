@@ -191,11 +191,6 @@ class PreferencesForm(FlaskForm):
 # region ROUTES
 
 
-@app.route("/robots.txt")
-def robots():
-    return send_from_directory(app.static_folder, "robots.txt", mimetype="text/plain")
-
-
 @app.route("/ping")
 @limiter.limit("1 per 15 seconds")
 def ping():
@@ -480,21 +475,6 @@ def preferences():
         form=form,
         back_url=session.get("back-url", url_for("index")),
     )
-
-
-@app.route("/")
-@limiter.limit("10 per minute")
-@utils.set_cookies
-def index():
-    session["back-url"] = request.url
-
-    sources = []
-    for module in app.config["DATA_SOURCES"]:
-        sources.append(app.config["DATA_SOURCES"][module].get("logo", {}))
-    # remove duplicates
-    sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
-    template_response = render_template("index.html", sources=sources)
-    return template_response
 
 
 @app.route("/update-visitor-id", methods=["GET"])

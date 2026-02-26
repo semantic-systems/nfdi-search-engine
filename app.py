@@ -108,9 +108,11 @@ def create_app() -> Flask:
     }
 
     # register blueprints
+    from nfdi_search_engine.web.public import bp as public_bp
     from nfdi_search_engine.web.search import bp as search_bp
     from nfdi_search_engine.web.control_panel import bp as control_panel_bp
 
+    app.register_blueprint(public_bp)
     app.register_blueprint(search_bp)
     app.register_blueprint(control_panel_bp)
 
