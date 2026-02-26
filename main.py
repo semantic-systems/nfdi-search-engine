@@ -11,6 +11,9 @@ from urllib.parse import urlsplit, urlencode, quote
 import importlib
 import hmac
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import base64
+import time
+from urllib.parse import quote, unquote
 
 from flask import (
     Flask,
@@ -182,151 +185,6 @@ class PreferencesForm(FlaskForm):
     )
     submit = SubmitField("Save")
 
-
-# endregion
-
-
-# region JINJA2 FILTERS
-from jinja2.filters import FILTERS
-
-from urllib.parse import quote, unquote
-
-FILTERS["quote"] = lambda x: quote(str(x), safe="")
-
-import json
-import time
-import base64
-
-
-# encode the value for the URL
-def url_encode(value: str | bytes | None) -> str:
-    if not value:
-        return ""
-    # ensure str for quote()
-    if isinstance(value, bytes):
-        value = value.decode()
-    encoded = quote(str(value), safe="")  # '/' -> %2F, space -> %20, ...
-    return encoded.replace("%2F", "%252F")  # double-encode slash
-
-
-def format_digital_obj_url(obj, *fields) -> str:
-    """
-    Jinja usage examples
-        {{ resource | format_digital_obj_url('identifier', 'source_id') }}
-        {{ resource | format_digital_obj_url(['identifier', 'source_id']) }}
-    """
-
-    # accept either *fields or a single iterable
-    if len(fields) == 1 and isinstance(fields[0], (list, tuple)):
-        fields = fields[0]
-
-    # implement special cases here
-    def _get(field: str) -> str | None:
-        match field:
-            case "source-id":
-                # if a source identifier is available, use it, otherwise 'na'
-                if getattr(obj, "source", "") and getattr(
-                    obj.source[0], "identifier", ""
-                ):
-                    val = obj.source[0].identifier
-                else:
-                    val = "na"
-            case "source-name":
-                val = obj.source[0].name if getattr(obj, "source", "") else "na"
-            case "doi" | "orcid":
-                val = obj.identifier if getattr(obj, "identifier", "") else "na"
-            case _:
-                val = getattr(obj, field, "")
-        # print(f"{field=}, {val=}")
-        return val
-
-    parts = [f"{f}:{url_encode(_get(f))}" for f in fields if _get(f)]
-
-    current_timestamp = str(time.time())
-    timestamp_signature = (
-        base64.urlsafe_b64encode(current_timestamp.encode())
-        .rstrip(b"=")
-        .decode("utf-8")
-    )
-    parts.append(f"ts:{timestamp_signature}")
-
-    return "/".join(parts)
-
-
-def get_researcher_url(person, external=True) -> str:
-    """
-    Jinja usage example
-        {{ person | get_researcher_url }}
-    """
-
-    if getattr(person, "additionalType", "").lower() != "person":
-        return ""
-    if not getattr(person, "identifier", None):
-        return ""
-    orcid_id = str(person.identifier).split("/")[-1]
-
-    if (
-        getattr(person, "source", None)
-        and person.source
-        and getattr(person.source[0], "identifier", None)
-    ):
-        src_name = person.source[0].name
-        src_id = person.source[0].identifier
-    else:
-        src_name = "na"  # source name is 'na' if not available
-        src_id = orcid_id
-
-    current_timestamp = str(time.time())
-    timestamp_signature = (
-        base64.urlsafe_b64encode(current_timestamp.encode())
-        .rstrip(b"=")
-        .decode("utf-8")
-    )
-
-    return url_for(
-        "researcher_details",
-        source_name=f"source-name:{url_encode(src_name)}",
-        source_id=f"source-id:{url_encode(src_id)}",
-        orcid=f"orcid:{url_encode(orcid_id)}",
-        ts=f"ts:{url_encode(timestamp_signature)}",
-        _external=external,
-    )
-
-
-# Flask‐Jinja registration
-FILTERS["get_researcher_url"] = get_researcher_url
-FILTERS["format_digital_obj_url"] = format_digital_obj_url
-
-
-def format_authors_for_citations(value):
-    authors = ""
-    for author in value:
-        authors += author.name + " and "
-    return authors.rstrip(" and ") + "."
-
-
-FILTERS["format_authors_for_citations"] = format_authors_for_citations
-
-import re
-
-
-def regex_replace(s, find, replace):
-    """A less non-optimal implementation of a regex filter"""
-    if s is None:
-        s_str = ""
-    elif isinstance(s, (bytes, bytearray)):
-        s_str = s.decode("utf-8", errors="replace")
-    else:
-        s_str = str(s)
-
-    try:
-        out = re.sub(find, replace, s_str)
-    except re.error:
-        out = s_str
-
-    return out
-
-FILTERS["regex_replace"] = regex_replace
 
 # endregion
 

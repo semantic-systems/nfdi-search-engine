@@ -9,6 +9,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
 from nfdi_search_engine.extensions import limiter, session_ext, login_manager
+from nfdi_search_engine.web.filters import register_filters
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
@@ -30,6 +31,9 @@ def create_app() -> Flask:
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1)
 
     app.config.from_object(Config)
+
+    # register jinja filters
+    register_filters(app)
 
     # Flask-Session
     session_ext.init_app(app)
