@@ -375,11 +375,11 @@ class Config:
         },
     }
 
-    # ELASTIC = {
-    #     "server": os.environ.get('ELASTIC_SERVER',""),
-    #     "username": os.environ.get('ELASTIC_USERNAME',""),
-    #     "password": os.environ.get('ELASTIC_PASSWORD',""),
-    # }
+    ELASTIC = {
+        "server": os.environ.get('ELASTIC_SERVER',""),
+        "username": os.environ.get('ELASTIC_USERNAME',""),
+        "password": os.environ.get('ELASTIC_PASSWORD',""),
+    }
 
     OAUTH2_PROVIDERS = {
         # Google OAuth 2.0 documentation:
