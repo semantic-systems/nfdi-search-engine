@@ -15,7 +15,7 @@
         </li>
 
         <li class="pc-item">
-          <a href="{{url_for('dashboard')}}" class="pc-link">
+          <a href="{{url_for('control_panel.dashboard')}}" class="pc-link">
             <span class="pc-micon"><i class="bi bi-speedometer"></i></span>
             <span class="pc-mtext">Dashboard</span></a>
         </li>
@@ -25,23 +25,23 @@
           <i class="bi bi-window-stack"></i>
         </li>
         <li class="pc-item">
-          <a href="{{url_for('registered_users')}}" class="pc-link"><span class="pc-micon"><i
+          <a href="{{url_for('control_panel.registered_users')}}" class="pc-link"><span class="pc-micon"><i
                 class="bi bi-people"></i></span><span class="pc-mtext">Registered Users</span></a>
         </li>
         <li class="pc-item">
-          <a href="{{url_for('activity_log')}}" class="pc-link"><span class="pc-micon"><i
+          <a href="{{url_for('control_panel.activity_log')}}" class="pc-link"><span class="pc-micon"><i
                 class="bi bi-calendar3"></i></span><span class="pc-mtext">Actvity Log</span></a>
         </li>
         <li class="pc-item">
-          <a href="{{url_for('search_term_log')}}" class="pc-link"><span class="pc-micon"><i
+          <a href="{{url_for('control_panel.search_term_log')}}" class="pc-link"><span class="pc-micon"><i
                 class="bi bi-search"></i></span><span class="pc-mtext">Search Term Log</span></a>
         </li>
         <li class="pc-item">
-          <a href="{{url_for('user_agent_log')}}" class="pc-link"><span class="pc-micon"><i
+          <a href="{{url_for('control_panel.user_agent_log')}}" class="pc-link"><span class="pc-micon"><i
                 class="bi bi-calendar3"></i></span><span class="pc-mtext">Agent Log</span></a>
         </li>
         <li class="pc-item">
-          <a href="{{url_for('event_log', log_type='error')}}" class="pc-link"><span class="pc-micon"><i
+          <a href="{{url_for('control_panel.event_log', log_type='error')}}" class="pc-link"><span class="pc-micon"><i
                 class="bi bi-calendar3"></i></span><span class="pc-mtext">Event Log</span><span class="pc-arrow"></a>
         </li>
       </ul>

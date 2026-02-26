@@ -22,7 +22,7 @@
                     <input type="text" id="report-daterange" name="report-daterange" value="{{report_daterange}}"
                         aria-label="" class="form-control" style="cursor: pointer; width: 250px;" />
                     &nbsp;
-                    <a href="{{url_for('registered_users')}}" id="btn_refresh" class="btn btn-primary rounded"><span
+                    <a href="{{url_for('control_panel.registered_users')}}" id="btn_refresh" class="btn btn-primary rounded"><span
                             class="bi bi-arrow-repeat"></span></a>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                         <td>{{ user['_source']['last_name'] }}</td>
                         <td>{{ user['_source']['email'] }}</td>
                         <td>{{ user['_source']['oauth_source'] }}</td>
-                        <td><a href="{{url_for('delete_user', user_id=user['_id'])}}" target="_blank">Delete</a>
+                        <td><a href="{{url_for('control_panel.delete_user', user_id=user['_id'])}}" target="_blank">Delete</a>
                         </td>
                     </tr>
                     {% endfor %}
