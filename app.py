@@ -117,11 +117,13 @@ def create_app() -> Flask:
     from nfdi_search_engine.web.control_panel import bp as control_panel_bp
     from nfdi_search_engine.web.auth import bp as auth_bp
     from nfdi_search_engine.web.tracking import bp as tracking_bp
+    from nfdi_search_engine.web.account import bp as account_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(search_bp)
     app.register_blueprint(control_panel_bp)
     app.register_blueprint(auth_bp)
     app.register_blueprint(tracking_bp)
+    app.register_blueprint(account_bp)
 
     return app

@@ -64,8 +64,8 @@
                             Hi, {{ current_user.first_name }}!
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton2">
-                            <li><a class="dropdown-item active" href="{{ url_for('profile') }}">Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('preferences') }}">Preferences</a></li>
+                            <li><a class="dropdown-item active" href="{{ url_for('account.profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('account.preferences') }}">Preferences</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
