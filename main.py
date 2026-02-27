@@ -230,15 +230,6 @@ def preferences():
     )
 
 
-@app.route("/update-visitor-id", methods=["GET"])
-@utils.timeit
-def update_visitor_id():
-    visitor_id = request.args.get("visitor_id")
-    print(f"{visitor_id=}")
-    utils.update_visitor_id(visitor_id)
-    return str(True)
-
-
 @app.route("/are-embeddings-generated", methods=["GET"])
 @utils.timeit
 def are_embeddings_generated():
@@ -760,7 +751,6 @@ def generate_researcher_about_me(orcid):
     "/resource-details/<string:source_name>/<string:source_id>/<string:doi>/<string:ts>",
     methods=["GET"],
 )
-@utils.handle_exceptions
 def resource_details(source_name, source_id, doi, ts):
     source_name = (
         unquote(source_name.split(":", 1)[1])
