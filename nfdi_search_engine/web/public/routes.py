@@ -3,6 +3,7 @@ from flask import (
     current_app,
     request,
     session,
+    jsonify,
     send_from_directory,
 )
 
@@ -31,3 +32,9 @@ def index():
     template_response = render_template("index.html", sources=sources)
 
     return template_response
+
+
+@bp.route("/ping")
+@limiter.limit("1 per 15 seconds")
+def ping():
+    return jsonify(ping="NFDI4DS Gateway is up and running :) ")

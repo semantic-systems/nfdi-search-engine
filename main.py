@@ -164,57 +164,6 @@ class PreferencesForm(FlaskForm):
 
 # region ROUTES
 
-
-@app.route("/ping")
-@limiter.limit("1 per 15 seconds")
-def ping():
-    # check if all the environment variables are set
-    for env_variable in [
-        "SECRET_KEY",
-        "IEEE_API_KEY",
-        "CLIENT_ID_GOOGLE",
-        "CLIENT_SECRET_GOOGLE",
-        "CLIENT_ID_GITHUB",
-        "CLIENT_SECRET_GITHUB",
-        "CLIENT_ID_ORCID",
-        "CLIENT_SECRET_ORCID",
-        "OPENAI_API_KEY",
-        "LLAMA3_USERNAME",
-        "LLAMA3_PASSWORD",
-        "ELASTIC_SERVER",
-        "ELASTIC_USERNAME",  #'ELASTIC_PASSWORD',
-        "CHATBOT_SERVER",
-    ]:
-        if os.environ.get(env_variable, "") == "":
-            return make_response(
-                render_template(
-                    "error.html",
-                    error_message=f"Environment variable '{env_variable}' is not set.",
-                )
-            )
-
-    # check if the chatbot flag is enabled
-    if app.config["CHATBOT"]["chatbot_enable"] == False:
-        return make_response(
-            render_template("error.html", error_message=f"chatbot is not enabled.")
-        )
-
-    # check if all the indices exist; if any of the indices doesn't exist, create it
-    for idx in utils.ES_Index:
-        if not utils.es_client.indices.exists(index=idx.name):
-            try:
-                utils.es_client.indices.create(index=idx.name)
-            except Exception as ex:
-                return make_response(
-                    render_template(
-                        "error.html",
-                        error_message=f"Elastic error while creating '{idx.name}': {ex.error}",
-                    )
-                )
-
-    return jsonify(ping="NFDI4DS Gateway is up and running :) ")
-
-
 @app.route("/profile", methods=["GET", "POST"])
 @limiter.limit("10 per minute")
 @login_required
