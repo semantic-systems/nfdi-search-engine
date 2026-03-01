@@ -1,10 +1,11 @@
 import re
-from typing import Iterable, Dict, Any
+from typing import Iterable, Dict, Any, List
 
-from objects import thing, Article, Author
+from objects import thing, Article, Author, Dataset
 from sources import data_retriever
 from sources.base import BaseSource
 from main import app
+import requests
 
 import utils
 
@@ -55,10 +56,101 @@ class Resodate(BaseSource):
 
         return hits
 
+    def _ensure_list(self, value) -> List:
+        """
+        Normalize value to a list for resilient handling of string/list fields.
+        """
+        if value is None:
+            return []
+        if isinstance(value, list):
+            return value
+        return [value]
+
+    @utils.handle_exceptions
+    def map_dataset_hit(self, hit: Dict[str, Any]) -> Dataset:
+        """
+        Map a single dataset hit (with _source and _id) to a Dataset object.
+        """
+        hit_source = hit.get("_source", {})
+
+        dataset = Dataset()
+        dataset.name = hit_source.get("name", "")
+        dataset.url = "https://resodate.org/resources/" + hit.get("_id", "")
+        dataset.identifier = hit_source.get("id", "")
+
+        # description / abstract
+        dataset.description = utils.remove_html_tags(hit_source.get("description", ""))
+        dataset.abstract = dataset.description
+
+        # datePublished preference: datePublished -> mainEntityOfPage[0].dateCreated/dateModified
+        date_published = hit_source.get("datePublished", "")
+        if not date_published:
+            main_entity = hit_source.get("mainEntityOfPage") or []
+            if isinstance(main_entity, dict):
+                main_entity = [main_entity]
+            if main_entity:
+                first_entity = main_entity[0] or {}
+                date_published = (
+                    first_entity.get("dateCreated")
+                    or first_entity.get("dateModified")
+                    or ""
+                )
+        if date_published:
+            dataset.datePublished = utils.parse_date(date_published)
+
+        dataset.license = hit_source.get("license", {}).get("id", "")
+        dataset.image = hit_source.get("image", "")
+
+        # keywords and languages (string or list)
+        for keyword in self._ensure_list(hit_source.get("keywords")):
+            dataset.keywords.append(keyword)
+
+        for language in self._ensure_list(hit_source.get("inLanguage")):
+            dataset.inLanguage.append(language)
+
+        # encoding: pick first with contentUrl
+        encodings = hit_source.get("encoding")
+        encoding_list: List[Dict[str, Any]] = []
+        if isinstance(encodings, dict):
+            encoding_list = [encodings]
+        elif isinstance(encodings, list):
+            encoding_list = encodings
+
+        for encoding in encoding_list:
+            content_url = encoding.get("contentUrl", "")
+            if content_url:
+                dataset.encoding_contentUrl = content_url
+                dataset.encodingFormat = encoding.get("encodingFormat", "")
+                break
+
+        # creators mapped similar to publications
+        for author in hit_source.get("creator", []):
+            if author.get("type") == "Person":
+                _author = Author()
+                _author.additionalType = "Person"
+                _author.name = author.get("name", "")
+                _author.identifier = author.get("id", "").replace(
+                    "https://orcid.org/", ""
+                )
+                author_source = thing(
+                    name=self.SOURCE,
+                    identifier=_author.identifier,
+                )
+                _author.source.append(author_source)
+                dataset.author.append(_author)
+
+        _source = thing()
+        _source.name = self.SOURCE
+        _source.identifier = hit.get("_id", "")
+        _source.url = dataset.url
+        dataset.source.append(_source)
+
+        return dataset
+
     @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
-        Map a single hit (with _source and _id) to an Article from objects.py.
+        Map a single non-dataset hit (with _source and _id) to an Article from objects.py.
         """
         hit_source = hit.get("_source", {})
 
@@ -105,21 +197,24 @@ class Resodate(BaseSource):
 
         publication.image = hit_source.get("image", "")
 
-        keywords = hit_source.get("keywords")
-        if keywords:
-            for keyword in keywords:
-                publication.keywords.append(keyword)
+        # keywords and languages (string or list)
+        for keyword in self._ensure_list(hit_source.get("keywords")):
+            publication.keywords.append(keyword)
 
-        languages = hit_source.get("inLanguage")
-        if languages:
-            for language in languages:
-                publication.inLanguage.append(language)
+        for language in self._ensure_list(hit_source.get("inLanguage")):
+            publication.inLanguage.append(language)
 
+        # encoding can be missing or list/dict
         encodings = hit_source.get("encoding")
-        if encodings:
-            for encoding in encodings:
-                publication.encoding_contentUrl = encoding.get("contentUrl", "")
-                publication.encodingFormat = encoding.get("encodingFormat", "")
+        encoding_list: List[Dict[str, Any]] = []
+        if isinstance(encodings, dict):
+            encoding_list = [encodings]
+        elif isinstance(encodings, list):
+            encoding_list = encodings
+
+        for encoding in encoding_list:
+            publication.encoding_contentUrl = encoding.get("contentUrl", "")
+            publication.encodingFormat = encoding.get("encodingFormat", "")
 
         return publication
 
@@ -132,16 +227,144 @@ class Resodate(BaseSource):
         failed_sources: list,
     ) -> None:
         """
-        Fetch from Resodate, extract hits, map to Articles, and append to results.
+        Fetch from Resodate, extract hits, map to Articles/Datasets, and append to results.
         """
         raw = self.fetch(search_term, failed_sources)
         if raw is None:
             return
 
         hits = self.extract_hits(raw)
+        publication_count = 0
+        dataset_count = 0
+
         for hit in hits:
-            publication = self.map_hit(hit)
-            results["publications"].append(publication)
+            hit_source = hit.get("_source", {})
+            hit_type = hit_source.get("type", [])
+            type_list = self._ensure_list(hit_type)
+            type_list_lower = [str(t).lower() for t in type_list]
+
+            if "dataset" in type_list_lower:
+                dataset = self.map_dataset_hit(hit)
+                results["resources"].append(dataset)
+                dataset_count += 1
+            else:
+                publication = self.map_hit(hit)
+                results["publications"].append(publication)
+                publication_count += 1
+
+        utils.log_event(
+            type="info",
+            message=(
+                f"{self.SOURCE} - mapped {publication_count} publications and "
+                f"{dataset_count} datasets"
+            ),
+        )
+
+    @utils.handle_exceptions
+    def get_resource(
+        self,
+        source_name: str,
+        source_id: str,
+        doi: str,
+    ) -> Dataset | None:
+        """
+        Fetch detailed resource metadata for a single RESODATE resource.
+
+        Uses the RESODATE metadata index with an ids query on the ES document id.
+        """
+        api_url = "https://resodate.org/api/search/resource_metadata/_search"
+
+        body = {
+            "size": 1,
+            "query": {
+                "ids": {
+                    "values": [source_id],
+                }
+            },
+        }
+
+        headers = {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "User-Agent": app.config.get(
+                "REQUEST_HEADER_USER_AGENT", "nfdi-search-engine"
+            ),
+        }
+
+        try:
+            response = requests.post(
+                api_url,
+                json=body,
+                headers=headers,
+                timeout=int(app.config.get("REQUEST_TIMEOUT", 100)),
+            )
+        except requests.exceptions.Timeout:
+            utils.log_event(
+                type="error",
+                message=(
+                    f"{self.SOURCE} - details request timed out: "
+                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                ),
+            )
+            return None
+        except Exception as ex:
+            utils.log_event(
+                type="error",
+                message=(
+                    f"{self.SOURCE} - error requesting details: "
+                    f"source_name={source_name}, source_id={source_id}, doi={doi}, "
+                    f"error={str(ex)}"
+                ),
+            )
+            return None
+
+        if response.status_code != 200:
+            utils.log_event(
+                type="error",
+                message=(
+                    f"{self.SOURCE} - details API error {response.status_code}: "
+                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                ),
+            )
+            return None
+
+        try:
+            data = response.json()
+        except ValueError:
+            utils.log_event(
+                type="error",
+                message=(
+                    f"{self.SOURCE} - invalid JSON in details response: "
+                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                ),
+            )
+            return None
+
+        hits_container = data.get("hits", {})
+        hits = hits_container.get("hits", [])
+
+        if not hits:
+            utils.log_event(
+                type="error",
+                message=(
+                    f"{self.SOURCE} - no details hit found: "
+                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                ),
+            )
+            return None
+
+        hit = hits[0]
+        dataset = self.map_dataset_hit(hit)
+
+        utils.log_event(
+            type="info",
+            message=(
+                f"{self.SOURCE} - retrieved resource details: "
+                f"source_name={source_name}, source_id={source_id}, doi={doi}"
+            ),
+        )
+
+        return dataset
 
 
 @utils.handle_exceptions
@@ -155,3 +378,11 @@ def search(
     Entrypoint to search Resodate publications.
     """
     Resodate().search(source, search_term, results, failed_sources)
+
+
+@utils.handle_exceptions
+def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
+    """
+    Entrypoint to retrieve RESODATE resource details.
+    """
+    return Resodate().get_resource(source, source_id, doi)
