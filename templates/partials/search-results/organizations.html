@@ -96,9 +96,9 @@
 
 <div id="div_load_more_organizations" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.organizations < session.total_search_results.organizations %} <div>
-            Displaying top {{session.displayed_search_results.organizations }} digital objects out of {{
-            session.total_search_results.organizations }}
+        {% if displayed_results.organizations < total_results.organizations %} <div>
+            Displaying top {{displayed_results.organizations }} digital objects out of {{
+            total_results.organizations }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more digital objects"

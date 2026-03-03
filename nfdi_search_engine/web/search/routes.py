@@ -85,6 +85,7 @@ def search_results():
         "results.html",
         results=page.results,
         total_results=page.total_results,
+        displayed_results=page.displayed_results,
         search_term=page.search_term,
     )
 
@@ -127,7 +128,7 @@ def load_more(object_type: str):
 
     svc = _get_service()
     try:
-        chunk = svc.load_more(
+        chunk, displayed, total = svc.load_more(
             SearchContext(
                 search_id=search_id,
                 search_term="",
@@ -137,6 +138,14 @@ def load_more(object_type: str):
             ))
     except KeyError:
         abort(404)
+    
+    displayed_results = {object_type: displayed}
+    total_results = {object_type: total}
 
     results = {object_type: chunk}
-    return render_template(f"partials/search-results/{object_type}.html", results=results)
+    return render_template(
+        f"partials/search-results/{object_type}.html", 
+        results=results,
+        displayed_results=displayed_results,
+        total_results=total_results,
+    )

@@ -120,9 +120,9 @@
 
 <div id="div_load_more_others" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.others < session.total_search_results.others %} <div>
-            Displaying top {{session.displayed_search_results.others }} digital objects out of {{
-            session.total_search_results.others }}
+        {% if displayed_results.others < total_results.others %} <div>
+            Displaying top {{displayed_results.others }} digital objects out of {{
+            total_results.others }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more digital objects"

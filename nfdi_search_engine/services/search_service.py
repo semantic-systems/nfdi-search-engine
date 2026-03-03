@@ -41,6 +41,7 @@ class SearchPage:
     search_id: str
     search_term: str
     results: Dict[str, List[Any]]
+    displayed_results: Dict[str, int]
     total_results: Dict[str, int]
     failed_sources: List[str]
 
@@ -126,6 +127,7 @@ class SearchService:
             search_id=ctx.search_id,
             search_term=ctx.search_term,
             results=page_results,
+            displayed_results=displayed,
             total_results=total_results,
             failed_sources=failed_sources,
         )
@@ -158,7 +160,7 @@ class SearchService:
             user_id=ctx.user_id,
         )
 
-        return chunk
+        return chunk, new_displayed, total
 
     def update_search_result_block(self, source: str, source_identifier: str, doi: str) -> Any:
         if source not in self.settings.data_sources:
