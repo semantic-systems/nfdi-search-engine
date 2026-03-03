@@ -329,6 +329,20 @@ class Config:
             "module": "gepris",
             "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         },
+        "CODALAB": {
+            "logo": {
+                "name": "CODALAB",
+                "link": "https://worksheets.codalab.org/",
+                "src": "codalab-logo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "codalab",
+            "search-endpoint": "https://worksheets.codalab.org/rest/bundles?include_display_metadata=1&include=owner&.limit="
+                            + str(NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT)
+                            + "&keywords=",
+            "get-resource-endpoint": "https://worksheets.codalab.org/rest/bundles/",
+        },
     }
 
     LLMS = {

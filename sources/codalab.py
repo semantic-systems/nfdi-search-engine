@@ -1,122 +1,179 @@
-import requests
-import datetime
-import logging
-import os
-from objects import Dataset, Person
+from typing import Dict, Any, Iterable, List
+
 import utils
+from config import Config
+from sources.base import BaseSource
+from sources import data_retriever
+from objects import Dataset, Person, Author, thing
 
-logger = logging.getLogger('nfdi_search_engine')
+
+class Codalab(BaseSource):
+    """
+    Codalab adapter: fetches dataset bundles from worksheets.codalab.org
+    and maps them to Dataset objects.
+    """
+
+    SOURCE = "CODALAB"
+    SEARCH_ENDPOINT = Config.DATA_SOURCES[SOURCE].get("search-endpoint", "")
+    RESOURCE_ENDPOINT = Config.DATA_SOURCES[SOURCE].get("get-resource-endpoint", "")
+
+    def fetch(self, search_term: str, failed_sources: list = []) -> Dict[str, Any]:
+        """
+        Fetch raw JSON from Codalab bundles API.
+        """
+        return data_retriever.retrieve_data(
+            source=self.SOURCE,
+            base_url=self.SEARCH_ENDPOINT,
+            search_term=search_term,
+            failed_sources=failed_sources,
+        ) or {}
+
+    def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
+        """
+        Extract bundle hits from JSON API response.
+        """
+        if not raw:
+            return []
+
+        bundles = raw.get("data", [])
+        self._included = raw.get("included", [])
+
+        hits = [b for b in bundles if b.get("type") == "bundles"]
+
+        utils.log_event(
+            type="info",
+            message=f"{self.SOURCE} - {len(hits)} bundle(s) matched",
+        )
+
+        return hits
+
+    def _resolve_author(self, bundle: Dict[str, Any]) -> List[Author]:
+        """
+        Resolve owner relationship to Author object.
+        """
+        authors = []
+
+        owner_rel = bundle.get("relationships", {}).get("owner", {}).get("data")
+        if not owner_rel:
+            return authors
+
+        owner_id = owner_rel.get("id")
+        included = getattr(self, "_included", [])
+
+        for entity in included:
+            if entity.get("id") != owner_id:
+                continue
+
+            attrs = entity.get("attributes", {})
+            author = Author()
+            author.additionalType = "Person"
+            author.identifier = owner_id
+
+            author.name = (
+                attrs.get("user_name")
+                or attrs.get("first_name")
+                or attrs.get("last_name")
+                or ""
+            )
+
+            author_source = thing(
+                name=self.SOURCE,
+                identifier=owner_id,
+            )
+            author.source.append(author_source)
+
+            authors.append(author)
+            break
+
+        return authors
+
+    def map_hit(self, source_name: str, hit: Dict[str, Any]) -> Dataset:
+        """
+        Map Codalab bundle to Dataset object.
+        """
+        attrs = hit.get("attributes", {})
+        metadata = attrs.get("metadata", {})
+
+        dataset = Dataset()
+
+        dataset.identifier = hit.get("id", "")
+        dataset.name = metadata.get("name", "")
+        dataset.additionalType = "DATASET"
+
+        dataset.description = metadata.get("description", "")
+        dataset.abstract = dataset.description
+        dataset.license = metadata.get("license", "")
+
+        created_ts = metadata.get("created")
+        if created_ts:
+            dataset.datePublished = utils.parse_date(created_ts)
+
+        dataset.url = f"https://worksheets.codalab.org/bundles/{dataset.identifier}"
+
+        dataset.author = self._resolve_author(hit)
+
+        _source = thing()
+        _source.name = source_name
+        _source.identifier = dataset.identifier
+        _source.url = dataset.url
+        dataset.source.append(_source)
+
+        return dataset
+
+    def search(
+        self,
+        source_name: str,
+        search_term: str,
+        results: dict,
+        failed_sources: list,
+    ) -> None:
+        """
+        Search Codalab and append mapped datasets to results["resources"].
+        """
+        raw = self.fetch(search_term, failed_sources)
+
+        if not raw:
+            return
+
+        hits = self.extract_hits(raw)
+
+        for hit in hits:
+            dataset = self.map_hit(self.SOURCE, hit)
+            results["resources"].append(dataset)
+
+    def get_resource(self, identifier: str) -> Dataset | None:
+        """
+        Retrieve a single Codalab bundle by UUID.
+        """
+        raw = data_retriever.retrieve_object(
+            source=self.SOURCE,
+            base_url=self.RESOURCE_ENDPOINT,
+            identifier=identifier,
+            quote=False,
+        )
+
+        if not raw:
+            utils.log_event(
+                type="error",
+                message=f"{self.SOURCE} - failed to retrieve dataset details",
+            )
+            return None
+
+        dataset = self.map_hit(self.SOURCE, raw.get("data", {}))
+
+        utils.log_event(
+            type="info",
+            message=f"{self.SOURCE} - retrieved dataset details",
+        )
+
+        return dataset
 
 
-@utils.timeit
-def search(search_term, results):
+@utils.handle_exceptions
+def search(source: str, search_term: str, results, failed_sources) -> None:
+    Codalab().search(source, search_term, results, failed_sources)
 
-    url = "https://worksheets.codalab.org/rest/bundles"
-    limit_per_page = 10
-    params = {
-        "keywords": search_term,
-        "include_display_metadata": 1,
-        "include": "owner",
-        ".limit": limit_per_page
-    }
-    # Send an HTTP GET request to the API
-    # response = requests.get(api_endpoint, params=params)
-    response = requests.get(url, timeout=3)
 
-    # Check if the request was successful (status code 200)
-    if response.status_code == 200:
-        # Parse the JSON response
-        response_data = response.json()
-
-        logger.debug(f'Codalab response status code: {response.status_code}')
-        logger.debug(f'Codalab response headers: {response.headers}')
-
-        # Extract the 'data' list from the response
-        bundles_data = response_data.get("data", [])
-        bundles_includes = response_data.get("included", [])
-
-        if bundles_data:
-            # Loop through each bundle in 'data' and extract the required information
-            for bundle in bundles_data:
-                type = bundle['type']
-                if type == "bundles":
-                    resources = Dataset()
-                    resources.source = 'CODALAB'
-                    # Extract the bundle information
-                    resources.identifier = bundle['id']
-                    resources.name = bundle["attributes"]["metadata"]["name"]
-                    resources.license = bundle.get("attributes", {}).get("metadata", {}).get("license", "")
-                    resources.description  = bundle.get("attributes", {}).get("metadata", []).get("description", "")
-                    date_created = bundle.get("attributes", {}).get("metadata", []).get("created")
-                    # Check if date_created is not None before attempting to convert to a timestamp
-                    if date_created is not None:
-                        resources.dateCreated = datetime.datetime.fromtimestamp(date_created).strftime('%Y-%m-%d %H:%M:%S')
-                    else:
-                        # Handle the case when date_created is None set it to empty
-                        resources.dateCreated = ''  
-                    
-                    # Check if bundle is not None before accessing its keys
-                    if bundle is not None:
-                    # Check if relationships is not None before accessing its keys
-                        relationships = bundle.get("relationships")
-                        if relationships is not None:
-                            # Check if owner is not None before accessing its keys
-                            owner = relationships.get("owner")
-                            if owner is not None:
-                                # Check if data is not None before accessing its keys
-                                data = owner.get("data")
-                                if data is not None:
-                                    author_owner_id = data.get("id", "")
-                                else:
-                                    author_owner_id = ""  
-                            else:
-                                author_owner_id = ""  
-                        else:
-                            author_owner_id = ""  
-                    else:
-                        author_owner_id = ""  
-
-                    # link URL to the bundle
-                    resources.url = f"https://worksheets.codalab.org/bundles/{resources.identifier}"
-
-                    parent_uuid = None
-                    # Check if the bundle has dependencies
-                    if bundle.get("attributes", {}).get("dependencies"):
-                        parent_uuid = bundle["attributes"]["dependencies"][0]["parent_uuid"]
-                        parent_uuid_url = f"https://worksheets.codalab.org/bundles/{parent_uuid}"
-
-                    # Find the corresponding owner information from 'bundles_includes' using the author_owner_id
-                    for include in bundles_includes:
-                        if include.get('id') == author_owner_id:
-                            author = Person()
-                            author.additionalType = "Person"
-
-                            owner_user_name = include.get('attributes', {}).get('user_name', "")
-                            owner_givenName = include.get('attributes', {}).get('first_name', "")
-                            owner_familyName = include.get('attributes', {}).get('last_name', "")
-
-                            # Check if owner_user_name is available and not empty
-                            if owner_user_name:
-                                author.name = owner_user_name
-                            # Check if owner_familyName is available and not empty
-                            elif owner_familyName:
-                                author.name = owner_familyName
-                            # Check if owner_givenName is available and not empty
-                            elif owner_givenName:
-                                author.name = owner_givenName
-                            else:
-                                # If none of the above conditions are met, set author_name to an empty string
-                                author.name = ""
-
-                            # append the author_name to the author object
-                            resources.author.append(author)
-
-                    results['resources'].append(resources)
-
-            logger.info(f'Got {len(results)} records from Codalab')
-        else:
-            # Log an error message when the response is not successful
-            logger.error(f'Codalab response status code: {response.status_code}. No data for the search term found.')
-    else:
-    # Log an error message when the response is not successful
-        logger.error(f'Codalab response status code: {response.status_code}. Unable to fetch data from the API.')
+@utils.handle_exceptions
+def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
+    return Codalab().get_resource(source_id)
