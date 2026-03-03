@@ -292,19 +292,19 @@ class Config:
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        # "IEEE": {
-        #     "logo": {
-        #         "name": "IEEE",
-        #         "link": "https://ieeexplore.ieee.org/",
-        #         "src": "ieee.gif",
-        #         "width": "w-100",
-        #         "height": "h-70",
-        #     },
-        #     "module": "ieee",
-        #     "search-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-        #     "get-publication-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?doi=",
-        #     "api-key-param": "apikey",
-        # },
+        "IEEE": {
+            "logo": {
+                "name": "IEEE",
+                "link": "https://ieeexplore.ieee.org/",
+                "src": "ieee.gif",
+                "width": "w-100",
+                "height": "h-70",
+            },
+            "module": "ieee",
+            "search-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+            "get-publication-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?doi=",
+            "api-key-param": "apikey",
+        },
         # "EUDAT": {
         #     "module": "eudat",
         #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
