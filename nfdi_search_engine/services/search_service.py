@@ -88,6 +88,8 @@ class SearchService:
 
         # sort per category
         for k in CATEGORIES:
+            # filter empty
+            results_full[k] = [r for r in results_full[k] if r is not None]
             results_full[k] = self._sort_search_results(
                 ctx.search_term, results_full[k]
             )

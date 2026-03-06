@@ -593,7 +593,7 @@ def resource_details(source_name, source_id, doi, ts):
                 f"error={str(ex)}"
             ),
         )
-        return redirect(url_for("index"))
+        return redirect(url_for("public.index"))
 
     if resource is None:
         utils.log_event(
@@ -603,7 +603,7 @@ def resource_details(source_name, source_id, doi, ts):
                 f"source_name={source_name}, source_id={source_id}, doi={doi}"
             ),
         )
-        return redirect(url_for("index"))
+        return redirect(url_for("public.index"))
 
     response = make_response(
         render_template("resource-details.html", resource=resource)

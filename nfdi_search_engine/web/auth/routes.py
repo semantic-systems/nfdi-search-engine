@@ -26,7 +26,7 @@ def _get_service() -> UserService:
 
 
 @bp.route("/login", methods=["GET", "POST"])
-@limiter.limit("1 per minute")
+@limiter.limit("8 per minute")
 def login():
     if current_user.is_authenticated:
         session["current-user-email"] = current_user.email
@@ -61,7 +61,7 @@ def logout():
 
 
 @bp.route("/register", methods=["GET", "POST"])
-@limiter.limit("1 per minute")
+@limiter.limit("8 per minute")
 def register():
     if current_user.is_authenticated:
         return redirect(url_for("public.index"))

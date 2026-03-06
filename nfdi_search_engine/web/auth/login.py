@@ -12,4 +12,8 @@ def init_login_loader():
     def load_user(user_id: str):
         user_svc: UserService = current_app.extensions["services"]["users"]
         user = user_svc.get_user_by_id(user_id)
-        return SessionUser(**asdict(user))
+
+        if user is not None:
+            return SessionUser(**asdict(user))
+        else:
+            return None
