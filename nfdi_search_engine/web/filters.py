@@ -97,9 +97,8 @@ def get_researcher_url(person, external=True) -> str:
     )
 
     return url_for(
-        "researcher_details",
+        "details.researcher_details",
         source_name=f"source-name:{url_encode(src_name)}",
-        source_id=f"source-id:{url_encode(src_id)}",
         orcid=f"orcid:{url_encode(orcid_id)}",
         ts=f"ts:{url_encode(timestamp_signature)}",
         _external=external,
