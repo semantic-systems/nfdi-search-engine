@@ -42,7 +42,6 @@ from flask_session import Session
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
-from chatbot import chatbot
 from objects import Article
 
 import utils
@@ -98,9 +97,39 @@ def get_chatbot_answer():
     question = request.args.get("question")
     utils.log_activity(f"User asked the chatbot: {question}")
     search_uuid = session["search_uuid"]
-    answer = chatbot.getAnswer(app=app, question=question, search_uuid=search_uuid)
+    chatbot_server = app.config['CHATBOT']['chatbot_server'] 
+    chat_endpoint = app.config['CHATBOT']['endpoint_chat'] 
+    request_url = f"{chatbot_server}{chat_endpoint}"
 
-    return answer
+    print('question:', question)
+    print('uuid:', search_uuid)
+
+    payload = json.dumps({
+        "question": question,
+        "search_uuid": search_uuid
+    })
+    headers = {
+        'Content-Type': 'application/json'
+    }
+    response = requests.request("GET", request_url, headers=headers, data=payload)    
+    json_response = response.json()
+
+    response_exception = json_response.get('exception', "")
+    response_traceback= json_response.get('traceback', "")
+
+    print('response_exception:', response_exception)
+    print('response_traceback:', response_traceback)
+
+    if response_exception == "":
+        chat_history = json_response['chat-history']
+        lastest_response = chat_history[-1]
+
+        print('Question:', lastest_response['input'])
+        print('Answer:', lastest_response['output'])
+    else:
+        return response_exception
+
+    return lastest_response['output']
 
 
 @app.route("/publication-details/get-dois-references/<path:doi>", methods=["POST"])
