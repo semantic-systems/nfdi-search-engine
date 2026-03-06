@@ -653,11 +653,32 @@ def resource_details(source_name, source_id, doi, ts):
     except Exception as ex:
         abort(404)
 
-    # search for the doi in only the source_name platform
-    module_name = app.config["DATA_SOURCES"][source_name].get("module", "")
-    resource = importlib.import_module(f"sources.{module_name}").get_resource(
-        source_name, source_id, doi
-    )
+    # search for the resource in only the source_name platform
+    try:
+        module_name = app.config["DATA_SOURCES"][source_name].get("module", "")
+        resource = importlib.import_module(f"sources.{module_name}").get_resource(
+            source_name, source_id, doi
+        )
+    except Exception as ex:
+        utils.log_event(
+            type="error",
+            message=(
+                "resource_details - failed to load resource: "
+                f"source_name={source_name}, source_id={source_id}, doi={doi}, "
+                f"error={str(ex)}"
+            ),
+        )
+        return redirect(url_for("index"))
+
+    if resource is None:
+        utils.log_event(
+            type="error",
+            message=(
+                "resource_details - get_resource returned None: "
+                f"source_name={source_name}, source_id={source_id}, doi={doi}"
+            ),
+        )
+        return redirect(url_for("index"))
 
     response = make_response(
         render_template("resource-details.html", resource=resource)
