@@ -64,7 +64,7 @@ from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
-from nfdi_search_engine.services.tracking_task_proc import TrackingTaskProcessor
+from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.web import decorators
 from nfdi_search_engine.common import user
 

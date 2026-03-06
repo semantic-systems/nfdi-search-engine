@@ -19,7 +19,7 @@ from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
-from nfdi_search_engine.services.tracking_task_proc import TrackingTaskProcessor
+from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 
 
 def create_app() -> Flask:
@@ -61,7 +61,7 @@ def create_app() -> Flask:
     ensure_indices(es)
 
     # background jobs‚
-    tracking_tasks = TrackingTaskProcessor(es)
+    tracking_tasks = TrackingProcessor(es)
     jobs = InProcessDispatcher(
         handlers={
             "tracking.activity.write": tracking_tasks.handle_write_activity,

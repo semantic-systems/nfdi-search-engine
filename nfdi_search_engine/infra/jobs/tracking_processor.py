@@ -5,7 +5,7 @@ from elasticsearch import Elasticsearch
 from nfdi_search_engine.infra.elastic.indices import ESIndex
 
 
-class TrackingTaskProcessor:
+class TrackingProcessor:
     def __init__(self, es_client: Elasticsearch):
         self.es = es_client
 
