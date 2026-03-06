@@ -11,18 +11,20 @@ from config import Config
 from nfdi_search_engine.extensions import limiter, session_ext, login_manager
 from nfdi_search_engine.web.filters import register_filters
 from nfdi_search_engine.web.errors import register_error_handlers
+from nfdi_search_engine.web.auth.login import init_login_loader
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
-from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.services.search_service import SearchService, SearchSettings
-from nfdi_search_engine.services.chatbot_service import ChatbotService
+from nfdi_search_engine.services.chatbot_service import ChatbotService, ChatbotSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
+from nfdi_search_engine.services.publication_details_service import PublicationDetailsService, DetailsSettings
+
 
 def create_app() -> Flask:
     logging.config.fileConfig(
@@ -113,6 +115,10 @@ def create_app() -> Flask:
         activity=tracking_service,
     )
 
+    pub_details_service = PublicationDetailsService(
+        settings=DetailsSettings.from_config(app.config),
+    )
+
     # expose shared objects in app.extensions‚
     app.extensions["logger"] = logger
     app.extensions["result_store"] = result_store
@@ -124,10 +130,10 @@ def create_app() -> Flask:
         "tracking": tracking_service,
         "analytics": analytics_service,
         "chatbot": chatbot_service,
+        "publication_details": pub_details_service,
     }
 
     # register user loader
-    from nfdi_search_engine.web.auth.login import init_login_loader
     init_login_loader()
 
     # register blueprints
@@ -138,6 +144,7 @@ def create_app() -> Flask:
     from nfdi_search_engine.web.tracking import bp as tracking_bp
     from nfdi_search_engine.web.account import bp as account_bp
     from nfdi_search_engine.web.chatbot import bp as chatbot_bp
+    from nfdi_search_engine.web.details import bp as details_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(search_bp)
@@ -146,5 +153,6 @@ def create_app() -> Flask:
     app.register_blueprint(tracking_bp)
     app.register_blueprint(account_bp)
     app.register_blueprint(chatbot_bp)
+    app.register_blueprint(details_bp)
 
     return app

@@ -5,7 +5,7 @@
         <span class="text-secondary">{{reference.text}}</span>
         {% else %}
         <a class="text-secondary"
-            href="/publication-details/{{reference | format_digital_obj_url('source-name','source-id', 'doi')}}"
+            href="/publication-details/{{reference | format_digital_obj_url('source-name', 'doi')}}"
             target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{reference.text}}</a>
         {% endif %}
     </li>

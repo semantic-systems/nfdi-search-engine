@@ -24,7 +24,7 @@
                         </span>
                     {% else %}
                         <a class="text-secondary fw-bold publication_name"
-                        href="/publication-details/{{ publication | format_digital_obj_url('source-name','source-id','doi') }}"
+                        href="/publication-details/{{ publication | format_digital_obj_url('source-name','doi') }}"
                         target="_blank">
                         <i class="pull-left bi bi-link-45deg"></i>&nbsp;{{ publication.name }}
                         {% if publication.encoding_contentUrl %}
@@ -124,7 +124,7 @@
             {% with share_modal_id='share-publication-'+publication.identifier | regex_replace ('\W',''),
             preview_modal_id='preview-publication-'+publication.identifier | regex_replace ('\W',''),
             download_modal_id='download-publication-'+publication.identifier | regex_replace ('\W',''),
-            url = '/publication-details/'+ publication | format_digital_obj_url('source-name','source-id', 'doi'),
+            url = '/publication-details/'+ publication | format_digital_obj_url('source-name', 'doi'),
             img_src = publication.image,
             encoding_contentUrl = publication.encoding_contentUrl,
             title = publication.name | trim
