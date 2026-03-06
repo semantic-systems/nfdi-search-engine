@@ -15,6 +15,7 @@ from nfdi_search_engine.web.auth.login import init_login_loader
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
+from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
@@ -55,6 +56,9 @@ def create_app() -> Flask:
 
     # result store
     result_store = InMemoryTTLResultStore()
+
+    # details store
+    details_store = InMemoryTTLKVStore[dict]()
 
     # elastic client and setup
     es = get_es_client(
@@ -122,6 +126,7 @@ def create_app() -> Flask:
     # expose shared objects in app.extensions‚
     app.extensions["logger"] = logger
     app.extensions["result_store"] = result_store
+    app.extensions["details_store"] = details_store
     app.extensions["job_dispatcher"] = jobs
     app.extensions["es_client"] = es
     app.extensions["services"] = {
