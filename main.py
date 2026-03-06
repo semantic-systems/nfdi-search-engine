@@ -54,83 +54,8 @@ logger = app.extensions["logger"]
 utils.log_event(message="TEST")
 
 from typing import Optional
-from werkzeug.security import generate_password_hash, check_password_hash
-from pydantic.dataclasses import dataclass
-from dataclasses import fields, field
-from flask_login import UserMixin
-from nfdi_search_engine.infra.store.result_store import ResultStore
-from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
-from nfdi_search_engine.services.user_service import UserService
-from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings
-from nfdi_search_engine.services.tracking_service import TrackingService
-from nfdi_search_engine.services.analytics_service import AnalyticsService
-from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
-from nfdi_search_engine.web import decorators
-from nfdi_search_engine.common import user
 
 # region ROUTES
-
-@app.route("/are-embeddings-generated", methods=["GET"])
-@utils.timeit
-def are_embeddings_generated():
-    # Check the embeddings readiness only if the chatbot feature is enabled otherwise return False
-    if app.config["CHATBOT"]["chatbot_enable"]:
-        print("are_embeddings_generated")
-        uuid = session["search_uuid"]
-        chatbot_server = app.config["CHATBOT"]["chatbot_server"]
-        are_embeddings_generated = app.config["CHATBOT"][
-            "endpoint_are_embeddings_generated"
-        ]
-        request_url = f"{chatbot_server}{are_embeddings_generated}/{uuid}"
-        headers = {"Content-Type": "application/json"}
-        response = requests.request("GET", request_url, headers=headers)
-        json_response = response.json()
-        print("json_response:", json_response)
-        return str(json_response["file_exists"])
-    else:
-        return str(True)
-
-
-@app.route("/get-chatbot-answer", methods=["GET"])
-@utils.timeit
-def get_chatbot_answer():
-    question = request.args.get("question")
-    utils.log_activity(f"User asked the chatbot: {question}")
-    search_uuid = session["search_uuid"]
-    chatbot_server = app.config['CHATBOT']['chatbot_server'] 
-    chat_endpoint = app.config['CHATBOT']['endpoint_chat'] 
-    request_url = f"{chatbot_server}{chat_endpoint}"
-
-    print('question:', question)
-    print('uuid:', search_uuid)
-
-    payload = json.dumps({
-        "question": question,
-        "search_uuid": search_uuid
-    })
-    headers = {
-        'Content-Type': 'application/json'
-    }
-    response = requests.request("GET", request_url, headers=headers, data=payload)    
-    json_response = response.json()
-
-    response_exception = json_response.get('exception', "")
-    response_traceback= json_response.get('traceback', "")
-
-    print('response_exception:', response_exception)
-    print('response_traceback:', response_traceback)
-
-    if response_exception == "":
-        chat_history = json_response['chat-history']
-        lastest_response = chat_history[-1]
-
-        print('Question:', lastest_response['input'])
-        print('Answer:', lastest_response['output'])
-    else:
-        return response_exception
-
-    return lastest_response['output']
-
 
 @app.route("/publication-details/get-dois-references/<path:doi>", methods=["POST"])
 @limiter.limit("10 per minute")

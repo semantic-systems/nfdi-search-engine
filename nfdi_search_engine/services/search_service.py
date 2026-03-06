@@ -7,11 +7,11 @@ from rank_bm25 import BM25Plus
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.common.search_settings import SearchSettings
 from nfdi_search_engine.common.request_meta import RequestMeta
 from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
 from nfdi_search_engine.infra.store.result_store import ResultStore
+from nfdi_search_engine.services.chatbot_service import ChatbotService
 from nfdi_search_engine.services.tracking_service import TrackingService
 
 
@@ -50,7 +50,7 @@ class SearchService:
     def __init__(
         self,
         settings: SearchSettings,
-        chatbot: ChatbotSettings,
+        chatbot: ChatbotService,
         store: ResultStore,
         jobs: JobDispatcher,
         activity: TrackingService,
@@ -111,12 +111,7 @@ class SearchService:
         )
 
         # chatbot indexing async
-        if self.chatbot.enabled:
-            self.jobs.enqueue("chatbot_index_results", {
-                "search_id": ctx.search_id,
-                "chatbot_server": self.chatbot.server,
-                "endpoint": self.chatbot.endpoint_save_docs_with_embeddings,
-            })
+        self.chatbot.index_search_results_async(ctx.search_id)
 
         # first page slice
         page_results = {

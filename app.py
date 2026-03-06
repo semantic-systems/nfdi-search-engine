@@ -15,12 +15,14 @@ from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
+from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
+from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
+from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.services.user_service import UserService
-from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings
+from nfdi_search_engine.services.search_service import SearchService, SearchSettings
+from nfdi_search_engine.services.chatbot_service import ChatbotService
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
-from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
-
 
 def create_app() -> Flask:
     logging.config.fileConfig(
@@ -62,6 +64,11 @@ def create_app() -> Flask:
 
     # background jobs‚
     tracking_tasks = TrackingProcessor(es)
+    chatbot_tasks = ChatbotProcessor(
+        result_store=result_store,
+        settings=ChatbotSettings.from_config(app.config)
+    )
+
     jobs = InProcessDispatcher(
         handlers={
             "tracking.activity.write": tracking_tasks.handle_write_activity,
@@ -69,6 +76,7 @@ def create_app() -> Flask:
             "tracking.user_agent.upsert": tracking_tasks.handle_upsert_user_agent,
             "tracking.event.write": tracking_tasks.handle_write_event,
             "tracking.visitor_id.propagate": tracking_tasks.handle_propagate_visitor_id,
+            "chatbot.index_search_results": chatbot_tasks.handle_index_search_results,
         }
     )
 
@@ -91,9 +99,15 @@ def create_app() -> Flask:
         es_date_format=app.config["DATE_FORMAT_FOR_ELASTIC"],
     )
 
+    chatbot_service = ChatbotService(
+        settings=ChatbotSettings.from_config(app.config),
+        activity=tracking_service,
+        jobs=jobs,
+    )
+
     search_service = SearchService(
         settings=SearchSettings.from_config(app.config),
-        chatbot=ChatbotSettings.from_config(app.config),
+        chatbot=chatbot_service,
         store=result_store,
         jobs=jobs,
         activity=tracking_service,
@@ -109,6 +123,7 @@ def create_app() -> Flask:
         "users": user_service,
         "tracking": tracking_service,
         "analytics": analytics_service,
+        "chatbot": chatbot_service,
     }
 
     # register user loader
@@ -122,6 +137,7 @@ def create_app() -> Flask:
     from nfdi_search_engine.web.auth import bp as auth_bp
     from nfdi_search_engine.web.tracking import bp as tracking_bp
     from nfdi_search_engine.web.account import bp as account_bp
+    from nfdi_search_engine.web.chatbot import bp as chatbot_bp
 
     app.register_blueprint(public_bp)
     app.register_blueprint(search_bp)
@@ -129,5 +145,6 @@ def create_app() -> Flask:
     app.register_blueprint(auth_bp)
     app.register_blueprint(tracking_bp)
     app.register_blueprint(account_bp)
+    app.register_blueprint(chatbot_bp)
 
     return app
