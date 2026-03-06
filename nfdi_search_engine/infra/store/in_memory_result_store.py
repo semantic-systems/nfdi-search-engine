@@ -2,18 +2,12 @@ from __future__ import annotations
 
 import threading
 import time
-from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
-
-@dataclass
-class SearchRecord:
-    results: Dict[str, Any]          # category: list[object]
-    meta: Dict[str, Any]             # displayed counts, totals, etc.
-    expires_at: float
+from nfdi_search_engine.infra.store.result_store import SearchRecord, ResultStore
 
 
-class InMemoryTTLResultStore:
+class InMemoryTTLResultStore(ResultStore):
     """
     In-process result store with TTL
     """

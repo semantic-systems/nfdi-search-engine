@@ -13,7 +13,7 @@ from nfdi_search_engine.web.filters import register_filters
 from nfdi_search_engine.web.errors import register_error_handlers
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
-from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
+from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
 from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings

@@ -11,7 +11,7 @@ from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.common.search_settings import SearchSettings
 from nfdi_search_engine.common.request_meta import RequestMeta
 from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
-from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
+from nfdi_search_engine.infra.store.result_store import ResultStore
 from nfdi_search_engine.services.tracking_service import TrackingService
 
 
@@ -51,7 +51,7 @@ class SearchService:
         self,
         settings: SearchSettings,
         chatbot: ChatbotSettings,
-        store: InMemoryTTLResultStore,
+        store: ResultStore,
         jobs: JobDispatcher,
         activity: TrackingService,
     ) -> None:
