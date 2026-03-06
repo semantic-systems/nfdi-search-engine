@@ -650,13 +650,6 @@ def digital_obj_details(identifier_with_type):
     pass
 
 
-for code, message in app.config["ERROR_MESSAGES"].items():
-
-    @app.errorhandler(code)
-    def handle_error(e, message=message, code=code):
-        # utils.log_activity(f"{message} Exception: {e}")
-        return render_template("error.html", error_message=message), code
-
 # endregion
 
 

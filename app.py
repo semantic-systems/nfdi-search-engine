@@ -10,6 +10,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from config import Config
 from nfdi_search_engine.extensions import limiter, session_ext, login_manager
 from nfdi_search_engine.web.filters import register_filters
+from nfdi_search_engine.web.errors import register_error_handlers
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
@@ -44,6 +45,9 @@ def create_app() -> Flask:
 
     # Flask-Limiter
     limiter.init_app(app)
+
+    # register error handlers
+    register_error_handlers(app)
 
     # result store
     result_store = InMemoryTTLResultStore()
