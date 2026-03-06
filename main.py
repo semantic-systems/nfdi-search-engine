@@ -59,7 +59,7 @@ from pydantic.dataclasses import dataclass
 from dataclasses import fields, field
 from flask_login import UserMixin
 from nfdi_search_engine.infra.result_store import InMemoryTTLResultStore
-from nfdi_search_engine.infra.jobs.inprocess import InProcessDispatcher
+from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
 from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.services.search_service import SearchService, SearchSettings, ChatbotSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
