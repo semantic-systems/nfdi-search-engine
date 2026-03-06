@@ -45,7 +45,7 @@ def dashboard_auth():
     return None
 
 
-def _services() -> tuple[AnalyticsService, TrackingService, UserService]:
+def _get_services() -> tuple[AnalyticsService, TrackingService, UserService]:
     s = current_app.extensions["services"]
     return s["analytics"], s["tracking"], s["users"]
 
@@ -63,7 +63,7 @@ def _report_range(report_date_range: str | None):
 
 @bp.route("/dashboard")
 def dashboard():
-    analytics, _, _ = _services()
+    analytics, _, _ = _get_services()
 
     (
         current_month_users,
@@ -91,7 +91,7 @@ def dashboard():
 @bp.route("/activity-log/<report_date_range>")
 def activity_log(report_date_range):
     _, _, es_start, es_end, report_daterange = _report_range(report_date_range)
-    _, tracking, _ = _services()
+    _, tracking, _ = _get_services()
     user_activities = tracking.get_user_activities(es_start, es_end)
     return render_template(
         "control-panel/activity-log.html",
@@ -104,7 +104,7 @@ def activity_log(report_date_range):
 @bp.route("/user-agent-log/<report_date_range>")
 def user_agent_log(report_date_range):
     _, _, es_start, es_end, report_daterange = _report_range(report_date_range)
-    _, tracking, _ = _services()
+    _, tracking, _ = _get_services()
     user_agents = tracking.get_user_agents(es_start, es_end)
     return render_template(
         "control-panel/agent-log.html",
@@ -117,7 +117,7 @@ def user_agent_log(report_date_range):
 @bp.route("/event-log/<log_type>/<report_date_range>")
 def event_log(log_type, report_date_range):
     _, _, es_start, es_end, report_daterange = _report_range(report_date_range)
-    _, tracking, _ = _services()
+    _, tracking, _ = _get_services()
     events = tracking.get_events(es_start, es_end, log_type)
     return render_template(
         "control-panel/event-log.html",
@@ -130,7 +130,7 @@ def event_log(log_type, report_date_range):
 @bp.route("/event-log/delete-event", methods=["POST"])
 def delete_event():
     event_id = request.values.get("event_id")
-    _, tracking, _ = _services()
+    _, tracking, _ = _get_services()
     tracking.delete_event(event_id)
     return jsonify({"message": "Event has been deleted"}), 200
 
@@ -139,7 +139,7 @@ def delete_event():
 @bp.route("/registered-users/<report_date_range>")
 def registered_users(report_date_range):
     _, _, es_start, es_end, report_daterange = _report_range(report_date_range)
-    _, _, users_service = _services()
+    _, _, users_service = _get_services()
     users = users_service.list_users_between(es_start, es_end)
     return render_template(
         "control-panel/registered-users.html",
@@ -150,7 +150,7 @@ def registered_users(report_date_range):
 
 @bp.route("/registered-users/delete-user/<string:user_id>")
 def delete_user(user_id):
-    _, _, users_service = _services()
+    _, _, users_service = _get_services()
     users_service.delete_user(user_id)
     return "User has been deleted"
 
@@ -159,7 +159,7 @@ def delete_user(user_id):
 @bp.route("/search-term-log/<report_date_range>")
 def search_term_log(report_date_range):
     _, _, es_start, es_end, report_daterange = _report_range(report_date_range)
-    _, tracking, _ = _services()
+    _, tracking, _ = _get_services()
     search_terms = tracking.get_search_terms(es_start, es_end)
     return render_template(
         "control-panel/search-term-log.html",

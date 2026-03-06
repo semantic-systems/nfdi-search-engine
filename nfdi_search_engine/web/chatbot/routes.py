@@ -10,7 +10,7 @@ from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.chatbot_service import ChatbotService, ChatContext
 
 
-def _services() -> tuple[ChatbotService, TrackingService]:
+def _get_services() -> tuple[ChatbotService, TrackingService]:
     s = current_app.extensions["services"]
     return s["chatbot"], s["tracking"]
 
@@ -22,7 +22,7 @@ def are_embeddings_generated():
     if not search_uuid:
         abort(400, description="Missing search_uuid in session")
 
-    svc, _ = _services()
+    svc, _ = _get_services()
     ready = svc.are_embeddings_generated(search_uuid=search_uuid)
 
     return str(bool(ready))
@@ -55,7 +55,7 @@ def get_chatbot_answer():
         )
     )
 
-    chatbot, _ = _services()
+    chatbot, _ = _get_services()
     data = chatbot.get_answer(chat_context)
 
     if data.exception:

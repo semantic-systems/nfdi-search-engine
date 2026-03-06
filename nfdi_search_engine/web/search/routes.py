@@ -68,8 +68,7 @@ def search_results():
             search_term=search_term,
             excluded_sources=excluded,
             request_meta=meta,
-            user_id=None if current_user.is_anonymous else getattr(
-                current_user, "id", None),
+            user_id=None if current_user.is_anonymous else current_user.id,
         )
     )
 
