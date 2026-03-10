@@ -6,10 +6,10 @@ from typing import Any, List, Optional, Set, Tuple
 import requests
 
 from objects import Author
-from nfdi_search_engine.common.details_settings import DetailsSettings
-from nfdi_search_engine.common.openai_settings import OpenAISettings
+from nfdi_search_engine.common.models.details_settings import DetailsSettings
+from nfdi_search_engine.common.models.openai_settings import OpenAISettings
 from nfdi_search_engine.services.tracking_service import TrackingService
-from nfdi_search_engine.util.merge import merge_objects
+from nfdi_search_engine.common.merge import merge_objects
 
 
 class ResearcherDetailsService:

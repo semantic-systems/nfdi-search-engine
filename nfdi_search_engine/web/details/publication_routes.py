@@ -13,7 +13,7 @@ from nfdi_search_engine.web.helpers.ip import get_client_ip
 from nfdi_search_engine.web.helpers.timestamp_token import validate_ts_token
 from nfdi_search_engine.web.helpers.params import parse_prefixed_and_unquote
 from nfdi_search_engine.web.decorators import set_cookies, timeit
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.services.publication_details_service import PublicationDetailsService
 from nfdi_search_engine.services.tracking_service import TrackingService
 

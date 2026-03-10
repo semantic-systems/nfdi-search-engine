@@ -7,7 +7,7 @@ from typing import Any, Dict, Optional, List
 
 import requests
 
-from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
+from nfdi_search_engine.common.models.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.infra.store.result_store import ResultStore
 
 

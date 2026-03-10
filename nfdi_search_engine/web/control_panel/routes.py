@@ -6,7 +6,7 @@ import os
 from nfdi_search_engine.web.control_panel import bp
 from flask import Blueprint, Response, current_app, jsonify, render_template, request
 
-from nfdi_search_engine.util.dates import parse_report_date_range, to_es_range
+from nfdi_search_engine.common.dates import parse_report_date_range, to_es_range
 from nfdi_search_engine.services.analytics_service import AnalyticsService
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.user_service import UserService

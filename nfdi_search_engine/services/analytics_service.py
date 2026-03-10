@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import date, datetime
 import pandas as pd
 
-from nfdi_search_engine.util.dates import to_es_range
+from nfdi_search_engine.common.dates import to_es_range
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.user_service import UserService
 

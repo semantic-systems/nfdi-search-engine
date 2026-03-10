@@ -6,7 +6,7 @@ from dataclasses import asdict
 from flask import Request
 from ua_parser import user_agent_parser
 
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 
 
 def build_user_agent_doc(request: Request, request_meta: RequestMeta) -> dict:

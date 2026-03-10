@@ -7,8 +7,8 @@ from rank_bm25 import BM25Plus
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from nfdi_search_engine.common.search_settings import SearchSettings
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.search_settings import SearchSettings
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.infra.store.result_store import ResultStore
 from nfdi_search_engine.services.chatbot_service import ChatbotService
 from nfdi_search_engine.services.tracking_service import TrackingService

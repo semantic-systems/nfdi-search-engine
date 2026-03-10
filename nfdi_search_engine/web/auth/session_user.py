@@ -1,5 +1,5 @@
 from flask_login import UserMixin
-from nfdi_search_engine.common.user import User
+from nfdi_search_engine.common.models.user import User
 
 
 class SessionUser(UserMixin, User):

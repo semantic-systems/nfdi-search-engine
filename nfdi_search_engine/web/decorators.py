@@ -11,7 +11,7 @@ from functools import wraps
 from flask import current_app, make_response, request, session
 from flask_login import current_user
 
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.web.helpers.user_agent import build_user_agent_doc
 from nfdi_search_engine.web.helpers.ip import get_client_ip
 from nfdi_search_engine.services.tracking_service import TrackingService

@@ -5,7 +5,7 @@ from flask import abort, current_app, request, session
 from nfdi_search_engine.web.chatbot import bp
 from nfdi_search_engine.web.decorators import timeit
 from nfdi_search_engine.web.helpers.ip import get_client_ip
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.chatbot_service import ChatbotService, ChatContext
 

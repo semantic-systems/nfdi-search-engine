@@ -15,7 +15,7 @@ from flask_login import current_user
 
 from nfdi_search_engine.web.search import bp
 from nfdi_search_engine.web.helpers.ip import get_client_ip
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.web import decorators
 
 from nfdi_search_engine.extensions import limiter

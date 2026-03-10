@@ -7,8 +7,8 @@ import traceback
 
 import requests
 
-from nfdi_search_engine.common.request_meta import RequestMeta
-from nfdi_search_engine.common.chatbot_settings import ChatbotSettings
+from nfdi_search_engine.common.models.request_meta import RequestMeta
+from nfdi_search_engine.common.models.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
 

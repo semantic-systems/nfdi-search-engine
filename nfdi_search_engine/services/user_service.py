@@ -4,9 +4,9 @@ from datetime import datetime, timezone
 from typing import Optional
 
 from elasticsearch import Elasticsearch, exceptions
-from nfdi_search_engine.common.user import User
+from nfdi_search_engine.common.models.user import User
 from nfdi_search_engine.infra.elastic.indices import ESIndex
-from nfdi_search_engine.util.dates import to_es_range
+from nfdi_search_engine.common.dates import to_es_range
 
 
 class UserService:

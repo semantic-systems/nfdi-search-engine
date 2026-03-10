@@ -7,10 +7,10 @@ import os
 
 from elasticsearch import Elasticsearch
 
-from nfdi_search_engine.common.request_meta import RequestMeta
+from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.infra.elastic.indices import ESIndex
 from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
-from nfdi_search_engine.util.dates import to_es_range
+from nfdi_search_engine.common.dates import to_es_range
 
 
 class TrackingService:

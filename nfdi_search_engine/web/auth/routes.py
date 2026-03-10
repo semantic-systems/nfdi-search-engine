@@ -15,7 +15,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 
 from nfdi_search_engine.web.auth import bp
 from nfdi_search_engine.extensions import limiter
-from nfdi_search_engine.common.user import User
+from nfdi_search_engine.common.models.user import User
 from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.web.auth.forms import LoginForm, RegistrationForm
 from nfdi_search_engine.web.auth.session_user import SessionUser

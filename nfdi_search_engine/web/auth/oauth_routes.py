@@ -9,7 +9,7 @@ from flask import Blueprint, abort, current_app, flash, redirect, request, sessi
 from flask_login import current_user, login_user
 
 from nfdi_search_engine.web.auth import bp
-from nfdi_search_engine.common.user import User
+from nfdi_search_engine.common.models.user import User
 
 
 def _user_service():
