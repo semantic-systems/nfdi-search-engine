@@ -26,6 +26,7 @@ from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
 from nfdi_search_engine.services.publication_details_service import PublicationDetailsService, DetailsSettings
 from nfdi_search_engine.services.researcher_details_service import ResearcherDetailsService, OpenAISettings
+from nfdi_search_engine.services.resource_details_service import ResourceDetailsService
 
 
 def create_app() -> Flask:
@@ -116,17 +117,23 @@ def create_app() -> Flask:
         settings=SearchSettings.from_config(app.config),
         chatbot=chatbot_service,
         store=result_store,
-        jobs=jobs,
         activity=tracking_service,
     )
 
     pub_details_service = PublicationDetailsService(
         settings=DetailsSettings.from_config(app.config),
+        activity=tracking_service,
     )
 
-    res_details_service = ResearcherDetailsService(
+    researcher_details_service = ResearcherDetailsService(
         settings=DetailsSettings.from_config(app.config),
+        activity=tracking_service,
         openai=OpenAISettings.from_config(app.config),
+    )
+
+    resource_details_service = ResourceDetailsService(
+        settings=DetailsSettings.from_config(app.config),
+        activity=tracking_service,
     )
 
     # expose shared objects in app.extensions‚
@@ -142,7 +149,8 @@ def create_app() -> Flask:
         "analytics": analytics_service,
         "chatbot": chatbot_service,
         "publication_details": pub_details_service,
-        "researcher_details": res_details_service,
+        "researcher_details": researcher_details_service,
+        "resource_details": resource_details_service,
     }
 
     # register user loader

@@ -8,6 +8,7 @@ import requests
 
 from objects import Article
 from nfdi_search_engine.common.details_settings import DetailsSettings
+from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.util.merge import merge_objects
 
 
@@ -27,9 +28,11 @@ class PublicationDetailsService:
     def __init__(
         self,
         settings: DetailsSettings,
+        activity: TrackingService,
         http: Optional[requests.Session] = None,
     ):
         self.settings = settings
+        self.activity = activity
         self.http = http or requests.Session()
 
         # we can think about moving this to the config

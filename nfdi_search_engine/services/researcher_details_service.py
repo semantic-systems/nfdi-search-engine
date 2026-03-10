@@ -8,6 +8,7 @@ import requests
 from objects import Author
 from nfdi_search_engine.common.details_settings import DetailsSettings
 from nfdi_search_engine.common.openai_settings import OpenAISettings
+from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.util.merge import merge_objects
 
 
@@ -24,10 +25,12 @@ class ResearcherDetailsService:
         self,
         settings: DetailsSettings,
         openai: OpenAISettings,
+        activity: TrackingService,
         http: Optional[requests.Session] = None,
     ):
         self.settings = settings
         self.openai = openai
+        self.activity = activity
         self.http = http or requests.Session()
 
     def get_researchers_for_details_page(

@@ -10,6 +10,8 @@ from flask_login import current_user
 from nfdi_search_engine.extensions import limiter
 from nfdi_search_engine.web.details import bp
 from nfdi_search_engine.web.helpers.ip import get_client_ip
+from nfdi_search_engine.web.helpers.timestamp_token import validate_ts_token
+from nfdi_search_engine.web.helpers.params import parse_prefixed_and_unquote
 from nfdi_search_engine.web.decorators import set_cookies, timeit
 from nfdi_search_engine.common.request_meta import RequestMeta
 from nfdi_search_engine.services.publication_details_service import PublicationDetailsService
@@ -98,28 +100,12 @@ def publication_details(source_name, doi, ts):
         user_id=None if current_user.is_anonymous else current_user.id,
     )
 
-    def parse_prefixed_param(raw: str) -> str:
-        if ":" in raw:
-            return raw.split(":", 1)[1]
-        return raw
-
-    source_name = unquote(parse_prefixed_param(source_name))
-    doi = unquote(parse_prefixed_param(doi))
-    ts = unquote(parse_prefixed_param(ts))
+    source_name = parse_prefixed_and_unquote(source_name)
+    doi = parse_prefixed_and_unquote(doi)
+    ts = parse_prefixed_and_unquote(ts)
 
     # timestamp signature for bot id
-    # maybe can be removed once we move to cloudflare
-    try:
-        timestamp_signature = ts.encode("utf-8") + b"=" * (4 - len(ts) % 4)
-        timestamp_signature = base64.urlsafe_b64decode(timestamp_signature).decode(
-            "utf-8"
-        )
-        diff = int(time.time()) - int(float(timestamp_signature))
-
-        if diff > 3600:
-            abort(404)
-    except ValueError:
-        abort(404)
+    validate_ts_token(ts)
 
     excluded_sources = set()
     if not current_user.is_anonymous:

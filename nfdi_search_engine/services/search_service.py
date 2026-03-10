@@ -9,7 +9,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from nfdi_search_engine.common.search_settings import SearchSettings
 from nfdi_search_engine.common.request_meta import RequestMeta
-from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
 from nfdi_search_engine.infra.store.result_store import ResultStore
 from nfdi_search_engine.services.chatbot_service import ChatbotService
 from nfdi_search_engine.services.tracking_service import TrackingService
@@ -52,13 +51,11 @@ class SearchService:
         settings: SearchSettings,
         chatbot: ChatbotService,
         store: ResultStore,
-        jobs: JobDispatcher,
         activity: TrackingService,
     ) -> None:
         self.settings = settings
         self.chatbot = chatbot
         self.store = store
-        self.jobs = jobs
         self.activity = activity
 
     def run_search(self, ctx: SearchContext) -> SearchPage:
