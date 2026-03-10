@@ -22,11 +22,11 @@ class UserService:
         doc["included_data_sources"] = "; ".join(self.all_data_sources)
         doc["excluded_data_sources"] = user.excluded_data_sources or ""
 
-        self.es.index(index=ESIndex.USERS.value, document=doc)
+        self.es.index(index=ESIndex.users.name, document=doc)
 
     def update_user_profile(self, user: User) -> None:
         self.es.update(
-            index=ESIndex.USERS.value,
+            index=ESIndex.users.name,
             id=user.id,
             doc={
                 "first_name": user.first_name,
@@ -38,7 +38,7 @@ class UserService:
 
     def update_user_preferences(self, user: User) -> None:
         self.es.update(
-            index=ESIndex.USERS.value,
+            index=ESIndex.users.name,
             id=user.id,
             doc={
                 "included_data_sources": user.included_data_sources,
@@ -56,12 +56,12 @@ class UserService:
         return None if doc is None else User.from_dict(doc)
 
     def delete_user(self, user_id: str) -> None:
-        self.es.delete(index=ESIndex.USERS.value, id=user_id)
+        self.es.delete(index=ESIndex.users.name, id=user_id)
 
     def list_users_between(self, start_date, end_date) -> list[dict]:
         start_date, end_date = to_es_range(start_date, end_date, self.es_date_format)
         result = self.es.search(
-            index=ESIndex.USERS.value,
+            index=ESIndex.users.name,
             size=10000,
             query={
                 "range": {
@@ -78,7 +78,7 @@ class UserService:
     # ---------- Private ES helpers ----------
     def _get_user_doc_by_id(self, user_id: str) -> dict | None:
         try:
-            hit = self.es.get(index=ESIndex.USERS.value, id=user_id)
+            hit = self.es.get(index=ESIndex.users.name, id=user_id)
             return {"id": hit["_id"], **hit["_source"]}
         except exceptions.NotFoundError:
             return None
@@ -87,7 +87,7 @@ class UserService:
 
     def _get_user_doc_by_email(self, email: str) -> dict | None:
         result = self.es.search(
-            index=ESIndex.USERS.value,
+            index=ESIndex.users.name,
             query={"term": {"email.keyword": email}},
             size=2,
         )

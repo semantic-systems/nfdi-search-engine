@@ -87,7 +87,7 @@ class TrackingService:
     def get_user_activities(self, start_date, end_date) -> list[dict]:
         start_date, end_date = to_es_range(start_date, end_date, self.es_date_format)
         result = self.es.search(
-            index=ESIndex.USER_ACTIVITY_LOG.value,
+            index=ESIndex.user_activity_log.name,
             size=10000,
             query={"range": {"timestamp": {"gte": start_date, "lte": end_date}}},
             sort=[{"timestamp": "desc"}],
@@ -97,7 +97,7 @@ class TrackingService:
     def get_search_terms(self, start_date, end_date) -> list[dict]:
         start_date, end_date = to_es_range(start_date, end_date, self.es_date_format)
         result = self.es.search(
-            index=ESIndex.SEARCH_TERM_LOG.value,
+            index=ESIndex.search_term_log.name,
             size=10000,
             query={"range": {"timestamp": {"gte": start_date, "lte": end_date}}},
             sort=[{"timestamp": "desc"}],
@@ -107,7 +107,7 @@ class TrackingService:
     def get_user_agents(self, start_date, end_date, timestamp_field: str = "timestamp_updated") -> list[dict]:
         start_date, end_date = to_es_range(start_date, end_date, self.es_date_format)
         result = self.es.search(
-            index=ESIndex.USER_AGENT_LOG.value,
+            index=ESIndex.user_agent_log.name,
             size=10000,
             query={"range": {timestamp_field: {
                 "gte": start_date, "lte": end_date}}},
@@ -118,7 +118,7 @@ class TrackingService:
     def get_events(self, start_date, end_date, log_type: str) -> list[dict]:
         start_date, end_date = to_es_range(start_date, end_date, self.es_date_format)
         result = self.es.search(
-            index=ESIndex.EVENT_LOGS.value,
+            index=ESIndex.event_logs.name,
             size=10000,
             query={
                 "bool": {
@@ -133,4 +133,4 @@ class TrackingService:
         return result["hits"]["hits"]
 
     def delete_event(self, event_id: str) -> None:
-        self.es.delete(index=ESIndex.EVENT_LOGS.value, id=event_id)
+        self.es.delete(index=ESIndex.event_logs.name, id=event_id)

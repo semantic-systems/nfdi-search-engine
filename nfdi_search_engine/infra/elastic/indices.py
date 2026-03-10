@@ -6,11 +6,11 @@ from elasticsearch import Elasticsearch, exceptions
 
 
 class ESIndex(Enum):
-    USER_ACTIVITY_LOG = 1
-    USER_AGENT_LOG = 2
-    USERS = 3
-    EVENT_LOGS = 4
-    SEARCH_TERM_LOG = 5
+    user_activity_log = 1
+    user_agent_log = 2
+    users = 3
+    event_logs = 4
+    search_term_log = 5
 
 
 def ensure_indices(es: Elasticsearch) -> None:
@@ -19,7 +19,7 @@ def ensure_indices(es: Elasticsearch) -> None:
     """
     for idx in ESIndex:
         try:
-            es.indices.create(index=idx.value)
+            es.indices.create(index=idx.name)
         except exceptions.RequestError as ex:
             # "resource_already_exists_exception" is normal
             if getattr(ex, "error", None) == "resource_already_exists_exception":
