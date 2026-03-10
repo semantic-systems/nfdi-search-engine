@@ -99,18 +99,10 @@
             </div>
 
             {% with share_modal_id='share-other-'+digitalObj.identifier | regex_replace ('\W',''),
-            preview_modal_id='preview-other-'+digitalObj.identifier | regex_replace ('\W',''),
-            download_modal_id='download-other-'+digitalObj.identifier | regex_replace ('\W',''),
-            url = url_for('digital_obj_details', identifier_with_type=(digitalObj |
-            format_digital_obj_url('doi','source-id')),
-            _external=True),
-            img_src = digitalObj.image,
-            encoding_contentUrl = digitalObj.encoding_contentUrl,
+            url = digitalObj.url,
             title = digitalObj.name | trim
             %}
             {{ shareModal(share_modal_id, url, title) }}
-            {{ previewModal(preview_modal_id, title, img_src) }}
-            {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
             {% endwith %}
 
         </div>

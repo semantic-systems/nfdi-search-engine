@@ -31,7 +31,7 @@ def resource_details(source_name, doi, ts):
     Render the resource details page.
     
     :param source_name: The source name string
-    :param orcid: The ORCID string
+    :param doi: The doi string
     :param ts: timestamp for bot id
     """
     resource_details_svc, tracking = _get_services()
