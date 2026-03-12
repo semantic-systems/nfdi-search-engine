@@ -23,7 +23,6 @@ There is no central index of external data. All results are retrieved on demand 
 - Mapping of heterogeneous source responses to a common schema
 - Aggregation of results into common categories such as publications and researchers
 - Session based result handling for pagination and incremental loading
-- Optional chatbot interaction over the current search result set
 - User accounts with configurable source preferences
 
 ## Architecture in brief
@@ -34,7 +33,6 @@ There is no central index of external data. All results are retrieved on demand 
 - A controller deduplicates and aggregates results across sources
 - Results are grouped and stored in the user session
 - The interface renders the results and supports loading more items per category
-- If enabled, the current result set is shared with a chatbot service
 
 The application is implemented as a Flask based web service.
 
@@ -116,17 +114,6 @@ A Dockerfile and Docker Compose configuration are provided for container based d
 docker compose up --build
 ```
 By default, the application is exposed on port 6000 on the host system.
-
-## Chatbot integration
-The application includes optional support for a chatbot that can assist with search result analysis based on the current result set.
-
-When enabled:
-
-- The result set of a search is shared with the chatbot service
-- Users can ask natural language questions related to the results
-- Responses are limited to the provided search context
-
-The chatbot and language model configuration is optional and depends on deployment specific settings.
 
 ## Intended audience
 This project is intended for:
