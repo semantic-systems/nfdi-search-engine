@@ -1,10 +1,11 @@
 from typing import Dict, Any, Iterable, List
 
-import utils
 from config import Config
 from sources.base import BaseSource
 from sources import data_retriever
 from objects import Dataset, Person, Author, thing
+
+from nfdi_search_engine.common.dates import parse_date
 
 
 class Codalab(BaseSource):
@@ -106,7 +107,7 @@ class Codalab(BaseSource):
 
         created_ts = metadata.get("created")
         if created_ts:
-            dataset.datePublished = utils.parse_date(created_ts)
+            dataset.datePublished = parse_date(created_ts)
 
         dataset.url = f"https://worksheets.codalab.org/bundles/{dataset.identifier}"
 
@@ -169,11 +170,9 @@ class Codalab(BaseSource):
         return dataset
 
 
-@utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources, tracking=None) -> None:
     Codalab(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
 def get_resource(source: str, source_id: str, doi: str, tracking=None) -> Dataset | None:
     return Codalab(tracking).get_resource(source_id)

@@ -1,11 +1,10 @@
 
 from objects import thing, Dataset, Author
 from sources import data_retriever
-import utils
 from config import Config
 from nfdi_search_engine.common.formatting import remove_html_tags
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None): 
     search_result = data_retriever.retrieve_data(source=source, 
                                                 base_url=Config.DATA_SOURCES[source].get('search-endpoint', ''),

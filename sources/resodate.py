@@ -7,8 +7,6 @@ from sources.base import BaseSource
 from config import Config
 import requests
 
-import utils
-
 from nfdi_search_engine.common.dates import parse_date
 from nfdi_search_engine.common.formatting import remove_html_tags
 
@@ -21,7 +19,6 @@ class Resodate(BaseSource):
 
     SOURCE = "resodate"
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources: list) -> Dict[str, Any] | None:
         """
         Fetch raw JSON from the Resodate search API using the given search term.
@@ -34,7 +31,6 @@ class Resodate(BaseSource):
         )
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw Elasticsearch-style JSON response.
@@ -69,7 +65,6 @@ class Resodate(BaseSource):
             return value
         return [value]
 
-    @utils.handle_exceptions
     def map_dataset_hit(self, hit: Dict[str, Any]) -> Dataset:
         """
         Map a single dataset hit (with _source and _id) to a Dataset object.
@@ -150,7 +145,6 @@ class Resodate(BaseSource):
 
         return dataset
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single non-dataset hit (with _source and _id) to an Article from objects.py.
@@ -221,7 +215,6 @@ class Resodate(BaseSource):
 
         return publication
 
-    @utils.handle_exceptions
     def search(
         self,
         source_name: str,
@@ -263,7 +256,6 @@ class Resodate(BaseSource):
             ),
         )
 
-    @utils.handle_exceptions
     def get_resource(
         self,
         source_name: str,
@@ -368,7 +360,6 @@ class Resodate(BaseSource):
         return dataset
 
 
-@utils.handle_exceptions
 def search(
     source: str,
     search_term: str,
@@ -382,7 +373,6 @@ def search(
     Resodate(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
 def get_resource(source: str, source_id: str, doi: str, tracking=None) -> Dataset | None:
     """
     Entrypoint to retrieve RESODATE resource details.

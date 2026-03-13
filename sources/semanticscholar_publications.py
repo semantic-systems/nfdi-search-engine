@@ -13,7 +13,6 @@ from typing import Dict, Any, List
 from config import Config
 from objects import thing, Article, Author
 from sources import data_retriever
-import utils
 from nfdi_search_engine.common.formatting import remove_html_tags
 from nfdi_search_engine.services.tracking_service import TrackingService
 
@@ -51,7 +50,6 @@ class SemanticScholarPublications:
         """Return config value for the given source and key."""
         return Config.DATA_SOURCES.get(source, {}).get(key, default)
 
-    @utils.handle_exceptions
     def get_dois_citations(self, source: str, doi: str) -> List[str]:
         """
         Fetch the DOIs of citations for a given DOI.
@@ -81,7 +79,6 @@ class SemanticScholarPublications:
         ]
         return [d for d in dois_citation if d]
 
-    @utils.handle_exceptions
     def get_dois_recommendations(self, source: str, doi: str) -> List[str]:
         """
         Fetch the DOIs of recommendations for a given DOI.
@@ -158,7 +155,6 @@ class SemanticScholarPublications:
             time.sleep(RETRY_DELAY_SECONDS)
         return None
 
-    @utils.handle_exceptions
     def get_recommendations_for_publication(
         self, source: str, doi: str
     ) -> List[Article]:
@@ -235,7 +231,6 @@ class SemanticScholarPublications:
             time.sleep(RETRY_DELAY_SECONDS)
         return None
 
-    @utils.handle_exceptions
     def get_citations_for_publication(self, source: str, doi: str) -> List[Article]:
         """
         Fetch citing publications for a given DOI as Article objects.
@@ -281,7 +276,6 @@ class SemanticScholarPublications:
 # ---------------------------------------------------------------------------
 
 
-@utils.handle_exceptions
 def get_dois_citations(source: str, doi: str, tracking=None) -> List[str]:
     """
     Entrypoint: fetch DOIs of citations for a given DOI.
@@ -289,7 +283,6 @@ def get_dois_citations(source: str, doi: str, tracking=None) -> List[str]:
     return SemanticScholarPublications(tracking).get_dois_citations(source, doi)
 
 
-@utils.handle_exceptions
 def get_dois_recommendations(source: str, doi: str, tracking=None) -> List[str]:
     """
     Entrypoint: fetch DOIs of recommendations for a given DOI.
@@ -297,7 +290,6 @@ def get_dois_recommendations(source: str, doi: str, tracking=None) -> List[str]:
     return SemanticScholarPublications(tracking).get_dois_recommendations(source, doi)
 
 
-@utils.handle_exceptions
 def get_recommendations_for_publication(source: str, doi: str, tracking=None) -> List[Article]:
     """
     Entrypoint: fetch recommended publications for a given DOI as Article objects.
@@ -307,7 +299,6 @@ def get_recommendations_for_publication(source: str, doi: str, tracking=None) ->
     )
 
 
-@utils.handle_exceptions
 def get_citations_for_publication(source: str, doi: str, tracking=None) -> List[Article]:
     """
     Entrypoint: fetch citing publications for a given DOI as Article objects.

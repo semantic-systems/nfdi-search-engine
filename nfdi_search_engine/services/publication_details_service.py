@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import traceback
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple
 
@@ -47,6 +48,9 @@ class PublicationDetailsService:
         self.metadata_sources = {
             "OpenCitations": "opencitations",
         }
+        self.recommendation_sources = {
+            "SEMANTIC SCHOLAR - Publications": "semanticscholar_publications",
+        }
 
     def get_reference_dois(self, doi: str) -> List[str]:
         """
@@ -62,9 +66,21 @@ class PublicationDetailsService:
         doi = doi.lower()
 
         for source, module_name in self.references_sources.items():
-            mod = importlib.import_module(f"sources.{module_name}")
-            dois = mod.get_dois_references(source=source, doi=doi, tracking=self.tracking) or []
-            found.update(d.lower() for d in dois if d)
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                dois = mod.get_dois_references(
+                    source=source, doi=doi, tracking=self.tracking) or []
+                found.update(d.lower() for d in dois if d)
+            except Exception as e:
+                self.tracking.log_event_async(
+                    log_type="error",
+                    filename=f"sources/{module_name}.py",
+                    args=[source, doi],
+                    method=f"get_dois_references",
+                    message=traceback.format_exception_only(e),
+                    traceback=traceback.format_exception(e),
+                )
+                continue
 
         return sorted(found)
 
@@ -82,9 +98,21 @@ class PublicationDetailsService:
         doi = doi.lower()
 
         for source, module_name in self.citation_sources.items():
-            mod = importlib.import_module(f"sources.{module_name}")
-            dois = mod.get_dois_citations(source=source, doi=doi, tracking=self.tracking) or []
-            found.update(d.lower() for d in dois if d)
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                dois = mod.get_dois_citations(
+                    source=source, doi=doi, tracking=self.tracking) or []
+                found.update(d.lower() for d in dois if d)
+            except Exception as e:
+                self.tracking.log_event_async(
+                    log_type="error",
+                    filename=f"sources/{module_name}.py",
+                    args=[source, doi],
+                    method=f"get_dois_citations",
+                    message=traceback.format_exception_only(e),
+                    traceback=traceback.format_exception(e),
+                )
+                continue
 
         return sorted(found)
 
@@ -106,8 +134,20 @@ class PublicationDetailsService:
         collected: Dict[str, Any] = {}
 
         for module_name in self.metadata_sources.values():
-            mod = importlib.import_module(f"sources.{module_name}")
-            articles = mod.get_batch_articles(dois=dois, tracking=self.tracking) or []
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                articles = mod.get_batch_articles(
+                    dois=dois, tracking=self.tracking) or []
+            except Exception as e:
+                self.tracking.log_event_async(
+                    log_type="error",
+                    filename=f"sources/{module_name}.py",
+                    args=[dois],
+                    method=f"get_batch_articles",
+                    message=traceback.format_exception_only(e),
+                    traceback=traceback.format_exception(e),
+                )
+                continue
 
             # existing collected keys for dedup
             titles = {
@@ -163,11 +203,16 @@ class PublicationDetailsService:
             if str(cfg.get("get-publication-endpoint", "")).strip() and src not in excluded_sources:
                 sources.append(src)
 
-        def get_publication(source: str, module_name: str, doi_: str, source_id_: str):
-            mod = importlib.import_module(f"sources.{module_name}")
-            partial: List[Any] = []
-            mod.get_publication(source, doi_, source_id_, partial, self.tracking)
-            return partial
+        def get_publication(source: str, module_name: str, doi_: str) -> tuple[Optional[List[Any]], Optional[Exception]]:
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                partial: List[Any] = []
+                mod.get_publication(
+                    source, doi_, source, partial, self.tracking
+                )
+                return partial, None
+            except Exception as e:
+                return None, e
 
         publications: List[Article] = []
         failed: List[str] = []
@@ -177,16 +222,26 @@ class PublicationDetailsService:
         max_workers = min(self.settings.max_workers, len(sources) or 1)
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = {
-                ex.submit(get_publication, src, self.settings.data_sources[src]["module"], doi, src): src
+                ex.submit(get_publication, src, self.settings.data_sources[src]["module"], doi): src
                 for src in sources
             }
             for fut in as_completed(futures):
                 src = futures[fut]
-                try:
-                    partial = fut.result()
-                    publications.extend(partial or [])
-                except Exception:
+                partial, err = fut.result()
+                if err:
                     failed.append(src)
+                    module_name = self.settings.data_sources[src]["module"]
+                    self.tracking.log_event_async(
+                        log_type="error",
+                        filename=f"sources/{module_name}.py",
+                        args=[src, module_name, doi],
+                        method=f"get_publication",
+                        message=traceback.format_exception_only(err),
+                        traceback=traceback.format_exception(err),
+                    )
+                    continue
+
+                publications.extend(partial or [])
 
         return publications, failed
 
@@ -220,13 +275,27 @@ class PublicationDetailsService:
         publications: List[Any] = []
 
         for source, module_name in self.citation_sources.items():
-            mod = importlib.import_module(f"sources.{module_name}")
-            found = mod.get_citations_for_publication(
-                source=source, doi=doi, tracking=self.tracking) or []
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                found = mod.get_citations_for_publication(
+                    source=source, doi=doi, tracking=self.tracking
+                ) or []
+            except Exception as e:
+                self.tracking.log_event_async(
+                    log_type="error",
+                    filename=f"sources/{module_name}.py",
+                    args=[source, doi],
+                    method=f"get_citations_for_publication",
+                    message=traceback.format_exception_only(e),
+                    traceback=traceback.format_exception(e),
+                )
+                continue
 
             doi_list = {getattr(pub, "identifier", "") for pub in publications}
-            name_list = {(getattr(pub, "name", "") or "").lower()
-                         for pub in publications}
+            name_list = {
+                (getattr(pub, "name", "") or "").lower()
+                for pub in publications
+            }
 
             for pub in found:
                 if getattr(pub, "identifier", "") not in doi_list and (getattr(pub, "name", "") or "").lower() not in name_list:
@@ -245,11 +314,27 @@ class PublicationDetailsService:
         :rtype: List[Article]
         """
         doi = doi.lower()
-        source = "SEMANTIC SCHOLAR - Publications"
-        module_name = "semanticscholar_publications"
-        mod = importlib.import_module(f"sources.{module_name}")
+        publications: List[Article] = []
 
-        return mod.get_recommendations_for_publication(source=source, doi=doi, tracking=self.tracking) or []
+        for source, module_name in self.citation_sources.items():
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                found = mod.get_recommendations_for_publication(
+                    source=source, doi=doi, tracking=self.tracking
+                ) or []
+            except Exception as e:
+                self.tracking.log_event_async(
+                    log_type="error",
+                    filename=f"sources/{module_name}.py",
+                    args=[source, doi],
+                    method=f"get_recommendations_for_publication",
+                    message=traceback.format_exception_only(e),
+                    traceback=traceback.format_exception(e),
+                )
+                continue
+            publications.extend(found)
+
+        return publications
 
     def format_citation(self, doi: str, style: str = "ieee") -> dict:
         """

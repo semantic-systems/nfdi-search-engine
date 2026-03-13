@@ -1,7 +1,6 @@
 from objects import thing, Article, Author, CreativeWork
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 from config import Config
 from sources.base import BaseSource
 
@@ -12,7 +11,6 @@ class CROSSREF_Publications(BaseSource):
 
     SOURCE = 'CROSSREF - Publications'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -23,8 +21,7 @@ class CROSSREF_Publications(BaseSource):
                                                     failed_sources=failed_sources) 
         
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -36,7 +33,6 @@ class CROSSREF_Publications(BaseSource):
 
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, source_name: str, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -84,7 +80,6 @@ class CROSSREF_Publications(BaseSource):
 
         return publication
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -97,8 +92,6 @@ class CROSSREF_Publications(BaseSource):
             if publication:
                 results['publications'].append(publication)
 
-
-    @utils.handle_exceptions
     def get_publication(self, doi: str):
         search_result = data_retriever.retrieve_object(source=self.SOURCE, 
                                                         base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', ''),
@@ -108,7 +101,6 @@ class CROSSREF_Publications(BaseSource):
             search_result = search_result.get('message',{})
             return self.map_hit(self.SOURCE, search_result)
 
-    @utils.handle_exceptions
     def get_dois_references(self, source: str, doi: str) -> list:
         """
         Fetches the references for a given DOI from the specified source.
@@ -137,7 +129,6 @@ class CROSSREF_Publications(BaseSource):
         
         return []
 
-    @utils.handle_exceptions
     def get_publication_references(self, source: str, doi: str):
         search_result = data_retriever.retrieve_object(source=self.SOURCE, 
                                                         base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''),
@@ -171,11 +162,13 @@ class CROSSREF_Publications(BaseSource):
             
             return digitalObj
 
+
 def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search CROSSREF publications.
     """
     CROSSREF_Publications(tracking).search(source_name, search_term, results, failed_sources)
+
 
 def get_publication(source, doi, source_id, publications, tracking=None) -> None:
     source = CROSSREF_Publications(tracking)
@@ -184,8 +177,10 @@ def get_publication(source, doi, source_id, publications, tracking=None) -> None
     if publication:
         publications.append(publication)
 
+
 def get_dois_references(source: str, doi: str, tracking=None):
     return CROSSREF_Publications(tracking).get_dois_references(source, doi)
+
 
 def get_publication_references(source: str, doi: str, tracking=None):
     return CROSSREF_Publications(tracking).get_publication_references(source, doi)

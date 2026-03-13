@@ -105,7 +105,7 @@ class Config:
     SESSION_TYPE = "filesystem"
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
-    REQUEST_TIMEOUT = 100
+    REQUEST_TIMEOUT = 5
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
@@ -172,7 +172,7 @@ class Config:
                 "height": "h-100",
             },
             "module": "zenodo",
-            "search-endpoint": f"https://zenodo.org/api/records?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            "search-endpoint": f"https://zenodo.org/api/records?size=25&q=",
             "get-publication-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {

@@ -3,7 +3,6 @@ from sources import data_retriever
 from sources.base import BaseSource
 from config import Config
 from typing import Union, Dict, Any, List, Iterable
-import utils
 from nfdi_search_engine.common.formatting import remove_html_tags
 
 SOURCE = "OPENALEX - Publications"
@@ -101,7 +100,6 @@ class OpenAlexPublications(BaseSource):
 
         return publication
 
-    @utils.handle_exceptions
     def search(self, source: str, search_term: str, results: Dict[str, List], failed_sources: List[str]) -> None:
         """
         Search OpenAlex for the given term and append mapped results to the results dict.
@@ -131,8 +129,7 @@ class OpenAlexPublications(BaseSource):
                 results["publications"].append(obj)
             else:
                 results["others"].append(obj)
-    
-    @utils.handle_exceptions
+
     def get_publications(self, source: str, url: str, results, failed_sources):
         
         base_url = Config.DATA_SOURCES[SOURCE].get("search-endpoint", "")
@@ -166,14 +163,13 @@ class OpenAlexPublications(BaseSource):
                 results["others"].append(obj)
 
 
-@utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search OpenAlex publications.
     """
     OpenAlexPublications(tracking).search(source, search_term, results, failed_sources)
 
-@utils.handle_exceptions
+
 def get_publication(source: str, doi: str, source_id: str, publications, tracking=None):
     """
     Fetch a single object by DOI and map it.
@@ -188,6 +184,6 @@ def get_publication(source: str, doi: str, source_id: str, publications, trackin
         obj = OpenAlexPublications(tracking).map_hit(source, search_result)
         publications.append(obj)
 
-@utils.handle_exceptions
+
 def get_publications(source: str, url: str, results, failed_sources, tracking=None):
     OpenAlexPublications(tracking).get_publications(source, url, results, failed_sources)

@@ -4,7 +4,6 @@ from objects import thing, Article, Author
 from sources import data_retriever
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any
-import utils
 from config import Config
 from datetime import datetime
 from dateutil import parser
@@ -16,7 +15,6 @@ class IEEE(BaseSource):
 
     SOURCE = "IEEE"
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources: list) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -48,7 +46,6 @@ class IEEE(BaseSource):
         )
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response.
@@ -71,7 +68,6 @@ class IEEE(BaseSource):
         self.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top {len(hits)}")
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single hit dict from the source to an Article object.
@@ -135,7 +131,6 @@ class IEEE(BaseSource):
 
         return publication
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them into results dict.
@@ -150,7 +145,6 @@ class IEEE(BaseSource):
             if digitalObj:
                 results["publications"].append(digitalObj)
 
-    @utils.handle_exceptions
     def get_publication(self, doi: str) -> Article | None:
         """
         Fetch a single publication by DOI.
@@ -184,7 +178,6 @@ class IEEE(BaseSource):
         return self.map_hit(articles[0])
 
 
-@utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search IEEE publications.
@@ -192,7 +185,6 @@ def search(source: str, search_term: str, results, failed_sources, tracking=None
     IEEE(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
 def get_publication(source: str, doi: str, source_id: str, publications, tracking=None):
     """
     Entrypoint to get a single IEEE publication by DOI.

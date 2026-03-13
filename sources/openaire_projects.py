@@ -1,7 +1,6 @@
 from objects import thing, Project, Author, Organization
 from sources import data_retriever
 from typing import Iterable, Dict, Any
-import utils
 from config import Config
 
 from sources.base import BaseSource
@@ -10,7 +9,6 @@ class OpenAIRE_Projects(BaseSource):
 
     SOURCE = 'OPENAIRE - Projects'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -22,7 +20,6 @@ class OpenAIRE_Projects(BaseSource):
 
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -35,7 +32,6 @@ class OpenAIRE_Projects(BaseSource):
 
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Project:
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -86,7 +82,6 @@ class OpenAIRE_Projects(BaseSource):
 
         return project
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -98,7 +93,7 @@ class OpenAIRE_Projects(BaseSource):
             project = self.map_hit(hit)
             results['projects'].append(project)
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None): 
     """
     Entrypoint to search OpenAIRE Projects.

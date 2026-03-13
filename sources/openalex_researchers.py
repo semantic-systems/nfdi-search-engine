@@ -2,7 +2,6 @@ from objects import thing, Author, Organization
 from sources import data_retriever
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any, List
-import utils
 from config import Config
 from sources import openalex_publications
 
@@ -12,7 +11,6 @@ class OpenAlexResearchers(BaseSource):
     Implements the BaseSource interface for OpenAlex Researchers.
     """
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources: List[str], source_name: str = None) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -35,7 +33,6 @@ class OpenAlexResearchers(BaseSource):
         
         return search_result or {}
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -44,7 +41,6 @@ class OpenAlexResearchers(BaseSource):
         
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, source_name: str, hit: Dict[str, Any]) -> Author:
         """
         Map a single hit dict from the source to an Author object.
@@ -103,7 +99,6 @@ class OpenAlexResearchers(BaseSource):
 
         return author
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -131,7 +126,6 @@ class OpenAlexResearchers(BaseSource):
             results["researchers"].append(author)
 
 
-@utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search OpenAlex researchers.
@@ -139,7 +133,6 @@ def search(source: str, search_term: str, results, failed_sources, tracking=None
     OpenAlexResearchers(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
 def get_researcher(source: str, orcid: str, source_id: str, researchers, tracking=None):
     """
     Fetch a single researcher by ORCID and map it to an Author object.

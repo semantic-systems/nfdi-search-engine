@@ -1,7 +1,6 @@
 from objects import thing, Article, Author, CreativeWork
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 
 import requests
 
@@ -13,7 +12,6 @@ class DataCite(BaseSource):
 
     SOURCE = 'DataCite'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -25,14 +23,12 @@ class DataCite(BaseSource):
         
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
         """
         return raw['data']
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -94,8 +90,6 @@ class DataCite(BaseSource):
 
         return publication
 
-
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -116,8 +110,7 @@ class DataCite(BaseSource):
                 publications.append(pub)
 
         results['publications'].extend(publications)
-    
-    @utils.handle_exceptions
+
     def get_publication(self, doi: str) -> Article | None:
         """
         Fetch a single publication by its DOI and map it to an Article object.
@@ -140,11 +133,13 @@ class DataCite(BaseSource):
             self.log_event(type="error", message=f"{self.SOURCE} - Get Publication response status code: {str(response.status_code)} (Requesting URL: {url})")            
             return None
 
+
 def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search DataCite publications.
     """
     DataCite(tracking).search(source_name, search_term, results, failed_sources)
+
 
 def get_publication(source, doi, source_id, publications, tracking=None) -> None:
     source = DataCite(tracking)

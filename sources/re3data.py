@@ -1,7 +1,5 @@
-import time
 from typing import Iterable, Dict, Any, List
 
-import utils
 from objects import Dataset, Organization
 from config import Config
 from sources import data_retriever
@@ -19,7 +17,6 @@ class RE3DATA(BaseSource):
 
     SOURCE = 'RE3DATA'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -32,9 +29,7 @@ class RE3DATA(BaseSource):
             failed_sources=failed_sources
         )
         return search_results
-    
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -47,9 +42,7 @@ class RE3DATA(BaseSource):
         repositories_to_parse = repositories[:Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT]
         self.log_event(type="info", message=f"{self.SOURCE} - {len(repositories)} records matched; pulled top {len(repositories_to_parse)}")   
         return repositories_to_parse
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -172,8 +165,6 @@ class RE3DATA(BaseSource):
             text=repository_data.get('r3d:remarks', "")
         )
     
-
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -187,14 +178,14 @@ class RE3DATA(BaseSource):
             if repository:
                 results['resources'].append(repository)
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search RE3DATA dataset.
     """
     RE3DATA(tracking).search(source, search_term, results, failed_sources)
 
-@utils.handle_exceptions
+
 def get_resource(source: str, source_identifier: str, doi: str, tracking=None):
     """
     Retrieve detailed information for the repository. 

@@ -2,9 +2,7 @@ import requests
 from objects import thing, Article, Author, Organization
 from typing import Iterable, Dict, Any, List
 import logging
-import utils
 from sources import data_retriever
-import utils
 from config import Config
 
 from sources.base import BaseSource
@@ -13,7 +11,6 @@ class DBLP_Researchers(BaseSource):
 
     SOURCE = 'dblp-Researchers'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -25,7 +22,6 @@ class DBLP_Researchers(BaseSource):
 
         return search_result      
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -41,8 +37,7 @@ class DBLP_Researchers(BaseSource):
             hits = hits['hit']
             return hits
         return None
-    
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]) -> Author:
                 
         author = Author()
@@ -79,8 +74,7 @@ class DBLP_Researchers(BaseSource):
         author.source.append(_source)
 
         return author
-    
-    @utils.handle_exceptions
+
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -92,6 +86,7 @@ class DBLP_Researchers(BaseSource):
             for hit in hits:
                 author = self.map_hit(hit)
                 results['researchers'].append(author)
+
 
 def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """

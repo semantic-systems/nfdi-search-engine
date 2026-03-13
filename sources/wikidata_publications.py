@@ -1,18 +1,18 @@
-from objects import thing, Article, Author, Organization
-from sources import data_retriever
-from typing import Iterable, Dict, Any, List
-import utils
+from dateutil import parser
 from string import Template
 from datetime import datetime
-from dateutil import parser
+from typing import Iterable, Dict, Any, List
+
 from sources.base import BaseSource
 from config import Config
+from objects import thing, Article, Author, Organization
+from sources import data_retriever
+
 
 class WIKIDATA_Publication(BaseSource):
 
     SOURCE = 'WIKIDATA - Publications'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -57,7 +57,6 @@ class WIKIDATA_Publication(BaseSource):
                                                      failed_sources=failed_sources)
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -70,7 +69,6 @@ class WIKIDATA_Publication(BaseSource):
             return hits
         return []
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -115,7 +113,6 @@ class WIKIDATA_Publication(BaseSource):
         publication.source.append(_source)
         return publication
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.

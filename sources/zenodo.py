@@ -1,10 +1,11 @@
+from typing import Union, Dict, Any, List, Iterable
+
 from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
 from sources import data_retriever
-from config import Config
 from sources.base import BaseSource
-from typing import Union, Dict, Any, List, Iterable
-import utils
+from config import Config
 from nfdi_search_engine.common.formatting import remove_html_tags
+
 
 class ZENODO(BaseSource):
     """
@@ -20,7 +21,6 @@ class ZENODO(BaseSource):
         return search_result
 
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         total_records_found = raw.get("hits", {}).get("total", 0)
         hits = raw.get("hits", {}).get("hits", [])
@@ -31,7 +31,6 @@ class ZENODO(BaseSource):
             return hits
         return []
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Union[Article, CreativeWork, Dataset, VideoObject, ImageObject, LearningResource, SoftwareApplication]:
         metadata = hit.get('metadata', {})
         resource_type = metadata.get('resource_type', {}).get('type', 'OTHER').upper()
@@ -104,7 +103,6 @@ class ZENODO(BaseSource):
 
         return digitalObj
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         raw = self.fetch(search_term, failed_sources)
         hits = self.extract_hits(raw)

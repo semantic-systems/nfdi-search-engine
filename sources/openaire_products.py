@@ -1,6 +1,5 @@
 from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
 from sources import data_retriever
-import utils
 from config import Config
 from typing import Union, Iterable, Dict, Any
 
@@ -11,7 +10,6 @@ class OpenAIRE_Products(BaseSource):
 
     SOURCE = 'OPENAIRE - Products'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -23,7 +21,6 @@ class OpenAIRE_Products(BaseSource):
         
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -37,7 +34,6 @@ class OpenAIRE_Products(BaseSource):
 
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -160,7 +156,6 @@ class OpenAIRE_Products(BaseSource):
 
         return digitalObj
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -181,7 +176,6 @@ class OpenAIRE_Products(BaseSource):
             else:
                 results['others'].append(digitalObj)   
 
-    @utils.handle_exceptions
     def get_publication(self, doi: str):
         search_result = data_retriever.retrieve_object(source=self.SOURCE, 
                                                         base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', ''),
@@ -207,12 +201,14 @@ class OpenAIRE_Products(BaseSource):
                     return digitalObj
         
         return None
-    
+
+
 def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search OpenAIRE products.
     """
     OpenAIRE_Products(tracking).search(source_name, search_term, results, failed_sources)
+
 
 def get_publication(source, doi, source_id, publications, tracking=None) -> None:
     

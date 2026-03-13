@@ -1,7 +1,6 @@
 from objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
-import utils
 from config import Config
 from datetime import datetime
 from dateutil import parser
@@ -13,7 +12,6 @@ class EUDAT(BaseSource):
 
     SOURCE = 'EUDAT'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -24,8 +22,7 @@ class EUDAT(BaseSource):
                                                     failed_sources=failed_sources)  
 
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -39,8 +36,7 @@ class EUDAT(BaseSource):
             hits = hits.get("hits", [])
             return hits
         return None
-        
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -115,8 +111,7 @@ class EUDAT(BaseSource):
         digitalObj.source.append(_source)  
 
         return digitalObj
-    
-    @utils.handle_exceptions
+
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -141,7 +136,7 @@ class EUDAT(BaseSource):
                 else: # 'AUDIOVISUAL'
                     results['others'].append(digitalObj)   
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search EUDAT objects.

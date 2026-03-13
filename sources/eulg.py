@@ -3,7 +3,6 @@ from typing import List, Dict, Any, Iterable
 
 import requests
 
-import utils
 from elg import Catalog
 from config import Config
 from objects import Dataset, SoftwareApplication
@@ -59,7 +58,6 @@ class EULG(BaseSource):
         # Wrap in a "raw" structure similar to what your pipeline expects
         return {"hits": {"total": len(all_results), "hits": all_results}}
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Any]:
         total_records_found = raw.get("hits", {}).get("total", 0)
         hits = raw.get("hits", {}).get("hits", [])
@@ -101,7 +99,6 @@ class EULG(BaseSource):
 
         return out
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Any) -> Any:
         """
         Map a single ELG result object to one of our objects.py classes.
@@ -155,7 +152,6 @@ class EULG(BaseSource):
 
         return None
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch from ELG, extract hits, map to objects, and insert into results in-place.

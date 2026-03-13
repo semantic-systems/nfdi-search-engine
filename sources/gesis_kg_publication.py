@@ -1,7 +1,6 @@
 from objects import thing, Article, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 from config import Config
 from string import Template
 
@@ -11,7 +10,6 @@ class GESIS_KG_Publication(BaseSource):
 
     SOURCE = 'GESIS KG'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -62,8 +60,7 @@ class GESIS_KG_Publication(BaseSource):
                                                     failed_sources=failed_sources) or {}
         
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -76,8 +73,7 @@ class GESIS_KG_Publication(BaseSource):
         if int(total_hits) > 0:
             return hits
         return None
-    
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -121,7 +117,6 @@ class GESIS_KG_Publication(BaseSource):
         _source.url = publication.url #hit['urls'].get('value', "").strip()
         publication.source.append(_source)
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -134,7 +129,6 @@ class GESIS_KG_Publication(BaseSource):
                 publication = self.map_hit(hit)
                 results['resources'].append(publication)
         
-
 
 def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """

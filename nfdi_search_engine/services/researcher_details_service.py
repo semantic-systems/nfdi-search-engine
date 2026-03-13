@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import traceback
 from typing import Any, List, Optional, Set, Tuple
 
 import requests
@@ -21,6 +22,7 @@ class ResearcherDetailsService:
     - Researcher object consolidation / merging
     - Researcher 'about me' text generation
     """
+
     def __init__(
         self,
         settings: DetailsSettings,
@@ -42,7 +44,7 @@ class ResearcherDetailsService:
         """
         Harvest researcher records across all enabled data sources for the given ORCID.
         Uses the .get_researcher() method from source modules
-        
+
         :param orcid: The ORCID string
         :type orcid: str
         :param excluded_sources: Sources to ignore
@@ -58,11 +60,16 @@ class ResearcherDetailsService:
             if str(cfg.get("get-researcher-endpoint", "")).strip() and src not in excluded_sources:
                 sources.append(src)
 
-        def get_researcher(source: str, module_name: str, orcid_: str) -> List[Any]:
-            mod = importlib.import_module(f"sources.{module_name}")
-            partial: List[Any] = []
-            mod.get_researcher(source, orcid_, source, partial, tracking=self.tracking)
-            return partial
+        def get_researcher(source: str, module_name: str, orcid_: str) -> tuple[Optional[List[Any]], Optional[Exception]]:
+            try:
+                mod = importlib.import_module(f"sources.{module_name}")
+                partial: List[Any] = []
+                mod.get_researcher(
+                    source, orcid_, source, partial, tracking=self.tracking
+                )
+                return partial, None
+            except Exception as e:
+                return None, e
 
         from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -77,18 +84,28 @@ class ResearcherDetailsService:
             }
             for fut in as_completed(futures):
                 src = futures[fut]
-                try:
-                    partial = fut.result()
-                    researchers.extend(partial or [])
-                except Exception:
+                partial, err = fut.result()
+                if err:
                     failed.append(src)
+                    module_name = self.settings.data_sources[src]["module"]
+                    self.tracking.log_event_async(
+                        log_type="error",
+                        filename=f"sources/{module_name}.py",
+                        args=[src, module_name, orcid],
+                        method=f"get_researcher",
+                        message=traceback.format_exception_only(err),
+                        traceback=traceback.format_exception(err),
+                    )
+                    continue
+
+                researchers.extend(partial or [])
 
         return researchers, failed
 
     def merge_researchers(self, researchers: List[Any]) -> Any:
         """
         Merge multiple researcher objects into a single researcher representation.
-        
+
         :param researchers: List of researcher-like objects
         :type researchers: List[Any]
         :return: Single object with merged fields
@@ -103,7 +120,7 @@ class ResearcherDetailsService:
     def generate_about_me(self, researcher_details_json: dict | str) -> str:
         """
         Generate an 'about me' paragraph based on the provided researcher details using an LLM.
-        
+
         :param researcher_details_json: Information about the researcher in a json format
         :type researcher_details_json: dict | str
         :return: 'about me' paragraph

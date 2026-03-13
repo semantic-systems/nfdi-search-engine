@@ -1,7 +1,6 @@
 from objects import thing, Project, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 
 from config import Config
 from sources.base import BaseSource
@@ -10,7 +9,6 @@ class CORDIS(BaseSource):
 
     SOURCE = 'CORDIS'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -25,17 +23,13 @@ class CORDIS(BaseSource):
         self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_records_pulled}")   
 
         return search_result
-    
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
         """
         return raw.get('hits', {}).get('hit', [])
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -86,7 +80,6 @@ class CORDIS(BaseSource):
         return None
     
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -100,7 +93,7 @@ class CORDIS(BaseSource):
             if project:
                 results['projects'].append(project)
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORDIS publications.

@@ -1,16 +1,15 @@
-from objects import thing, Article, Author, Organization, Person
-from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 from string import Template
-from datetime import datetime
-from dateutil import parser
+
+from sources import data_retriever
+from objects import thing, Article, Author, Organization, Person
 from sources.base import BaseSource
 from config import Config
 
+
 class WIKIDATA_Researchers(BaseSource):
     SOURCE = 'WIKIDATA - Researchers'
-    @utils.handle_exceptions
+    
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -67,7 +66,6 @@ class WIKIDATA_Researchers(BaseSource):
                                                      failed_sources=failed_sources)
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -77,7 +75,6 @@ class WIKIDATA_Researchers(BaseSource):
         self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any])-> Author:
         """
         Map a single hit dict from the source to an Author object.
@@ -106,7 +103,6 @@ class WIKIDATA_Researchers(BaseSource):
 
         return author
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -119,7 +115,7 @@ class WIKIDATA_Researchers(BaseSource):
                 if author.identifier != "":
                     results["researchers"].append(author)
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search Wikidata researchers.

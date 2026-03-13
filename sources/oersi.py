@@ -1,7 +1,6 @@
 from objects import thing, Article, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 from config import Config
 
 from sources.base import BaseSource
@@ -11,7 +10,6 @@ class OERSI(BaseSource):
 
     SOURCE = 'OERSI'
 
-    # @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -23,14 +21,12 @@ class OERSI(BaseSource):
         
         return search_result
 
-    # @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
         """
         return raw['hits']['hits'] 
 
-    # @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -108,7 +104,7 @@ class OERSI(BaseSource):
             else:
                 results['others'].append(publication)
 
-# @utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORDIS publications.

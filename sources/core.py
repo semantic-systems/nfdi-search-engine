@@ -2,7 +2,6 @@ from objects import thing, Article, Author, Organization
 from sources import data_retriever
 from config import Config
 from typing import Iterable, Dict, Any, List
-import utils
 import requests
 
 from sources.base import BaseSource
@@ -13,7 +12,6 @@ class CORE(BaseSource):
 
     SOURCE = 'CORE'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -33,9 +31,7 @@ class CORE(BaseSource):
         
         failed_sources.append(self.SOURCE)
         return None
-    
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -48,9 +44,7 @@ class CORE(BaseSource):
         self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}") 
 
         return hits
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -108,9 +102,7 @@ class CORE(BaseSource):
         publication.source.append(_source)
 
         return publication
-    
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -129,7 +121,7 @@ class CORE(BaseSource):
             if digitalObj:
                 results['publications'].append(digitalObj)
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORE publications.

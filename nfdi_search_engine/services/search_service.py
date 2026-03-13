@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import importlib
+import traceback
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 from rank_bm25 import BM25Plus
@@ -163,20 +164,32 @@ class SearchService:
         if not module_name:
             raise KeyError(f"No module configured for source: {source}")
 
-        mod = importlib.import_module(f"sources.{module_name}")
-        clean_doi = doi.replace("DOI:", "")
-        return mod.get_resource(source, source_identifier, clean_doi, tracking=self.tracking)
+        try:
+            mod = importlib.import_module(f"sources.{module_name}")
+            clean_doi = doi.replace("DOI:", "")
+            return mod.get_resource(source, source_identifier, clean_doi, tracking=self.tracking)
+        except Exception as e:
+            self.tracking.log_event_async(
+                log_type="error",
+                filename=mod.__file__,
+                args=[source, source_identifier, clean_doi],
+                method="get_resource",
+                message=traceback.format_exception_only(e),
+                traceback=traceback.format_exception(e),
+            )
 
     def _harvest(self, sources: List[str], search_term: str) -> Tuple[Dict[str, List[Any]], List[str]]:
         results: Dict[str, List[Any]] = {c: [] for c in CATEGORIES}
         failed: List[str] = []
 
         def search_source(source: str, module_name: str, term: str) -> tuple[Optional[dict], Optional[Exception]]:
-            mod = importlib.import_module(f"sources.{module_name}")
-            partial = {c: [] for c in CATEGORIES}
-            failed_sources: List[str] = []
             try:
-                mod.search(source, term, partial, failed_sources, tracking=self.tracking)
+                mod = importlib.import_module(f"sources.{module_name}")
+                partial = {c: [] for c in CATEGORIES}
+                failed_sources: List[str] = []
+                mod.search(
+                    source, term, partial, failed_sources, tracking=self.tracking
+                )
                 if failed_sources:
                     return None, Exception(f"Failed to harvest {source}")
                 return partial, None
@@ -194,7 +207,17 @@ class SearchService:
                 partial, err = fut.result()
                 if err:
                     failed.append(src)
+                    module_name = self.settings.data_sources[src]["module"]
+                    self.tracking.log_event_async(
+                        log_type="error",
+                        filename=f"sources/{module_name}.py",
+                        args=[src, module_name, search_term],
+                        method=f"search",
+                        message=traceback.format_exception_only(err),
+                        traceback=traceback.format_exception(err),
+                    )
                     continue
+
                 for k in CATEGORIES:
                     results[k].extend(partial[k])
 

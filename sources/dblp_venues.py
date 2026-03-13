@@ -1,7 +1,6 @@
 from objects import thing, Article, Author
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
-import utils
 from config import Config
 
 from sources.base import BaseSource
@@ -10,7 +9,6 @@ class DBLP_Venues(BaseSource):
 
     SOURCE = 'DBLP - VENUES'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -21,8 +19,7 @@ class DBLP_Venues(BaseSource):
                                                     failed_sources=failed_sources)  
 
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -38,8 +35,7 @@ class DBLP_Venues(BaseSource):
             hits = hits['hit']
             return hits
         return None
-    
-    @utils.handle_exceptions
+
     def map_hit(self, source_name: str, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -60,8 +56,7 @@ class DBLP_Venues(BaseSource):
         venue.source.append(_source)
 
         return venue
-    
-    @utils.handle_exceptions
+
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -74,7 +69,7 @@ class DBLP_Venues(BaseSource):
                 venue = self.map_hit(self.SOURCE, hit)
                 results['events'].append(venue)
 
-@utils.handle_exceptions
+
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search DBLP venues.

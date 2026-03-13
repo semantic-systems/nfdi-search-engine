@@ -1,7 +1,6 @@
 from objects import thing, Article, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
 from config import Config
 
 from sources.base import BaseSource
@@ -10,7 +9,6 @@ class DBLP_Publications(BaseSource):
 
     SOURCE = 'dblp - Publications'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -22,8 +20,7 @@ class DBLP_Publications(BaseSource):
                                                         failed_sources=failed_sources)
         
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -35,8 +32,7 @@ class DBLP_Publications(BaseSource):
         self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
 
         return hits
-    
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -81,8 +77,7 @@ class DBLP_Publications(BaseSource):
         publication.source.append(_source)
 
         return publication
-    
-    @utils.handle_exceptions
+
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -97,6 +92,7 @@ class DBLP_Publications(BaseSource):
                 results['publications'].append(digitalObj)
             else:
                 results['others'].append(digitalObj)
+
 
 def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
