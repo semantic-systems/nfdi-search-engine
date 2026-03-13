@@ -1,23 +1,108 @@
 import os
-
-# load environment variables
 from dotenv import find_dotenv, load_dotenv
 
+from typing import Optional, Dict, Any
+from pydantic import Field, HttpUrl, ValidationError
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+# load environment variables
 _ = load_dotenv(find_dotenv())
 
+class Settings(BaseSettings):
+    """Helper for loading and validating .env values"""
+
+    PREFERRED_URL_SCHEME: str = "http"
+    SECRET_KEY: Optional[str] = None
+    
+    # API Keys
+    IEEE_API_KEY: Optional[str] = None
+    OPENCITATIONS_API_KEY: Optional[str] = None
+    CORE_API_KEY: Optional[str] = None
+    OPENAI_API_KEY: Optional[str] = None
+
+    # OAuth
+    CLIENT_ID_GOOGLE: Optional[str] = None
+    CLIENT_SECRET_GOOGLE: Optional[str] = None
+    CLIENT_ID_GITHUB: Optional[str] = None
+    CLIENT_SECRET_GITHUB: Optional[str] = None
+    CLIENT_ID_ORCID: Optional[str] = None
+    CLIENT_SECRET_ORCID: Optional[str] = None
+    REDIRECT_URI_ORCID: Optional[str] = None
+
+    # Dashboard auth
+    DASHBOARD_USERNAME: str
+    DASHBOARD_PASSWORD: str
+
+    # LLAMA
+    LLAMA3_USERNAME: Optional[str] = None
+    LLAMA3_PASSWORD: Optional[str] = None
+
+    # Elasticsearch + Chatbot
+    ELASTIC_SERVER: str = Field(default="https://dev.nfdi-elastic.nliwod.org/")
+    ELASTIC_USERNAME: str = Field(default="elastic")
+    ELASTIC_PASSWORD: Optional[str] = None
+    CHATBOT_SERVER: str = Field(default="https://nfdi-chatbot.nliwod.org")
+
+    model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
+
+def validate_env():
+    """
+    Try to create a Settings object and return it. If .env values are missing/incorrect,
+    prints a warning and returns a Settings object in which all missing/incorrect values
+    are None.
+    """
+    try:
+        settings = Settings()
+        return settings
+    except ValidationError as e:
+        print("\n--- ERROR: Missing or Invalid Environment Variables ---")
+        for error in e.errors():
+            loc = " -> ".join(str(x) for x in error['loc'])
+            print(f"Variable: {loc}, Error: {error['msg']}")
+        print("-------------------------------------------------------\n")
+
+        # create an unsafe settings object
+        # warning: missing keys are set to None!
+        all_fields = Settings.model_fields.keys()
+        safe_data = {field: os.environ.get(field) for field in all_fields}
+
+        return Settings.model_construct(**safe_data)
+
+app_settings = validate_env()
 
 class Config:
-    SECRET_KEY = os.environ.get("SECRET_KEY", "")
+
+    # copy over all the values from the settings
+    if app_settings:
+        PREFERRED_URL_SCHEME = app_settings.PREFERRED_URL_SCHEME
+        SECRET_KEY = app_settings.SECRET_KEY
+
+        IEEE_API_KEY = app_settings.IEEE_API_KEY
+        OPENCITATIONS_API_KEY = app_settings.OPENCITATIONS_API_KEY
+        CORE_API_KEY = app_settings.CORE_API_KEY
+        OPENAI_API_KEY = app_settings.OPENAI_API_KEY
+
+        CLIENT_ID_GOOGLE = app_settings.CLIENT_ID_GOOGLE
+        CLIENT_SECRET_GOOGLE = app_settings.CLIENT_SECRET_GOOGLE
+        CLIENT_ID_GITHUB = app_settings.CLIENT_ID_GITHUB
+        CLIENT_SECRET_GITHUB = app_settings.CLIENT_SECRET_GITHUB
+        CLIENT_ID_ORCID = app_settings.CLIENT_ID_ORCID
+        CLIENT_SECRET_ORCID = app_settings.CLIENT_SECRET_ORCID
+        REDIRECT_URI_ORCID = app_settings.REDIRECT_URI_ORCID
+
+        LLAMA3_USERNAME = app_settings.LLAMA3_USERNAME
+        LLAMA3_PASSWORD = app_settings.LLAMA3_PASSWORD
+
+        DASHBOARD_USERNAME = app_settings.DASHBOARD_USERNAME
+        DASHBOARD_PASSWORD = app_settings.DASHBOARD_PASSWORD
+
+        ELASTIC_SERVER = app_settings.ELASTIC_SERVER
+        ELASTIC_USERNAME = app_settings.ELASTIC_USERNAME
+        ELASTIC_PASSWORD = app_settings.ELASTIC_PASSWORD
+        CHATBOT_SERVER = app_settings.CHATBOT_SERVER
+
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
-
-    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
-    IEEE_API_KEY = os.environ.get("IEEE_API_KEY", "")
-    OPENCITATIONS_API_KEY = os.environ.get("OPENCITATIONS_API_KEY", "")
-    CORE_API_KEY = os.environ.get("CORE_API_KEY", "")
-
-    DASHBOARD_USERNAME = os.environ.get("DASHBOARD_USERNAME")
-    DASHBOARD_PASSWORD = os.environ.get("DASHBOARD_PASSWORD")
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 100
@@ -292,19 +377,19 @@ class Config:
         #     "module": "oersi",
         #     "search-endpoint": f"https://oersi.org/resources/api/search/oer_data/_search?pretty&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
         # },
-        # "IEEE": {
-        #     "logo": {
-        #         "name": "IEEE",
-        #         "link": "https://ieeexplore.ieee.org/",
-        #         "src": "ieee.gif",
-        #         "width": "w-100",
-        #         "height": "h-70",
-        #     },
-        #     "module": "ieee",
-        #     "search-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
-        #     "get-publication-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?doi=",
-        #     "api-key-param": "apikey",
-        # },
+        "IEEE": {
+            "logo": {
+                "name": "IEEE",
+                "link": "https://ieeexplore.ieee.org/",
+                "src": "ieee.gif",
+                "width": "w-100",
+                "height": "h-70",
+            },
+            "module": "ieee",
+            "search-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?max_records={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&querytext=",
+            "get-publication-endpoint": f"https://ieeexploreapi.ieee.org/api/v1/search/articles?doi=",
+            "api-key-param": "apikey",
+        },
         # "EUDAT": {
         #     "module": "eudat",
         #     "search-endpoint": f"https://b2share.eudat.eu/api/records/?page=1&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&sort=bestmatch&q=",
@@ -314,10 +399,17 @@ class Config:
         #     "module": "cordis",
         #     "search-endpoint": f"https://cordis.europa.eu/search?p=1&num={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&srt=Relevance:decreasing&format=json&q=contenttype='project'%20AND%20",
         # },
-        # "ORKG": {
-        #     "module": "orkg",
-        #     "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
-        # },
+        "ORKG": {
+            "logo": {
+                "name": "ORKG",
+                "link": "https://orkg.org/",
+                "src": "orkg.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "orkg",
+            "search-endpoint": f"https://orkg.org/api/resources/?size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&base_class=Paper&q=",
+        },
         "gepris": {
             "logo": {
                 "name": "GEPRIS",
@@ -329,24 +421,38 @@ class Config:
             "module": "gepris",
             "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         },
+        "CODALAB": {
+            "logo": {
+                "name": "CODALAB",
+                "link": "https://worksheets.codalab.org/",
+                "src": "codalab-logo.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "codalab",
+            "search-endpoint": "https://worksheets.codalab.org/rest/bundles?include_display_metadata=1&include=owner&.limit="
+                            + str(NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT)
+                            + "&keywords=",
+            "get-resource-endpoint": "https://worksheets.codalab.org/rest/bundles/",
+        },
     }
 
     LLMS = {
         "openai": {
             "url_chat_completions": "https://api.openai.com/v1/chat/completions",
             "url_images_generations": "https://api.openai.com/v1/images/generations",
-            "open_api_key": os.environ.get("OPENAI_API_KEY", ""),
+            "open_api_key": app_settings.OPENAI_API_KEY
         },
         "llama3": {
             "url": "https://llm-chat.skynet.coypu.org/generate_text",
-            "username": os.environ.get("LLAMA3_USERNAME", ""),
-            "password": os.environ.get("LLAMA3_PASSWORD", ""),
+            "username": app_settings.LLAMA3_USERNAME,
+            "password": app_settings.LLAMA3_PASSWORD
         },
     }
 
     CHATBOT = {
         "chatbot_enable": False,
-        "chatbot_server": os.environ.get("CHATBOT_SERVER", ""),
+        "chatbot_server": app_settings.CHATBOT_SERVER,
         "endpoint_chat": "/chat",
         "endpoint_save_docs_with_embeddings": "/save-docs-with-embeddings",
         "endpoint_are_embeddings_generated": "/are-embeddings-generated",
@@ -382,18 +488,18 @@ class Config:
         },
     }
 
-    ELASTIC = {
-        "server": os.environ.get('ELASTIC_SERVER',""),
-        "username": os.environ.get('ELASTIC_USERNAME',""),
-        "password": os.environ.get('ELASTIC_PASSWORD',""),
-    }
+    # ELASTIC = {
+    #     "server": app_settings.ELASTIC_SERVER,
+    #     "username": app_settings.ELASTIC_USERNAME,
+    #     "password": app_settings.ELASTIC_PASSWORD
+    # }
 
     OAUTH2_PROVIDERS = {
         # Google OAuth 2.0 documentation:
         # https://developers.google.com/identity/protocols/oauth2/web-server#httprest
         "google": {
-            "client_id": os.environ.get("CLIENT_ID_GOOGLE"),
-            "client_secret": os.environ.get("CLIENT_SECRET_GOOGLE"),
+            "client_id": app_settings.CLIENT_ID_GOOGLE,
+            "client_secret": app_settings.CLIENT_SECRET_GOOGLE,
             "authorize_url": "https://accounts.google.com/o/oauth2/auth",
             "token_url": "https://accounts.google.com/o/oauth2/token",
             "userinfo": {
@@ -405,8 +511,8 @@ class Config:
         # GitHub OAuth 2.0 documentation:
         # https://docs.github.com/en/apps/oauth-apps/building-oauth-apps/authorizing-oauth-apps
         "github": {
-            "client_id": os.environ.get("CLIENT_ID_GITHUB"),
-            "client_secret": os.environ.get("CLIENT_SECRET_GITHUB"),
+            "client_id": app_settings.CLIENT_ID_GITHUB,
+            "client_secret": app_settings.CLIENT_SECRET_GITHUB,
             "authorize_url": "https://github.com/login/oauth/authorize",
             "token_url": "https://github.com/login/oauth/access_token",
             "userinfo": {
@@ -418,8 +524,8 @@ class Config:
         # # ORCID OAuth 2.0 documentation:
         # # https://info.orcid.org/documentation/api-tutorials/api-tutorial-get-and-authenticated-orcid-id/
         # 'orcid': {
-        #     'client_id': os.environ.get('CLIENT_ID_ORCID'),
-        #     'client_secret': os.environ.get('CLIENT_SECRET_ORCID'),
+        #     'client_id': app_settings.CLIENT_ID_ORCID,
+        #     'client_secret': app_settingsCLIENT_SECRET_ORCID,
         #     'authorize_url': 'https://sandbox.orcid.org/oauth/authorize',
         #     'token_url': 'https://sandbox.orcid.org/oauth/token',
         #     'userinfo': {
@@ -441,3 +547,5 @@ class Config:
         502: "Error 502: Bad Gateway.",
         503: "Error 503: Service Unavailable.",
     }
+
+    
