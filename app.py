@@ -109,7 +109,7 @@ def create_app() -> Flask:
 
     chatbot_service = ChatbotService(
         settings=ChatbotSettings.from_config(app.config),
-        activity=tracking_service,
+        tracking=tracking_service,
         jobs=jobs,
     )
 
@@ -117,23 +117,23 @@ def create_app() -> Flask:
         settings=SearchSettings.from_config(app.config),
         chatbot=chatbot_service,
         store=result_store,
-        activity=tracking_service,
+        tracking=tracking_service,
     )
 
     pub_details_service = PublicationDetailsService(
         settings=DetailsSettings.from_config(app.config),
-        activity=tracking_service,
+        tracking=tracking_service,
     )
 
     researcher_details_service = ResearcherDetailsService(
         settings=DetailsSettings.from_config(app.config),
-        activity=tracking_service,
+        tracking=tracking_service,
         openai=OpenAISettings.from_config(app.config),
     )
 
     resource_details_service = ResourceDetailsService(
         settings=DetailsSettings.from_config(app.config),
-        activity=tracking_service,
+        tracking=tracking_service,
     )
 
     # expose shared objects in app.extensions‚

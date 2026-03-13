@@ -36,12 +36,12 @@ class ChatbotService:
     def __init__(
         self,
         settings: ChatbotSettings,
-        activity: TrackingService,
+        tracking: TrackingService,
         jobs: JobDispatcher,
         http: Optional[requests.Session] = None
     ):
         self.settings = settings
-        self.activity = activity
+        self.tracking = tracking
         self.jobs = jobs
         self.http = http or requests.Session()
 
@@ -66,7 +66,7 @@ class ChatbotService:
         return bool(data.get("file_exists", False))
 
     def get_answer(self, ctx: ChatContext) -> ChatResponse:
-        self.activity.log_activity_async(
+        self.tracking.log_activity_async(
             description=f"User asked the chatbot: {ctx.question}",
             request_meta=ctx.request_meta,
             user_id=ctx.user_id,

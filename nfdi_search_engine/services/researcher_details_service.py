@@ -25,12 +25,12 @@ class ResearcherDetailsService:
         self,
         settings: DetailsSettings,
         openai: OpenAISettings,
-        activity: TrackingService,
+        tracking: TrackingService,
         http: Optional[requests.Session] = None,
     ):
         self.settings = settings
         self.openai = openai
-        self.activity = activity
+        self.tracking = tracking
         self.http = http or requests.Session()
 
     def get_researchers_for_details_page(

@@ -28,11 +28,11 @@ class PublicationDetailsService:
     def __init__(
         self,
         settings: DetailsSettings,
-        activity: TrackingService,
+        tracking: TrackingService,
         http: Optional[requests.Session] = None,
     ):
         self.settings = settings
-        self.activity = activity
+        self.tracking = tracking
         self.http = http or requests.Session()
 
         # we can think about moving this to the config

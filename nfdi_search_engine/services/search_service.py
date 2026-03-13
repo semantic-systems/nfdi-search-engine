@@ -51,21 +51,20 @@ class SearchService:
         settings: SearchSettings,
         chatbot: ChatbotService,
         store: ResultStore,
-        activity: TrackingService,
+        tracking: TrackingService,
     ) -> None:
         self.settings = settings
         self.chatbot = chatbot
         self.store = store
-        self.activity = activity
+        self.tracking = tracking
 
     def run_search(self, ctx: SearchContext) -> SearchPage:
-        # async logging and no Flask globals in worker
-        self.activity.log_activity_async(
+        self.tracking.log_activity_async(
             description=f"loading search results for {ctx.search_term}",
             request_meta=ctx.request_meta,
             user_id=ctx.user_id,
         )
-        self.activity.log_search_term_async(
+        self.tracking.log_search_term_async(
             search_term=ctx.search_term,
             request_meta=ctx.request_meta,
             user_id=ctx.user_id,
@@ -148,7 +147,7 @@ class SearchService:
         meta["displayed"][ctx.object_type] = new_displayed
         self.store.update_meta(ctx.search_id, {"displayed": meta["displayed"]})
 
-        self.activity.log_activity_async(
+        self.tracking.log_activity_async(
             description=f"loading more {ctx.object_type}",
             request_meta=ctx.request_meta,
             user_id=ctx.user_id,

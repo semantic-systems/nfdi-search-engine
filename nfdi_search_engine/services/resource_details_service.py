@@ -21,11 +21,11 @@ class ResourceDetailsService:
     def __init__(
         self,
         settings: DetailsSettings,
-        activity: TrackingService,
+        tracking: TrackingService,
         http: Optional[requests.Session] = None,
     ):
         self.settings = settings
-        self.activity = activity
+        self.tracking = tracking
         self.http = http
 
     def get_resource_details(self, doi: str, source_name: str) -> Optional[CreativeWork]:
