@@ -4,43 +4,6 @@ import traceback
 import inspect
 
 
-def clean_json(value):
-    """
-    Recursively remove all None values from dictionaries and lists, and returns
-    the result as a new dictionary or list.
-    """
-    if isinstance(value, list):
-        return [clean_json(x) for x in value if x is not None]
-    elif isinstance(value, dict):
-        return {
-            key: clean_json(val)
-            for key, val in value.items()
-            if val is not None
-        }
-    else:
-        return value
-
-def remove_html_tags(text):
-    soup = BeautifulSoup(text, "html.parser")
-    return soup.text.strip()
-
-def remove_line_tags(text):
-    return text.replace('\n', ' ').replace('\t', ' ')
-
-def generate_string_from_keys(dictionary):
-    keys_list = list(dictionary.keys())
-    keys_string = " ".join(keys_list)
-    return keys_string
-
-from dateparser import parse
-def parse_date(date_str):
-    try:
-        parsed_date_str = parse(date_str).strftime("%Y-%m-%d")
-        return parsed_date_str
-    except (TypeError, ValueError):
-        print(f"original date str: {date_str}")
-        return ""
-
 from elasticsearch import Elasticsearch, exceptions
 es_client = Elasticsearch(
     os.environ.get("ELASTIC_SERVER", ""),  # Elasticsearch endpoint
@@ -96,18 +59,6 @@ from time import time
 import inspect
 import os
 
-def timeit(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        ts = time()
-        result = f(*args, **kwargs)
-        te = time()
-        filename = os.path.basename(inspect.getfile(f))
-        # print('file:%r func:%r took: %2.4f sec' % (filename, f.__name__, te-ts))
-        log_event(type="info", filename=filename, method=f.__name__, message=f"execution time: {(te-ts):2.4f} sec")
-        return result
-    return decorated_function
-
 def handle_exceptions(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -121,4 +72,5 @@ def handle_exceptions(f):
         except Exception as ex:
             filename = os.path.basename(inspect.getfile(f))
             log_event(type="error", filename=filename, method=f.__name__, message=str(ex), traceback= traceback.format_exc())
+            raise ex
     return decorated_function

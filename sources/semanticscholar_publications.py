@@ -14,7 +14,8 @@ from config import Config
 from objects import thing, Article, Author
 from sources import data_retriever
 import utils
-
+from nfdi_search_engine.common.formatting import remove_html_tags
+from nfdi_search_engine.services.tracking_service import TrackingService
 
 # Retry configuration for API rate limiting / transient failures
 MAX_RETRIES = 10
@@ -27,6 +28,24 @@ class SemanticScholarPublications:
     """
 
     SOURCE = "SEMANTIC SCHOLAR - Publications"
+
+    def __init__(self, tracking: TrackingService = None):
+        self.tracking = tracking
+
+    def log_event(self, type: str, message: str):
+        """
+        Match the log_event signature used in sources.
+        Async logging to elastic if TrackingService is passed in the constructor,
+        to stdout otherwise.
+        """
+        if self.tracking is not None:
+            self.tracking.log_event_async(
+                log_type=type,
+                message=message,
+            )
+        else:
+            # if no tracking service is passed, log to stdout
+            print(f"{type.upper()}: {self.SOURCE}: {message}")
 
     def _get_config(self, source: str, key: str, default: str = "") -> str:
         """Return config value for the given source and key."""
@@ -178,7 +197,7 @@ class SemanticScholarPublications:
         recommended_papers = rec_response.get("recommendedPapers", [])
         for recommended_paper in recommended_papers:
             publication = Article()
-            publication.name = utils.remove_html_tags(
+            publication.name = remove_html_tags(
                 recommended_paper.get("title", "")
             )
             publication.identifier = recommended_paper.get("externalIds", {}).get(
@@ -237,7 +256,7 @@ class SemanticScholarPublications:
         citations = response.get("citations", [])
         for citation in citations:
             publication = Article()
-            publication.name = utils.remove_html_tags(citation.get("title", ""))
+            publication.name = remove_html_tags(citation.get("title", ""))
             authors = citation.get("authors", [])
             for author in authors:
                 _author = Author()

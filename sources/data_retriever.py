@@ -4,6 +4,9 @@ import urllib.parse
 from config import Config
 import xmltodict
 
+from nfdi_search_engine.common.formatting import clean_json
+
+
 def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url:str="", quote:bool=True):    
     try:
         # Either the request will have base url and search then the url will be formed concatenating both of them 
@@ -32,7 +35,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
                 search_result = response.json()
 
             #clean the json response; remove all the keys which don't have any value
-            search_result = utils.clean_json(search_result)
+            search_result = clean_json(search_result)
             return search_result 
         else:
             failed_sources.append(source)
@@ -65,7 +68,7 @@ def retrieve_object(source: str, base_url: str, identifier: str, quote:bool=True
                 search_result = response.json()
             
             #clean the json response; remove all the keys which don't have any value
-            search_result = utils.clean_json(search_result)
+            search_result = clean_json(search_result)
             return search_result 
         else:
             utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")     

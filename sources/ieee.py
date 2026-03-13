@@ -9,6 +9,7 @@ from config import Config
 from datetime import datetime
 from dateutil import parser
 from config import Config
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class IEEE(BaseSource):
@@ -98,7 +99,7 @@ class IEEE(BaseSource):
         publication.publication = hit.get("publisher", "") or ""
 
         abstract = hit.get("abstract", "") or ""
-        publication.description = utils.remove_html_tags(abstract)
+        publication.description = remove_html_tags(abstract)
         publication.abstract = publication.description
 
         publication.encoding_contentUrl = hit.get("pdf_url", "") or ""

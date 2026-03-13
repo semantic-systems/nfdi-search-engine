@@ -6,6 +6,7 @@ import utils
 import requests
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class CORE(BaseSource):
@@ -83,7 +84,7 @@ class CORE(BaseSource):
         if not abstract:
             abstract = ""
 
-        publication.description = utils.remove_html_tags(abstract)
+        publication.description = remove_html_tags(abstract)
         publication.abstract = publication.description
 
         publication.citationCount = hit.get("citationCount", "")

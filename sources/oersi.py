@@ -5,6 +5,7 @@ import utils
 from config import Config
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class OERSI(BaseSource):
 
@@ -43,7 +44,7 @@ class OERSI(BaseSource):
         publication.datePublished = hit_source.get("datePublished", "") 
         publication.license = hit_source.get("license", {}).get("id", "")
         
-        publication.description = utils.remove_html_tags(hit_source.get("description", ""))
+        publication.description = remove_html_tags(hit_source.get("description", ""))
         publication.abstract = publication.description
         # every object is categorized as 'learning resource' which is vague. not sure whether this information should be used.
         publication.additionalType = ','.join(hit_source.get("type", [])) 

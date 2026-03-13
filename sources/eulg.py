@@ -8,6 +8,7 @@ from elg import Catalog
 from config import Config
 from objects import Dataset, SoftwareApplication
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class EULG(BaseSource):
@@ -109,7 +110,7 @@ class EULG(BaseSource):
         result = hit
         resource_type = getattr(result, "resource_type", "")
 
-        description = utils.remove_html_tags(getattr(result, "description", "") or "")
+        description = remove_html_tags(getattr(result, "description", "") or "")
         first_license = self._first_license(result)
 
         if resource_type in ("Corpus", "Lexical/Conceptual resource"):

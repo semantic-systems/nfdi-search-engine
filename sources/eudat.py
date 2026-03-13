@@ -7,6 +7,7 @@ from datetime import datetime
 from dateutil import parser
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class EUDAT(BaseSource):
 
@@ -71,7 +72,7 @@ class EUDAT(BaseSource):
         digitalObj.url = hit.get('links', {}).get('self', '')  # this gives the json response
         
         
-        digitalObj.description = utils.remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
+        digitalObj.description = remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
         
         
         keywords = metadata.get('keywords', [])

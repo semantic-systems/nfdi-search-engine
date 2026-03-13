@@ -5,6 +5,7 @@ from config import Config
 from typing import Union, Iterable, Dict, Any
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class OpenAIRE_Products(BaseSource):
 
@@ -78,18 +79,18 @@ class OpenAIRE_Products(BaseSource):
         
         titles = oaf_result.get("title", [])
         if isinstance(titles, dict):
-            digitalObj.name = utils.remove_html_tags(titles.get("$", ""))
+            digitalObj.name = remove_html_tags(titles.get("$", ""))
         if isinstance(titles, list):
             for title in titles:
                 if title.get("@classid","").upper() == "MAIN TITLE":
-                    digitalObj.name = utils.remove_html_tags(title.get("$", ""))
+                    digitalObj.name = remove_html_tags(title.get("$", ""))
 
         descriptions = oaf_result.get("description", [])
         if isinstance(descriptions, dict):
-            digitalObj.description = utils.remove_html_tags(str(descriptions.get("$", "")))
+            digitalObj.description = remove_html_tags(str(descriptions.get("$", "")))
         if isinstance(descriptions, list):
             for description in descriptions:
-                digitalObj.description += utils.remove_html_tags(str(description.get("$", ""))) + "<br/>"
+                digitalObj.description += remove_html_tags(str(description.get("$", ""))) + "<br/>"
 
         children_instance = oaf_result.get('children', {}).get('instance', {})
         if isinstance(children_instance, dict):

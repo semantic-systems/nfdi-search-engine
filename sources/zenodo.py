@@ -4,6 +4,7 @@ from config import Config
 from sources.base import BaseSource
 from typing import Union, Dict, Any, List, Iterable
 import utils
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class ZENODO(BaseSource):
     """
@@ -60,7 +61,7 @@ class ZENODO(BaseSource):
         digitalObj.name = hit.get('title', '')
         digitalObj.url = hit.get('links', {}).get('self', '')
 
-        digitalObj.description = utils.remove_html_tags(metadata.get('description', ''))
+        digitalObj.description = remove_html_tags(metadata.get('description', ''))
 
         keywords = metadata.get('keywords', [])
         if isinstance(keywords, list):

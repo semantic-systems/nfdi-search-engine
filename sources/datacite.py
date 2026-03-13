@@ -7,6 +7,7 @@ import requests
 
 from config import Config
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class DataCite(BaseSource):
 
@@ -43,7 +44,7 @@ class DataCite(BaseSource):
 
         titles = hit.get("titles", [])
         if len(titles) > 0:
-            publication.name = utils.remove_html_tags(titles[0]['title'])
+            publication.name = remove_html_tags(titles[0]['title'])
 
         publication.url = hit.get("url", "")
         publication.identifier = hit.get("doi", "").replace("https://doi.org/", "")
@@ -58,7 +59,7 @@ class DataCite(BaseSource):
 
         descriptions = hit.get('descriptions', [])
         if len(descriptions) > 0:
-            publication.description = utils.remove_html_tags(descriptions[0]['description'])
+            publication.description = remove_html_tags(descriptions[0]['description'])
         publication.abstract = publication.description
 
         publication.referenceCount = hit.get("referenceCount", "")

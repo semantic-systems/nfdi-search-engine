@@ -3,6 +3,7 @@ from objects import thing, Dataset, Author
 from sources import data_retriever
 import utils
 from config import Config
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 @utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources, tracking=None): 
@@ -26,7 +27,7 @@ def search(source: str, search_term: str, results, failed_sources, tracking=None
         title = dc_fields['title']['all'][0] if 'title' in dc_fields and 'all' in dc_fields['title'] else ''
         digital_obj.name =title 
         description = dc_fields['description']['all'][0] if 'description' in dc_fields and 'all' in dc_fields['description'] else ''
-        short_description = utils.remove_html_tags(description)
+        short_description = remove_html_tags(description)
         digital_obj.abstract = short_description
         digital_obj.description = short_description
         type = dc_fields['type']['all'][0] if 'type' in dc_fields and 'all' in dc_fields['type'] else 'Type not available'

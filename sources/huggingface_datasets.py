@@ -1,10 +1,11 @@
 from typing import Union, Dict, Any, List, Iterable
 
-import utils
 from config import Config
 from sources.base import BaseSource
 from sources import data_retriever
 from objects import thing, Article, Author, Dataset, Person
+
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class HuggingFaceDatasets(BaseSource):
@@ -39,7 +40,7 @@ class HuggingFaceDatasets(BaseSource):
         dataset.name = hit.get("id", "")
         dataset.additionalType = "DATASET"
         dataset.url = "https://huggingface.co/datasets/" + hit.get("id", "")
-        dataset.description = utils.remove_html_tags(hit.get("description", ""))
+        dataset.description = remove_html_tags(hit.get("description", ""))
         dataset.abstract = dataset.description
         dataset.license = hit.get("license", {}).get("id", "")
         dataset.datePublished = hit.get("createdAt", "")

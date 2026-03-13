@@ -4,6 +4,7 @@ from sources.base import BaseSource
 from config import Config
 from typing import Union, Dict, Any, List, Iterable
 import utils
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 SOURCE = "OPENALEX - Publications"
 
@@ -48,7 +49,7 @@ class OpenAlexPublications(BaseSource):
             publication = CreativeWork()
 
         publication.additionalType = hit.get("type", "")
-        publication.name = utils.remove_html_tags(hit.get("title", "") or "")
+        publication.name = remove_html_tags(hit.get("title", "") or "")
 
         # OpenAlex "id" is their work URL
         _id = hit.get("id", "") or ""

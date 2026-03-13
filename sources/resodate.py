@@ -9,6 +9,9 @@ import requests
 
 import utils
 
+from nfdi_search_engine.common.dates import parse_date
+from nfdi_search_engine.common.formatting import remove_html_tags
+
 
 class Resodate(BaseSource):
     """
@@ -79,7 +82,7 @@ class Resodate(BaseSource):
         dataset.identifier = hit_source.get("id", "")
 
         # description / abstract
-        dataset.description = utils.remove_html_tags(hit_source.get("description", ""))
+        dataset.description = remove_html_tags(hit_source.get("description", ""))
         dataset.abstract = dataset.description
 
         # datePublished preference: datePublished -> mainEntityOfPage[0].dateCreated/dateModified
@@ -96,7 +99,7 @@ class Resodate(BaseSource):
                     or ""
                 )
         if date_published:
-            dataset.datePublished = utils.parse_date(date_published)
+            dataset.datePublished = parse_date(date_published)
 
         dataset.license = hit_source.get("license", {}).get("id", "")
         dataset.image = hit_source.get("image", "")
@@ -162,10 +165,10 @@ class Resodate(BaseSource):
         )
         publication.datePublished = hit_source.get("datePublished", "")
         if publication.datePublished:
-            publication.datePublished = utils.parse_date(publication.datePublished)
+            publication.datePublished = parse_date(publication.datePublished)
         publication.license = hit_source.get("license", {}).get("id", "")
 
-        publication.description = utils.remove_html_tags(
+        publication.description = remove_html_tags(
             hit_source.get("description", "")
         )
         publication.abstract = publication.description

@@ -5,6 +5,8 @@ import utils
 from config import Config
 from sources.base import BaseSource
 
+from nfdi_search_engine.common.formatting import remove_html_tags
+
 
 class CROSSREF_Publications(BaseSource):
 
@@ -43,7 +45,7 @@ class CROSSREF_Publications(BaseSource):
         publication.additionalType = hit.get("type", "")
         titles = hit.get("title", [])    
         if len(titles) > 0:
-            publication.name = utils.remove_html_tags(titles[0])       
+            publication.name = remove_html_tags(titles[0])       
         publication.url = hit.get("URL", "")
         publication.identifier = hit.get("DOI", "").replace("https://doi.org/", "")
         publication.datePublished = hit.get("created", {}).get("date-time","") 
@@ -53,7 +55,7 @@ class CROSSREF_Publications(BaseSource):
             publication.license = licenses[0].get("URL", "")
         publication.publication = hit.get("publisher", "")
 
-        publication.description = utils.remove_html_tags(hit.get("abstract",""))
+        publication.description = remove_html_tags(hit.get("abstract",""))
         publication.abstract = publication.description
 
         publication.referenceCount = hit.get("reference-count", "")

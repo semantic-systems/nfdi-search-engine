@@ -1,6 +1,5 @@
 from typing import Union, Dict, Any, List, Iterable
 
-import utils
 from config import Config
 from sources import data_retriever
 from sources.base import BaseSource
@@ -8,6 +7,7 @@ from objects import thing, CreativeWork, Author
 
 import requests
 
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class HuggingFaceModels(BaseSource):
     SOURCE = "Huggingface - Models"
@@ -48,13 +48,13 @@ class HuggingFaceModels(BaseSource):
             try:
                 response = requests.get(readme_url, timeout=5)
                 if response.status_code == 200:
-                    model.description = utils.remove_html_tags(response.text)
+                    model.description = remove_html_tags(response.text)
                 else:
-                    model.description = utils.remove_html_tags(hit.get("description", ""))
+                    model.description = remove_html_tags(hit.get("description", ""))
             except requests.RequestException:
-                model.description = utils.remove_html_tags(hit.get("description", ""))
+                model.description = remove_html_tags(hit.get("description", ""))
         else:
-            model.description = utils.remove_html_tags(hit.get("description", ""))
+            model.description = remove_html_tags(hit.get("description", ""))
 
         model.abstract = model.description
         model.dateCreated = hit.get("createdAt", "")

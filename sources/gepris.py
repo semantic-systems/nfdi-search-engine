@@ -546,7 +546,6 @@ def geocode_address(address):
         raise Exception(f'An unexpected error occurred: {ex}')
 
 
-@utils.timeit
 @utils.handle_exceptions
 def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
