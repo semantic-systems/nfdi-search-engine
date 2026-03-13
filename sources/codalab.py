@@ -3,7 +3,7 @@ from typing import Dict, Any, Iterable, List
 from config import Config
 from sources.base import BaseSource
 from sources import data_retriever
-from objects import Dataset, Person, Author, thing
+from nfdi_search_engine.common.models.objects import Dataset, Person, Author, thing
 
 from nfdi_search_engine.common.dates import parse_date
 

@@ -3,7 +3,7 @@ from typing import Union, Dict, Any, List, Iterable
 from config import Config
 from sources import data_retriever
 from sources.base import BaseSource
-from objects import thing, CreativeWork, Author
+from nfdi_search_engine.common.models.objects import thing, CreativeWork, Author
 
 import requests
 

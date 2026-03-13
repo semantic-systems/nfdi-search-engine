@@ -1,5 +1,5 @@
 import requests
-from objects import thing, Article, Author, Organization
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization
 from typing import Iterable, Dict, Any, List
 import logging
 from sources import data_retriever

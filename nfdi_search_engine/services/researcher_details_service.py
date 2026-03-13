@@ -6,7 +6,7 @@ from typing import Any, List, Optional, Set, Tuple
 
 import requests
 
-from objects import Author
+from nfdi_search_engine.common.models.objects import Author
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.common.models.openai_settings import OpenAISettings
 from nfdi_search_engine.services.tracking_service import TrackingService

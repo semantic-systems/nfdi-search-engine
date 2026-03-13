@@ -1,7 +1,7 @@
 import re
 from typing import Iterable, Dict, Any, List
 
-from objects import thing, Article, Author, Dataset
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Dataset
 from sources import data_retriever
 from sources.base import BaseSource
 from config import Config

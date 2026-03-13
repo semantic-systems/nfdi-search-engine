@@ -6,7 +6,7 @@ from typing import Any, Optional
 
 import requests
 
-from objects import CreativeWork
+from nfdi_search_engine.common.models.objects import CreativeWork
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 

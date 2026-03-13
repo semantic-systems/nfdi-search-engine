@@ -1,4 +1,4 @@
-from objects import thing, Article, Author, CreativeWork
+from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork
 from sources import data_retriever
 from sources.base import BaseSource
 from config import Config

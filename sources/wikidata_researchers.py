@@ -2,7 +2,7 @@ from typing import Iterable, Dict, Any, List
 from string import Template
 
 from sources import data_retriever
-from objects import thing, Article, Author, Organization, Person
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization, Person
 from sources.base import BaseSource
 from config import Config
 

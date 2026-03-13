@@ -1,9 +1,9 @@
 from typing import Iterable, Dict, Any, List
 
-from objects import Dataset, Organization
+from nfdi_search_engine.common.models.objects import Dataset, Organization
 from config import Config
 from sources import data_retriever
-from objects import thing, Author, Article
+from nfdi_search_engine.common.models.objects import thing, Author, Article
 
 from sources.base import BaseSource
 

@@ -11,7 +11,7 @@ import time
 from typing import Dict, Any, List
 
 from config import Config
-from objects import thing, Article, Author
+from nfdi_search_engine.common.models.objects import thing, Article, Author
 from sources import data_retriever
 from nfdi_search_engine.common.formatting import remove_html_tags
 from nfdi_search_engine.services.tracking_service import TrackingService

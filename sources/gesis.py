@@ -1,5 +1,5 @@
 
-from objects import thing, Dataset, Author
+from nfdi_search_engine.common.models.objects import thing, Dataset, Author
 from sources import data_retriever
 from config import Config
 from nfdi_search_engine.common.formatting import remove_html_tags

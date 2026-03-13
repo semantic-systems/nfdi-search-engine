@@ -1,4 +1,4 @@
-from objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
+from nfdi_search_engine.common.models.objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
 from config import Config

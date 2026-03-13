@@ -5,7 +5,7 @@ import requests
 
 from elg import Catalog
 from config import Config
-from objects import Dataset, SoftwareApplication
+from nfdi_search_engine.common.models.objects import Dataset, SoftwareApplication
 from sources.base import BaseSource
 from nfdi_search_engine.common.formatting import remove_html_tags
 

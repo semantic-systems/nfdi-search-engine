@@ -1,9 +1,12 @@
 import re
-from typing import List
-from requests import get
-from objects import Person, Article, thing, Organization
-from config import Config
 from time import sleep
+from typing import List
+
+from requests import get
+
+from config import Config
+from nfdi_search_engine.common.models.objects import Person, Article, thing, Organization
+
 
 _RX_DOI = re.compile(r"10\.\d{4,9}/\S+", re.I)
 _RX_ORCID = re.compile(r"orcid:([\d\-Xx]{15,19})")

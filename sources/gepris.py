@@ -1,4 +1,4 @@
-from objects import Project, Person, Organization, Place, Author, thing
+from nfdi_search_engine.common.models.objects import Project, Person, Organization, Place, Author, thing
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any
 import requests
