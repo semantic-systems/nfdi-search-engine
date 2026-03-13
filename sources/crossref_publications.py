@@ -91,7 +91,7 @@ class CROSSREF_Publications(BaseSource):
         hits = self.extract_hits(raw)
 
         for hit in hits:
-            publication = self.map_hit(hit)
+            publication = self.map_hit(self.SOURCE, hit)
             if publication:
                 results['publications'].append(publication)
 

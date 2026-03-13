@@ -127,9 +127,15 @@ class OpenAIRE_Products(BaseSource):
             _author.identifier = authors.get("@orcid_pending", "")
             if ";" not in _author.name:
                 digitalObj.author.append(_author) 
-            else: # author instance is a list however for this record all the authors are combined into one 
-                utils.split_authors(_author.name, ";", digitalObj.author)
-        if isinstance(authors, list): 
+            else: # author instance is a list however for this record all the authors are combined into one
+                for name in _author.name.split(';'):
+                    digitalObj.author.append(
+                        Author(
+                            name=name,
+                            additionalType='Person',
+                        )
+                    )
+        if isinstance(authors, list):
             for author in authors:
                 _author = Author()
                 _author.additionalType = 'Person'
