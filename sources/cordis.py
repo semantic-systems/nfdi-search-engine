@@ -2,8 +2,8 @@ from objects import thing, Project, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
 import utils
-from main import app
 
+from config import Config
 from sources.base import BaseSource
 
 class CORDIS(BaseSource):
@@ -17,12 +17,12 @@ class CORDIS(BaseSource):
         """
         search_term = f"({search_term})"
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                     search_term=search_term,
                                                     failed_sources=failed_sources) 
         total_records_found = search_result.get('result', {}).get('header', {}).get('totalHits', 0)
         total_records_pulled = search_result.get('result', {}).get('header', {}).get('numHits', 0)
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_records_pulled}")   
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_records_pulled}")   
 
         return search_result
     
@@ -101,8 +101,8 @@ class CORDIS(BaseSource):
                 results['projects'].append(project)
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORDIS publications.
     """
-    CORDIS().search(source, search_term, results, failed_sources)
+    CORDIS(tracking).search(source, search_term, results, failed_sources)

@@ -63,7 +63,7 @@ class PublicationDetailsService:
 
         for source, module_name in self.references_sources.items():
             mod = importlib.import_module(f"sources.{module_name}")
-            dois = mod.get_dois_references(source=source, doi=doi) or []
+            dois = mod.get_dois_references(source=source, doi=doi, tracking=self.tracking) or []
             found.update(d.lower() for d in dois if d)
 
         return sorted(found)
@@ -83,7 +83,7 @@ class PublicationDetailsService:
 
         for source, module_name in self.citation_sources.items():
             mod = importlib.import_module(f"sources.{module_name}")
-            dois = mod.get_dois_citations(source=source, doi=doi) or []
+            dois = mod.get_dois_citations(source=source, doi=doi, tracking=self.tracking) or []
             found.update(d.lower() for d in dois if d)
 
         return sorted(found)
@@ -107,7 +107,7 @@ class PublicationDetailsService:
 
         for module_name in self.metadata_sources.values():
             mod = importlib.import_module(f"sources.{module_name}")
-            articles = mod.get_batch_articles(dois=dois) or []
+            articles = mod.get_batch_articles(dois=dois, tracking=self.tracking) or []
 
             # existing collected keys for dedup
             titles = {
@@ -166,7 +166,7 @@ class PublicationDetailsService:
         def get_publication(source: str, module_name: str, doi_: str, source_id_: str):
             mod = importlib.import_module(f"sources.{module_name}")
             partial: List[Any] = []
-            mod.get_publication(source, doi_, source_id_, partial)
+            mod.get_publication(source, doi_, source_id_, partial, self.tracking)
             return partial
 
         publications: List[Article] = []
@@ -222,7 +222,7 @@ class PublicationDetailsService:
         for source, module_name in self.citation_sources.items():
             mod = importlib.import_module(f"sources.{module_name}")
             found = mod.get_citations_for_publication(
-                source=source, doi=doi) or []
+                source=source, doi=doi, tracking=self.tracking) or []
 
             doi_list = {getattr(pub, "identifier", "") for pub in publications}
             name_list = {(getattr(pub, "name", "") or "").lower()
@@ -249,7 +249,7 @@ class PublicationDetailsService:
         module_name = "semanticscholar_publications"
         mod = importlib.import_module(f"sources.{module_name}")
 
-        return mod.get_recommendations_for_publication(source=source, doi=doi) or []
+        return mod.get_recommendations_for_publication(source=source, doi=doi, tracking=self.tracking) or []
 
     def format_citation(self, doi: str, style: str = "ieee") -> dict:
         """

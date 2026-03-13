@@ -10,7 +10,7 @@ get_citations_for_publication, get_recommendations_for_publication.
 import time
 from typing import Dict, Any, List
 
-from main import app
+from config import Config
 from objects import thing, Article, Author
 from sources import data_retriever
 import utils
@@ -30,7 +30,7 @@ class SemanticScholarPublications:
 
     def _get_config(self, source: str, key: str, default: str = "") -> str:
         """Return config value for the given source and key."""
-        return app.config["DATA_SOURCES"].get(source, {}).get(key, default)
+        return Config.DATA_SOURCES.get(source, {}).get(key, default)
 
     @utils.handle_exceptions
     def get_dois_citations(self, source: str, doi: str) -> List[str]:
@@ -107,7 +107,7 @@ class SemanticScholarPublications:
             )
             if isinstance(response, dict):
                 return response
-            utils.log_event(
+            self.log_event(
                 type="info",
                 message=f"{source} - Retry {attempt + 1}/{MAX_RETRIES} for Semantic Scholar paper ID",
             )
@@ -132,7 +132,7 @@ class SemanticScholarPublications:
             )
             if isinstance(response, dict):
                 return response
-            utils.log_event(
+            self.log_event(
                 type="info",
                 message=f"{source} - Retry {attempt + 1}/{MAX_RETRIES} for recommendations",
             )
@@ -166,7 +166,7 @@ class SemanticScholarPublications:
         if not paper_id:
             return recommended_publications
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=f"{source} - Resolved DOI to Semantic Scholar paper_id: {paper_id}",
         )
@@ -209,7 +209,7 @@ class SemanticScholarPublications:
             )
             if isinstance(response, dict):
                 return response
-            utils.log_event(
+            self.log_event(
                 type="info",
                 message=f"{source} - Retry {attempt + 1}/{MAX_RETRIES} for citations",
             )
@@ -263,34 +263,34 @@ class SemanticScholarPublications:
 
 
 @utils.handle_exceptions
-def get_dois_citations(source: str, doi: str) -> List[str]:
+def get_dois_citations(source: str, doi: str, tracking=None) -> List[str]:
     """
     Entrypoint: fetch DOIs of citations for a given DOI.
     """
-    return SemanticScholarPublications().get_dois_citations(source, doi)
+    return SemanticScholarPublications(tracking).get_dois_citations(source, doi)
 
 
 @utils.handle_exceptions
-def get_dois_recommendations(source: str, doi: str) -> List[str]:
+def get_dois_recommendations(source: str, doi: str, tracking=None) -> List[str]:
     """
     Entrypoint: fetch DOIs of recommendations for a given DOI.
     """
-    return SemanticScholarPublications().get_dois_recommendations(source, doi)
+    return SemanticScholarPublications(tracking).get_dois_recommendations(source, doi)
 
 
 @utils.handle_exceptions
-def get_recommendations_for_publication(source: str, doi: str) -> List[Article]:
+def get_recommendations_for_publication(source: str, doi: str, tracking=None) -> List[Article]:
     """
     Entrypoint: fetch recommended publications for a given DOI as Article objects.
     """
-    return SemanticScholarPublications().get_recommendations_for_publication(
+    return SemanticScholarPublications(tracking).get_recommendations_for_publication(
         source, doi
     )
 
 
 @utils.handle_exceptions
-def get_citations_for_publication(source: str, doi: str) -> List[Article]:
+def get_citations_for_publication(source: str, doi: str, tracking=None) -> List[Article]:
     """
     Entrypoint: fetch citing publications for a given DOI as Article objects.
     """
-    return SemanticScholarPublications().get_citations_for_publication(source, doi)
+    return SemanticScholarPublications(tracking).get_citations_for_publication(source, doi)

@@ -1,7 +1,7 @@
 from objects import thing, Article, Author
 from sources import data_retriever
 import utils
-from main import app
+from config import Config
 import requests
 from typing import Iterable, Dict, Any, List
 
@@ -17,7 +17,7 @@ class ORKG(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                            base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                             search_term=search_term,
                                             failed_sources=failed_sources)
 
@@ -32,7 +32,7 @@ class ORKG(BaseSource):
         meta = raw['page']
         total_hits = meta['total_elements']
         total_records_pulled = meta['size']
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_records_pulled}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_records_pulled}")
         hits = raw['content']
         return hits
     
@@ -105,9 +105,8 @@ class ORKG(BaseSource):
                 results['publications'].append(publication)
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search ORKG publications.
     """
-    ORKG().search(source, search_term, results, failed_sources)
-    
+    ORKG(tracking).search(source, search_term, results, failed_sources)

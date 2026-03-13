@@ -100,7 +100,7 @@ class HuggingFaceModels(BaseSource):
 
         total_hits = len(search_result)
         if int(total_hits) > 0:
-            utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched")
+            self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched")
 
             for hit in search_result:
                 model = self.map_hit(self.SOURCE, hit, request_readme)
@@ -115,23 +115,21 @@ class HuggingFaceModels(BaseSource):
         )
         if search_result:
             model = self.map_hit(self.SOURCE, search_result, request_readme)
-            utils.log_event(type="info", message=f"{self.SOURCE} - retrieved model details")
+            self.log_event(type="info", message=f"{self.SOURCE} - retrieved model details")
             return model
         else:
-            utils.log_event(type="error", message=f"{self.SOURCE} - failed to retrieve model details")
+            self.log_event(type="error", message=f"{self.SOURCE} - failed to retrieve model details")
             return None
 
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources) -> None:
+def search(source: str, search_term: str, results, failed_sources, tracking=None) -> None:
     """
     Entrypoint to search Huggingface Models.
     """
-    HuggingFaceModels().search(source, search_term, results, failed_sources)
+    HuggingFaceModels(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
-def get_resource(source: str, source_id: str, doi: str) -> CreativeWork | None:
+def get_resource(source: str, source_id: str, doi: str, tracking=None) -> CreativeWork | None:
     """
     Retrieve detailed information for the model. 
 
@@ -141,4 +139,4 @@ def get_resource(source: str, source_id: str, doi: str) -> CreativeWork | None:
 
     :return: CreativeWork
     """
-    return HuggingFaceModels().get_resource(doi, request_readme=True)
+    return HuggingFaceModels(tracking).get_resource(doi, request_readme=True)

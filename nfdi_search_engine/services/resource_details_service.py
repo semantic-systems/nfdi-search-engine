@@ -38,4 +38,4 @@ class ResourceDetailsService:
             "module", ""
         )
         mod = importlib.import_module(f"sources.{mod_name}")
-        return mod.get_resource(source_name, source_name, doi)
+        return mod.get_resource(source_name, source_name, doi, tracking=self.tracking)

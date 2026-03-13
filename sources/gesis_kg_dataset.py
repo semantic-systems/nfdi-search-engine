@@ -2,7 +2,7 @@ from objects import thing, Article, Author, Dataset
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
 import utils
-from main import app
+from config import Config
 from string import Template
 
 from sources.base import BaseSource
@@ -62,12 +62,12 @@ class GESIS_KG_Dataset(BaseSource):
 
         replacement_dict = {
             "search_string": search_term,
-            "number_of_records": app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+            "number_of_records": Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
         search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                     search_term=query,
                                                     failed_sources=failed_sources) or {}
         
@@ -81,7 +81,7 @@ class GESIS_KG_Dataset(BaseSource):
         hits = raw.get("results", {}).get("bindings", [])
         total_hits = len(hits)
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
         # print(str(total_hits) + "from GESIS KG")
         if int(total_hits) > 0:
             return hits
@@ -152,8 +152,8 @@ class GESIS_KG_Dataset(BaseSource):
                 dataset = self.map_hit(hit)
                 results['resources'].append(dataset)
         
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search GESIS KG datasets.
     """
-    GESIS_KG_Dataset().search(source_name, search_term, results, failed_sources)
+    GESIS_KG_Dataset(tracking).search(source_name, search_term, results, failed_sources)

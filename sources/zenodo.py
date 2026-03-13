@@ -1,6 +1,6 @@
 from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
 from sources import data_retriever
-from main import app
+from config import Config
 from sources.base import BaseSource
 from typing import Union, Dict, Any, List, Iterable
 import utils
@@ -13,7 +13,7 @@ class ZENODO(BaseSource):
 
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                      search_term=search_term,
                                                      failed_sources=failed_sources)
         return search_result
@@ -24,7 +24,7 @@ class ZENODO(BaseSource):
         total_records_found = raw.get("hits", {}).get("total", 0)
         hits = raw.get("hits", {}).get("hits", [])
         total_hits = len(hits)
-        utils.log_event(type="info",
+        self.log_event(type="info",
                         message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
         if int(total_hits) > 0:
             return hits
@@ -52,7 +52,7 @@ class ZENODO(BaseSource):
         elif resource_type == 'OTHER':
             digitalObj = CreativeWork()
         else:
-            utils.log_event(type="info", message=f"{self.SOURCE} - Resource type not defined: {resource_type}")
+            self.log_event(type="info", message=f"{self.SOURCE} - Resource type not defined: {resource_type}")
             digitalObj = CreativeWork()
 
         digitalObj.additionalType = resource_type
@@ -120,5 +120,5 @@ class ZENODO(BaseSource):
                 results['others'].append(digitalObj)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
-    ZENODO.search(source_name, search_term, results, failed_sources)
+def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+    ZENODO(tracking).search(source_name, search_term, results, failed_sources)

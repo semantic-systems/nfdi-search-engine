@@ -1,7 +1,7 @@
 import requests
 import utils
 import urllib.parse
-from main import app
+from config import Config
 import xmltodict
 
 def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url:str="", quote:bool=True):    
@@ -19,10 +19,10 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
 
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'User-Agent': app.config['REQUEST_HEADER_USER_AGENT'],
+                    'User-Agent': Config.REQUEST_HEADER_USER_AGENT,
                     }
         
-        response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))                
+        response = requests.get(url, headers=headers, timeout=int(Config.REQUEST_TIMEOUT))                
 
         if response.status_code == 200:
 
@@ -37,15 +37,13 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
         else:
             failed_sources.append(source)
             utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")            
-            return None
+            return {}
     
     except requests.exceptions.Timeout as ex:
         failed_sources.append(source)
         utils.log_event(type="error", message=f"{source} - timed out.")
         raise ex
-    
-    except Exception as ex:
-        raise ex
+
 
 def retrieve_object(source: str, base_url: str, identifier: str, quote:bool=True):    
     try:        
@@ -56,9 +54,9 @@ def retrieve_object(source: str, base_url: str, identifier: str, quote:bool=True
         # print('url:', url)
         headers = {'Accept': 'application/json',
                     'Content-Type': 'application/json',
-                    'User-Agent': app.config['REQUEST_HEADER_USER_AGENT'], 
+                    'User-Agent': Config.REQUEST_HEADER_USER_AGENT, 
                     }
-        response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))
+        response = requests.get(url, headers=headers, timeout=int(Config.REQUEST_TIMEOUT))
 
         if response.status_code == 200:
             if 'xml' in response.headers.get('content-type'):
@@ -71,11 +69,8 @@ def retrieve_object(source: str, base_url: str, identifier: str, quote:bool=True
             return search_result 
         else:
             utils.log_event(type="error", message=f"{source} - Response status code: {str(response.status_code)}")     
-            return None
+            return {}
         
     except requests.exceptions.Timeout as ex:
         utils.log_event(type="error", message=f"{source} - timed out.")
-        raise ex
-
-    except Exception as ex:
         raise ex

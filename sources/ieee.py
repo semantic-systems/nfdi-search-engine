@@ -5,7 +5,7 @@ from sources import data_retriever
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any
 import utils
-from main import app
+from config import Config
 from datetime import datetime
 from dateutil import parser
 from config import Config
@@ -20,19 +20,19 @@ class IEEE(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        base_url_template = app.config["DATA_SOURCES"][self.SOURCE].get("search-endpoint", "")
+        base_url_template = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
         if not base_url_template:
-            utils.log_event(type="error", message=f"{self.SOURCE} - No search endpoint configured")
+            self.log_event(type="error", message=f"{self.SOURCE} - No search endpoint configured")
             failed_sources.append(self.SOURCE)
             return None
 
         api_key = getattr(Config, "IEEE_API_KEY", "") or ""
         if not api_key.strip():
-            utils.log_event(type="error", message=f"{self.SOURCE} - IEEE_API_KEY is missing or empty")
+            self.log_event(type="error", message=f"{self.SOURCE} - IEEE_API_KEY is missing or empty")
             failed_sources.append(self.SOURCE)
             return None
 
-        api_key_param = app.config["DATA_SOURCES"][self.SOURCE].get("api-key-param", "apikey")
+        api_key_param = Config.DATA_SOURCES[self.SOURCE].get("api-key-param", "apikey")
 
         if "?" in base_url_template:
             base_url = base_url_template.replace("?", f"?{api_key_param}={api_key}&", 1)
@@ -64,10 +64,10 @@ class IEEE(BaseSource):
             total_records = len(hits)
 
         if not hits:
-            utils.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top 0")
+            self.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top 0")
             return []
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top {len(hits)}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top {len(hits)}")
         return hits
 
     @utils.handle_exceptions
@@ -155,12 +155,12 @@ class IEEE(BaseSource):
         Fetch a single publication by DOI.
         """
         api_key = getattr(Config, "IEEE_API_KEY", "") or ""
-        base_url_template = app.config["DATA_SOURCES"][self.SOURCE].get("get-publication-endpoint", "")
+        base_url_template = Config.DATA_SOURCES[self.SOURCE].get("get-publication-endpoint", "")
 
         if not api_key.strip() or not base_url_template:
             return None
 
-        api_key_param = app.config["DATA_SOURCES"][self.SOURCE].get("api-key-param", "apikey")
+        api_key_param = Config.DATA_SOURCES[self.SOURCE].get("api-key-param", "apikey")
 
         if "?" in base_url_template:
             base_url = base_url_template.replace("?", f"?{api_key_param}={api_key}&", 1)
@@ -184,18 +184,18 @@ class IEEE(BaseSource):
 
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search IEEE publications.
     """
-    IEEE().search(source, search_term, results, failed_sources)
+    IEEE(tracking).search(source, search_term, results, failed_sources)
 
 
 @utils.handle_exceptions
-def get_publication(source: str, doi: str, source_id: str, publications):
+def get_publication(source: str, doi: str, source_id: str, publications, tracking=None):
     """
     Entrypoint to get a single IEEE publication by DOI.
     """
-    publication = IEEE().get_publication(doi)
+    publication = IEEE(tracking).get_publication(doi)
     if publication:
         publications.append(publication)

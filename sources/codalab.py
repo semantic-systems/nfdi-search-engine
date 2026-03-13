@@ -40,7 +40,7 @@ class Codalab(BaseSource):
 
         hits = [b for b in bundles if b.get("type") == "bundles"]
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=f"{self.SOURCE} - {len(hits)} bundle(s) matched",
         )
@@ -153,7 +153,7 @@ class Codalab(BaseSource):
         )
 
         if not raw:
-            utils.log_event(
+            self.log_event(
                 type="error",
                 message=f"{self.SOURCE} - failed to retrieve dataset details",
             )
@@ -161,7 +161,7 @@ class Codalab(BaseSource):
 
         dataset = self.map_hit(self.SOURCE, raw.get("data", {}))
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=f"{self.SOURCE} - retrieved dataset details",
         )
@@ -170,10 +170,10 @@ class Codalab(BaseSource):
 
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources) -> None:
-    Codalab().search(source, search_term, results, failed_sources)
+def search(source: str, search_term: str, results, failed_sources, tracking=None) -> None:
+    Codalab(tracking).search(source, search_term, results, failed_sources)
 
 
 @utils.handle_exceptions
-def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
-    return Codalab().get_resource(source_id)
+def get_resource(source: str, source_id: str, doi: str, tracking=None) -> Dataset | None:
+    return Codalab(tracking).get_resource(source_id)

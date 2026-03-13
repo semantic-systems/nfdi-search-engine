@@ -488,11 +488,11 @@ class Config:
         },
     }
 
-    # ELASTIC = {
-    #     "server": app_settings.ELASTIC_SERVER,
-    #     "username": app_settings.ELASTIC_USERNAME,
-    #     "password": app_settings.ELASTIC_PASSWORD
-    # }
+    ELASTIC = {
+        "server": app_settings.ELASTIC_SERVER,
+        "username": app_settings.ELASTIC_USERNAME,
+        "password": app_settings.ELASTIC_PASSWORD
+    }
 
     OAUTH2_PROVIDERS = {
         # Google OAuth 2.0 documentation:

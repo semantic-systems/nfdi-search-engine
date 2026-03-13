@@ -6,7 +6,7 @@ from string import Template
 from datetime import datetime
 from dateutil import parser
 from sources.base import BaseSource
-from main import app
+from config import Config
 
 class WIKIDATA_Researchers(BaseSource):
     SOURCE = 'WIKIDATA - Researchers'
@@ -56,12 +56,12 @@ class WIKIDATA_Researchers(BaseSource):
 
         replacement_dict = {
             "search_string" : search_term,
-            "number_of_records" : app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+            "number_of_records" : Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
         search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get(
+                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get(
                                                          'search-endpoint', ''),
                                                      search_term=query,
                                                      failed_sources=failed_sources)
@@ -74,7 +74,7 @@ class WIKIDATA_Researchers(BaseSource):
         """
         hits = raw.get("results", {}).get("bindings", [])
         total_hits = len(hits)
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
         return hits
 
     @utils.handle_exceptions
@@ -120,99 +120,8 @@ class WIKIDATA_Researchers(BaseSource):
                     results["researchers"].append(author)
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search Wikidata researchers.
     """
-    WIKIDATA_Researchers().search(source, search_term, results, failed_sources)
-
-
-# @utils.handle_exceptions
-# def get_researcher(source: str, orcid: str, source_id: str, researchers):
-#     """
-#     Fetch a single researcher by ORCID and map it to an Author object.
-#     """
-#     if not orcid.startswith("https://orcid.org"):
-#         orcid = "https://orcid.org/" + orcid
-#
-#     hit = data_retriever.retrieve_object(
-#         source=source,
-#         base_url=app.config["DATA_SOURCES"][source].get("get-researcher-endpoint", ""),
-#         identifier=orcid
-#     )
-#
-#     if not hit:
-#         return
-#
-#     researcher = Author()
-#     researcher.url = orcid
-#     researcher.identifier = hit.get("ids", {}).get("orcid", "").replace("https://orcid.org/", "")
-#     researcher.name = hit.get("display_name", "")
-#
-#     # Alternate names
-#     alias = hit.get("display_name_alternatives", [])
-#     if isinstance(alias, str):
-#         researcher.alternateName.append(alias)
-#     elif isinstance(alias, list):
-#         for _alias in alias:
-#             researcher.alternateName.append(_alias)
-#
-#     # Affiliations
-#     affiliations = hit.get("affiliations", [])
-#     if isinstance(affiliations, list):
-#         for affiliation in affiliations:
-#             institution = affiliation.get("institution", {})
-#             if isinstance(institution, dict):
-#                 _organization = Organization()
-#                 _organization.name = institution.get("display_name", "")
-#                 years = affiliation.get("years", [])
-#                 if len(years) > 1:
-#                     _organization.keywords.append(f"{years[-1]}-{years[0]}")
-#                 elif len(years) == 1:
-#                     _organization.keywords.append(f"{years[0]}")
-#                 researcher.affiliation.append(_organization)
-#
-#     # Research areas (topics)
-#     topics = hit.get("topics", [])
-#     if isinstance(topics, list):
-#         for topic in topics:
-#             name = topic.get("display_name", "")
-#             if name:
-#                 researcher.researchAreas.append(name)
-#
-#     # Source information
-#     _source = thing()
-#     _source.name = source
-#     openalex_id = hit.get("ids", {}).get("openalex", "").replace("https://openalex.org/", "")
-#     _source.identifier = openalex_id
-#     researcher.source.append(_source)
-#
-#     # Search OpenAlex for author's publications
-#     researcher_publications = {
-#         "publications": [],
-#         "others": [],
-#     }
-#     openalex_id_full = hit.get("id", "").replace("https://openalex.org/", "")
-#     url = app.config["DATA_SOURCES"][source].get("get-researcher-publications-endpoint", "") + openalex_id_full
-#     openalex_publications.get_publications("OPENALEX - Publications", url, researcher_publications, [])
-#     researcher.works.extend(researcher_publications["publications"])
-#
-#     researchers.append(researcher)
-#
-#
-# def convert_to_string(value):
-#     """
-#     Helper function to convert various value types to string representation.
-#     Note: This function appears to be unused but is kept for backward compatibility.
-#     """
-#     if isinstance(value, list):
-#         return ", ".join(convert_to_string(item) for item in value if item not in ("", [], {}, None))
-#     elif hasattr(value, "__dict__"):  # Check if the value is an instance of a class
-#         details = vars(value)
-#         return ", ".join(
-#             f"{key}: {convert_to_string(val)}"
-#             for key, val in details.items()
-#             if val not in ("", [], {}, None)
-#         )
-#     return str(value)
-#
+    WIKIDATA_Researchers(tracking).search(source, search_term, results, failed_sources)

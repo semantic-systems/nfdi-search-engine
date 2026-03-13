@@ -2,9 +2,10 @@ from objects import thing, Article, Author, CreativeWork
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
 import utils
-from main import app
+
 import requests
 
+from config import Config
 from sources.base import BaseSource
 
 class DataCite(BaseSource):
@@ -17,7 +18,7 @@ class DataCite(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                      search_term=search_term,
                                                      failed_sources=failed_sources) 
         
@@ -120,14 +121,14 @@ class DataCite(BaseSource):
         """
         Fetch a single publication by its DOI and map it to an Article object.
         """
-        url = app.config['DATA_SOURCES'][self.SOURCE].get('get-publication-endpoint', '') + doi
+        url = Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', '') + doi
 
         headers = {'Accept': 'application/json',
                 'Content-Type': 'application/json',
-                'User-Agent': app.config['REQUEST_HEADER_USER_AGENT'],
+                'User-Agent': Config.REQUEST_HEADER_USER_AGENT,
                 }
         
-        response = requests.get(url, headers=headers, timeout=int(app.config["REQUEST_TIMEOUT"]))                
+        response = requests.get(url, headers=headers, timeout=int(Config.REQUEST_TIMEOUT))                
 
         if response.status_code == 200:
             raw = response.json()
@@ -135,18 +136,17 @@ class DataCite(BaseSource):
             publication = self.map_hit(hit['attributes'])
             return publication
         else:
-            utils.log_event(type="error", message=f"{self.SOURCE} - Get Publication response status code: {str(response.status_code)} (Requesting URL: {url})")            
+            self.log_event(type="error", message=f"{self.SOURCE} - Get Publication response status code: {str(response.status_code)} (Requesting URL: {url})")            
             return None
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search DataCite publications.
     """
-    DataCite().search(source_name, search_term, results, failed_sources)
+    DataCite(tracking).search(source_name, search_term, results, failed_sources)
 
-def get_publication(source, doi, source_id, publications) -> None:
-    
-    source = DataCite()
+def get_publication(source, doi, source_id, publications, tracking=None) -> None:
+    source = DataCite(tracking)
 
     publication = source.get_publication(doi)
     if publication:

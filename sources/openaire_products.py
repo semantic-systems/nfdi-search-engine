@@ -1,7 +1,7 @@
 from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
 from sources import data_retriever
 import utils
-from main import app
+from config import Config
 from typing import Union, Iterable, Dict, Any
 
 from sources.base import BaseSource
@@ -16,7 +16,7 @@ class OpenAIRE_Products(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                 search_term=search_term,
                                                 failed_sources=failed_sources)
         
@@ -32,7 +32,7 @@ class OpenAIRE_Products(BaseSource):
         hits = response.get("results", {}).get("result",[])
 
         total_hits = len(hits)
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
 
         return hits
 
@@ -54,7 +54,7 @@ class OpenAIRE_Products(BaseSource):
         elif resource_type.upper() == 'OTHER':
             digitalObj = CreativeWork() 
         else:
-            utils.log_event(type="info", message=f"{self.SOURCE} - Resource type not defined: {resource_type}")  
+            self.log_event(type="info", message=f"{self.SOURCE} - Resource type not defined: {resource_type}")  
             digitalObj = CreativeWork()
 
         digitalObj.additionalType = resource_type
@@ -183,16 +183,16 @@ class OpenAIRE_Products(BaseSource):
     @utils.handle_exceptions
     def get_publication(self, doi: str):
         search_result = data_retriever.retrieve_object(source=self.SOURCE, 
-                                                        base_url=app.config['DATA_SOURCES'][self.SOURCE].get('get-publication-endpoint', ''),
+                                                        base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', ''),
                                                         identifier=doi)
         response = search_result.get("response", {})
         total_records_found = response.get("header", {}).get("total", "").get("$", "")
         hits = response.get("results", {}).get("result",[])
         total_hits = len(hits)
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
 
         if int(total_hits) > 1:   
-            utils.log_event(type="info", message=f"{self.SOURCE} - more than 1 record returned against a doi")
+            self.log_event(type="info", message=f"{self.SOURCE} - more than 1 record returned against a doi")
             return None
         
         if int(total_hits) > 0:
@@ -207,15 +207,15 @@ class OpenAIRE_Products(BaseSource):
         
         return None
     
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search OpenAIRE products.
     """
-    OpenAIRE_Products().search(source_name, search_term, results, failed_sources)
+    OpenAIRE_Products(tracking).search(source_name, search_term, results, failed_sources)
 
-def get_publication(source, doi, source_id, publications) -> None:
+def get_publication(source, doi, source_id, publications, tracking=None) -> None:
     
-    publication = OpenAIRE_Products().get_publication(doi)
+    publication = OpenAIRE_Products(tracking).get_publication(doi)
 
     if publication:
         publications.append(publication)

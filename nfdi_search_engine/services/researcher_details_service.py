@@ -61,7 +61,7 @@ class ResearcherDetailsService:
         def get_researcher(source: str, module_name: str, orcid_: str) -> List[Any]:
             mod = importlib.import_module(f"sources.{module_name}")
             partial: List[Any] = []
-            mod.get_researcher(source, orcid_, source, partial)
+            mod.get_researcher(source, orcid_, source, partial, tracking=self.tracking)
             return partial
 
         from concurrent.futures import ThreadPoolExecutor, as_completed

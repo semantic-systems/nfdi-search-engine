@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import logging
 import re
 import utils
-from main import app
+from config import Config
 
 logger = logging.getLogger('nfdi_search_engine')
 
@@ -31,7 +31,7 @@ class GEPRIS(BaseSource):
         Returns:
             Dictionary containing the HTML response and metadata
         """
-        endpoint = app.config["DATA_SOURCES"][self.SOURCE].get("search-endpoint", "")
+        endpoint = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
         base_url = endpoint.split("?")[0] if "?" in endpoint else endpoint
         # First request to get total count
         url = f"{base_url}?context={context}&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
@@ -51,7 +51,7 @@ class GEPRIS(BaseSource):
             logger.info(f'{self.SOURCE} - {total_records_text} records found for {context}')
             
             # Extract number from result text
-            max_records = app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+            max_records = Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
             numbers = re.findall(r'\d+', total_records_text)
             if numbers:
                 total_available = int(numbers[-1])
@@ -126,7 +126,7 @@ class GEPRIS(BaseSource):
             
             # Create source thing object
             _source = thing()
-            _source.name = app.config["DATA_SOURCES"][self.SOURCE]["logo"]["name"]
+            _source.name = Config.DATA_SOURCES[self.SOURCE]["logo"]["name"]
             _source.identifier = project_identifier
             project_url = 'https://gepris.dfg.de' + project_link + '?language=en'
             _source.url = project_url
@@ -237,7 +237,7 @@ class GEPRIS(BaseSource):
             author_identifier = author_link.split("/")[-1] if "/" in author_link else author_link
             
             _source = thing()
-            _source.name = app.config["DATA_SOURCES"][self.SOURCE]["logo"]["name"]
+            _source.name = Config.DATA_SOURCES[self.SOURCE]["logo"]["name"]
             _source.identifier = author_identifier
             _source.url = f'https://gepris.dfg.de{author_link}'
             authorObj.source.append(_source)
@@ -322,7 +322,7 @@ class GEPRIS(BaseSource):
             
             # Create source thing object
             _source = thing()
-            _source.name = app.config["DATA_SOURCES"][self.SOURCE]["logo"]["name"]
+            _source.name = Config.DATA_SOURCES[self.SOURCE]["logo"]["name"]
             _source.identifier = org_id
             _source.url = orgObj.url
             orgObj.source.append(_source)
@@ -548,8 +548,8 @@ def geocode_address(address):
 
 @utils.timeit
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search GEPRIS for projects, researchers, and organizations.
     """
-    GEPRIS().search(source, search_term, results, failed_sources)
+    GEPRIS(tracking).search(source, search_term, results, failed_sources)

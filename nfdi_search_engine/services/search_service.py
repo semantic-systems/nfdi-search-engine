@@ -165,7 +165,7 @@ class SearchService:
 
         mod = importlib.import_module(f"sources.{module_name}")
         clean_doi = doi.replace("DOI:", "")
-        return mod.get_resource(source, source_identifier, clean_doi)
+        return mod.get_resource(source, source_identifier, clean_doi, tracking=self.tracking)
 
     def _harvest(self, sources: List[str], search_term: str) -> Tuple[Dict[str, List[Any]], List[str]]:
         results: Dict[str, List[Any]] = {c: [] for c in CATEGORIES}
@@ -176,7 +176,7 @@ class SearchService:
             partial = {c: [] for c in CATEGORIES}
             failed_sources: List[str] = []
             try:
-                mod.search(source, term, partial, failed_sources)
+                mod.search(source, term, partial, failed_sources, tracking=self.tracking)
                 if failed_sources:
                     return None, Exception(f"Failed to harvest {source}")
                 return partial, None

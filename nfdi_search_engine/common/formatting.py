@@ -25,9 +25,3 @@ def remove_html_tags(text):
 
 def remove_line_tags(text):
     return text.replace('\n', ' ').replace('\t', ' ')
-
-
-def generate_string_from_keys(dictionary):
-    keys_list = list(dictionary.keys())
-    keys_string = " ".join(keys_list)
-    return keys_string

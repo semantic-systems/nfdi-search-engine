@@ -2,7 +2,7 @@ from objects import thing, Article, Author
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
 import utils
-from main import app
+from config import Config
 
 from sources.base import BaseSource
 
@@ -16,7 +16,7 @@ class DBLP_Venues(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                     search_term=search_term,
                                                     failed_sources=failed_sources)  
 
@@ -32,7 +32,7 @@ class DBLP_Venues(BaseSource):
         total_records_found = hits['@total']
         total_hits = hits['@sent']
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
 
         if int(total_hits) > 0:
             hits = hits['hit']
@@ -71,12 +71,12 @@ class DBLP_Venues(BaseSource):
 
         if hits:
             for hit in hits:
-                venue = self.map_hit(hit)
+                venue = self.map_hit(self.SOURCE, hit)
                 results['events'].append(venue)
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search DBLP venues.
     """
-    DBLP_Venues().search(source, search_term, results, failed_sources)
+    DBLP_Venues(tracking).search(source, search_term, results, failed_sources)

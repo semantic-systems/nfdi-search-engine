@@ -2,7 +2,7 @@ from objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
 import utils
-from main import app
+from config import Config
 from datetime import datetime
 from dateutil import parser
 
@@ -18,7 +18,7 @@ class EUDAT(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('endpoint', ''),
+                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('endpoint', ''),
                                                     search_term=search_term,
                                                     failed_sources=failed_sources)  
 
@@ -32,7 +32,7 @@ class EUDAT(BaseSource):
 
         hits = raw['hits']
         total_hits = hits['total']
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")              
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")              
 
         if int(total_hits) > 0:
             hits = hits.get("hits", [])
@@ -110,7 +110,7 @@ class EUDAT(BaseSource):
         _source.name = self.SOURCE
         _source.identifier = hit.get("id", "")
         # _source.url = hit.get('links', {}).get('self', '')  # this gives json response
-        _source.url = app.config['DATA_SOURCES'][self.SOURCE].get('record-base-url', '') + _source.identifier                    
+        _source.url = Config.DATA_SOURCES[self.SOURCE].get('record-base-url', '') + _source.identifier                    
         digitalObj.source.append(_source)  
 
         return digitalObj
@@ -141,8 +141,8 @@ class EUDAT(BaseSource):
                     results['others'].append(digitalObj)   
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search EUDAT objects.
     """
-    EUDAT().search(source, search_term, results, failed_sources)
+    EUDAT(tracking).search(source, search_term, results, failed_sources)

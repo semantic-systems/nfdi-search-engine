@@ -4,7 +4,6 @@ from config import Config
 from typing import Iterable, Dict, Any, List
 import utils
 import requests
-from main import app
 
 from sources.base import BaseSource
 
@@ -45,7 +44,7 @@ class CORE(BaseSource):
         total_hits = raw['totalHits']
         total_results = len(hits)
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}") 
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}") 
 
         return hits
     
@@ -130,8 +129,8 @@ class CORE(BaseSource):
                 results['publications'].append(digitalObj)
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORE publications.
     """
-    CORE().search(source, search_term, results, failed_sources)
+    CORE(tracking).search(source, search_term, results, failed_sources)

@@ -2,7 +2,7 @@ from objects import thing, Article, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
 import utils
-from main import app
+from config import Config
 
 from sources.base import BaseSource
 
@@ -16,7 +16,7 @@ class OERSI(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                 search_term=search_term,
                                                 failed_sources=failed_sources)
         
@@ -108,8 +108,8 @@ class OERSI(BaseSource):
                 results['others'].append(publication)
 
 # @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORDIS publications.
     """
-    return OERSI().search(source, search_term, results, failed_sources)
+    return OERSI(tracking).search(source, search_term, results, failed_sources)

@@ -2,7 +2,7 @@ from objects import Author, thing, Organization
 from sources import data_retriever
 from typing import Iterable, Dict, Any
 import utils
-from main import app
+from config import Config
 
 from sources.base import BaseSource
 
@@ -17,7 +17,7 @@ class ORCID(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                     search_term=search_term,
                                                     failed_sources=failed_sources)
 
@@ -36,7 +36,7 @@ class ORCID(BaseSource):
         authors = raw.get('expanded-result', None)
         
         if records_found > 0 and authors:
-            utils.log_event(type="info", message=f"{self.SOURCE} - {records_found} records matched; pulled top {len(authors)}")
+            self.log_event(type="info", message=f"{self.SOURCE} - {records_found} records matched; pulled top {len(authors)}")
             return authors
         
         return []
@@ -88,8 +88,8 @@ class ORCID(BaseSource):
 
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search ORCID researchers.
     """
-    ORCID().search(source, search_term, results, failed_sources)
+    ORCID(tracking).search(source, search_term, results, failed_sources)

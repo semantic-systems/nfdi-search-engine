@@ -3,7 +3,7 @@ from sources import data_retriever
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any, List
 import utils
-from main import app
+from config import Config
 from sources import openalex_publications
 
 
@@ -19,11 +19,11 @@ class OpenAlexResearchers(BaseSource):
         """
         # Use source_name if provided, otherwise fall back to app.config
         if source_name:
-            base_url = app.config["DATA_SOURCES"][source_name].get("search-endpoint", "")
+            base_url = Config.DATA_SOURCES[source_name].get("search-endpoint", "")
             source = source_name
         else:
             # Fallback for backward compatibility
-            base_url = app.config["DATA_SOURCES"].get("OPENALEX - Researchers", {}).get("search-endpoint", "")
+            base_url = Config.DATA_SOURCES.get("OPENALEX - Researchers", {}).get("search-endpoint", "")
             source = "OPENALEX - Researchers"
         
         search_result = data_retriever.retrieve_data(
@@ -120,7 +120,7 @@ class OpenAlexResearchers(BaseSource):
         # Log the number of records found
         total_records_found = raw.get("meta", {}).get("count", 0) if raw.get("meta") else 0
         total_hits = len(list(hits)) if not isinstance(hits, list) else len(hits)
-        utils.log_event(
+        self.log_event(
             type="info",
             message=f"{source_name} - {total_records_found} records matched; pulled top {total_hits}"
         )
@@ -132,15 +132,15 @@ class OpenAlexResearchers(BaseSource):
 
 
 @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search OpenAlex researchers.
     """
-    OpenAlexResearchers().search(source, search_term, results, failed_sources)
+    OpenAlexResearchers(tracking).search(source, search_term, results, failed_sources)
 
 
 @utils.handle_exceptions
-def get_researcher(source: str, orcid: str, source_id: str, researchers):
+def get_researcher(source: str, orcid: str, source_id: str, researchers, tracking=None):
     """
     Fetch a single researcher by ORCID and map it to an Author object.
     """
@@ -149,7 +149,7 @@ def get_researcher(source: str, orcid: str, source_id: str, researchers):
 
     hit = data_retriever.retrieve_object(
         source=source,
-        base_url=app.config["DATA_SOURCES"][source].get("get-researcher-endpoint", ""),
+        base_url=Config.DATA_SOURCES[source].get("get-researcher-endpoint", ""),
         identifier=orcid
     )
     
@@ -205,25 +205,8 @@ def get_researcher(source: str, orcid: str, source_id: str, researchers):
         "others": [],
     }
     openalex_id_full = hit.get("id", "").replace("https://openalex.org/", "")
-    url = app.config["DATA_SOURCES"][source].get("get-researcher-publications-endpoint", "") + openalex_id_full
-    openalex_publications.get_publications("OPENALEX - Publications", url, researcher_publications, [])
+    url = Config.DATA_SOURCES[source].get("get-researcher-publications-endpoint", "") + openalex_id_full
+    openalex_publications.get_publications("OPENALEX - Publications", url, researcher_publications, [], tracking=tracking)
     researcher.works.extend(researcher_publications["publications"])
 
     researchers.append(researcher)
-
-
-def convert_to_string(value):
-    """
-    Helper function to convert various value types to string representation.
-    Note: This function appears to be unused but is kept for backward compatibility.
-    """
-    if isinstance(value, list):
-        return ", ".join(convert_to_string(item) for item in value if item not in ("", [], {}, None))
-    elif hasattr(value, "__dict__"):  # Check if the value is an instance of a class
-        details = vars(value)
-        return ", ".join(
-            f"{key}: {convert_to_string(val)}"
-            for key, val in details.items()
-            if val not in ("", [], {}, None)
-        )
-    return str(value)
