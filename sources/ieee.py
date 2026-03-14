@@ -1,38 +1,37 @@
 # sources/ieee.py
 
-from objects import thing, Article, Author
+from nfdi_search_engine.common.models.objects import thing, Article, Author
 from sources import data_retriever
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any
-import utils
-from main import app
+from config import Config
 from datetime import datetime
 from dateutil import parser
 from config import Config
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class IEEE(BaseSource):
 
     SOURCE = "IEEE"
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources: list) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        base_url_template = app.config["DATA_SOURCES"][self.SOURCE].get("search-endpoint", "")
+        base_url_template = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
         if not base_url_template:
-            utils.log_event(type="error", message=f"{self.SOURCE} - No search endpoint configured")
+            self.log_event(type="error", message=f"{self.SOURCE} - No search endpoint configured")
             failed_sources.append(self.SOURCE)
             return None
 
         api_key = getattr(Config, "IEEE_API_KEY", "") or ""
         if not api_key.strip():
-            utils.log_event(type="error", message=f"{self.SOURCE} - IEEE_API_KEY is missing or empty")
+            self.log_event(type="error", message=f"{self.SOURCE} - IEEE_API_KEY is missing or empty")
             failed_sources.append(self.SOURCE)
             return None
 
-        api_key_param = app.config["DATA_SOURCES"][self.SOURCE].get("api-key-param", "apikey")
+        api_key_param = Config.DATA_SOURCES[self.SOURCE].get("api-key-param", "apikey")
 
         if "?" in base_url_template:
             base_url = base_url_template.replace("?", f"?{api_key_param}={api_key}&", 1)
@@ -47,7 +46,6 @@ class IEEE(BaseSource):
         )
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response.
@@ -64,13 +62,12 @@ class IEEE(BaseSource):
             total_records = len(hits)
 
         if not hits:
-            utils.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top 0")
+            self.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top 0")
             return []
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top {len(hits)}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records} records matched; pulled top {len(hits)}")
         return hits
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single hit dict from the source to an Article object.
@@ -98,7 +95,7 @@ class IEEE(BaseSource):
         publication.publication = hit.get("publisher", "") or ""
 
         abstract = hit.get("abstract", "") or ""
-        publication.description = utils.remove_html_tags(abstract)
+        publication.description = remove_html_tags(abstract)
         publication.abstract = publication.description
 
         publication.encoding_contentUrl = hit.get("pdf_url", "") or ""
@@ -134,7 +131,6 @@ class IEEE(BaseSource):
 
         return publication
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them into results dict.
@@ -149,18 +145,17 @@ class IEEE(BaseSource):
             if digitalObj:
                 results["publications"].append(digitalObj)
 
-    @utils.handle_exceptions
     def get_publication(self, doi: str) -> Article | None:
         """
         Fetch a single publication by DOI.
         """
         api_key = getattr(Config, "IEEE_API_KEY", "") or ""
-        base_url_template = app.config["DATA_SOURCES"][self.SOURCE].get("get-publication-endpoint", "")
+        base_url_template = Config.DATA_SOURCES[self.SOURCE].get("get-publication-endpoint", "")
 
         if not api_key.strip() or not base_url_template:
             return None
 
-        api_key_param = app.config["DATA_SOURCES"][self.SOURCE].get("api-key-param", "apikey")
+        api_key_param = Config.DATA_SOURCES[self.SOURCE].get("api-key-param", "apikey")
 
         if "?" in base_url_template:
             base_url = base_url_template.replace("?", f"?{api_key_param}={api_key}&", 1)
@@ -183,19 +178,17 @@ class IEEE(BaseSource):
         return self.map_hit(articles[0])
 
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search IEEE publications.
     """
-    IEEE().search(source, search_term, results, failed_sources)
+    IEEE(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
-def get_publication(source: str, doi: str, source_id: str, publications):
+def get_publication(source: str, doi: str, source_id: str, publications, tracking=None):
     """
     Entrypoint to get a single IEEE publication by DOI.
     """
-    publication = IEEE().get_publication(doi)
+    publication = IEEE(tracking).get_publication(doi)
     if publication:
         publications.append(publication)

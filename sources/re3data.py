@@ -1,11 +1,9 @@
-import time
 from typing import Iterable, Dict, Any, List
 
-import utils
-from objects import Dataset, Organization
-from main import app
+from nfdi_search_engine.common.models.objects import Dataset, Organization
+from config import Config
 from sources import data_retriever
-from objects import thing, Author, Article
+from nfdi_search_engine.common.models.objects import thing, Author, Article
 
 from sources.base import BaseSource
 
@@ -15,17 +13,15 @@ class RE3DATA(BaseSource):
     Search for repositories in the Re3Data registry based on the search term. For re3data, the returned search results
     are only short models of repositories and do not contain detailed information, since very limited information
     is returned by the search-term-ready API and looping over all details is too time-consuming.
-    The detailed information is retrieved separately for each (list of) repository in search_displayed_resources().
     """
 
     SOURCE = 'RE3DATA'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_url = app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', '')
+        search_url = Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
         search_results = data_retriever.retrieve_data(
             source=self.SOURCE,
             base_url=search_url,
@@ -33,9 +29,7 @@ class RE3DATA(BaseSource):
             failed_sources=failed_sources
         )
         return search_results
-    
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -45,12 +39,10 @@ class RE3DATA(BaseSource):
         if isinstance(repositories, dict):
             repositories = [repositories]
 
-        repositories_to_parse = repositories[:app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']]
-        utils.log_event(type="info", message=f"{self.SOURCE} - {len(repositories)} records matched; pulled top {len(repositories_to_parse)}")   
+        repositories_to_parse = repositories[:Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT]
+        self.log_event(type="info", message=f"{self.SOURCE} - {len(repositories)} records matched; pulled top {len(repositories_to_parse)}")   
         return repositories_to_parse
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -173,8 +165,6 @@ class RE3DATA(BaseSource):
             text=repository_data.get('r3d:remarks', "")
         )
     
-
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -188,15 +178,15 @@ class RE3DATA(BaseSource):
             if repository:
                 results['resources'].append(repository)
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search RE3DATA dataset.
     """
-    RE3DATA().search(source, search_term, results, failed_sources)
+    RE3DATA(tracking).search(source, search_term, results, failed_sources)
 
-@utils.handle_exceptions
-def get_resource(source: str, source_identifier: str, doi: str):
+
+def get_resource(source: str, source_identifier: str, doi: str, tracking=None):
     """
     Retrieve detailed information for the repository. 
 
@@ -207,52 +197,13 @@ def get_resource(source: str, source_identifier: str, doi: str):
     :return: dataset
     """
 
-    re3data = RE3DATA()
+    re3data = RE3DATA(tracking)
 
-    base_url = app.config['DATA_SOURCES'][source].get('get-resource-endpoint', '')     
+    base_url = Config.DATA_SOURCES[source].get('get-resource-endpoint', '')     
     search_result = data_retriever.retrieve_object(source=source, 
                                                     base_url=base_url,
                                                     identifier=source_identifier) #source identifier will be passed on with the base url
     if search_result:
         dataset = re3data.map_hit_detailled(source, search_result, doi)
-        utils.log_event(type="info", message=f"{source} - retrieved repository details")
+        tracking.log_event_async(log_type="info", message=f"{source} - retrieved repository details")
         return dataset
-
-
-
-
-
-
-# Note: the following function is unused
-@utils.handle_exceptions
-def search_displayed_resources(displayed_repos: List[Dataset], results: Dict, failed_sources: List):
-    """
-    Retrieve detailed information for each repository in the list of displayed repositories. Since a separate API call
-    is needed for each repository, this function is time-consuming, and the number of repositories should be limited.
-
-    :param displayed_repos: the list of repositories to retrieve detailed information for
-    :param results: the dictionary to store the search results
-    :param failed_sources: the list to store the failed
-
-    :return: None
-    """
-    # start_time = time.time()
-    source_name = displayed_repos[0].source[0].name if displayed_repos else "re3data"
-
-    counter_retrieved_resources = 0
-    for repo in displayed_repos:
-        base_url = app.config['DATA_SOURCES'][source_name].get('details-endpoint', '')
-        details = data_retriever.retrieve_data(
-            source=source_name,
-            base_url=base_url,
-            search_term=repo.url.partition('https://www.re3data.org/api/beta/repository/')[2],
-            failed_sources=failed_sources
-        ) if repo.source else None
-
-        if details:
-            dataset = map_repository_to_dataset(source_name, repo.identifier, details)
-            results['resources'].append(dataset)
-            counter_retrieved_resources += 1
-
-    utils.log_event(type="info", message=f"{source_name} - retrieved {counter_retrieved_resources} repository details")
-    # print(f"searching Re3Data details took {time.time() - start_time:.2f} seconds to execute")

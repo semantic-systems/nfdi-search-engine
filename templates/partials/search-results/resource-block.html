@@ -11,7 +11,7 @@
                         {{resource.name}}</span>
                     {% else %}
                     <a class="text-secondary fw-bold"
-                        href="/resource-details/{{resource | format_digital_obj_url('source-name','source-id','doi')}}"
+                        href="/resource-details/{{resource | format_digital_obj_url('source-name','doi')}}"
                         target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{resource.name}}</a>
                     {% endif %}
                 </div>
@@ -109,7 +109,7 @@
         {% with share_modal_id='share-resource-'+resource.identifier | regex_replace ('\W',''),
         preview_modal_id='preview-resource-'+resource.identifier | regex_replace ('\W',''),
         download_modal_id='download-resource-'+resource.identifier | regex_replace ('\W',''),
-        url = '/resource-details/'+ resource | format_digital_obj_url('doi','source-name','source-id'),
+        url = '/resource-details/'+ resource | format_digital_obj_url('doi','source-name'),
         img_src = resource.image,
         encoding_contentUrl = resource.encoding_contentUrl,
         title = resource.name | trim

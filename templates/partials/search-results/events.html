@@ -65,9 +65,9 @@
 
 <div id="div_load_more_events" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.events < session.total_search_results.events %} <div>
-            Displaying top {{session.displayed_search_results.events }} events out of {{
-            session.total_search_results.events }}
+        {% if displayed_results.events < total_results.events %} <div>
+            Displaying top {{displayed_results.events }} events out of {{
+            total_results.events }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more events" id="btn_load_more_events">Load

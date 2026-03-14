@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="col-12">
                                     <p class="text-center m-0">Don't have an account? <a
-                                            href="{{ url_for('register') }}">Register</a>
+                                            href="{{ url_for('auth.register') }}">Register</a>
                                     </p>
                                 </div>
                             </div>
@@ -90,7 +90,7 @@
                     </div>
                     <div class="col-12 col-lg-5 d-flex align-items-center">
                         <div class="d-flex gap-3 flex-column w-100 ">
-                            <a href="{{ url_for('oauth2_authorize', provider='github') }}"
+                            <a href="{{ url_for('auth.oauth2_authorize', provider='github') }}"
                                 class="btn btn-lg btn-success">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                     class="bi bi-github" viewBox="0 0 16 16">
@@ -99,7 +99,7 @@
                                 </svg>
                                 <span class="ms-2 fs-6">Login with Github</span>
                             </a>
-                            <a href="{{ url_for('oauth2_authorize', provider='google') }}"
+                            <a href="{{ url_for('auth.oauth2_authorize', provider='google') }}"
                                 class="btn btn-lg btn-danger">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
                                     class="bi bi-google" viewBox="0 0 16 16">
@@ -108,7 +108,7 @@
                                 </svg>
                                 <span class="ms-2 fs-6">Login with Google</span>
                             </a>
-                            <!-- <a href="{{ url_for('oauth2_authorize', provider='orcid') }}"
+                            <!-- <a href="{{ url_for('auth.oauth2_authorize', provider='orcid') }}"
                                 class="btn btn-lg btn-primary">
                                 <img class="mx-auto"
                                     src="{{ url_for('static', filename='images/sources/orcid-id.png') }}" alt="ORCID">

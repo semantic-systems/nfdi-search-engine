@@ -10,10 +10,16 @@
             <div class="col-md-11 fs-6">
                 <div class="row">
                     <div class="col-md-6 fs-5">
+                        {% if not organization.url %}
                         <a class="text-secondary fw-bold"
-                            href='/organization-details/{{ organization.identifier }}/{{ organization.name }}'
                             target='_blank'>
                             {{organization.name}}</a>
+                        {% else %}
+                        <a class="text-secondary fw-bold"
+                            href='{{ organization.url }}'
+                            target='_blank'>
+                            {{organization.name}}</a>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="row px-2 pt-3">
@@ -64,30 +70,12 @@
             </div>
 
             {% with share_modal_id='share-other-'+organization.identifier | regex_replace ('\W',''),
-            preview_modal_id='preview-other-'+organization.identifier | regex_replace ('\W',''),
-            download_modal_id='download-other-'+organization.identifier | regex_replace ('\W',''),
-            url = url_for('digital_obj_details', identifier_with_type=(organization | format_digital_obj_url('doi','source-id')),
-            _external=True),
-            img_src = organization.image,
-            encoding_contentUrl = organization.encoding_contentUrl,
+            url = organization.url,
             title = organization.name | trim
             %}
             {{ shareModal(share_modal_id, url, title) }}
-            {{ previewModal(preview_modal_id, title, img_src) }}
-            {{ downloadModal(download_modal_id, title, encoding_contentUrl) }}
             {% endwith %}
 
-            <div class="col-md-1">
-                <div class="row fs-5">
-                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Share"><i
-                                class="bi bi-share"></i></a></div>
-                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Preview" data-bs-toggle=""
-                            data-bs-target=""><i class="bi bi-eye"></i></a></div>
-                    <div class="col-lg-12 text-end mb-3"><a target='_blank' href="#" title="Download"><i
-                                class="bi bi-download"></i></a></div>
-
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -96,9 +84,9 @@
 
 <div id="div_load_more_organizations" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.organizations < session.total_search_results.organizations %} <div>
-            Displaying top {{session.displayed_search_results.organizations }} digital objects out of {{
-            session.total_search_results.organizations }}
+        {% if displayed_results.organizations < total_results.organizations %} <div>
+            Displaying top {{displayed_results.organizations }} digital objects out of {{
+            total_results.organizations }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more digital objects"

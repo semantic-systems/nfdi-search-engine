@@ -1,10 +1,11 @@
 from typing import Union, Dict, Any, List, Iterable
 
-import utils
 from config import Config
 from sources.base import BaseSource
 from sources import data_retriever
-from objects import thing, Article, Author, Dataset, Person
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Dataset, Person
+
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class HuggingFaceDatasets(BaseSource):
@@ -39,7 +40,7 @@ class HuggingFaceDatasets(BaseSource):
         dataset.name = hit.get("id", "")
         dataset.additionalType = "DATASET"
         dataset.url = "https://huggingface.co/datasets/" + hit.get("id", "")
-        dataset.description = utils.remove_html_tags(hit.get("description", ""))
+        dataset.description = remove_html_tags(hit.get("description", ""))
         dataset.abstract = dataset.description
         dataset.license = hit.get("license", {}).get("id", "")
         dataset.datePublished = hit.get("createdAt", "")
@@ -84,7 +85,7 @@ class HuggingFaceDatasets(BaseSource):
 
         total_hits = len(search_result)
         if int(total_hits) > 0:
-            utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched")
+            self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched")
 
             for hit in search_result:
                 dataset = self.map_hit(self.SOURCE, hit)
@@ -99,23 +100,21 @@ class HuggingFaceDatasets(BaseSource):
         )
         if search_result:
             dataset = self.map_hit(self.SOURCE, search_result)
-            utils.log_event(type="info", message=f"{self.SOURCE} - retrieved dataset details")
+            self.log_event(type="info", message=f"{self.SOURCE} - retrieved dataset details")
             return dataset
         else:
-            utils.log_event(type="error", message=f"{self.SOURCE} - failed to retrieve dataset details")
+            self.log_event(type="error", message=f"{self.SOURCE} - failed to retrieve dataset details")
             return None
 
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources) -> None:
+def search(source: str, search_term: str, results, failed_sources, tracking=None) -> None:
     """
     Entrypoint to search Huggingface Datasets.
     """
-    HuggingFaceDatasets().search(source, search_term, results, failed_sources)
+    HuggingFaceDatasets(tracking).search(source, search_term, results, failed_sources)
 
 
-@utils.handle_exceptions
-def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
+def get_resource(source: str, source_id: str, doi: str, tracking=None) -> Dataset | None:
     """
     Retrieve detailed information for the dataset. 
 
@@ -125,4 +124,4 @@ def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
 
     :return: dataset
     """
-    return HuggingFaceDatasets().get_resource(doi)
+    return HuggingFaceDatasets(tracking).get_resource(doi)

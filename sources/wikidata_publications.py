@@ -1,18 +1,18 @@
-from objects import thing, Article, Author, Organization
-from sources import data_retriever
-from typing import Iterable, Dict, Any, List
-import utils
+from dateutil import parser
 from string import Template
 from datetime import datetime
-from dateutil import parser
+from typing import Iterable, Dict, Any, List
+
 from sources.base import BaseSource
-from main import app
+from config import Config
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization
+from sources import data_retriever
+
 
 class WIKIDATA_Publication(BaseSource):
 
     SOURCE = 'WIKIDATA - Publications'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
@@ -47,30 +47,28 @@ class WIKIDATA_Publication(BaseSource):
                                         ''')
         replacement_dict = {
             "search_string": search_term,
-            "number_of_records": app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+            "number_of_records": Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
         search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                      search_term=query,
                                                      failed_sources=failed_sources)
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
         """
         hits = raw.get("results", {}).get("bindings", [])
         total_hits = len(hits)
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
         # print(str(total_hits) + " from WIKIDATA Publications")
         if int(total_hits) > 0:
             return hits
         return []
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -115,7 +113,6 @@ class WIKIDATA_Publication(BaseSource):
         publication.source.append(_source)
         return publication
 
-    @utils.handle_exceptions
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -131,8 +128,8 @@ class WIKIDATA_Publication(BaseSource):
                     results['others'].append(publication)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
     """
     Entrypoint to search WIKIDATA publications.
     """
-    WIKIDATA_Publication().search(source_name, search_term, results, failed_sources)
+    WIKIDATA_Publication(tracking).search(source_name, search_term, results, failed_sources)

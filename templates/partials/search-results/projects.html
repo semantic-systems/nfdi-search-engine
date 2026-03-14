@@ -100,9 +100,9 @@
 
 <div id="div_load_more_projects" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.projects < session.total_search_results.projects %} <div>
-            Displaying top {{session.displayed_search_results.projects }} projects out of {{
-            session.total_search_results.projects }}
+        {% if displayed_results.projects < total_results.projects %} <div>
+            Displaying top {{displayed_results.projects }} projects out of {{
+            total_results.projects }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more projects" id="btn_load_more_projects">Load

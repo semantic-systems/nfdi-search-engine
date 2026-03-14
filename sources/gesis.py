@@ -1,19 +1,19 @@
 
-from objects import thing, Dataset, Author
+from nfdi_search_engine.common.models.objects import thing, Dataset, Author
 from sources import data_retriever
-import utils
-from main import app
+from config import Config
+from nfdi_search_engine.common.formatting import remove_html_tags
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources): 
+
+def search(source: str, search_term: str, results, failed_sources, tracking=None): 
     search_result = data_retriever.retrieve_data(source=source, 
-                                                base_url=app.config['DATA_SOURCES'][source].get('search-endpoint', ''),
+                                                base_url=Config.DATA_SOURCES[source].get('search-endpoint', ''),
                                                 search_term=search_term,
                                                 failed_sources=failed_sources)      
         
     total_records_found = search_result.get('hits', {}).get('total', '')
     total_hits = search_result.get('hits', {}).get('hits', [])
-    utils.log_event(type="info", message=f"{source} - {total_records_found} records matched; pulled top {len(total_hits)}")    
+    tracking.log_event_async(log_type="info", message=f"{source} - {total_records_found} records matched; pulled top {len(total_hits)}")    
     for hit in total_hits:
         # Extract the dc fields from the hit object
         dc_fields = hit['_source']['dc']
@@ -26,7 +26,7 @@ def search(source: str, search_term: str, results, failed_sources):
         title = dc_fields['title']['all'][0] if 'title' in dc_fields and 'all' in dc_fields['title'] else ''
         digital_obj.name =title 
         description = dc_fields['description']['all'][0] if 'description' in dc_fields and 'all' in dc_fields['description'] else ''
-        short_description = utils.remove_html_tags(description)
+        short_description = remove_html_tags(description)
         digital_obj.abstract = short_description
         digital_obj.description = short_description
         type = dc_fields['type']['all'][0] if 'type' in dc_fields and 'all' in dc_fields['type'] else 'Type not available'
@@ -69,7 +69,3 @@ def search(source: str, search_term: str, results, failed_sources):
 
 
         results['resources'].append(digital_obj)
-
-       
-
-

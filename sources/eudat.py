@@ -1,30 +1,28 @@
-from objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
+from nfdi_search_engine.common.models.objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
-import utils
-from main import app
+from config import Config
 from datetime import datetime
 from dateutil import parser
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class EUDAT(BaseSource):
 
     SOURCE = 'EUDAT'
 
-    @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('endpoint', ''),
+                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('endpoint', ''),
                                                     search_term=search_term,
                                                     failed_sources=failed_sources)  
 
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -32,14 +30,13 @@ class EUDAT(BaseSource):
 
         hits = raw['hits']
         total_hits = hits['total']
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")              
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")              
 
         if int(total_hits) > 0:
             hits = hits.get("hits", [])
             return hits
         return None
-        
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -71,7 +68,7 @@ class EUDAT(BaseSource):
         digitalObj.url = hit.get('links', {}).get('self', '')  # this gives the json response
         
         
-        digitalObj.description = utils.remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
+        digitalObj.description = remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
         
         
         keywords = metadata.get('keywords', [])
@@ -110,12 +107,11 @@ class EUDAT(BaseSource):
         _source.name = self.SOURCE
         _source.identifier = hit.get("id", "")
         # _source.url = hit.get('links', {}).get('self', '')  # this gives json response
-        _source.url = app.config['DATA_SOURCES'][self.SOURCE].get('record-base-url', '') + _source.identifier                    
+        _source.url = Config.DATA_SOURCES[self.SOURCE].get('record-base-url', '') + _source.identifier                    
         digitalObj.source.append(_source)  
 
         return digitalObj
-    
-    @utils.handle_exceptions
+
     def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
@@ -140,9 +136,9 @@ class EUDAT(BaseSource):
                 else: # 'AUDIOVISUAL'
                     results['others'].append(digitalObj)   
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search EUDAT objects.
     """
-    EUDAT().search(source, search_term, results, failed_sources)
+    EUDAT(tracking).search(source, search_term, results, failed_sources)

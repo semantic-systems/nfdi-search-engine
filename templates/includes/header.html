@@ -57,19 +57,19 @@
                 <div class="d-inline-block" style="vertical-align: super;">
                     <div class="dropdown">
                         {% if current_user.is_anonymous %}
-                        <a class="btn btn-success px-4 py-0" href="{{ url_for('login') }}">Login</a>
+                        <a class="btn btn-success px-4 py-0" href="{{ url_for('auth.login') }}">Login</a>
                         {% else %}
                         <button class="btn btn-success dropdown-toggle px-4 py-0" type="button" id="dropdownMenuButton2"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Hi, {{ current_user.first_name }}!
                         </button>
                         <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton2">
-                            <li><a class="dropdown-item active" href="{{ url_for('profile') }}">Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ url_for('preferences') }}">Preferences</a></li>
+                            <li><a class="dropdown-item active" href="{{ url_for('account.profile') }}">Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('account.preferences') }}">Preferences</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
-                            <li><a class="dropdown-item" href="{{ url_for('logout') }}">Log out</a></li>
+                            <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">Log out</a></li>
                         </ul>
                         {% endif %}
 

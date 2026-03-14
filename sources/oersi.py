@@ -1,35 +1,32 @@
-from objects import thing, Article, Author
+from nfdi_search_engine.common.models.objects import thing, Article, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
-from main import app
+from config import Config
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 class OERSI(BaseSource):
 
     SOURCE = 'OERSI'
 
-    # @utils.handle_exceptions
     def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
+                                                base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
                                                 search_term=search_term,
                                                 failed_sources=failed_sources)
         
         return search_result
 
-    # @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
         """
         return raw['hits']['hits'] 
 
-    # @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -43,7 +40,7 @@ class OERSI(BaseSource):
         publication.datePublished = hit_source.get("datePublished", "") 
         publication.license = hit_source.get("license", {}).get("id", "")
         
-        publication.description = utils.remove_html_tags(hit_source.get("description", ""))
+        publication.description = remove_html_tags(hit_source.get("description", ""))
         publication.abstract = publication.description
         # every object is categorized as 'learning resource' which is vague. not sure whether this information should be used.
         publication.additionalType = ','.join(hit_source.get("type", [])) 
@@ -107,9 +104,9 @@ class OERSI(BaseSource):
             else:
                 results['others'].append(publication)
 
-# @utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+
+def search(source: str, search_term: str, results, failed_sources, tracking=None):
     """
     Entrypoint to search CORDIS publications.
     """
-    return OERSI().search(source, search_term, results, failed_sources)
+    return OERSI(tracking).search(source, search_term, results, failed_sources)
