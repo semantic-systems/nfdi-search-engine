@@ -20,7 +20,7 @@ def _get_services() -> tuple[ChatbotService, TrackingService]:
 def are_embeddings_generated():
     search_uuid = session.get("search_uuid")
     if not search_uuid:
-        abort(400, description="Missing search_uuid in session")
+        return str(False)
 
     svc, _ = _get_services()
     ready = svc.are_embeddings_generated(search_uuid=search_uuid)

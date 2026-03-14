@@ -90,7 +90,7 @@ class TrackingService:
             index=ESIndex.user_activity_log.name,
             size=10000,
             query={"range": {"timestamp": {"gte": start_date, "lte": end_date}}},
-            sort=[{"timestamp": "desc"}],
+            sort=[{"timestamp": {"order": "desc", "unmapped_type": "date"}}],
         )
         return result["hits"]["hits"]
 
@@ -100,7 +100,7 @@ class TrackingService:
             index=ESIndex.search_term_log.name,
             size=10000,
             query={"range": {"timestamp": {"gte": start_date, "lte": end_date}}},
-            sort=[{"timestamp": "desc"}],
+            sort=[{"timestamp": {"order": "desc", "unmapped_type": "date"}}],
         )
         return result["hits"]["hits"]
 
@@ -111,7 +111,7 @@ class TrackingService:
             size=10000,
             query={"range": {timestamp_field: {
                 "gte": start_date, "lte": end_date}}},
-            sort=[{timestamp_field: "desc"}],
+            sort=[{timestamp_field: {"order": "desc", "unmapped_type": "date"}}],
         )
         return result["hits"]["hits"]
 
@@ -128,7 +128,7 @@ class TrackingService:
                     ]
                 }
             },
-            sort=[{"timestamp": "desc"}],
+            sort=[{"timestamp": {"order": "desc", "unmapped_type": "date"}}],
         )
         return result["hits"]["hits"]
 

@@ -71,7 +71,7 @@ class UserService:
                     }
                 }
             },
-            sort=[{"timestamp_created": "desc"}],
+            sort=[{"timestamp_created": {"order": "desc", "unmapped_type": "date"}}],
         )
         return result["hits"]["hits"]
 
