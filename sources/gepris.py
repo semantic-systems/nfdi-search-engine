@@ -14,7 +14,7 @@ class GEPRIS(BaseSource):
 
     SOURCE = "gepris"
 
-    def fetch(self, search_term: str, context: str = 'projekt', failed_sources: list = None) -> Dict[str, Any]:
+    def fetch(self, search_term: str, context: str = 'projekt') -> Dict[str, Any]:
         """
         Fetch raw HTML from GEPRIS using the given search term and context.
         
@@ -31,51 +31,40 @@ class GEPRIS(BaseSource):
         # First request to get total count
         url = f"{base_url}?context={context}&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
         
-        try:
-            response = requests.get(url, timeout=3)
-            response.raise_for_status()
-            
-            soup = BeautifulSoup(response.content, 'html.parser')
-            result = soup.find("span", id="result-info")
-            
-            if not result:
-                self.log_event(type="info", message=f'{self.SOURCE} - No results found for {context}')
-                return {'html': None, 'total_available': 0, 'context': context}
-            
-            total_records_text = result.text.strip()
-            self.log_event(type="info", message=f'{self.SOURCE} - {total_records_text} records found for {context}')
-            
-            # Extract number from result text
-            max_records = Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
-            numbers = re.findall(r'\d+', total_records_text)
-            if numbers:
-                total_available = int(numbers[-1])
-                hits_per_page = min(max_records, total_available)
-            else:
-                hits_per_page = max_records
-                total_available = 0
-            
-            # Second request to get actual results
-            url = f"{base_url}?context={context}&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
-            response = requests.get(url, timeout=10)
-            response.raise_for_status()
-            
-            return {
-                'html': response.content,
-                'total_available': total_available,
-                'context': context
-            }
-            
-        except requests.exceptions.Timeout as ex:
-            self.log_event(type="error", message=f'{self.SOURCE} - Timed out Exception: {str(ex)}')
-            if failed_sources is not None:
-                failed_sources.append(self.SOURCE)
+        response = requests.get(url, timeout=3)
+        response.raise_for_status()
+        
+        soup = BeautifulSoup(response.content, 'html.parser')
+        result = soup.find("span", id="result-info")
+        
+        if not result:
+            self.log_event(type="info", message=f'{self.SOURCE} - No results found for {context}')
             return {'html': None, 'total_available': 0, 'context': context}
-        except Exception as ex:
-            self.log_event(type="error", message=f'{self.SOURCE} - Exception: {str(ex)}')
-            if failed_sources is not None:
-                failed_sources.append(self.SOURCE)
-            return {'html': None, 'total_available': 0, 'context': context}
+        
+        total_records_text = result.text.strip()
+        self.log_event(type="info", message=f'{self.SOURCE} - {total_records_text} records found for {context}')
+        
+        # Extract number from result text
+        max_records = Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
+        numbers = re.findall(r'\d+', total_records_text)
+        if numbers:
+            total_available = int(numbers[-1])
+            hits_per_page = min(max_records, total_available)
+        else:
+            hits_per_page = max_records
+            total_available = 0
+        
+        # Second request to get actual results
+        url = f"{base_url}?context={context}&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+        
+        return {
+            'html': response.content,
+            'total_available': total_available,
+            'context': context
+        }
+    
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -101,7 +90,7 @@ class GEPRIS(BaseSource):
             self.log_event(type="info", message=f'{self.SOURCE} - No {raw["context"]} found in results')
             return []
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+    def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit from GEPRIS to a Project object.
         
@@ -174,7 +163,7 @@ class GEPRIS(BaseSource):
             self.log_event(type="warning", message=f"{self.SOURCE} - Error while processing project: {e}. Skipping project.")
             return None
 
-    def fetch_researchers(self, search_term: str, failed_sources: list = None) -> Dict[str, Any]:
+    def fetch_researchers(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch researchers/authors from GEPRIS.
         
@@ -185,7 +174,7 @@ class GEPRIS(BaseSource):
         Returns:
             Dictionary containing the HTML response and metadata
         """
-        return self.fetch(search_term, context='person', failed_sources=failed_sources)
+        return self.fetch(search_term, context='person')
 
     def extract_researcher_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -253,7 +242,7 @@ class GEPRIS(BaseSource):
             self.log_event(type="warning", message=f"{self.SOURCE} - Error processing researcher: {e}")
             return None
 
-    def fetch_organizations(self, search_term: str, failed_sources: list = None) -> Dict[str, Any]:
+    def fetch_organizations(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch organizations from GEPRIS.
         
@@ -264,7 +253,7 @@ class GEPRIS(BaseSource):
         Returns:
             Dictionary containing the HTML response and metadata
         """
-        return self.fetch(search_term, context='institution', failed_sources=failed_sources)
+        return self.fetch(search_term, context='institution')
 
     def extract_organization_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -335,20 +324,18 @@ class GEPRIS(BaseSource):
             self.log_event(type="warning", message=f"{self.SOURCE} - Error processing organization: {e}")
             return None
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch data from GEPRIS for projects, researchers, and organizations,
         extract hits, map them to objects, and insert them in-place into the results dict.
         
         Args:
-            source_name: Name of the source (unused, kept for interface compatibility)
             search_term: The search term to query
             results: Dictionary to store results in
-            failed_sources: List to append source name if request fails
         """
         # Search for researchers/authors
         try:
-            raw_researchers = self.fetch_researchers(search_term, failed_sources)
+            raw_researchers = self.fetch_researchers(search_term)
             researcher_hits = self.extract_researcher_hits(raw_researchers)
             for hit in researcher_hits:
                 researcher = self.map_researcher_hit(hit)
@@ -359,7 +346,7 @@ class GEPRIS(BaseSource):
 
         # Search for organizations
         try:
-            raw_organizations = self.fetch_organizations(search_term, failed_sources)
+            raw_organizations = self.fetch_organizations(search_term)
             organization_hits = self.extract_organization_hits(raw_organizations)
             for hit in organization_hits:
                 organization = self.map_organization_hit(hit)
@@ -370,11 +357,11 @@ class GEPRIS(BaseSource):
 
         # Search for projects
         try:
-            raw = self.fetch(search_term, context='projekt', failed_sources=failed_sources)
+            raw = self.fetch(search_term, context='projekt')
             hits = self.extract_hits(raw)
             
             for hit in hits:
-                project = self.map_hit(source_name, hit)
+                project = self.map_hit(hit)
                 if project:
                     results['projects'].append(project)
         except Exception as e:
@@ -530,8 +517,8 @@ class GEPRIS(BaseSource):
             raise Exception(f'An unexpected error occurred: {ex}')
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search GEPRIS for projects, researchers, and organizations.
     """
-    GEPRIS(tracking).search(source, search_term, results, failed_sources)
+    GEPRIS(tracking).search(search_term, results)

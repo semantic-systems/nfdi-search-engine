@@ -19,15 +19,13 @@ class Resodate(BaseSource):
 
     SOURCE = "resodate"
 
-    def fetch(self, search_term: str, failed_sources: list) -> Dict[str, Any] | None:
+    def fetch(self, search_term: str) -> Dict[str, Any] | None:
         """
         Fetch raw JSON from the Resodate search API using the given search term.
         """
         search_result = data_retriever.retrieve_data(
-            source=self.SOURCE,
             base_url=Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", ""),
             search_term=search_term,
-            failed_sources=failed_sources,
         )
         return search_result
 
@@ -217,15 +215,13 @@ class Resodate(BaseSource):
 
     def search(
         self,
-        source_name: str,
         search_term: str,
         results: dict,
-        failed_sources: list,
     ) -> None:
         """
         Fetch from Resodate, extract hits, map to Articles/Datasets, and append to results.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         if raw is None:
             return
 
@@ -258,8 +254,6 @@ class Resodate(BaseSource):
 
     def get_resource(
         self,
-        source_name: str,
-        source_id: str,
         doi: str,
     ) -> Dataset | None:
         """
@@ -273,7 +267,7 @@ class Resodate(BaseSource):
             "size": 1,
             "query": {
                 "ids": {
-                    "values": [source_id],
+                    "values": [self.SOURCE],
                 }
             },
         }
@@ -291,12 +285,13 @@ class Resodate(BaseSource):
                 headers=headers,
                 timeout=int(Config.REQUEST_TIMEOUT),
             )
+            response.raise_for_status()
         except requests.exceptions.Timeout:
             self.log_event(
                 type="error",
                 message=(
                     f"{self.SOURCE} - details request timed out: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                    f"source_name={self.SOURCE}, doi={doi}"
                 ),
             )
             return None
@@ -305,18 +300,8 @@ class Resodate(BaseSource):
                 type="error",
                 message=(
                     f"{self.SOURCE} - error requesting details: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}, "
+                    f"source_name={self.SOURCE}, doi={doi}, "
                     f"error={str(ex)}"
-                ),
-            )
-            return None
-
-        if response.status_code != 200:
-            self.log_event(
-                type="error",
-                message=(
-                    f"{self.SOURCE} - details API error {response.status_code}: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
                 ),
             )
             return None
@@ -328,7 +313,7 @@ class Resodate(BaseSource):
                 type="error",
                 message=(
                     f"{self.SOURCE} - invalid JSON in details response: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                    f"source_name={self.SOURCE}, doi={doi}"
                 ),
             )
             return None
@@ -341,7 +326,7 @@ class Resodate(BaseSource):
                 type="error",
                 message=(
                     f"{self.SOURCE} - no details hit found: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                    f"source_name={self.SOURCE}, doi={doi}"
                 ),
             )
             return None
@@ -353,7 +338,7 @@ class Resodate(BaseSource):
             type="info",
             message=(
                 f"{self.SOURCE} - retrieved resource details: "
-                f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                f"source_name={self.SOURCE}, doi={doi}"
             ),
         )
 
@@ -361,20 +346,18 @@ class Resodate(BaseSource):
 
 
 def search(
-    source: str,
     search_term: str,
     results: dict,
-    failed_sources: list,
     tracking=None,
 ) -> None:
     """
     Entrypoint to search Resodate publications.
     """
-    Resodate(tracking).search(source, search_term, results, failed_sources)
+    Resodate(tracking).search(search_term, results)
 
 
-def get_resource(source: str, source_id: str, doi: str, tracking=None) -> Dataset | None:
+def get_resource(doi: str, tracking=None) -> Dataset | None:
     """
     Entrypoint to retrieve RESODATE resource details.
     """
-    return Resodate(tracking).get_resource(source, source_id, doi)
+    return Resodate(tracking).get_resource(doi)

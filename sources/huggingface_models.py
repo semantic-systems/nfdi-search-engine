@@ -14,15 +14,13 @@ class HuggingFaceModels(BaseSource):
     SEARCH_ENDPOINT = Config.DATA_SOURCES[SOURCE].get('search-endpoint', '')
     RESOURCE_ENDPOINT = Config.DATA_SOURCES[SOURCE].get("get-resource-endpoint", "")
 
-    def fetch(self, search_term: str, failed_sources: list = []) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         return data_retriever.retrieve_data(
-            source=self.SOURCE,
             base_url=self.SEARCH_ENDPOINT,
             search_term=search_term,
-            failed_sources=failed_sources,
         ) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -31,7 +29,7 @@ class HuggingFaceModels(BaseSource):
         """
         return raw
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any], request_readme: bool = False):
+    def map_hit(self, hit: Dict[str, Any], request_readme: bool = False):
         """
         Convert a single Huggingface model record into a `CreativeWork` object.
         """
@@ -84,7 +82,7 @@ class HuggingFaceModels(BaseSource):
         model.encoding_contentUrl = model.url
 
         _src = thing()
-        _src.name = "Huggingface - Models"
+        _src.name = self.SOURCE
         _src.originalSource = model.publisher
         _src.identifier = model.identifier
         _src.url = model.url
@@ -92,18 +90,18 @@ class HuggingFaceModels(BaseSource):
 
         return model
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list, request_readme: bool = False) -> None:
+    def search(self, search_term: str, results: dict, request_readme: bool = False) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        search_result = self.fetch(search_term, failed_sources)
+        search_result = self.fetch(search_term)
 
         total_hits = len(search_result)
         if int(total_hits) > 0:
             self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched")
 
             for hit in search_result:
-                model = self.map_hit(self.SOURCE, hit, request_readme)
+                model = self.map_hit(hit, request_readme)
                 results['resources'].append(model)
 
     def get_resource(self, doi: str, request_readme: bool = False) -> CreativeWork | None:
@@ -114,7 +112,7 @@ class HuggingFaceModels(BaseSource):
             quote=False,
         )
         if search_result:
-            model = self.map_hit(self.SOURCE, search_result, request_readme)
+            model = self.map_hit(search_result, request_readme)
             self.log_event(type="info", message=f"{self.SOURCE} - retrieved model details")
             return model
         else:
@@ -122,14 +120,14 @@ class HuggingFaceModels(BaseSource):
             return None
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None) -> None:
+def search(search_term: str, results, tracking=None) -> None:
     """
     Entrypoint to search Huggingface Models.
     """
-    HuggingFaceModels(tracking).search(source, search_term, results, failed_sources)
+    HuggingFaceModels(tracking).search(search_term, results)
 
 
-def get_resource(source: str, source_id: str, doi: str, tracking=None) -> CreativeWork | None:
+def get_resource(doi: str, tracking=None) -> CreativeWork | None:
     """
     Retrieve detailed information for the model. 
 

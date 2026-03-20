@@ -5,29 +5,24 @@ from config import Config
 from typing import Union, Dict, Any, List, Iterable
 from nfdi_search_engine.common.formatting import remove_html_tags
 
-SOURCE = "OPENALEX - Publications"
 
 class OpenAlexPublications(BaseSource):
     """
     Implements the BaseSource interface for OpenAlex Publications.
     """
+    SOURCE = "OPENALEX - Publications"
 
     def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Hit the OpenAlex search endpoint with the given search term and return the JSON response.
         """
 
-        base_url = Config.DATA_SOURCES[SOURCE].get("search-endpoint", "")
+        base_url = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
 
-        response =  data_retriever.retrieve_data(
-            source=SOURCE,
+        return data_retriever.retrieve_data(
             base_url=base_url,
             search_term=search_term,
-            failed_sources=[],
-        )
-
-        return response or {}
-
+        ) or {}
 
     def extract_hits(self, raw) -> Iterable[Dict[str, Any]]:
         """
@@ -35,7 +30,7 @@ class OpenAlexPublications(BaseSource):
         """
         return raw.get("results", []) or []
 
-    def map_hit(self, source: str, hit: Dict[str, Any]) -> Union[Article, CreativeWork]:
+    def map_hit(self, hit: Dict[str, Any]) -> Union[Article, CreativeWork]:
         """
         Map a single hit dict from OpenAlex to an Article or CreativeWork object.
         """
@@ -53,7 +48,8 @@ class OpenAlexPublications(BaseSource):
         # OpenAlex "id" is their work URL
         _id = hit.get("id", "") or ""
         publication.url = _id
-        publication.identifier = (hit.get("doi", "") or "").replace("https://doi.org/", "")
+        publication.identifier = (hit.get("doi", "") or "").replace(
+            "https://doi.org/", "")
         publication.datePublished = hit.get("publication_date", "") or ""
 
         lang = hit.get("language", "")
@@ -62,13 +58,15 @@ class OpenAlexPublications(BaseSource):
 
         primary_location = (hit.get("primary_location") or {})  # may be None
         publication.license = primary_location.get("license", "") or ""
-        publication.publication = ((primary_location.get("source") or {}).get("display_name", "") or "")
+        publication.publication = ((primary_location.get(
+            "source") or {}).get("display_name", "") or "")
 
         abstract_inverted_index = (hit.get("abstract_inverted_index") or {})
         publication.description = " ".join(abstract_inverted_index.keys())
         publication.abstract = publication.description
 
-        publication.encoding_contentUrl = primary_location.get("pdf_url", "") or ""
+        publication.encoding_contentUrl = primary_location.get(
+            "pdf_url", "") or ""
 
         # authors
         for authorship in (hit.get("authorships") or []):
@@ -80,7 +78,7 @@ class OpenAlexPublications(BaseSource):
 
             _author.source.append(
                 thing(
-                    name=source,
+                    name=self.SOURCE,
                     identifier=_author.identifier,
                 )
             )
@@ -93,14 +91,14 @@ class OpenAlexPublications(BaseSource):
 
         # source
         _source = thing()
-        _source.name = source
+        _source.name = self.SOURCE
         _source.identifier = _id.replace("https://openalex.org/", "")
         _source.url = _id
         publication.source.append(_source)
 
         return publication
 
-    def search(self, source: str, search_term: str, results: Dict[str, List], failed_sources: List[str]) -> None:
+    def search(self, search_term: str, results: Dict[str, List]) -> None:
         """
         Search OpenAlex for the given term and append mapped results to the results dict.
         """
@@ -119,27 +117,27 @@ class OpenAlexPublications(BaseSource):
         )
         self.log_event(
             type="info",
-            message=f"{source} - {total_records_found} records matched; pulled top {len(hits)}",
+            message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {len(hits)}",
         )
 
         # 3. map each hit and append to results
         for hit in hits:
-            obj = self.map_hit(source, hit)
+            obj = self.map_hit(hit)
             if (hit.get("type", "") or "").upper() in ("ARTICLE", "PREPRINT") and getattr(obj, "identifier", ""):
                 results["publications"].append(obj)
             else:
                 results["others"].append(obj)
 
-    def get_publications(self, source: str, url: str, results, failed_sources):
-        
-        base_url = Config.DATA_SOURCES[SOURCE].get("search-endpoint", "")
+    def get_publications(self, url: str, results):
 
-        raw = data_retriever.retrieve_data(source=source, 
-                                            base_url=base_url,
-                                            search_term="",
-                                            failed_sources=failed_sources,
-                                            url=url)
-        
+        base_url = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
+
+        raw = data_retriever.retrieve_data(
+            base_url=base_url,
+            search_term="",
+            url=url
+        )
+
         # 2. extract the hits
         hits = list(self.extract_hits(raw))
 
@@ -151,39 +149,42 @@ class OpenAlexPublications(BaseSource):
         )
         self.log_event(
             type="info",
-            message=f"{source} - {total_records_found} records matched; pulled top {len(hits)}",
+            message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {len(hits)}",
         )
 
         # 3. map each hit and append to results
         for hit in hits:
-            obj = self.map_hit(source, hit)
+            obj = self.map_hit(hit)
             if (hit.get("type", "") or "").upper() in ("ARTICLE", "PREPRINT") and getattr(obj, "identifier", ""):
                 results["publications"].append(obj)
             else:
                 results["others"].append(obj)
 
+    def get_publication(self, doi: str):
+        base_url = Config.DATA_SOURCES[self.SOURCE].get("get-publication-endpoint", "")
+        search_result = data_retriever.retrieve_object(
+            base_url=base_url,
+            identifier="https://doi.org/" + doi,
+        )
+        if search_result:
+            return self.map_hit(search_result)
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search OpenAlex publications.
     """
-    OpenAlexPublications(tracking).search(source, search_term, results, failed_sources)
+    OpenAlexPublications(tracking).search(search_term, results)
 
 
-def get_publication(source: str, doi: str, source_id: str, publications, tracking=None):
+def get_publication(doi: str, publications, tracking=None):
     """
     Fetch a single object by DOI and map it.
     """
-    base_url = Config.DATA_SOURCES[SOURCE].get("get-publication-endpoint", "")
-    search_result = data_retriever.retrieve_object(
-        source=source,
-        base_url=base_url,
-        identifier="https://doi.org/" + doi,
-    )
-    if search_result:
-        obj = OpenAlexPublications(tracking).map_hit(source, search_result)
-        publications.append(obj)
+    pub = OpenAlexPublications(tracking).get_publication(doi)
+    if pub:
+        publications.append(pub)
 
 
-def get_publications(source: str, url: str, results, failed_sources, tracking=None):
-    OpenAlexPublications(tracking).get_publications(source, url, results, failed_sources)
+def get_publications(url: str, results, tracking=None):
+    OpenAlexPublications(tracking).get_publications(url, results)

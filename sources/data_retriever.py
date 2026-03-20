@@ -6,7 +6,7 @@ import xmltodict
 from nfdi_search_engine.common.formatting import clean_json
 
 
-def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, url: str = "", quote: bool = True):
+def retrieve_data(base_url: str, search_term: str, url: str = "", quote: bool = True):
     # Either the request will have base url and search then the url will be formed concatenating both of them
     # otherwise the url will be used as is.
     if url == "":
@@ -39,7 +39,7 @@ def retrieve_data(source: str, base_url: str, search_term: str, failed_sources, 
     return search_result
 
 
-def retrieve_object(source: str, base_url: str, identifier: str, quote: bool = True):
+def retrieve_object(base_url: str, identifier: str, quote: bool = True):
     if quote:
         # encode the identifier
         identifier = urllib.parse.quote_plus(string=identifier, safe='()?&=,')

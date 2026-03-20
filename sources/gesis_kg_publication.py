@@ -6,11 +6,12 @@ from string import Template
 
 from sources.base import BaseSource
 
+
 class GESIS_KG_Publication(BaseSource):
 
     SOURCE = 'GESIS KG'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -54,11 +55,11 @@ class GESIS_KG_Publication(BaseSource):
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
-        search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=query,
-                                                    failed_sources=failed_sources) or {}
-        
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=query,
+        ) or {}
+
         return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -81,28 +82,29 @@ class GESIS_KG_Publication(BaseSource):
         publication = Article()
         publication.identifier = hit.get("doi", {}).get("value", "")
         publication.name = hit.get("title", {}).get("value", "")
-        publication.url =  hit.get("urls", {}).get("value", "").strip() # hit.get("urls", {}).get("value", "")
+        publication.url = hit.get("urls", {}).get("value", "").strip()  # hit.get("urls", {}).get("value", "")
 
-        #publication.identifier = hit.get("linksURNs", {}).get("value", "")  # DOI is available for few; we need to update the sparql query to fetch this information
+        # publication.identifier = hit.get("linksURNs", {}).get("value", "")  # DOI is available for few; we need to update the sparql query to fetch this information
         publication.description = hit.get("abstract", {}).get("value", "")
         publication.datePublished = hit.get('datePublished', {}).get('value', "")
         languages = hit.get("languages", {}).get("value", "")
         if languages:
             for language in languages.strip().split(" "):
                 publication.inLanguage.append(language)
-        #publication.sourceOrganization = hit.get("providers", {}).get("value", "")
+        # publication.sourceOrganization = hit.get("providers", {}).get("value", "")
         publication.publisher = hit.get("sourceInfos", {}).get("value", "")
 
         authors = hit.get("authors", {}).get("value", "")
         contributors = hit.get("contributors", {}).get("value", "")
-        authors_list = [name for name in (authors + ";" + contributors).strip(", ").split(";") if name ]
+        authors_list = [name for name in (authors + ";" + contributors).strip(", ").split(";") if name]
         authors_list = list(dict.fromkeys(authors_list))
 
         for authorsName in authors_list:
             _author = Author()
             _author.additionalType = 'Person'
             _author.name = authorsName
-            _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
+            # ORCID is available for few; we need to update the sparql query to pull this information
+            _author.identifier = ""
             author_source = thing(
                 name=self.SOURCE,
                 identifier=_author.identifier,
@@ -113,25 +115,26 @@ class GESIS_KG_Publication(BaseSource):
         _source = thing()
         _source.name = self.SOURCE
         _source.originalSource = publication.publisher
-        _source.identifier = publication.identifier # hit['publication'].get('value', "") #.replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
-        _source.url = publication.url #hit['urls'].get('value', "").strip()
+        # hit['publication'].get('value', "") #.replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
+        _source.identifier = publication.identifier
+        _source.url = publication.url  # hit['urls'].get('value', "").strip()
         publication.source.append(_source)
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         if hits:
             for hit in hits:
                 publication = self.map_hit(hit)
                 results['resources'].append(publication)
-        
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search GESIS KG publications.
     """
-    GESIS_KG_Publication(tracking).search(source_name, search_term, results, failed_sources)
+    GESIS_KG_Publication(tracking).search(search_term, results)

@@ -32,7 +32,7 @@ class EULG(BaseSource):
             response = requests.get(url, timeout=int(Config.REQUEST_TIMEOUT))
             return response.json() if json else response
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         For ELG, we don't have a single JSON "search endpoint" returning hits in one response
         (as in Elastic-style APIs). Instead we call the ELG python client and return a raw dict
@@ -43,17 +43,12 @@ class EULG(BaseSource):
         resource_items = ["Corpus", "Tool/Service", "Lexical/Conceptual resource"]
         all_results = []
         for resource_item in resource_items:
-            try:
-                elg_results = catalog.search(
-                    resource=resource_item,
-                    search=search_term,
-                    limit=100,
-                )
-                all_results.extend(elg_results or [])
-            except Exception:
-                if failed_sources is not None:
-                    failed_sources.append(self.SOURCE)
-                raise
+            elg_results = catalog.search(
+                resource=resource_item,
+                search=search_term,
+                limit=100,
+            )
+            all_results.extend(elg_results or [])
 
         # Wrap in a "raw" structure similar to what your pipeline expects
         return {"hits": {"total": len(all_results), "hits": all_results}}
@@ -152,11 +147,11 @@ class EULG(BaseSource):
 
         return None
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch from ELG, extract hits, map to objects, and insert into results in-place.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         for hit in hits:
@@ -172,8 +167,8 @@ class EULG(BaseSource):
                 results.setdefault("others", []).append(digital_obj)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search EULG/ELG.
     """
-    EULG(tracking).search(source_name, search_term, results, failed_sources)
+    EULG(tracking).search(search_term, results)

@@ -12,7 +12,7 @@ class CORE(BaseSource):
 
     SOURCE = 'CORE'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -20,17 +20,14 @@ class CORE(BaseSource):
         # learn more: https://api.core.ac.uk/docs/v3#tag/Search
         limit = Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         api_url = f'https://api.core.ac.uk/v3/search/works/?limit={limit}&q={search_term}&_exists_:doi'
-        headers = {"Authorization":"Bearer " + Config.CORE_API_KEY}
+        headers = {"Authorization": "Bearer " + Config.CORE_API_KEY}
 
         # send the request
         response = requests.get(api_url, headers=headers)
+        response.raise_for_status()
 
-        if response.status_code == 200:
-            search_result = response.json()
-            return search_result
-        
-        failed_sources.append(self.SOURCE)
-        return None
+        search_result = response.json()
+        return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -41,7 +38,7 @@ class CORE(BaseSource):
         total_hits = raw['totalHits']
         total_results = len(hits)
 
-        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}") 
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}")
 
         return hits
 
@@ -50,7 +47,7 @@ class CORE(BaseSource):
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
 
-        publication = Article() 
+        publication = Article()
         publication.additionalType = hit.get("documentType", "")
         publication.name = hit.get("title", "")
 
@@ -60,7 +57,7 @@ class CORE(BaseSource):
             if link.get("type", "") == "display":
                 publication.url = link.get("url", "")
                 break
-        
+
         publication.encoding_contentUrl = hit.get("downloadUrl", "")
 
         # publications may not always have a DOI!
@@ -94,7 +91,7 @@ class CORE(BaseSource):
             _author.additionalType = 'Person'
             _author.name = author.get("name", "")
             publication.author.append(_author)
-        
+
         _source = thing()
         _source.name = self.SOURCE
         _source.identifier = publication.identifier
@@ -103,11 +100,11 @@ class CORE(BaseSource):
 
         return publication
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
 
         if raw == None:
             return
@@ -122,8 +119,8 @@ class CORE(BaseSource):
                 results['publications'].append(digitalObj)
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search CORE publications.
     """
-    CORE(tracking).search(source, search_term, results, failed_sources)
+    CORE(tracking).search(search_term, results)

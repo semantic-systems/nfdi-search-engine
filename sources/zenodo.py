@@ -13,13 +13,11 @@ class ZENODO(BaseSource):
     """
     SOURCE = "ZENODO"
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
-        search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                     search_term=search_term,
-                                                     failed_sources=failed_sources)
-        return search_result
-
+    def fetch(self, search_term: str) -> Dict[str, Any]:
+        return data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term,
+        )
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         total_records_found = raw.get("hits", {}).get("total", 0)
@@ -103,8 +101,8 @@ class ZENODO(BaseSource):
 
         return digitalObj
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
-        raw = self.fetch(search_term, failed_sources)
+    def search(self, search_term: str, results: dict) -> None:
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
         for hit in hits:
             metadata = hit.get('metadata', {})
@@ -119,5 +117,5 @@ class ZENODO(BaseSource):
                 results['others'].append(digitalObj)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
-    ZENODO(tracking).search(source_name, search_term, results, failed_sources)
+def search(search_term: str, results: dict, tracking=None):
+    ZENODO(tracking).search(search_term, results)

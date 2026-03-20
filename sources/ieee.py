@@ -15,21 +15,17 @@ class IEEE(BaseSource):
 
     SOURCE = "IEEE"
 
-    def fetch(self, search_term: str, failed_sources: list) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         base_url_template = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
         if not base_url_template:
-            self.log_event(type="error", message=f"{self.SOURCE} - No search endpoint configured")
-            failed_sources.append(self.SOURCE)
-            return None
+            raise Exception(f"{self.SOURCE} - No search endpoint configured")
 
         api_key = getattr(Config, "IEEE_API_KEY", "") or ""
         if not api_key.strip():
-            self.log_event(type="error", message=f"{self.SOURCE} - IEEE_API_KEY is missing or empty")
-            failed_sources.append(self.SOURCE)
-            return None
+            raise Exception(f"{self.SOURCE} - IEEE_API_KEY is missing or empty")
 
         api_key_param = Config.DATA_SOURCES[self.SOURCE].get("api-key-param", "apikey")
 
@@ -39,10 +35,8 @@ class IEEE(BaseSource):
             base_url = f"{base_url_template}?{api_key_param}={api_key}"
 
         search_result = data_retriever.retrieve_data(
-            source=self.SOURCE,
             base_url=base_url,
             search_term=search_term,
-            failed_sources=failed_sources,
         )
         return search_result
 
@@ -131,11 +125,11 @@ class IEEE(BaseSource):
 
         return publication
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them into results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         if raw is None:
             return
 
@@ -163,7 +157,6 @@ class IEEE(BaseSource):
             base_url = f"{base_url_template}?{api_key_param}={api_key}"
 
         search_result = data_retriever.retrieve_object(
-            source=self.SOURCE,
             base_url=base_url,
             identifier=doi,
         )
@@ -178,14 +171,14 @@ class IEEE(BaseSource):
         return self.map_hit(articles[0])
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search IEEE publications.
     """
-    IEEE(tracking).search(source, search_term, results, failed_sources)
+    IEEE(tracking).search(search_term, results)
 
 
-def get_publication(source: str, doi: str, source_id: str, publications, tracking=None):
+def get_publication(doi: str, publications, tracking=None):
     """
     Entrypoint to get a single IEEE publication by DOI.
     """

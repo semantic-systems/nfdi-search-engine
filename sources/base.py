@@ -33,7 +33,7 @@ class BaseSource(ABC):
             print(f"{type.upper()}: {filename} in {method}: {message}")
 
     @abstractmethod
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -54,7 +54,7 @@ class BaseSource(ABC):
         ...
 
     @abstractmethod
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """

@@ -1,4 +1,4 @@
-from typing import Iterable, Dict, Any, List
+from typing import Iterable, Dict, Any, List, Optional
 
 from nfdi_search_engine.common.models.objects import Dataset, Organization
 from config import Config
@@ -17,16 +17,14 @@ class RE3DATA(BaseSource):
 
     SOURCE = 'RE3DATA'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         search_url = Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
         search_results = data_retriever.retrieve_data(
-            source=self.SOURCE,
             base_url=search_url,
             search_term=search_term,
-            failed_sources=failed_sources
         )
         return search_results
 
@@ -58,7 +56,7 @@ class RE3DATA(BaseSource):
 
         return repository
     
-    def map_hit_detailled(self, source: str, hit: dict, doi: str) -> Dataset:
+    def map_hit_detailled(self, hit: dict, doi: str) -> Dataset:
         """
         Map the detailed information of a repository to a Dataset object.
 
@@ -106,9 +104,13 @@ class RE3DATA(BaseSource):
                 location=inst.get('r3d:institutionCountry', ''),
                 email=inst.get('r3d:institutionContact', ''),
                 keywords=keywords,
-                source=[thing(name=source,
-                            url='https://www.re3data.org/repository/' +
-                                repository_data.get('r3d:re3data.orgIdentifier', ""))]
+                source=[
+                    thing(
+                        name=self.SOURCE,
+                        url='https://www.re3data.org/repository/' +
+                        repository_data.get('r3d:re3data.orgIdentifier', "")
+                    )
+                ]
             )
             organizations.append(organization)
 
@@ -147,10 +149,14 @@ class RE3DATA(BaseSource):
             url=repository_data.get('r3d:repositoryURL', ""),
             identifier=doi,
             additionalType=', '.join(content_types),
-            source=[thing(name=source,
-                        identifier=repository_data.get('r3d:re3data.orgIdentifier', ""),
-                        url='https://www.re3data.org/repository/' +
-                            repository_data.get('r3d:re3data.orgIdentifier', ""))],
+            source=[
+                thing(
+                    name=self.SOURCE,
+                    identifier=repository_data.get('r3d:re3data.orgIdentifier', ""),
+                    url='https://www.re3data.org/repository/' +
+                    repository_data.get('r3d:re3data.orgIdentifier', "")
+                )
+            ],
             author=organizations,
             sourceOrganization=organizations[0] if organizations else None,
             funder=funder,
@@ -165,11 +171,11 @@ class RE3DATA(BaseSource):
             text=repository_data.get('r3d:remarks', "")
         )
     
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         for hit in hits:
@@ -178,32 +184,39 @@ class RE3DATA(BaseSource):
             if repository:
                 results['resources'].append(repository)
 
+    def get_resource(self, doi: str) -> Optional[Dataset]:
+        """
+        Retrieve detailed information for the repository. 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+        :param doi: digital identifier for the resource
+
+        :return: dataset or None
+        """
+
+        base_url = Config.DATA_SOURCES[self.SOURCE].get('get-resource-endpoint', '')     
+        search_result = data_retriever.retrieve_object(
+            base_url=base_url,
+            identifier=doi
+        ) #source identifier will be passed on with the base url
+
+        if search_result:
+            dataset = self.map_hit_detailled(search_result, doi)
+            self.log_event(type="info", message=f"{self.SOURCE} - retrieved repository details")
+            return dataset
+
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search RE3DATA dataset.
     """
-    RE3DATA(tracking).search(source, search_term, results, failed_sources)
+    RE3DATA(tracking).search(search_term, results)
 
 
-def get_resource(source: str, source_identifier: str, doi: str, tracking=None):
-    """
-    Retrieve detailed information for the repository. 
+def get_resource(doi: str, tracking=None) -> Optional[Dataset]:
+        """
+        Retrieve detailed information for the repository. 
 
-    :param source: source label for the data source; in this case its re3data
-    :param source_identifier: the primay identifier in the source records
-    :param doi: digital identifier for the resource
+        :param doi: digital identifier for the resource
 
-    :return: dataset
-    """
-
-    re3data = RE3DATA(tracking)
-
-    base_url = Config.DATA_SOURCES[source].get('get-resource-endpoint', '')     
-    search_result = data_retriever.retrieve_object(source=source, 
-                                                    base_url=base_url,
-                                                    identifier=source_identifier) #source identifier will be passed on with the base url
-    if search_result:
-        dataset = re3data.map_hit_detailled(source, search_result, doi)
-        tracking.log_event_async(log_type="info", message=f"{source} - retrieved repository details")
-        return dataset
+        :return: dataset or None
+        """
+        return RE3DATA(tracking).get_resource(doi)

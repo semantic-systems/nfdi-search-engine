@@ -5,22 +5,27 @@ from typing import Iterable, Dict, Any, List
 from config import Config
 from sources.base import BaseSource
 
+
 class CORDIS(BaseSource):
 
     SOURCE = 'CORDIS'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         search_term = f"({search_term})"
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources) 
-        total_records_found = search_result.get('result', {}).get('header', {}).get('totalHits', 0)
-        total_records_pulled = search_result.get('result', {}).get('header', {}).get('numHits', 0)
-        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_records_pulled}")   
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get(
+                'search-endpoint', ''),
+            search_term=search_term
+        )
+        total_records_found = search_result.get(
+            'result', {}).get('header', {}).get('totalHits', 0)
+        total_records_pulled = search_result.get(
+            'result', {}).get('header', {}).get('numHits', 0)
+        self.log_event(
+            type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_records_pulled}")
 
         return search_result
 
@@ -67,24 +72,23 @@ class CORDIS(BaseSource):
                             project.inLanguage.append(language)
                     else:
                         # If languages is a single string, directly append it to project.inLanguage
-                        project.inLanguage.append(languages)                
+                        project.inLanguage.append(languages)
 
                 _source = thing()
                 _source.name = self.SOURCE
                 _source.identifier = projectNode.get('id', '')
-                _source.url = project.url                        
+                _source.url = project.url
                 project.source.append(_source)
 
                 return project
-            
-        return None
-    
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+        return None
+
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         for hit in hits:
@@ -94,8 +98,8 @@ class CORDIS(BaseSource):
                 results['projects'].append(project)
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search CORDIS publications.
     """
-    CORDIS(tracking).search(source, search_term, results, failed_sources)
+    CORDIS(tracking).search(search_term, results)

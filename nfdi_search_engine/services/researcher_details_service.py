@@ -60,12 +60,12 @@ class ResearcherDetailsService:
             if str(cfg.get("get-researcher-endpoint", "")).strip() and src not in excluded_sources:
                 sources.append(src)
 
-        def get_researcher(source: str, module_name: str, orcid_: str) -> tuple[Optional[List[Any]], Optional[Exception]]:
+        def get_researcher(module_name: str, orcid_: str) -> tuple[Optional[List[Any]], Optional[Exception]]:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 partial: List[Any] = []
                 mod.get_researcher(
-                    source, orcid_, source, partial, tracking=self.tracking
+                    orcid_, partial, tracking=self.tracking
                 )
                 return partial, None
             except Exception as e:
@@ -79,7 +79,7 @@ class ResearcherDetailsService:
         max_workers = min(self.settings.max_workers, len(sources) or 1)
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = {
-                ex.submit(get_researcher, src, self.settings.data_sources[src]["module"], orcid): src
+                ex.submit(get_researcher, self.settings.data_sources[src]["module"], orcid): src
                 for src in sources
             }
             for fut in as_completed(futures):

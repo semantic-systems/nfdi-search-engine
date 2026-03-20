@@ -7,20 +7,22 @@ from config import Config
 
 from sources.base import BaseSource
 
+
 class DBLP_Researchers(BaseSource):
 
     SOURCE = 'dblp-Researchers'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources)  
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get(
+                'search-endpoint', ''),
+            search_term=search_term,
+        )
 
-        return search_result      
+        return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -39,9 +41,9 @@ class DBLP_Researchers(BaseSource):
         return None
 
     def map_hit(self, hit: Dict[str, Any]) -> Author:
-                
+
         author = Author()
-        info = hit.get('info',{})
+        info = hit.get('info', {})
 
         author.name = info.get('author', '')
         alias = info.get('aliases', {}).get('alias', '')
@@ -63,23 +65,23 @@ class DBLP_Researchers(BaseSource):
                 _organization = Organization()
                 _organization.name = affiliations.get('text', '')
                 author.affiliation.append(_organization)
-                                    
+
         # author.works_count = ''
         # author.cited_by_count = ''
 
         _source = thing()
         _source.name = 'DBLP'
         _source.identifier = hit.get("@id", "")
-        _source.url = info.get("url", "")                         
+        _source.url = info.get("url", "")
         author.source.append(_source)
 
         return author
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         if hits:
@@ -88,8 +90,8 @@ class DBLP_Researchers(BaseSource):
                 results['researchers'].append(author)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search for DBLP researchers.
     """
-    DBLP_Researchers(tracking).search(source_name, search_term, results, failed_sources)
+    DBLP_Researchers(tracking).search(search_term, results)

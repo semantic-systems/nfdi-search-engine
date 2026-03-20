@@ -69,7 +69,8 @@ class PublicationDetailsService:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 dois = mod.get_dois_references(
-                    source=source, doi=doi, tracking=self.tracking) or []
+                    doi=doi, tracking=self.tracking
+                ) or []
                 found.update(d.lower() for d in dois if d)
             except Exception as e:
                 self.tracking.log_event_async(
@@ -101,7 +102,8 @@ class PublicationDetailsService:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 dois = mod.get_dois_citations(
-                    source=source, doi=doi, tracking=self.tracking) or []
+                    doi=doi, tracking=self.tracking
+                ) or []
                 found.update(d.lower() for d in dois if d)
             except Exception as e:
                 self.tracking.log_event_async(
@@ -137,7 +139,8 @@ class PublicationDetailsService:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 articles = mod.get_batch_articles(
-                    dois=dois, tracking=self.tracking) or []
+                    dois=dois, tracking=self.tracking
+                ) or []
             except Exception as e:
                 self.tracking.log_event_async(
                     log_type="error",
@@ -203,12 +206,12 @@ class PublicationDetailsService:
             if str(cfg.get("get-publication-endpoint", "")).strip() and src not in excluded_sources:
                 sources.append(src)
 
-        def get_publication(source: str, module_name: str, doi_: str) -> tuple[Optional[List[Any]], Optional[Exception]]:
+        def get_publication(module_name: str, doi_: str) -> tuple[Optional[List[Any]], Optional[Exception]]:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 partial: List[Any] = []
                 mod.get_publication(
-                    source, doi_, source, partial, self.tracking
+                    doi_, partial, self.tracking
                 )
                 return partial, None
             except Exception as e:
@@ -222,7 +225,7 @@ class PublicationDetailsService:
         max_workers = min(self.settings.max_workers, len(sources) or 1)
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = {
-                ex.submit(get_publication, src, self.settings.data_sources[src]["module"], doi): src
+                ex.submit(get_publication, self.settings.data_sources[src]["module"], doi): src
                 for src in sources
             }
             for fut in as_completed(futures):
@@ -278,7 +281,7 @@ class PublicationDetailsService:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 found = mod.get_citations_for_publication(
-                    source=source, doi=doi, tracking=self.tracking
+                    doi=doi, tracking=self.tracking
                 ) or []
             except Exception as e:
                 self.tracking.log_event_async(
@@ -320,7 +323,7 @@ class PublicationDetailsService:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 found = mod.get_recommendations_for_publication(
-                    source=source, doi=doi, tracking=self.tracking
+                    doi=doi, tracking=self.tracking
                 ) or []
             except Exception as e:
                 self.tracking.log_event_async(

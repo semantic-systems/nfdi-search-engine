@@ -167,7 +167,7 @@ class SearchService:
         try:
             mod = importlib.import_module(f"sources.{module_name}")
             clean_doi = doi.replace("DOI:", "")
-            return mod.get_resource(source, source_identifier, clean_doi, tracking=self.tracking)
+            return mod.get_resource(clean_doi, tracking=self.tracking)
         except Exception as e:
             self.tracking.log_event_async(
                 log_type="error",
@@ -182,16 +182,13 @@ class SearchService:
         results: Dict[str, List[Any]] = {c: [] for c in CATEGORIES}
         failed: List[str] = []
 
-        def search_source(source: str, module_name: str, term: str) -> tuple[Optional[dict], Optional[Exception]]:
+        def search_source(module_name: str, term: str) -> tuple[Optional[dict], Optional[Exception]]:
             try:
                 mod = importlib.import_module(f"sources.{module_name}")
                 partial = {c: [] for c in CATEGORIES}
-                failed_sources: List[str] = []
                 mod.search(
-                    source, term, partial, failed_sources, tracking=self.tracking
+                    term, partial, tracking=self.tracking
                 )
-                if failed_sources:
-                    return None, Exception(f"Failed to harvest {source}")
                 return partial, None
             except Exception as e:
                 return None, e
@@ -199,7 +196,7 @@ class SearchService:
         max_workers = min(self.settings.max_workers, len(sources) or 1)
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
             futures = {
-                ex.submit(search_source, src, self.settings.data_sources[src]["module"], search_term): src
+                ex.submit(search_source, self.settings.data_sources[src]["module"], search_term): src
                 for src in sources
             }
             for fut in as_completed(futures):

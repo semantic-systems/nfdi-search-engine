@@ -25,7 +25,7 @@ TIME_BETWEEN_REQUESTS = 0.5  # seconds, to avoid rate limiting
 # we specifically do not use the data_retriever here
 # as it does not allow passing in custom headers
 
-def get_dois_citations(source: str = None, doi: str = None, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
+def get_dois_citations(doi: str = None, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
     """
     Fetches the DOIs of citations for a given DOI from OpenCitations.
 
@@ -46,7 +46,7 @@ def get_dois_citations(source: str = None, doi: str = None, access_token: str = 
     
     return dois
 
-def get_dois_references(source: str = None, doi: str = None, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
+def get_dois_references(doi: str = None, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
     """
     Fetches the DOIs of references for a given DOI from OpenCitations.
 
@@ -234,7 +234,7 @@ def metadata_to_articles(records: List[dict]) -> List[Article]:
 
     return articles
 
-def get_citations_for_publication(source: str, doi: str, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
+def get_citations_for_publication(doi: str, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
     """
     Fetches the citation data for a given DOI from OpenCitations.
 
@@ -252,7 +252,7 @@ def get_citations_for_publication(source: str, doi: str, access_token: str = ACC
     
     return objects
 
-def get_publication_references(source: str, doi: str, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
+def get_publication_references(doi: str, access_token: str = ACCESS_TOKEN, tracking=None) -> List[Article]:
     """
     Fetches the references for a given DOI from OpenCitations.
 

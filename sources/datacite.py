@@ -8,19 +8,21 @@ from config import Config
 from sources.base import BaseSource
 from nfdi_search_engine.common.formatting import remove_html_tags
 
+
 class DataCite(BaseSource):
 
     SOURCE = 'DataCite'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                     search_term=search_term,
-                                                     failed_sources=failed_sources) 
-        
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get(
+                'search-endpoint', ''),
+            search_term=search_term,
+        )
+
         return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -61,7 +63,7 @@ class DataCite(BaseSource):
         publication.referenceCount = hit.get("referenceCount", "")
         publication.citationCount = hit.get("citationCount", "")
 
-        authorships = hit.get("creators", [])                        
+        authorships = hit.get("creators", [])
         for authorship in authorships:
             _author = Author()
             _author.additionalType = 'Person'
@@ -81,23 +83,26 @@ class DataCite(BaseSource):
 
             _author.source.append(author_source)
             publication.author.append(_author)
-        
+
         _source = thing()
         _source.name = self.SOURCE
         _source.identifier = publication.identifier
-        _source.url = publication.url                                          
+        _source.url = publication.url
         publication.source.append(_source)
 
         return publication
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
-        unfiltered_publications = [self.map_hit(hit['attributes']) for hit in hits]
+        unfiltered_publications = [
+            self.map_hit(hit['attributes'])
+            for hit in hits
+        ]
 
         # DataCite often returns duplicate results!
         # these have the exact same information, and only differ in the DOI suffix (e.g., 10.5281/zenodo.17713041 vs 10.5281/zenodo.17713042)
@@ -115,33 +120,38 @@ class DataCite(BaseSource):
         """
         Fetch a single publication by its DOI and map it to an Article object.
         """
-        url = Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', '') + doi
+        url = Config.DATA_SOURCES[self.SOURCE].get(
+            'get-publication-endpoint', '') + doi
 
-        headers = {'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'User-Agent': Config.REQUEST_HEADER_USER_AGENT,
-                }
-        
-        response = requests.get(url, headers=headers, timeout=int(Config.REQUEST_TIMEOUT))                
+        headers = {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'User-Agent': Config.REQUEST_HEADER_USER_AGENT,
+        }
 
-        if response.status_code == 200:
-            raw = response.json()
-            hit = self.extract_hits(raw)  # this directly returns the hit, not a list!
-            publication = self.map_hit(hit['attributes'])
-            return publication
-        else:
-            self.log_event(type="error", message=f"{self.SOURCE} - Get Publication response status code: {str(response.status_code)} (Requesting URL: {url})")            
-            return None
+        response = requests.get(
+            url,
+            headers=headers,
+            timeout=int(Config.REQUEST_TIMEOUT)
+        )
+        response.raise_for_status()
+
+        raw = response.json()
+        # this directly returns the hit, not a list!
+        hit = self.extract_hits(raw)
+        publication = self.map_hit(hit['attributes'])
+
+        return publication
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search DataCite publications.
     """
-    DataCite(tracking).search(source_name, search_term, results, failed_sources)
+    DataCite(tracking).search(search_term, results)
 
 
-def get_publication(source, doi, source_id, publications, tracking=None) -> None:
+def get_publication(doi, publications, tracking=None) -> None:
     source = DataCite(tracking)
 
     publication = source.get_publication(doi)

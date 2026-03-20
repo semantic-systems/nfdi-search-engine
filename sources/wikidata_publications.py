@@ -13,7 +13,7 @@ class WIKIDATA_Publication(BaseSource):
 
     SOURCE = 'WIKIDATA - Publications'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -51,10 +51,10 @@ class WIKIDATA_Publication(BaseSource):
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
-        search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                     base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                     search_term=query,
-                                                     failed_sources=failed_sources)
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=query,
+        )
         return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -113,11 +113,11 @@ class WIKIDATA_Publication(BaseSource):
         publication.source.append(_source)
         return publication
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
         if len(hits)> 0:
             for hit in hits:
@@ -128,8 +128,8 @@ class WIKIDATA_Publication(BaseSource):
                     results['others'].append(publication)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search WIKIDATA publications.
     """
-    WIKIDATA_Publication(tracking).search(source_name, search_term, results, failed_sources)
+    WIKIDATA_Publication(tracking).search(search_term, results)

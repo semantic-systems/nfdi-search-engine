@@ -10,14 +10,14 @@ class ORKG(BaseSource):
 
     SOURCE = 'ORKG'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                            search_term=search_term,
-                                            failed_sources=failed_sources)
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term,
+        )
 
         return search_result
 
@@ -75,7 +75,7 @@ class ORKG(BaseSource):
                     publication.author.append(author)
             
             _source = thing()
-            _source.name = 'ORKG'
+            _source.name = self.SOURCE
             _source.identifier = id
             _source.url = api_url                        
             publication.source.append(_source)
@@ -84,11 +84,11 @@ class ORKG(BaseSource):
 
         return None
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         for hit in hits:
@@ -98,8 +98,8 @@ class ORKG(BaseSource):
                 results['publications'].append(publication)
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search ORKG publications.
     """
-    ORKG(tracking).search(source, search_term, results, failed_sources)
+    ORKG(tracking).search(search_term, results)

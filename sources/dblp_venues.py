@@ -9,14 +9,14 @@ class DBLP_Venues(BaseSource):
 
     SOURCE = 'DBLP - VENUES'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources)  
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term,
+        )
 
         return search_result
 
@@ -36,7 +36,7 @@ class DBLP_Venues(BaseSource):
             return hits
         return None
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+    def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
@@ -57,11 +57,11 @@ class DBLP_Venues(BaseSource):
 
         return venue
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         if hits:
@@ -70,8 +70,8 @@ class DBLP_Venues(BaseSource):
                 results['events'].append(venue)
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search DBLP venues.
     """
-    DBLP_Venues(tracking).search(source, search_term, results, failed_sources)
+    DBLP_Venues(tracking).search(search_term, results)

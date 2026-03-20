@@ -11,15 +11,15 @@ class CROSSREF_Publications(BaseSource):
 
     SOURCE = 'CROSSREF - Publications'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources) 
-        
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term
+        )
+
         return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -29,35 +29,35 @@ class CROSSREF_Publications(BaseSource):
         total_records_found = raw['message']['total-results']
         hits = raw['message'].get("items", [])
         total_hits = len(hits)
-        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}") 
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
 
         return hits
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+    def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
-        publication = Article() 
+        publication = Article()
         publication.additionalType = hit.get("type", "")
-        titles = hit.get("title", [])    
+        titles = hit.get("title", [])
         if len(titles) > 0:
-            publication.name = remove_html_tags(titles[0])       
+            publication.name = remove_html_tags(titles[0])
         publication.url = hit.get("URL", "")
         publication.identifier = hit.get("DOI", "").replace("https://doi.org/", "")
-        publication.datePublished = hit.get("created", {}).get("date-time","") 
+        publication.datePublished = hit.get("created", {}).get("date-time", "")
         publication.inLanguage.append(hit.get("language", ""))
         licenses = hit.get("license", [])
         if len(licenses) > 0:
             publication.license = licenses[0].get("URL", "")
         publication.publication = hit.get("publisher", "")
 
-        publication.description = remove_html_tags(hit.get("abstract",""))
+        publication.description = remove_html_tags(hit.get("abstract", ""))
         publication.abstract = publication.description
 
         publication.referenceCount = hit.get("reference-count", "")
         publication.citationCount = hit.get("is-referenced-by-count", "")
 
-        authorships = hit.get("author", [])                        
+        authorships = hit.get("author", [])
         for authorship in authorships:
             _author = Author()
             _author.additionalType = 'Person'
@@ -71,37 +71,39 @@ class CROSSREF_Publications(BaseSource):
 
             _author.source.append(author_source)
             publication.author.append(_author)
-        
+
         _source = thing()
         _source.name = self.SOURCE
         _source.identifier = publication.identifier
-        _source.url = publication.url                                          
+        _source.url = publication.url
         publication.source.append(_source)
 
         return publication
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         for hit in hits:
-            publication = self.map_hit(self.SOURCE, hit)
+            publication = self.map_hit(hit)
             if publication:
                 results['publications'].append(publication)
 
     def get_publication(self, doi: str):
-        search_result = data_retriever.retrieve_object(source=self.SOURCE, 
-                                                        base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', ''),
-                                                        identifier=doi)
-        
-        if search_result:
-            search_result = search_result.get('message',{})
-            return self.map_hit(self.SOURCE, search_result)
+        search_result = data_retriever.retrieve_object(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get(
+                'get-publication-endpoint', ''),
+            identifier=doi
+        )
 
-    def get_dois_references(self, source: str, doi: str) -> list:
+        if search_result:
+            search_result = search_result.get('message', {})
+            return self.map_hit(search_result)
+
+    def get_dois_references(self, doi: str) -> list:
         """
         Fetches the references for a given DOI from the specified source.
 
@@ -112,65 +114,68 @@ class CROSSREF_Publications(BaseSource):
         Returns:
             list: A list of DOIs that are referenced by the given DOI.
         """
-        search_result = data_retriever.retrieve_object(source=self.SOURCE, 
-                                                        base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''),
-                                                        identifier=doi,
-                                                        quote=False)
-        
+        search_result = data_retriever.retrieve_object(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''),
+            identifier=doi,
+            quote=False
+        )
+
         if search_result:
-            search_result = search_result.get('message',{})
+            search_result = search_result.get('message', {})
 
             if "reference" not in search_result:
                 return []
 
-            dois = [ref.get("DOI", "") for ref in search_result["reference"] if ref.get("DOI", "")]
+            dois = [ref.get("DOI", "")
+                    for ref in search_result["reference"] if ref.get("DOI", "")]
 
             return dois
-        
+
         return []
 
-    def get_publication_references(self, source: str, doi: str):
-        search_result = data_retriever.retrieve_object(source=self.SOURCE, 
-                                                        base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''),
-                                                        identifier=doi)
+    def get_publication_references(self, doi: str):
+        search_result = data_retriever.retrieve_object(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''), 
+            identifier=doi
+        )
         if search_result:
-            search_result = search_result.get('message',{})
-            digitalObj = self.map_hit(self.SOURCE, search_result)    
-            
-            references = search_result.get("reference", [])                        
+            search_result = search_result.get('message', {})
+            digitalObj = self.map_hit(search_result)
+
+            references = search_result.get("reference", [])
             for reference in references:
-                referenced_publication = Article() 
-                referenced_publication.identifier = reference.get("DOI", "") 
+                referenced_publication = Article()
+                referenced_publication.identifier = reference.get("DOI", "")
 
                 _source = thing()
                 _source.name = self.SOURCE
                 _source.identifier = referenced_publication.identifier
-                _source.url = referenced_publication.url                                          
+                _source.url = referenced_publication.url
                 referenced_publication.source.append(_source)
 
-                structured_reference_text = []  
-                structured_reference_text.append(reference.get("author", "")) 
+                structured_reference_text = []
+                structured_reference_text.append(reference.get("author", ""))
                 reference_year = reference.get("year", "")
-                if reference_year  != "":
+                if reference_year != "":
                     structured_reference_text.append("(" + reference_year + ")")
                 structured_reference_text.append(reference.get("article-title", ""))
                 structured_reference_text.append(reference.get("series-title", ""))
                 structured_reference_text.append(reference.get("journal-title", ""))
-                structured_reference_text.append(reference.get("unstructured", ""))        
+                structured_reference_text.append(reference.get("unstructured", ""))
                 referenced_publication.text = ('. ').join(filter(None, structured_reference_text))
-                digitalObj.reference.append(referenced_publication)     
-            
+                digitalObj.reference.append(referenced_publication)
+
             return digitalObj
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search CROSSREF publications.
     """
-    CROSSREF_Publications(tracking).search(source_name, search_term, results, failed_sources)
+    CROSSREF_Publications(tracking).search(search_term, results)
 
 
-def get_publication(source, doi, source_id, publications, tracking=None) -> None:
+def get_publication(doi, publications, tracking=None) -> None:
     source = CROSSREF_Publications(tracking)
 
     publication = source.get_publication(doi)
@@ -178,9 +183,9 @@ def get_publication(source, doi, source_id, publications, tracking=None) -> None
         publications.append(publication)
 
 
-def get_dois_references(source: str, doi: str, tracking=None):
-    return CROSSREF_Publications(tracking).get_dois_references(source, doi)
+def get_dois_references(doi: str, tracking=None):
+    return CROSSREF_Publications(tracking).get_dois_references(doi)
 
 
-def get_publication_references(source: str, doi: str, tracking=None):
-    return CROSSREF_Publications(tracking).get_publication_references(source, doi)
+def get_publication_references(doi: str, tracking=None):
+    return CROSSREF_Publications(tracking).get_publication_references(doi)

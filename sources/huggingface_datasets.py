@@ -13,15 +13,13 @@ class HuggingFaceDatasets(BaseSource):
     SEARCH_ENDPOINT = Config.DATA_SOURCES[SOURCE].get('search-endpoint', '')
     RESOURCE_ENDPOINT = Config.DATA_SOURCES[SOURCE].get("get-resource-endpoint", "")
 
-    def fetch(self, search_term: str, failed_sources: list = []) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
         return data_retriever.retrieve_data(
-            source=self.SOURCE,
             base_url=self.SEARCH_ENDPOINT,
             search_term=search_term,
-            failed_sources=failed_sources,
         ) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -30,7 +28,7 @@ class HuggingFaceDatasets(BaseSource):
         """
         return raw
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any]):
+    def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
@@ -69,7 +67,7 @@ class HuggingFaceDatasets(BaseSource):
             dataset.publisher = dataset.author[0].name if dataset.author else ""
 
         _source = thing()
-        _source.name = source_name
+        _source.name = self.SOURCE
         _source.originalSource = dataset.publisher
         _source.identifier = dataset.identifier
         _source.url = dataset.url
@@ -77,29 +75,28 @@ class HuggingFaceDatasets(BaseSource):
 
         return dataset
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        search_result = self.fetch(search_term, failed_sources)
+        search_result = self.fetch(search_term)
 
         total_hits = len(search_result)
         if int(total_hits) > 0:
             self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched")
 
             for hit in search_result:
-                dataset = self.map_hit(self.SOURCE, hit)
+                dataset = self.map_hit(hit)
                 results['resources'].append(dataset)
 
     def get_resource(self, doi: str) -> Dataset | None:
         search_result = data_retriever.retrieve_object(
-            source=self.SOURCE,
             base_url=self.RESOURCE_ENDPOINT,
             identifier=doi,
             quote=False,
         )
         if search_result:
-            dataset = self.map_hit(self.SOURCE, search_result)
+            dataset = self.map_hit(search_result)
             self.log_event(type="info", message=f"{self.SOURCE} - retrieved dataset details")
             return dataset
         else:
@@ -107,14 +104,14 @@ class HuggingFaceDatasets(BaseSource):
             return None
 
 
-def search(source: str, search_term: str, results, failed_sources, tracking=None) -> None:
+def search(search_term: str, results, tracking=None) -> None:
     """
     Entrypoint to search Huggingface Datasets.
     """
-    HuggingFaceDatasets(tracking).search(source, search_term, results, failed_sources)
+    HuggingFaceDatasets(tracking).search(search_term, results)
 
 
-def get_resource(source: str, source_id: str, doi: str, tracking=None) -> Dataset | None:
+def get_resource(doi: str, tracking=None) -> Dataset | None:
     """
     Retrieve detailed information for the dataset. 
 

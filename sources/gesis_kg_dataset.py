@@ -6,11 +6,12 @@ from string import Template
 
 from sources.base import BaseSource
 
+
 class GESIS_KG_Dataset(BaseSource):
 
     SOURCE = 'GESIS KG - Dataset'
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -64,11 +65,11 @@ class GESIS_KG_Dataset(BaseSource):
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
-        search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                    base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=query,
-                                                    failed_sources=failed_sources) or {}
-        
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=query,
+        ) or {}
+
         return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -118,7 +119,8 @@ class GESIS_KG_Dataset(BaseSource):
             _author = Author()
             _author.additionalType = 'Person'
             _author.name = authorsName
-            _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
+            # ORCID is available for few; we need to update the sparql query to pull this information
+            _author.identifier = ""
             author_source = thing(
                 name=self.SOURCE,
                 identifier=_author.identifier,
@@ -135,11 +137,11 @@ class GESIS_KG_Dataset(BaseSource):
 
         return dataset
 
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         if hits:
@@ -148,8 +150,8 @@ class GESIS_KG_Dataset(BaseSource):
                 results['resources'].append(dataset)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list, tracking=None):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search GESIS KG datasets.
     """
-    GESIS_KG_Dataset(tracking).search(source_name, search_term, results, failed_sources)
+    GESIS_KG_Dataset(tracking).search(search_term, results)

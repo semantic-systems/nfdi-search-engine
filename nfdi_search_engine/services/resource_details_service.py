@@ -39,7 +39,7 @@ class ResourceDetailsService:
                 "module", ""
             )
             mod = importlib.import_module(f"sources.{mod_name}")
-            return mod.get_resource(source_name, source_name, doi, tracking=self.tracking)
+            return mod.get_resource(doi, tracking=self.tracking)
         except Exception as e:
             self.tracking.log_event_async(
                 log_type="error",
