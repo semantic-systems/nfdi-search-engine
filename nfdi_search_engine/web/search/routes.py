@@ -35,6 +35,23 @@ def _get_service() -> SearchService:
 @decorators.timeit
 @decorators.set_cookies
 def search_results():
+    """
+    Render the main search results page.
+
+    Executes a full search across all enabled sources for the query in
+    ``txtSearchTerm``. Results are harvested in parallel by the SearchService,
+    ranked per category, stored in the ResultStore under a new ``search_uuid``,
+    and rendered as the first page slice.
+
+    Side effects:
+    - stores ``search-term``, ``back-url`` and ``search_uuid`` in session
+    - emits tracking events for activity + search term
+
+    Query params:
+    - txtSearchTerm: search query string
+
+    :return: rendered results page template
+    """
     search_term = request.args.get("txtSearchTerm", "")
     session["search-term"] = search_term
     session["back-url"] = request.url
@@ -58,8 +75,6 @@ def search_results():
         visitor_id=session.get("visitor_id", ""),
         client_ip=get_client_ip(),
     )
-
-
 
     svc = _get_service()
     page = svc.run_search(
@@ -92,6 +107,15 @@ def search_results():
     methods=["GET"],
 )
 def update_search_result(source: str, source_identifier: str, doi: str):
+    """
+    Refresh a single search result block and return the rendered HTML partial.
+    Used for in-place updates of result items (e.g., AJAX refresh).
+
+    :param source: configured source key (must exist in settings.data_sources)
+    :param source_identifier: source-specific identifier for the resource (passed through for logging/context)
+    :param doi: DOI string (may be prefixed with "DOI:")
+    :return: rendered resource block partial
+    """
     svc = _get_service()
     try:
         resource = svc.update_search_result_block(
@@ -107,6 +131,16 @@ def update_search_result(source: str, source_identifier: str, doi: str):
     methods=["GET"]
 )
 def load_more(object_type: str):
+    """
+    Lazy-load additional search results for a single category and return an HTML partial.
+
+    Reads the current ``search_uuid`` from session and requests the next chunk for
+    ``object_type`` from the SearchService (which loads from the ResultStore and
+    updates the per-category displayed counter).
+
+    :param object_type: result category (must be one of the configured CATEGORIES)
+    :return: rendered category partial with appended items and updated counters
+    """
     search_id = session.get("search_uuid")
     if not search_id:
         abort(400, description="Missing search_uuid in session")
@@ -135,13 +169,13 @@ def load_more(object_type: str):
             ))
     except KeyError:
         abort(404)
-    
+
     displayed_results = {object_type: displayed}
     total_results = {object_type: total}
-
     results = {object_type: chunk}
+
     return render_template(
-        f"partials/search-results/{object_type}.html", 
+        f"partials/search-results/{object_type}.html",
         results=results,
         displayed_results=displayed_results,
         total_results=total_results,

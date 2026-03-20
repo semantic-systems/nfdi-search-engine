@@ -28,6 +28,11 @@ def _get_service() -> UserService:
 @bp.route("/login", methods=["GET", "POST"])
 @limiter.limit("8 per minute")
 def login():
+    """
+    Render the login page and handle user authentication.
+
+    :return: login page (GET/failed POST) or redirect (successful login)
+    """
     if current_user.is_authenticated:
         session["current-user-email"] = current_user.email
         return redirect(session.get("back-url", url_for("public.index")))
@@ -55,6 +60,14 @@ def login():
 @bp.route("/logout")
 @login_required
 def logout():
+    """
+    Log out the current user and redirect back to the previous page.
+
+    Clears the Flask-Login session and redirects to ``session['back-url']`` if present,
+    otherwise falls back to the public index.
+
+    :return: redirect response
+    """
     logout_user()
     flash("You have been logged out.", "info")
     return redirect(session.get("back-url", url_for("public.index")))
@@ -63,6 +76,11 @@ def logout():
 @bp.route("/register", methods=["GET", "POST"])
 @limiter.limit("8 per minute")
 def register():
+    """
+    Render the registration page and handle new user creation.
+
+    :return: registration page (GET/failed POST) or redirect to login (successful registration)
+    """
     if current_user.is_authenticated:
         return redirect(url_for("public.index"))
     form = RegistrationForm()

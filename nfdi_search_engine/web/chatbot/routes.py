@@ -18,6 +18,11 @@ def _get_services() -> tuple[ChatbotService, TrackingService]:
 @bp.route("/are-embeddings-generated", methods=["GET"])
 @timeit
 def are_embeddings_generated():
+    """
+    Check whether chatbot embeddings have been generated for the current search session.
+
+    :return: "True" or "False" as a plain string.
+    """
     search_uuid = session.get("search_uuid")
     if not search_uuid:
         return str(False)
@@ -31,6 +36,18 @@ def are_embeddings_generated():
 @bp.route("/get-chatbot-answer", methods=["GET"])
 @timeit
 def get_chatbot_answer():
+    """
+    Retrieve a chatbot answer for the given question and current search session.
+
+    Builds a ChatContext with request metadata for tracking. Returns the chatbot's
+    last output message as plain text. If the chatbot backend reports an exception,
+    returns the exception string.
+
+    Query params:
+    - question: user question text
+
+    :return: chatbot answer as plain string, or an error/exception string.
+    """
     question = (request.args.get("question") or "").strip()
     if not question:
         abort(400, description="Missing question")

@@ -8,6 +8,9 @@ from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.web.auth.session_user import SessionUser
 
 def init_login_loader():
+    """
+    Initializes the user loader for the login manager
+    """
     @login_manager.user_loader
     def load_user(user_id: str):
         user_svc: UserService = current_app.extensions["services"]["users"]

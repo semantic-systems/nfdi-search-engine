@@ -17,6 +17,11 @@ def _get_service() -> UserService:
 @limiter.limit("10 per minute")
 @login_required
 def profile():
+    """
+    Render and update the user profile.
+
+    :return: profile page template (GET/invalid POST) or redirect (successful update)
+    """
     form = ProfileForm()
 
     if form.validate_on_submit():
@@ -46,6 +51,11 @@ def profile():
 # @limiter.limit("10 per minute")
 @login_required
 def preferences():
+    """
+    Render and update user data-source preferences.
+
+    :return: preferences page template (GET/invalid POST) or redirect (successful update)
+    """
     form = PreferencesForm()
 
     # populate the forms dynamically with the values in the configuration and database

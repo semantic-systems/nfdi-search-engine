@@ -19,6 +19,12 @@ def _user_service():
 # authization code copied from https://github.com/miguelgrinberg/flask-oauth-example
 @bp.route("/authorize/<provider>")
 def oauth2_authorize(provider):
+    """
+    Start the OAuth2 authorization flow for a given provider.
+
+    :param provider: Provider key as configured in ``OAUTH2_PROVIDERS`` (e.g. "google").
+    :return: Redirect response to the provider authorization URL.
+    """
     if not current_user.is_anonymous:
         return redirect(url_for("public.index"))
 
@@ -51,6 +57,21 @@ def oauth2_authorize(provider):
 
 @bp.route("/callback/<provider>")
 def oauth2_callback(provider: str):
+    """
+    Handle the OAuth2 provider callback and log the user in.
+
+    Flow:
+    - Rejects the request if the user is already authenticated.
+    - Loads provider configuration from ``app.config['OAUTH2_PROVIDERS']``.
+    - Handles provider error responses via query params (``error*``).
+    - Validates the CSRF state token against ``session['oauth2_state']``.
+    - Exchanges the authorization code for an access token.
+    - Fetches user info and extracts the email via provider-specific mapping.
+    - Looks up (or creates) a local user record and logs the user in.
+
+    :param provider: Provider key as configured in ``OAUTH2_PROVIDERS``.
+    :return: Redirect to public index on success, or abort/redirect on failure.
+    """
     if not current_user.is_anonymous:
         return redirect(url_for("public.index"))
 
