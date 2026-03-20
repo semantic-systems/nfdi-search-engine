@@ -140,7 +140,6 @@ class Codalab(BaseSource):
         Retrieve a single Codalab bundle by UUID.
         """
         raw = data_retriever.retrieve_object(
-            source=self.SOURCE,
             base_url=self.RESOURCE_ENDPOINT,
             identifier=identifier,
             quote=False,

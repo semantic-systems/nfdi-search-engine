@@ -106,7 +106,6 @@ class HuggingFaceModels(BaseSource):
 
     def get_resource(self, doi: str, request_readme: bool = False) -> CreativeWork | None:
         search_result = data_retriever.retrieve_object(
-            source=self.SOURCE,
             base_url=self.RESOURCE_ENDPOINT,
             identifier=doi,
             quote=False,

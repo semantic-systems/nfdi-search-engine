@@ -138,7 +138,6 @@ class SemanticScholarPublications:
             response = data_retriever.retrieve_data(
                 base_url=base_url,
                 search_term=search_term,
-                failed_sources=[],
             )
             if isinstance(response, dict):
                 return response

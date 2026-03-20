@@ -21,7 +21,6 @@ class GEPRIS(BaseSource):
         Args:
             search_term: The search term to query
             context: The context type ('projekt', 'person', or 'institution')
-            failed_sources: List to append source name if request fails
             
         Returns:
             Dictionary containing the HTML response and metadata
@@ -30,7 +29,7 @@ class GEPRIS(BaseSource):
         base_url = endpoint.split("?")[0] if "?" in endpoint else endpoint
         # First request to get total count
         url = f"{base_url}?context={context}&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
-        
+
         response = requests.get(url, timeout=3)
         response.raise_for_status()
         
@@ -169,7 +168,6 @@ class GEPRIS(BaseSource):
         
         Args:
             search_term: The search term to query
-            failed_sources: List to append source name if request fails
             
         Returns:
             Dictionary containing the HTML response and metadata
@@ -248,7 +246,6 @@ class GEPRIS(BaseSource):
         
         Args:
             search_term: The search term to query
-            failed_sources: List to append source name if request fails
             
         Returns:
             Dictionary containing the HTML response and metadata
