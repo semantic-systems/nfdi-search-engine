@@ -2,8 +2,6 @@ from __future__ import annotations
 
 import json
 from urllib.parse import urljoin
-from dataclasses import dataclass
-from typing import Any, Dict, Optional, List
 
 import requests
 
@@ -12,6 +10,9 @@ from nfdi_search_engine.infra.store.result_store import ResultStore
 
 
 class ChatbotProcessor:
+    """
+    Provides job handlers for asynchronous chatbot operations
+    """
     def __init__(self, result_store: ResultStore, settings: ChatbotSettings, http_timeout_s: int = 30):
         self.store = result_store
         self.settings = settings

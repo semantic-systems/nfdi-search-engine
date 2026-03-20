@@ -15,6 +15,9 @@ class _KVRecord(Generic[T]):
 
 
 class InMemoryTTLKVStore(Generic[T]):
+    """
+    In memory Key-Value Store with TTL
+    """
     def __init__(self) -> None:
         self._lock = threading.RLock()
         self._data: Dict[str, _KVRecord[T]] = {}

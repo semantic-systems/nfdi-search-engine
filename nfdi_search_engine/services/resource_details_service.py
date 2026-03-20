@@ -44,7 +44,7 @@ class ResourceDetailsService:
             self.tracking.log_event_async(
                 log_type="error",
                 filename=mod.__file__,
-                args=[source_name, source_name, doi],
+                args=[source_name, doi],
                 method="get_resource",
                 message=traceback.format_exception_only(e),
                 traceback=traceback.format_exception(e),

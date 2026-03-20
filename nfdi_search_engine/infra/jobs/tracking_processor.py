@@ -6,6 +6,9 @@ from nfdi_search_engine.infra.elastic.indices import ESIndex
 
 
 class TrackingProcessor:
+    """
+    Provides job handlers for asynchronous writes to elastic search
+    """
     def __init__(self, es_client: Elasticsearch):
         self.es = es_client
 

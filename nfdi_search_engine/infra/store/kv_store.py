@@ -6,6 +6,9 @@ T = TypeVar("T")
 
 
 class KVStore(Protocol, Generic[T]):
+    """
+    Protocol for a generic KV store
+    """
     def put(self, key: str, value: T, ttl_s: Optional[int] = None) -> None: ...
     def get(self, key: str) -> Optional[T]: ...
     def delete(self, key: str) -> bool: ...

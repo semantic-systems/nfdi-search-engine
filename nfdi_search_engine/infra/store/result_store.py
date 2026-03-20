@@ -12,6 +12,9 @@ class SearchRecord:
 
 
 class ResultStore(Protocol):
+    """
+    Protocol for a result store containing search records
+    """
     def put(
         self,
         search_id: str,

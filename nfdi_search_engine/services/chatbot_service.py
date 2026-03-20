@@ -15,6 +15,13 @@ from nfdi_search_engine.infra.jobs.dispatcher import JobDispatcher
 
 @dataclass(frozen=True)
 class ChatContext:
+    """
+    Context object for chatbot operations.
+
+    Carries the user question, the search UUID used to look up the previously
+    indexed search results (for retrieval/embeddings), and request metadata for
+    tracking/logging.
+    """
     question: str
     search_uuid: str
     request_meta: RequestMeta
@@ -24,6 +31,8 @@ class ChatContext:
 @dataclass(frozen=True)
 class ChatResponse:
     """
+    Chatbot response payload.
+
     This is currently implemented to reflect the structure by the nfdi-se-chatbot,
     in the future we might want to stick to a standard format, like the one from openai
     """
@@ -33,6 +42,14 @@ class ChatResponse:
 
 
 class ChatbotService:
+    """
+    Service for chatbot integration.
+
+    This service contains the orchestration logic for:
+    - Checking whether embeddings have been generated for a given search UUID
+    - Sending a user question to the chatbot backend and returning the response
+    - Triggering asynchronous indexing of search results for embeddings generation
+    """
     def __init__(
         self,
         settings: ChatbotSettings,
@@ -40,12 +57,36 @@ class ChatbotService:
         jobs: JobDispatcher,
         http: Optional[requests.Session] = None
     ):
+        """
+        Initialize the chatbot service.
+
+        :param settings: Chatbot configuration (server URL, endpoints, timeouts).
+        :type settings: ChatbotSettings
+        :param tracking: Tracking service used to record chatbot interactions.
+        :type tracking: TrackingService
+        :param jobs: Job dispatcher used for asynchronous indexing tasks.
+        :type jobs: JobDispatcher
+        :param http: Optional requests session to reuse connections; a new session is created if omitted.
+        :type http: Optional[requests.Session]
+        """
         self.settings = settings
         self.tracking = tracking
         self.jobs = jobs
         self.http = http or requests.Session()
 
     def are_embeddings_generated(self, *, search_uuid: str) -> bool:
+        """
+        Return whether the chatbot backend has finished generating embeddings for a search UUID.
+
+        When the chatbot is disabled via settings, this returns True so that callers can
+        proceed without gating UI behavior on the backend.
+
+        :param search_uuid: Search UUID identifying the indexed search results.
+        :type search_uuid: str
+        :return: True if embeddings are available (or chatbot is disabled), otherwise False.
+        :rtype: bool
+        :raises requests.RequestException: For network/HTTP errors in enabled mode.
+        """
         if not self.settings.enabled:
             return True
 
@@ -66,6 +107,14 @@ class ChatbotService:
         return bool(data.get("file_exists", False))
 
     def get_answer(self, ctx: ChatContext) -> ChatResponse:
+        """
+        Query the chatbot backend for an answer given a user question and a search UUID.
+
+        :param ctx: Chat request context (question, search uuid, request meta, user id).
+        :type ctx: ChatContext
+        :return: ChatResponse containing chat history and error/traceback fields.
+        :rtype: ChatResponse
+        """
         self.tracking.log_activity_async(
             description=f"User asked the chatbot: {ctx.question}",
             request_meta=ctx.request_meta,
@@ -112,6 +161,18 @@ class ChatbotService:
             )
 
     def index_search_results_async(self, search_id: str) -> None:
+        """
+        Enqueue an asynchronous task to index search results for chatbot embeddings generation.
+
+        This delegates the heavy lifting to a background worker (job dispatcher) so that
+        the main request path remains fast. The worker is expected to look up the stored
+        search results by search_id and forward them to the chatbot backend.
+
+        :param search_id: Search id identifying the stored full search results.
+        :type search_id: str
+        :return: None
+        :rtype: None
+        """
         if not self.settings.enabled:
             return
         self.jobs.enqueue(

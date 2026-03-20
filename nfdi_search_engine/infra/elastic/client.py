@@ -7,6 +7,9 @@ from elasticsearch import Elasticsearch, exceptions
 
 
 def get_es_client(host: str, username: str | None = None, password: str | None = None) -> Elasticsearch:
+    """
+    Initializes and returns an Elasticsearch client
+    """
     auth = (username, password) if username or password else None
     return Elasticsearch(
         host,

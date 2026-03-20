@@ -28,6 +28,12 @@ CATEGORIES: List[str] = [
 
 @dataclass(frozen=True)
 class SearchContext:
+    """
+    Context object for search-related operations.
+
+    Carries request-scoped and user-scoped information that is needed by the
+    SearchService for orchestration and logging.
+    """
     search_id: str
     search_term: str
     excluded_sources: Set[str]
@@ -38,6 +44,12 @@ class SearchContext:
 
 @dataclass(frozen=True)
 class SearchPage:
+    """
+    Result object returned for the initial search results page.
+
+    Contains the first-page slice of results per category, plus counts and
+    metadata used by the UI for pagination.
+    """
     search_id: str
     search_term: str
     results: Dict[str, List[Any]]
@@ -47,6 +59,17 @@ class SearchPage:
 
 
 class SearchService:
+    """
+    Service for all search-results operations.
+
+    This service contains the orchestration logic for:
+    - Parallel harvesting across enabled data sources
+    - Category-wise ranking/sorting of results
+    - Persisting full search results in a ResultStore for pagination
+    - Triggering chatbot indexing for search result embeddings
+    - Lazy-loading /load-more pagination per category
+    - Updating individual result blocks via source re-fetch
+    """
     def __init__(
         self,
         settings: SearchSettings,
@@ -54,12 +77,34 @@ class SearchService:
         store: ResultStore,
         tracking: TrackingService,
     ) -> None:
+        """
+        Initialize the search service.
+
+        :param settings: Search configuration (data sources, limits, TTLs, etc.).
+        :type settings: SearchSettings
+        :param chatbot: Chatbot integration service for async indexing.
+        :type chatbot: ChatbotService
+        :param store: Store implementation used to persist full results across requests.
+        :type store: ResultStore
+        :param tracking: Tracking service used to record activity, search terms, and errors.
+        :type tracking: TrackingService
+        """
         self.settings = settings
         self.chatbot = chatbot
         self.store = store
         self.tracking = tracking
 
     def run_search(self, ctx: SearchContext) -> SearchPage:
+        """
+        Execute a search request end-to-end and return the first-page results.
+        Uses .search() method from source modules.
+        
+
+        :param ctx: Request context carrying search id, term, exclusions and request meta.
+        :type ctx: SearchContext
+        :return: Page object containing first-page results and counts.
+        :rtype: SearchPage
+        """
         self.tracking.log_activity_async(
             description=f"loading search results for {ctx.search_term}",
             request_meta=ctx.request_meta,
@@ -127,6 +172,15 @@ class SearchService:
         )
 
     def load_more(self, ctx: SearchContext) -> List[Any]:
+        """
+        Load the next chunk of results for a single category (lazy-load / pagination).
+
+        :param ctx: Request context containing search_id and object_type, plus request meta.
+        :type ctx: SearchContext
+        :raises KeyError: If object_type is invalid, or search_id is missing/expired.
+        :return: Tuple(chunk, new_displayed_count, total_count)
+        :rtype: Tuple[List[Any], int, int]
+        """
         if ctx.object_type not in CATEGORIES:
             raise KeyError(f"Invalid object_type: {ctx.object_type}")
 
@@ -157,6 +211,22 @@ class SearchService:
         return chunk, new_displayed, total
 
     def update_search_result_block(self, source: str, source_identifier: str, doi: str) -> Any:
+        """
+        Refresh a single search result block by re-fetching it from the corresponding source.
+        This is used by AJAX partial updates to replace an item in-place.
+
+        Uses the .get_resource() method from source modules.
+
+        :param source: Source key as used in config (must be present in settings.data_sources).
+        :type source: str
+        :param source_identifier: Identifier for the result item within the source.
+        :type source_identifier: str
+        :param doi: DOI string (may be prefixed with "DOI:").
+        :type doi: str
+        :raises KeyError: If the source is unknown or misconfigured.
+        :return: Updated resource object, source-specific type.
+        :rtype: Any
+        """
         if source not in self.settings.data_sources:
             raise KeyError(f"Unknown source: {source}")
 
@@ -179,6 +249,20 @@ class SearchService:
             )
 
     def _harvest(self, sources: List[str], search_term: str) -> Tuple[Dict[str, List[Any]], List[str]]:
+        """
+        Harvest search results across multiple data sources in parallel.
+
+        Uses the .search() method from source modules. Each source module is expected
+        to populate a category -> list mapping and may raise exceptions
+        that are logged via TrackingService.
+
+        :param sources: List of enabled source keys (as in settings.data_sources).
+        :type sources: List[str]
+        :param search_term: Search string to pass to sources.
+        :type search_term: str
+        :return: Tuple(results_by_category, failed_source_keys)
+        :rtype: Tuple[Dict[str, List[Any]], List[str]]
+        """
         results: Dict[str, List[Any]] = {c: [] for c in CATEGORIES}
         failed: List[str] = []
 
@@ -221,6 +305,20 @@ class SearchService:
         return results, failed
 
     def _sort_search_results(self, search_term, search_results) -> list:
+        """
+        Rank and sort search results by textual relevance using BM25Plus.
+
+        This method tokenizes each result object's string representation and
+        computes BM25 scores relative to the tokenized query. The score is stored
+        on each result object as `rankScore`, and the list is sorted descending.
+
+        :param search_term: User query string.
+        :type search_term: str
+        :param search_results: List of result objects to score and sort.
+        :type search_results: List[Any]
+        :return: Sorted list of results in descending relevance.
+        :rtype: List[Any]
+        """
         tokenized_results = [
             str(result).lower().split(" ")
             for result in search_results

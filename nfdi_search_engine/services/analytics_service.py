@@ -14,13 +14,38 @@ _MONTHS = [
 
 
 class AnalyticsService:
+    """
+    Service for control-panel analytics and dashboard summaries.
+
+    This service contains the reporting logic for aggregating tracking and user
+    data into compact time-series summaries used by the control-panel dashboard.
+
+    All methods return JSON-serializable structures (lists/dicts) suitable for
+    direct use in templates and charting components.
+    """
     def __init__(self, tracking_service: TrackingService, user_service: UserService, *, es_date_format: str):
+        """
+        Initialize the analytics service.
+
+        :param tracking_service: Tracking service used to read activity/search/UA logs.
+        :type tracking_service: TrackingService
+        :param user_service: User service used to read registered user records.
+        :type user_service: UserService
+        :param es_date_format: Date format used for converting date/datetime ranges to ES query strings.
+        :type es_date_format: str
+        """
         self.tracking = tracking_service
         self.users = user_service
         self.es_date_format = es_date_format
 
     # ---------- Public dashboard summaries ----------
     def generate_registered_users_summaries(self):
+        """
+        Generate daily and monthly summaries for registered users.
+
+        :return: Tuple(current_month_series, current_month_count, current_year_series, current_year_count)
+        :rtype: tuple
+        """
         today = datetime.today()
         year_start = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
@@ -67,6 +92,12 @@ class AnalyticsService:
         )
 
     def generate_visitors_summaries(self):
+        """
+        Generate daily and monthly summaries for visitors (distinct visitor ids).
+
+        :return: Tuple(current_month_series, current_month_count, current_year_series, current_year_count)
+        :rtype: tuple
+        """
         today = datetime.today()
         year_start = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
 
@@ -113,6 +144,12 @@ class AnalyticsService:
         )
 
     def generate_user_agent_family_summary(self):
+        """
+        Generate a summary of distinct visitors per user-agent family for the current year.
+
+        :return: Tuple(series_counts, labels, unique_family_count)
+        :rtype: tuple
+        """
         today = datetime.today()
         year_start = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         es_start, es_end = to_es_range(year_start, today, self.es_date_format)
@@ -137,6 +174,12 @@ class AnalyticsService:
         )
 
     def generate_operating_system_family_summary(self):
+        """
+        Generate a summary of distinct visitors per OS family for the current year.
+
+        :return: Tuple(series_counts, labels, unique_family_count)
+        :rtype: tuple
+        """
         today = datetime.today()
         year_start = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         es_start, es_end = to_es_range(year_start, today, self.es_date_format)
@@ -161,6 +204,12 @@ class AnalyticsService:
         )
 
     def generate_search_term_summary(self):
+        """
+        Generate the top-10 search terms for the current year.
+
+        :return: Dict mapping search_term -> [count]
+        :rtype: dict
+        """
         today = datetime.today()
         year_start = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         es_start, es_end = to_es_range(year_start, today, self.es_date_format)
@@ -176,6 +225,12 @@ class AnalyticsService:
         return top10.set_index("search_term").T.to_dict("list")
 
     def generate_traffic_summary(self):
+        """
+        Generate monthly traffic summary split by registered users vs visitors for the current year.
+
+        :return: Tuple(registered_user_counts_by_month, visitor_counts_by_month)
+        :rtype: tuple
+        """
         today = datetime.today()
         year_start = today.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0)
         es_start, es_end = to_es_range(year_start, today, self.es_date_format)
@@ -207,6 +262,12 @@ class AnalyticsService:
 
     # ---------- helpers ----------
     def _empty_month_day_summary(self):
+        """
+        Return empty (zero) month and day series for dashboard charts.
+
+        :return: Tuple(empty_day_series, 0, empty_month_series, 0)
+        :rtype: tuple
+        """
         empty_month = [{"x": m, "y": 0} for m in _MONTHS]
         empty_days = [{"x": str(i).zfill(2), "y": 0} for i in range(1, 32)]
         return empty_days, 0, empty_month, 0
