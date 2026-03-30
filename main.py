@@ -696,12 +696,10 @@ def search_results():
 
     # Load all the sources from config.py used to harvest data related to search term
     for module in app.config["DATA_SOURCES"]:
-        if (
-            app.config["DATA_SOURCES"][module]
-            .get("search-endpoint", "")
-            .strip() != ""
-            and module not in excluded_sources
-        ):
+        source_cfg = app.config["DATA_SOURCES"][module]
+        has_endpoint = source_cfg.get("search-endpoint", "").strip() != ""
+        is_local = source_cfg.get("local", False)
+        if (has_endpoint or is_local) and module not in excluded_sources:
             sources.append(module)
 
     # for now this wraps the in-reference editing

@@ -421,6 +421,17 @@ class Config:
             "module": "gepris",
             "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         },
+        "GERiT": {
+            "logo": {
+                "name": "GERiT",
+                "link": "https://gerit.org/",
+                "src": "gerit.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "gerit",
+            "local": True,
+        },
         "CODALAB": {
             "logo": {
                 "name": "CODALAB",
