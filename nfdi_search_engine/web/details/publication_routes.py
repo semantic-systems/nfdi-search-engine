@@ -85,7 +85,7 @@ def publication_details(source_name, doi, ts):
     request_meta = RequestMeta(
         user_email=session.get("current-user-email", ""),
         session_id=session.get("gateway-session-id", ""),
-        visitor_id=session.get("visitor-id", ""),
+        visitor_id=session.get("visitor_id", ""),
         url=request.url,
         host=request.host,
         url_root=request.root_url,

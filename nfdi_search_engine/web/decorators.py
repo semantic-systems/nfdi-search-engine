@@ -44,7 +44,7 @@ def set_cookies(f):
                     current_user.email if current_user.is_authenticated else ""
                 ),
                 session_id=session.get("gateway-session-id", ""),
-                visitor_id=session.get("visitor-id", ""),
+                visitor_id=session.get("visitor_id", ""),
                 url=request.url,
                 host=request.host,
                 url_root=request.root_url,
