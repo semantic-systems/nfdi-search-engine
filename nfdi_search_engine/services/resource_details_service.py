@@ -34,6 +34,7 @@ class ResourceDetailsService:
         Returns resource details for the given doi from the given source.
         Uses the .get_resource() method from the source module.
         """
+        mod = None
         try:
             mod_name = self.settings.data_sources[source_name].get(
                 "module", ""
@@ -43,7 +44,7 @@ class ResourceDetailsService:
         except Exception as e:
             self.tracking.log_event_async(
                 log_type="error",
-                filename=mod.__file__,
+                filename=getattr(mod, "__file__", source_name),
                 args=[source_name, doi],
                 method="get_resource",
                 message=traceback.format_exception_only(e),

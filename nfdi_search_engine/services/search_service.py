@@ -70,6 +70,7 @@ class SearchService:
     - Lazy-loading /load-more pagination per category
     - Updating individual result blocks via source re-fetch
     """
+
     def __init__(
         self,
         settings: SearchSettings,
@@ -98,7 +99,7 @@ class SearchService:
         """
         Execute a search request end-to-end and return the first-page results.
         Uses .search() method from source modules.
-        
+
 
         :param ctx: Request context carrying search id, term, exclusions and request meta.
         :type ctx: SearchContext
@@ -234,14 +235,16 @@ class SearchService:
         if not module_name:
             raise KeyError(f"No module configured for source: {source}")
 
+        mod = None
+        clean_doi = doi.replace("DOI:", "")
+
         try:
             mod = importlib.import_module(f"sources.{module_name}")
-            clean_doi = doi.replace("DOI:", "")
             return mod.get_resource(clean_doi, tracking=self.tracking)
         except Exception as e:
             self.tracking.log_event_async(
                 log_type="error",
-                filename=mod.__file__,
+                filename=getattr(mod, "__file__", f"sources.{module_name}"),
                 args=[source, source_identifier, clean_doi],
                 method="get_resource",
                 message=traceback.format_exception_only(e),
