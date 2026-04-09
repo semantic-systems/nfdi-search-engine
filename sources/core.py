@@ -63,7 +63,6 @@ class CORE(BaseSource):
         # publications may not always have a DOI!
         # if we don't find one, we do NOT create a result object for the hit
         if not hit.get("doi", None):
-            print("No DOI found for publication:", publication.name)
             return None
 
         publication.identifier = hit.get("doi", "")
