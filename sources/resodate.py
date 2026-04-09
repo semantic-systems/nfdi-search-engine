@@ -1,13 +1,14 @@
 import re
 from typing import Iterable, Dict, Any, List
 
-from objects import thing, Article, Author, Dataset
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Dataset
 from sources import data_retriever
 from sources.base import BaseSource
-from main import app
+from config import Config
 import requests
 
-import utils
+from nfdi_search_engine.common.dates import parse_date
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class Resodate(BaseSource):
@@ -18,20 +19,16 @@ class Resodate(BaseSource):
 
     SOURCE = "resodate"
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources: list) -> Dict[str, Any] | None:
+    def fetch(self, search_term: str) -> Dict[str, Any] | None:
         """
         Fetch raw JSON from the Resodate search API using the given search term.
         """
         search_result = data_retriever.retrieve_data(
-            source=self.SOURCE,
-            base_url=app.config["DATA_SOURCES"][self.SOURCE].get("search-endpoint", ""),
+            base_url=Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", ""),
             search_term=search_term,
-            failed_sources=failed_sources,
         )
         return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw Elasticsearch-style JSON response.
@@ -49,7 +46,7 @@ class Resodate(BaseSource):
         hits = hits_container.get("hits", [])
 
         if int(total_hits) > 0:
-            utils.log_event(
+            self.log_event(
                 type="info",
                 message=f"{self.SOURCE} - {total_hits} records matched; pulled top {len(hits)}",
             )
@@ -66,7 +63,6 @@ class Resodate(BaseSource):
             return value
         return [value]
 
-    @utils.handle_exceptions
     def map_dataset_hit(self, hit: Dict[str, Any]) -> Dataset:
         """
         Map a single dataset hit (with _source and _id) to a Dataset object.
@@ -79,7 +75,7 @@ class Resodate(BaseSource):
         dataset.identifier = hit_source.get("id", "")
 
         # description / abstract
-        dataset.description = utils.remove_html_tags(hit_source.get("description", ""))
+        dataset.description = remove_html_tags(hit_source.get("description", ""))
         dataset.abstract = dataset.description
 
         # datePublished preference: datePublished -> mainEntityOfPage[0].dateCreated/dateModified
@@ -96,7 +92,7 @@ class Resodate(BaseSource):
                     or ""
                 )
         if date_published:
-            dataset.datePublished = utils.parse_date(date_published)
+            dataset.datePublished = parse_date(date_published)
 
         dataset.license = hit_source.get("license", {}).get("id", "")
         dataset.image = hit_source.get("image", "")
@@ -147,7 +143,6 @@ class Resodate(BaseSource):
 
         return dataset
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single non-dataset hit (with _source and _id) to an Article from objects.py.
@@ -162,10 +157,10 @@ class Resodate(BaseSource):
         )
         publication.datePublished = hit_source.get("datePublished", "")
         if publication.datePublished:
-            publication.datePublished = utils.parse_date(publication.datePublished)
+            publication.datePublished = parse_date(publication.datePublished)
         publication.license = hit_source.get("license", {}).get("id", "")
 
-        publication.description = utils.remove_html_tags(
+        publication.description = remove_html_tags(
             hit_source.get("description", "")
         )
         publication.abstract = publication.description
@@ -218,18 +213,15 @@ class Resodate(BaseSource):
 
         return publication
 
-    @utils.handle_exceptions
     def search(
         self,
-        source_name: str,
         search_term: str,
         results: dict,
-        failed_sources: list,
     ) -> None:
         """
         Fetch from Resodate, extract hits, map to Articles/Datasets, and append to results.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         if raw is None:
             return
 
@@ -252,7 +244,7 @@ class Resodate(BaseSource):
                 results["publications"].append(publication)
                 publication_count += 1
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=(
                 f"{self.SOURCE} - mapped {publication_count} publications and "
@@ -260,11 +252,8 @@ class Resodate(BaseSource):
             ),
         )
 
-    @utils.handle_exceptions
     def get_resource(
         self,
-        source_name: str,
-        source_id: str,
         doi: str,
     ) -> Dataset | None:
         """
@@ -278,7 +267,7 @@ class Resodate(BaseSource):
             "size": 1,
             "query": {
                 "ids": {
-                    "values": [source_id],
+                    "values": [self.SOURCE],
                 }
             },
         }
@@ -286,9 +275,7 @@ class Resodate(BaseSource):
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "User-Agent": app.config.get(
-                "REQUEST_HEADER_USER_AGENT", "nfdi-search-engine"
-            ),
+            "User-Agent": Config.REQUEST_HEADER_USER_AGENT,
         }
 
         try:
@@ -296,34 +283,25 @@ class Resodate(BaseSource):
                 api_url,
                 json=body,
                 headers=headers,
-                timeout=int(app.config.get("REQUEST_TIMEOUT", 100)),
+                timeout=int(Config.REQUEST_TIMEOUT),
             )
+            response.raise_for_status()
         except requests.exceptions.Timeout:
-            utils.log_event(
+            self.log_event(
                 type="error",
                 message=(
                     f"{self.SOURCE} - details request timed out: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                    f"source_name={self.SOURCE}, doi={doi}"
                 ),
             )
             return None
         except Exception as ex:
-            utils.log_event(
+            self.log_event(
                 type="error",
                 message=(
                     f"{self.SOURCE} - error requesting details: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}, "
+                    f"source_name={self.SOURCE}, doi={doi}, "
                     f"error={str(ex)}"
-                ),
-            )
-            return None
-
-        if response.status_code != 200:
-            utils.log_event(
-                type="error",
-                message=(
-                    f"{self.SOURCE} - details API error {response.status_code}: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
                 ),
             )
             return None
@@ -331,11 +309,11 @@ class Resodate(BaseSource):
         try:
             data = response.json()
         except ValueError:
-            utils.log_event(
+            self.log_event(
                 type="error",
                 message=(
                     f"{self.SOURCE} - invalid JSON in details response: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                    f"source_name={self.SOURCE}, doi={doi}"
                 ),
             )
             return None
@@ -344,11 +322,11 @@ class Resodate(BaseSource):
         hits = hits_container.get("hits", [])
 
         if not hits:
-            utils.log_event(
+            self.log_event(
                 type="error",
                 message=(
                     f"{self.SOURCE} - no details hit found: "
-                    f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                    f"source_name={self.SOURCE}, doi={doi}"
                 ),
             )
             return None
@@ -356,33 +334,30 @@ class Resodate(BaseSource):
         hit = hits[0]
         dataset = self.map_dataset_hit(hit)
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=(
                 f"{self.SOURCE} - retrieved resource details: "
-                f"source_name={source_name}, source_id={source_id}, doi={doi}"
+                f"source_name={self.SOURCE}, doi={doi}"
             ),
         )
 
         return dataset
 
 
-@utils.handle_exceptions
 def search(
-    source: str,
     search_term: str,
     results: dict,
-    failed_sources: list,
+    tracking=None,
 ) -> None:
     """
     Entrypoint to search Resodate publications.
     """
-    Resodate().search(source, search_term, results, failed_sources)
+    Resodate(tracking).search(search_term, results)
 
 
-@utils.handle_exceptions
-def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
+def get_resource(doi: str, tracking=None) -> Dataset | None:
     """
     Entrypoint to retrieve RESODATE resource details.
     """
-    return Resodate().get_resource(source, source_id, doi)
+    return Resodate(tracking).get_resource(doi)

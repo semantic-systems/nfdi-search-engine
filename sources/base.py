@@ -1,11 +1,39 @@
 # sources/base.py
+import os
+import inspect
 from abc import ABC, abstractmethod
 from typing import Iterable, Dict, Any
 
+from nfdi_search_engine.services.tracking_service import TrackingService
+
+
 class BaseSource(ABC):
+    def __init__(self, tracking: TrackingService = None):
+        self.tracking = tracking
+
+    def log_event(self, type: str, message: str):
+        """
+        Match the log_event signature used in sources.
+        Async logging to elastic if TrackingService is passed in the constructor,
+        to stdout otherwise.
+        """
+        caller = inspect.stack()[1]
+        filename = os.path.splitext(os.path.basename(caller.filename))[0]
+        method = inspect.stack()[1][3]
+
+        if self.tracking is not None:
+            self.tracking.log_event_async(
+                log_type=type,
+                message=message,
+                filename=filename,
+                method=method
+            )
+        else:
+            # if no tracking service is passed, log to stdout
+            print(f"{type.upper()}: {filename} in {method}: {message}")
 
     @abstractmethod
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -26,7 +54,7 @@ class BaseSource(ABC):
         ...
 
     @abstractmethod
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """

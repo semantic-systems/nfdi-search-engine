@@ -1,30 +1,29 @@
-from objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
+from nfdi_search_engine.common.models.objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 from typing import Iterable, Dict, Any, List
 from sources import data_retriever
-import utils
-from main import app
+from config import Config
 from datetime import datetime
 from dateutil import parser
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
+
 
 class EUDAT(BaseSource):
 
     SOURCE = 'EUDAT'
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources)  
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('endpoint', ''),
+            search_term=search_term
+        )
 
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -32,51 +31,49 @@ class EUDAT(BaseSource):
 
         hits = raw['hits']
         total_hits = hits['total']
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")              
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
 
         if int(total_hits) > 0:
             hits = hits.get("hits", [])
             return hits
         return None
-        
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
-        metadata = hit.get('metadata', {})    
-        resource_type = 'OTHER' # resource type is defaulted to 'Other'   
+        metadata = hit.get('metadata', {})
+        resource_type = 'OTHER'  # resource type is defaulted to 'Other'
         resource_types = metadata.get('resource_types', [])
         if len(resource_types) > 0:
             resource_type = resource_types[0].get('resource_type_general', '').upper()
 
         # print('Resource Type:', resource_type.upper())
         if resource_type == 'DATASET':
-            digitalObj = Dataset() 
+            digitalObj = Dataset()
         elif resource_type in ['TEXT']:
             digitalObj = Article()
         elif resource_type in ['MODEL']:
             digitalObj = CreativeWork()
         elif resource_type in ['AUDIOVISUAL']:
-            digitalObj = VideoObject()                 
+            digitalObj = VideoObject()
         elif resource_type == 'OTHER':
-            digitalObj = CreativeWork() 
+            digitalObj = CreativeWork()
         else:
             print(f'{self.SOURCE} - This resource type is still not defined:', resource_type.upper())
             digitalObj = CreativeWork()
-            
+
         digitalObj.additionalType = resource_type
-        digitalObj.identifier = metadata.get('DOI', '').replace("https://doi.org/","")
+        digitalObj.identifier = metadata.get('DOI', '').replace("https://doi.org/", "")
         digitalObj.name = next(iter(metadata.get('titles', [])), {}).get("title", "")
         digitalObj.url = hit.get('links', {}).get('self', '')  # this gives the json response
-        
-        
-        digitalObj.description = utils.remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
-        
-        
+
+        digitalObj.description = remove_html_tags(next(iter(metadata.get('descriptions', [])), {}).get("description", ""))
+
         keywords = metadata.get('keywords', [])
         for keyword in keywords:
-            digitalObj.keywords.extend(keyword.get("keyword", "").split(","))  #keyword field contains comma seperated keywords  
+            # keyword field contains comma seperated keywords
+            digitalObj.keywords.extend(keyword.get("keyword", "").split(","))
 
         language = next(iter(metadata.get('languages', [])), {}).get("language_identifier", "")
         digitalObj.inLanguage.append(language)
@@ -84,7 +81,7 @@ class EUDAT(BaseSource):
         digitalObj.datePublished = datetime.strftime(parser.parse(hit.get('created', "")), '%Y-%m-%d')
         digitalObj.license = metadata.get('license', {}).get('license', '')
 
-        authors = metadata.get("creators", [])                        
+        authors = metadata.get("creators", [])
         for author in authors:
             _author = Author()
             _author.additionalType = 'Person'
@@ -102,25 +99,24 @@ class EUDAT(BaseSource):
                     __author = Author()
                     __author.additionalType = 'Person'
                     __author.name = author_name
-                digitalObj.author.append(__author)  
+                digitalObj.author.append(__author)
             else:
-                digitalObj.author.append(_author)  
+                digitalObj.author.append(_author)
 
         _source = thing()
         _source.name = self.SOURCE
         _source.identifier = hit.get("id", "")
         # _source.url = hit.get('links', {}).get('self', '')  # this gives json response
-        _source.url = app.config['DATA_SOURCES'][self.SOURCE].get('record-base-url', '') + _source.identifier                    
-        digitalObj.source.append(_source)  
+        _source.url = Config.DATA_SOURCES[self.SOURCE].get('record-base-url', '') + _source.identifier
+        digitalObj.source.append(_source)
 
         return digitalObj
-    
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
 
         if raw == None:
             return
@@ -133,16 +129,16 @@ class EUDAT(BaseSource):
                 resource_type = digitalObj.additionalType
 
                 if resource_type in ['DATASET', 'MODEL']:
-                    results['resources'].append(digitalObj)    
+                    results['resources'].append(digitalObj)
                 elif resource_type.upper() in ['TEXT']:
                     digitalObj.abstract = digitalObj.description
-                    results['publications'].append(digitalObj)                
-                else: # 'AUDIOVISUAL'
-                    results['others'].append(digitalObj)   
+                    results['publications'].append(digitalObj)
+                else:  # 'AUDIOVISUAL'
+                    results['others'].append(digitalObj)
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search EUDAT objects.
     """
-    EUDAT().search(source, search_term, results, failed_sources)
+    EUDAT(tracking).search(search_term, results)

@@ -1,20 +1,18 @@
-from objects import thing, Article, Author, Organization
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization
 from sources import data_retriever
 from config import Config
 from typing import Iterable, Dict, Any, List
-import utils
 import requests
-from main import app
 
 from sources.base import BaseSource
+from nfdi_search_engine.common.formatting import remove_html_tags
 
 
 class CORE(BaseSource):
 
     SOURCE = 'CORE'
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -22,20 +20,15 @@ class CORE(BaseSource):
         # learn more: https://api.core.ac.uk/docs/v3#tag/Search
         limit = Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         api_url = f'https://api.core.ac.uk/v3/search/works/?limit={limit}&q={search_term}&_exists_:doi'
-        headers = {"Authorization":"Bearer " + Config.CORE_API_KEY}
+        headers = {"Authorization": "Bearer " + Config.CORE_API_KEY}
 
         # send the request
         response = requests.get(api_url, headers=headers)
+        response.raise_for_status()
 
-        if response.status_code == 200:
-            search_result = response.json()
-            return search_result
-        
-        failed_sources.append(self.SOURCE)
-        return None
-    
+        search_result = response.json()
+        return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -45,18 +38,16 @@ class CORE(BaseSource):
         total_hits = raw['totalHits']
         total_results = len(hits)
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}") 
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_results}")
 
         return hits
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
         """
 
-        publication = Article() 
+        publication = Article()
         publication.additionalType = hit.get("documentType", "")
         publication.name = hit.get("title", "")
 
@@ -66,13 +57,12 @@ class CORE(BaseSource):
             if link.get("type", "") == "display":
                 publication.url = link.get("url", "")
                 break
-        
+
         publication.encoding_contentUrl = hit.get("downloadUrl", "")
 
         # publications may not always have a DOI!
         # if we don't find one, we do NOT create a result object for the hit
         if not hit.get("doi", None):
-            print("No DOI found for publication:", publication.name)
             return None
 
         publication.identifier = hit.get("doi", "")
@@ -84,7 +74,7 @@ class CORE(BaseSource):
         if not abstract:
             abstract = ""
 
-        publication.description = utils.remove_html_tags(abstract)
+        publication.description = remove_html_tags(abstract)
         publication.abstract = publication.description
 
         publication.citationCount = hit.get("citationCount", "")
@@ -100,7 +90,7 @@ class CORE(BaseSource):
             _author.additionalType = 'Person'
             _author.name = author.get("name", "")
             publication.author.append(_author)
-        
+
         _source = thing()
         _source.name = self.SOURCE
         _source.identifier = publication.identifier
@@ -108,14 +98,12 @@ class CORE(BaseSource):
         publication.source.append(_source)
 
         return publication
-    
 
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
 
         if raw == None:
             return
@@ -129,9 +117,9 @@ class CORE(BaseSource):
             if digitalObj:
                 results['publications'].append(digitalObj)
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search CORE publications.
     """
-    CORE().search(source, search_term, results, failed_sources)
+    CORE(tracking).search(search_term, results)

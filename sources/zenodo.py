@@ -1,9 +1,11 @@
-from objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
-from sources import data_retriever
-from main import app
-from sources.base import BaseSource
 from typing import Union, Dict, Any, List, Iterable
-import utils
+
+from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
+from sources import data_retriever
+from sources.base import BaseSource
+from config import Config
+from nfdi_search_engine.common.formatting import remove_html_tags
+
 
 class ZENODO(BaseSource):
     """
@@ -11,26 +13,22 @@ class ZENODO(BaseSource):
     """
     SOURCE = "ZENODO"
 
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
-        search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                     base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
-                                                     search_term=search_term,
-                                                     failed_sources=failed_sources)
-        return search_result
+    def fetch(self, search_term: str) -> Dict[str, Any]:
+        return data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term,
+        )
 
-
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         total_records_found = raw.get("hits", {}).get("total", 0)
         hits = raw.get("hits", {}).get("hits", [])
         total_hits = len(hits)
-        utils.log_event(type="info",
+        self.log_event(type="info",
                         message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
         if int(total_hits) > 0:
             return hits
         return []
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]) -> Union[Article, CreativeWork, Dataset, VideoObject, ImageObject, LearningResource, SoftwareApplication]:
         metadata = hit.get('metadata', {})
         resource_type = metadata.get('resource_type', {}).get('type', 'OTHER').upper()
@@ -52,7 +50,7 @@ class ZENODO(BaseSource):
         elif resource_type == 'OTHER':
             digitalObj = CreativeWork()
         else:
-            utils.log_event(type="info", message=f"{self.SOURCE} - Resource type not defined: {resource_type}")
+            self.log_event(type="info", message=f"{self.SOURCE} - Resource type not defined: {resource_type}")
             digitalObj = CreativeWork()
 
         digitalObj.additionalType = resource_type
@@ -60,7 +58,7 @@ class ZENODO(BaseSource):
         digitalObj.name = hit.get('title', '')
         digitalObj.url = hit.get('links', {}).get('self', '')
 
-        digitalObj.description = utils.remove_html_tags(metadata.get('description', ''))
+        digitalObj.description = remove_html_tags(metadata.get('description', ''))
 
         keywords = metadata.get('keywords', [])
         if isinstance(keywords, list):
@@ -103,9 +101,8 @@ class ZENODO(BaseSource):
 
         return digitalObj
 
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
-        raw = self.fetch(search_term, failed_sources)
+    def search(self, search_term: str, results: dict) -> None:
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
         for hit in hits:
             metadata = hit.get('metadata', {})
@@ -120,5 +117,5 @@ class ZENODO(BaseSource):
                 results['others'].append(digitalObj)
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
-    ZENODO.search(source_name, search_term, results, failed_sources)
+def search(search_term: str, results: dict, tracking=None):
+    ZENODO(tracking).search(search_term, results)

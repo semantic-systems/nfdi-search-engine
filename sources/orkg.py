@@ -1,7 +1,6 @@
-from objects import thing, Article, Author
+from nfdi_search_engine.common.models.objects import thing, Article, Author
 from sources import data_retriever
-import utils
-from main import app
+from config import Config
 import requests
 from typing import Iterable, Dict, Any, List
 
@@ -11,20 +10,17 @@ class ORKG(BaseSource):
 
     SOURCE = 'ORKG'
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                            base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
-                                            search_term=search_term,
-                                            failed_sources=failed_sources)
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term,
+        )
 
         return search_result
-    
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -32,12 +28,10 @@ class ORKG(BaseSource):
         meta = raw['page']
         total_hits = meta['total_elements']
         total_records_pulled = meta['size']
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_records_pulled}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_records_pulled}")
         hits = raw['content']
         return hits
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -81,7 +75,7 @@ class ORKG(BaseSource):
                     publication.author.append(author)
             
             _source = thing()
-            _source.name = 'ORKG'
+            _source.name = self.SOURCE
             _source.identifier = id
             _source.url = api_url                        
             publication.source.append(_source)
@@ -90,12 +84,11 @@ class ORKG(BaseSource):
 
         return None
 
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         for hit in hits:
@@ -104,10 +97,9 @@ class ORKG(BaseSource):
             if publication:
                 results['publications'].append(publication)
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search ORKG publications.
     """
-    ORKG().search(source, search_term, results, failed_sources)
-    
+    ORKG(tracking).search(search_term, results)

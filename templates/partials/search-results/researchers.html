@@ -90,10 +90,10 @@
 
 <div id="div_load_more_researchers" class="row text-center my-2">
     <div class="col">
-        {% if session.displayed_search_results.researchers
-        < session.total_search_results.researchers %} <div>Displaying top {{
-            session.displayed_search_results.researchers }} researchers out of
-            {{ session.total_search_results.researchers }}
+        {% if displayed_results.researchers
+        < total_results.researchers %} <div>Displaying top {{
+            displayed_results.researchers }} researchers out of
+            {{ total_results.researchers }}
     </div>
     <br />
     <button type="button" class="btn btn-secondary" aria-label="Load more researchers"

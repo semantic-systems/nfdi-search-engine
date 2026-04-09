@@ -1,10 +1,11 @@
 from typing import Dict, Any, Iterable, List
 
-import utils
 from config import Config
 from sources.base import BaseSource
 from sources import data_retriever
-from objects import Dataset, Person, Author, thing
+from nfdi_search_engine.common.models.objects import Dataset, Person, Author, thing
+
+from nfdi_search_engine.common.dates import parse_date
 
 
 class Codalab(BaseSource):
@@ -17,15 +18,13 @@ class Codalab(BaseSource):
     SEARCH_ENDPOINT = Config.DATA_SOURCES[SOURCE].get("search-endpoint", "")
     RESOURCE_ENDPOINT = Config.DATA_SOURCES[SOURCE].get("get-resource-endpoint", "")
 
-    def fetch(self, search_term: str, failed_sources: list = []) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw JSON from Codalab bundles API.
         """
         return data_retriever.retrieve_data(
-            source=self.SOURCE,
             base_url=self.SEARCH_ENDPOINT,
             search_term=search_term,
-            failed_sources=failed_sources,
         ) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -40,7 +39,7 @@ class Codalab(BaseSource):
 
         hits = [b for b in bundles if b.get("type") == "bundles"]
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=f"{self.SOURCE} - {len(hits)} bundle(s) matched",
         )
@@ -87,7 +86,7 @@ class Codalab(BaseSource):
 
         return authors
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any]) -> Dataset:
+    def map_hit(self, hit: Dict[str, Any]) -> Dataset:
         """
         Map Codalab bundle to Dataset object.
         """
@@ -106,39 +105,34 @@ class Codalab(BaseSource):
 
         created_ts = metadata.get("created")
         if created_ts:
-            dataset.datePublished = utils.parse_date(created_ts)
+            dataset.datePublished = parse_date(created_ts)
 
         dataset.url = f"https://worksheets.codalab.org/bundles/{dataset.identifier}"
 
         dataset.author = self._resolve_author(hit)
 
         _source = thing()
-        _source.name = source_name
+        _source.name = self.SOURCE
         _source.identifier = dataset.identifier
         _source.url = dataset.url
         dataset.source.append(_source)
 
         return dataset
 
-    def search(
-        self,
-        source_name: str,
-        search_term: str,
-        results: dict,
-        failed_sources: list,
-    ) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Search Codalab and append mapped datasets to results["resources"].
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
 
         if not raw:
-            return
+            return results
 
         hits = self.extract_hits(raw)
+        results["resources"] = []
 
         for hit in hits:
-            dataset = self.map_hit(self.SOURCE, hit)
+            dataset = self.map_hit(hit)
             results["resources"].append(dataset)
 
     def get_resource(self, identifier: str) -> Dataset | None:
@@ -146,22 +140,21 @@ class Codalab(BaseSource):
         Retrieve a single Codalab bundle by UUID.
         """
         raw = data_retriever.retrieve_object(
-            source=self.SOURCE,
             base_url=self.RESOURCE_ENDPOINT,
             identifier=identifier,
             quote=False,
         )
 
         if not raw:
-            utils.log_event(
+            self.log_event(
                 type="error",
                 message=f"{self.SOURCE} - failed to retrieve dataset details",
             )
             return None
 
-        dataset = self.map_hit(self.SOURCE, raw.get("data", {}))
+        dataset = self.map_hit(raw.get("data", {}))
 
-        utils.log_event(
+        self.log_event(
             type="info",
             message=f"{self.SOURCE} - retrieved dataset details",
         )
@@ -169,11 +162,9 @@ class Codalab(BaseSource):
         return dataset
 
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources) -> None:
-    Codalab().search(source, search_term, results, failed_sources)
+def search(search_term: str, results, tracking=None) -> None:
+    Codalab(tracking).search(search_term, results)
 
 
-@utils.handle_exceptions
-def get_resource(source: str, source_id: str, doi: str) -> Dataset | None:
-    return Codalab().get_resource(source_id)
+def get_resource(doi: str, tracking=None) -> Dataset | None:
+    return Codalab(tracking).get_resource(doi)
