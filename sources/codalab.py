@@ -86,7 +86,7 @@ class Codalab(BaseSource):
 
         return authors
 
-    def map_hit(self, source_name: str, hit: Dict[str, Any]) -> Dataset:
+    def map_hit(self, hit: Dict[str, Any]) -> Dataset:
         """
         Map Codalab bundle to Dataset object.
         """
@@ -112,7 +112,7 @@ class Codalab(BaseSource):
         dataset.author = self._resolve_author(hit)
 
         _source = thing()
-        _source.name = source_name
+        _source.name = self.SOURCE
         _source.identifier = dataset.identifier
         _source.url = dataset.url
         dataset.source.append(_source)
@@ -132,7 +132,7 @@ class Codalab(BaseSource):
         results["resources"] = []
 
         for hit in hits:
-            dataset = self.map_hit(self.SOURCE, hit)
+            dataset = self.map_hit(hit)
             results["resources"].append(dataset)
 
     def get_resource(self, identifier: str) -> Dataset | None:
@@ -152,7 +152,7 @@ class Codalab(BaseSource):
             )
             return None
 
-        dataset = self.map_hit(self.SOURCE, raw.get("data", {}))
+        dataset = self.map_hit(raw.get("data", {}))
 
         self.log_event(
             type="info",

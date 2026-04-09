@@ -66,7 +66,7 @@ class DBLP_Venues(BaseSource):
 
         if hits:
             for hit in hits:
-                venue = self.map_hit(self.SOURCE, hit)
+                venue = self.map_hit(hit)
                 results['events'].append(venue)
 
 
