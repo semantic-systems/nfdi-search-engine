@@ -1,8 +1,7 @@
-from objects import Author, thing, Organization
+from nfdi_search_engine.common.models.objects import Author, thing, Organization
 from sources import data_retriever
 from typing import Iterable, Dict, Any
-import utils
-from main import app
+from config import Config
 
 from sources.base import BaseSource
 
@@ -11,20 +10,17 @@ class ORCID(BaseSource):
 
     SOURCE = 'ORCID'
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources)
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=search_term,
+        )
 
         return search_result
-    
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -36,13 +32,11 @@ class ORCID(BaseSource):
         authors = raw.get('expanded-result', None)
         
         if records_found > 0 and authors:
-            utils.log_event(type="info", message=f"{self.SOURCE} - {records_found} records matched; pulled top {len(authors)}")
+            self.log_event(type="info", message=f"{self.SOURCE} - {records_found} records matched; pulled top {len(authors)}")
             return authors
         
         return []
-    
 
-    @utils.handle_exceptions
     def map_hit(self, hit: Dict[str, Any]):
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -68,14 +62,12 @@ class ORCID(BaseSource):
         authorObj.source.append(_source)
 
         return authorObj
-    
 
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
 
         if raw is None:
             return
@@ -87,9 +79,8 @@ class ORCID(BaseSource):
             results['researchers'].append(authorObj)
 
 
-@utils.handle_exceptions
-def search(source: str, search_term: str, results, failed_sources):
+def search(search_term: str, results, tracking=None):
     """
     Entrypoint to search ORCID researchers.
     """
-    ORCID().search(source, search_term, results, failed_sources)
+    ORCID(tracking).search(search_term, results)

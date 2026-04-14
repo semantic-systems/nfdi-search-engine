@@ -1,18 +1,17 @@
-from objects import thing, Article, Author
+from nfdi_search_engine.common.models.objects import thing, Article, Author
 from sources import data_retriever
 from typing import Iterable, Dict, Any, List
-import utils
-from main import app
+from config import Config
 from string import Template
 
 from sources.base import BaseSource
+
 
 class GESIS_KG_Publication(BaseSource):
 
     SOURCE = 'GESIS KG'
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
@@ -52,18 +51,17 @@ class GESIS_KG_Publication(BaseSource):
 
         replacement_dict = {
             "search_string": search_term,
-            "number_of_records": app.config['NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT']
+            "number_of_records": Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
-        search_result = data_retriever.retrieve_data(source=self.SOURCE,
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('search-endpoint', ''),
-                                                    search_term=query,
-                                                    failed_sources=failed_sources)
-        
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
+            search_term=query,
+        ) or {}
+
         return search_result
-    
-    @utils.handle_exceptions
+
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -71,13 +69,12 @@ class GESIS_KG_Publication(BaseSource):
         hits = raw.get("results", {}).get("bindings", [])
         total_hits = len(hits)
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_hits} records matched; pulled top {total_hits}")
         # print(str(total_hits) + "from GESIS KG")
         if int(total_hits) > 0:
             return hits
         return None
-    
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]) -> Article:
         """
         Map a single hit dict from the source to a object from objects.py (e.g., Article, CreativeWork).
@@ -85,28 +82,29 @@ class GESIS_KG_Publication(BaseSource):
         publication = Article()
         publication.identifier = hit.get("doi", {}).get("value", "")
         publication.name = hit.get("title", {}).get("value", "")
-        publication.url =  hit.get("urls", {}).get("value", "").strip() # hit.get("urls", {}).get("value", "")
+        publication.url = hit.get("urls", {}).get("value", "").strip()  # hit.get("urls", {}).get("value", "")
 
-        #publication.identifier = hit.get("linksURNs", {}).get("value", "")  # DOI is available for few; we need to update the sparql query to fetch this information
+        # publication.identifier = hit.get("linksURNs", {}).get("value", "")  # DOI is available for few; we need to update the sparql query to fetch this information
         publication.description = hit.get("abstract", {}).get("value", "")
         publication.datePublished = hit.get('datePublished', {}).get('value', "")
         languages = hit.get("languages", {}).get("value", "")
         if languages:
             for language in languages.strip().split(" "):
                 publication.inLanguage.append(language)
-        #publication.sourceOrganization = hit.get("providers", {}).get("value", "")
+        # publication.sourceOrganization = hit.get("providers", {}).get("value", "")
         publication.publisher = hit.get("sourceInfos", {}).get("value", "")
 
         authors = hit.get("authors", {}).get("value", "")
         contributors = hit.get("contributors", {}).get("value", "")
-        authors_list = [name for name in (authors + ";" + contributors).strip(", ").split(";") if name ]
+        authors_list = [name for name in (authors + ";" + contributors).strip(", ").split(";") if name]
         authors_list = list(dict.fromkeys(authors_list))
 
         for authorsName in authors_list:
             _author = Author()
             _author.additionalType = 'Person'
             _author.name = authorsName
-            _author.identifier = ""  # ORCID is available for few; we need to update the sparql query to pull this information
+            # ORCID is available for few; we need to update the sparql query to pull this information
+            _author.identifier = ""
             author_source = thing(
                 name=self.SOURCE,
                 identifier=_author.identifier,
@@ -117,27 +115,26 @@ class GESIS_KG_Publication(BaseSource):
         _source = thing()
         _source.name = self.SOURCE
         _source.originalSource = publication.publisher
-        _source.identifier = publication.identifier # hit['publication'].get('value', "") #.replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
-        _source.url = publication.url #hit['urls'].get('value', "").strip()
+        # hit['publication'].get('value', "") #.replace("http://www.wikidata.org/", "")  # remove the base url and only keep the ID
+        _source.identifier = publication.identifier
+        _source.url = publication.url  # hit['urls'].get('value', "").strip()
         publication.source.append(_source)
 
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         if hits:
             for hit in hits:
                 publication = self.map_hit(hit)
                 results['resources'].append(publication)
-        
 
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search GESIS KG publications.
     """
-    GESIS_KG_Publication().search(source_name, search_term, results, failed_sources)
+    GESIS_KG_Publication(tracking).search(search_term, results)

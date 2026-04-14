@@ -303,11 +303,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // format a digital object URL from the publication object
     // same functionality as in the Python template filter format_digital_obj_url() (see main.py)
-    function formatDigitalObjUrl(obj, fields = ["source-name", "source-id", "doi"]) {
+    function formatDigitalObjUrl(obj, fields = ["source-name", "doi"]) {
         const get = (field) => {
             switch (field) {
-                case "source-id":
-                    return obj.source?.[0]?.identifier || "na";
                 case "source-name":
                     return obj.source?.[0]?.name       || "na";
                 case "doi":
@@ -381,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
             return `<li class="list-group-item border-0">${text}</li>`;
         
         // build the URL to the external publication details page
-        const href = `/publication-details/${formatDigitalObjUrl(a, ['source-name', 'source-id', 'doi'])}`;
+        const href = `/publication-details/${formatDigitalObjUrl(a, ['source-name', 'doi'])}`;
 
         // if articles have no metadata (a.partiallyLoaded is true), we only show the DOI with a note
         // this happens if we do not find any metadata for a DOI (see main.py > get_publication_metadata())

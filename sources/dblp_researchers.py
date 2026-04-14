@@ -1,31 +1,29 @@
 import requests
-from objects import thing, Article, Author, Organization
+from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization
 from typing import Iterable, Dict, Any, List
 import logging
-import utils
 from sources import data_retriever
-import utils
-from main import app
+from config import Config
 
 from sources.base import BaseSource
+
 
 class DBLP_Researchers(BaseSource):
 
     SOURCE = 'dblp-Researchers'
 
-    @utils.handle_exceptions
-    def fetch(self, search_term: str, failed_sources) -> Dict[str, Any]:
+    def fetch(self, search_term: str) -> Dict[str, Any]:
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(source=self.SOURCE, 
-                                                    base_url=app.config['DATA_SOURCES'][self.SOURCE].get('endpoint', ''),
-                                                    search_term=search_term,
-                                                    failed_sources=failed_sources)  
+        search_result = data_retriever.retrieve_data(
+            base_url=Config.DATA_SOURCES[self.SOURCE].get(
+                'search-endpoint', ''),
+            search_term=search_term,
+        )
 
-        return search_result      
+        return search_result
 
-    @utils.handle_exceptions
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
         Extract the list of hits from the raw JSON response. Should return an iterable of hit dicts.
@@ -35,18 +33,17 @@ class DBLP_Researchers(BaseSource):
         total_records_found = hits['@total']
         total_hits = hits['@sent']
 
-        utils.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
+        self.log_event(type="info", message=f"{self.SOURCE} - {total_records_found} records matched; pulled top {total_hits}")
 
         if int(total_hits) > 0:
             hits = hits['hit']
             return hits
         return None
-    
-    @utils.handle_exceptions
+
     def map_hit(self, hit: Dict[str, Any]) -> Author:
-                
+
         author = Author()
-        info = hit.get('info',{})
+        info = hit.get('info', {})
 
         author.name = info.get('author', '')
         alias = info.get('aliases', {}).get('alias', '')
@@ -68,24 +65,23 @@ class DBLP_Researchers(BaseSource):
                 _organization = Organization()
                 _organization.name = affiliations.get('text', '')
                 author.affiliation.append(_organization)
-                                    
+
         # author.works_count = ''
         # author.cited_by_count = ''
 
         _source = thing()
         _source.name = 'DBLP'
         _source.identifier = hit.get("@id", "")
-        _source.url = info.get("url", "")                         
+        _source.url = info.get("url", "")
         author.source.append(_source)
 
         return author
-    
-    @utils.handle_exceptions
-    def search(self, source_name: str, search_term: str, results: dict, failed_sources: list) -> None:
+
+    def search(self, search_term: str, results: dict) -> None:
         """
         Fetch json from the source, extract hits, map them to objects, and insert them in-place into the results dict.
         """
-        raw = self.fetch(search_term, failed_sources)
+        raw = self.fetch(search_term)
         hits = self.extract_hits(raw)
 
         if hits:
@@ -93,8 +89,9 @@ class DBLP_Researchers(BaseSource):
                 author = self.map_hit(hit)
                 results['researchers'].append(author)
 
-def search(source_name: str, search_term: str, results: dict, failed_sources: list):
+
+def search(search_term: str, results: dict, tracking=None):
     """
     Entrypoint to search for DBLP researchers.
     """
-    DBLP_Researchers().search(source_name, search_term, results, failed_sources)
+    DBLP_Researchers(tracking).search(search_term, results)
