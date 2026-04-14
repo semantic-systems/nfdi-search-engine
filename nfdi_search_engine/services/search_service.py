@@ -121,7 +121,8 @@ class SearchService:
         for src in self.settings.data_sources:
             cfg = self.settings.data_sources[src]
             has_endpoint = str(cfg.get("search-endpoint", "")).strip() != ""
-            if has_endpoint and src not in ctx.excluded_sources:
+            is_static = cfg.get("static", False)
+            if (has_endpoint or is_static) and src not in ctx.excluded_sources:
                 active_sources.append(src)
 
         results_full, failed_sources = self._harvest(
