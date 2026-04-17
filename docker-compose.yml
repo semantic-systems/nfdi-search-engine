@@ -1,11 +1,40 @@
 services:
-    search-engine:
-        build: .
-        ports:
-            - 6000:8000
-        restart: unless-stopped
-        networks:
-            - nfdi-search-engine_default
+  nginx:
+    image: nginx:alpine
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "6000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - anubis
+    networks:
+      - nfdi-search-engine_default
+
+  anubis:
+    image: ghcr.io/techarohq/anubis:latest
+    container_name: anubis
+    restart: unless-stopped
+    environment:
+      BIND: ":8080"
+      TARGET: "http://search-engine:8000"
+      DIFFICULTY: "4"
+      SERVE_ROBOTS_TXT: "true"
+      METRICS_BIND: ":9090"        # anubis metrics inside container
+    ports:
+      - "9091:9090"                # expose to host as 9091
+    depends_on:
+      - search-engine
+    networks:
+      - nfdi-search-engine_default
+
+  search-engine:
+    build: .
+    restart: unless-stopped
+    networks:
+      - nfdi-search-engine_default
+
 networks:
-    nfdi-search-engine_default:
-        external: false
+  nfdi-search-engine_default:
+    external: false
