@@ -1,0 +1,30 @@
+FROM python:3.11-slim
+
+# Install supercronic — a cron replacement built for containers.
+# Pin the version for reproducible builds.
+# Verify the checksum before deploying to production:
+#   sha1sum /usr/local/bin/supercronic
+ARG SUPERCRONIC_VERSION=v0.2.36
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates \
+    && curl -fsSL \
+        "https://github.com/aptible/supercronic/releases/download/${SUPERCRONIC_VERSION}/supercronic-linux-amd64" \
+        -o /usr/local/bin/supercronic \
+    && chmod +x /usr/local/bin/supercronic \
+    && apt-get purge -y curl \
+    && rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+RUN pip install --no-cache-dir requests openpyxl pydantic pydantic-settings python-dotenv
+
+# Copy config and sources — no Flask app needed
+COPY config.py config.py
+COPY sources/ sources/
+COPY sources/static/gerit/updater.crontab updater.crontab
+# Strip Windows CRLF line endings
+RUN sed -i 's/\r$//' updater.crontab
+
+# Run the updater once on startup so fresh data is available immediately,
+# then hand off to supercronic for scheduled refreshes.
+# Using ; not && so a failed initial download does not prevent the cron from starting.
+CMD ["/bin/sh", "-c", "/usr/local/bin/python -m sources.static.gerit.updater ; exec supercronic /app/updater.crontab"]
