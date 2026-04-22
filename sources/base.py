@@ -1,10 +1,13 @@
 # sources/base.py
+from __future__ import annotations
+
 import os
 import inspect
 from abc import ABC, abstractmethod
-from typing import Iterable, Dict, Any
+from typing import TYPE_CHECKING, Iterable, Dict, Any
 
-from nfdi_search_engine.services.tracking_service import TrackingService
+if TYPE_CHECKING:
+    from nfdi_search_engine.services.tracking_service import TrackingService
 
 
 class BaseSource(ABC):

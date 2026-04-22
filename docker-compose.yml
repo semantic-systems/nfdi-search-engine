@@ -4,8 +4,27 @@ services:
         ports:
             - 6000:8000
         restart: unless-stopped
+        volumes:
+            - gerit-data:/app/data
         networks:
             - nfdi-search-engine_default
+
+    gerit-updater:
+        build:
+            context: .
+            dockerfile: sources/static/gerit/Dockerfile.updater
+        restart: unless-stopped
+        env_file: .env
+        environment:
+            - STATIC_DATA_PATH=/app/data
+        volumes:
+            - gerit-data:/app/data
+        networks:
+            - nfdi-search-engine_default
+
+volumes:
+    gerit-data:
+
 networks:
     nfdi-search-engine_default:
         external: false

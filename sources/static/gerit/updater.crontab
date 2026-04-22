@@ -1,0 +1,4 @@
+# To add further static source updates, add additional lines here.
+
+# Run GERiT update on the 1st of every month at 06:00 UTC. Downloads https://www.gerit.org/downloads/institutionen_gerit.xlsx
+0 6 1 * * /usr/local/bin/python -m sources.static.gerit.updater
