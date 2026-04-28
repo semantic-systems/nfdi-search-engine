@@ -254,6 +254,7 @@ class Config:
             },
             "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            "get-researcher-endpoint": "https://pub.orcid.org/v3.0/",
         },
         "CROSSREF - Publications": {
             "logo": {
