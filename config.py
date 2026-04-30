@@ -488,6 +488,20 @@ class Config:
         },
     }
 
+    JOBS = {
+        "beat_schedule": {
+            # scheduled jobs go here. Example:
+            # "hello-world-every-10s": {
+            #     "task": "nfdi_search_engine.infra.jobs.scheduled.hello_world.run",
+            #     "schedule": 10.0,
+            # }
+        },
+        "include": [
+            # add the module path of each task file here. Example:
+            # "nfdi_search_engine.infra.jobs.scheduled.hello_world"
+        ],
+    }
+
     ELASTIC = {
         "server": app_settings.ELASTIC_SERVER,
         "username": app_settings.ELASTIC_USERNAME,

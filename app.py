@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 import logging
 import logging.config
+import tempfile
+import threading
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -17,6 +19,7 @@ from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
+from nfdi_search_engine.infra.jobs.celery_app import celery_app
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
 from nfdi_search_engine.services.user_service import UserService
@@ -174,5 +177,22 @@ def create_app() -> Flask:
     app.register_blueprint(account_bp)
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(details_bp)
+
+    # start celery worker and beat threads
+    celery_app.conf.update(
+        beat_schedule=Config.JOBS["beat_schedule"],
+        include=Config.JOBS["include"],
+        beat_schedule_filename=os.path.join(tempfile.gettempdir(), "celerybeat-schedule"),
+    )
+    threading.Thread(
+        target=lambda: celery_app.Worker(loglevel="WARNING", pool="solo", concurrency=1, quiet=True).start(),
+        daemon=True,
+        name="celery-worker",
+    ).start()
+    threading.Thread(
+        target=lambda: celery_app.Beat(loglevel="WARNING", quiet=True).run(),
+        daemon=True,
+        name="celery-beat",
+    ).start()
 
     return app
