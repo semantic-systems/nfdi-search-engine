@@ -8,6 +8,7 @@ from rank_bm25 import BM25Plus
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from nfdi_search_engine.common.dedup import deduplicate
 from nfdi_search_engine.common.models.search_settings import SearchSettings
 from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.infra.store.result_store import ResultStore
@@ -129,10 +130,19 @@ class SearchService:
             ctx.search_term
         )
 
+        # filter empty results per category
+        for k in CATEGORIES:
+            results_full[k] = [r for r in results_full[k] if r is not None]
+
+        # deduplicate by identifier before ranking
+        results_full = deduplicate(
+            results_full,
+            categories=self.settings.dedup_categories,
+            mapping_preference=self.settings.mapping_preference,
+        )
+
         # sort per category
         for k in CATEGORIES:
-            # filter empty
-            results_full[k] = [r for r in results_full[k] if r is not None]
             results_full[k] = self._sort_search_results(
                 ctx.search_term, results_full[k]
             )

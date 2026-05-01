@@ -465,12 +465,21 @@ class Config:
         "settings_file_publications": "static/weights/publications-settings.json",
     }
 
-    # MAPPING_PREFERENCE is used to map the fields from the platform responses to the objects in objects.py
-    # i.e. abstracts from publications are first taken from OPENALEX - Publications, then from CROSSREF - Publications, etc.
+    # what categories to deduplicate during search
+    DEDUP_CATEGORIES = ["publications", "researchers", "resources"]
+
+    # MAPPING_PREFERENCE is used to deduplicate and merge results from different sources
+    # here we define for each category (e.g., "researchers", "publications") how to prioritize and merge field values when we have multiple entries for the same entity from different sources
+    # values can be: "max" (take the maximum), "union" (combine all values), or a list of sources (e.g., ["source1", "source2"], where source1 has higher preference than source2)
     MAPPING_PREFERENCE = {
         "researchers": {
             "__default__": ["OPENALEX - Researchers", "ORCID"],
-            "identifier": ["ORCID", "OPENALEX - Researchers"],
+            "identifier":    ["ORCID", "OPENALEX - Researchers"],
+            "works_count":   "max",
+            "cited_by_count": "max",
+            "alternateName": "union",
+            "affiliation":   "union",
+            "researchAreas": "union",
         },
         "publications": {
             "__default__": [
@@ -483,8 +492,12 @@ class Config:
                 "CROSSREF - Publications",
                 "OPENAIRE - Products",
             ],
-            "reference": ["CROSSREF - Publications"],
-            "citation": ["CROSSREF - Publications"],
+            "reference":      ["CROSSREF - Publications"],
+            "citation":       ["CROSSREF - Publications"],
+            "citationCount":  "max",
+            "referenceCount": "max",
+            "keywords":       "union",
+            "alternateName":  "union",
         },
     }
 
