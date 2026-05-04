@@ -21,6 +21,8 @@ from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
 from nfdi_search_engine.services.user_service import UserService
 from nfdi_search_engine.services.search_service import SearchService, SearchSettings
+from nfdi_search_engine.services.deduplication import DeduplicationService
+from nfdi_search_engine.services.deduplication.policies import default_policies
 from nfdi_search_engine.services.chatbot_service import ChatbotService, ChatbotSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
@@ -113,11 +115,17 @@ def create_app() -> Flask:
         jobs=jobs,
     )
 
+    deduplication_service = DeduplicationService(
+        policies=default_policies(),
+        mapping_preference=app.config.get("MAPPING_PREFERENCE", {}),
+    )
+
     search_service = SearchService(
         settings=SearchSettings.from_config(app.config),
         chatbot=chatbot_service,
         store=result_store,
         tracking=tracking_service,
+        deduplication=deduplication_service,
     )
 
     pub_details_service = PublicationDetailsService(

@@ -10,7 +10,7 @@ import requests
 from nfdi_search_engine.common.models.objects import Article
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
-from nfdi_search_engine.common.merge import merge_objects
+from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 
 
 class PublicationDetailsService:
@@ -35,6 +35,7 @@ class PublicationDetailsService:
         self.settings = settings
         self.tracking = tracking
         self.http = http or requests.Session()
+        self.merger = ObjectMerger()
 
         # we can think about moving this to the config
         self.references_sources = {
@@ -259,10 +260,7 @@ class PublicationDetailsService:
         """
         if not publications:
             return None
-        if len(publications) == 1:
-            return publications[0]
-
-        return merge_objects(publications, self.settings.mapping_preference["publications"])
+        return self.merger.merge(publications, self.settings.mapping_preference["publications"])
 
     def get_citations_for_publication(self, doi: str) -> List[Article]:
         """

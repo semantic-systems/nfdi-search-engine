@@ -8,8 +8,8 @@ from rank_bm25 import BM25Plus
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from nfdi_search_engine.common.dedup import deduplicate
 from nfdi_search_engine.common.models.search_settings import SearchSettings
+from nfdi_search_engine.services.deduplication import DeduplicationService
 from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.infra.store.result_store import ResultStore
 from nfdi_search_engine.services.chatbot_service import ChatbotService
@@ -78,6 +78,7 @@ class SearchService:
         chatbot: ChatbotService,
         store: ResultStore,
         tracking: TrackingService,
+        deduplication: DeduplicationService,
     ) -> None:
         """
         Initialize the search service.
@@ -95,6 +96,7 @@ class SearchService:
         self.chatbot = chatbot
         self.store = store
         self.tracking = tracking
+        self.deduplication = deduplication
 
     def run_search(self, ctx: SearchContext) -> SearchPage:
         """
@@ -134,12 +136,8 @@ class SearchService:
         for k in CATEGORIES:
             results_full[k] = [r for r in results_full[k] if r is not None]
 
-        # deduplicate by identifier before ranking
-        results_full = deduplicate(
-            results_full,
-            categories=self.settings.dedup_categories,
-            mapping_preference=self.settings.mapping_preference,
-        )
+        # deduplicate before ranking
+        results_full = self.deduplication.deduplicate(results_full)
 
         # sort per category
         for k in CATEGORIES:

@@ -1,5 +1,5 @@
-from dataclasses import dataclass, field
-from typing import Any, Dict, List
+from dataclasses import dataclass
+from typing import Any, Dict
 
 
 @dataclass(frozen=True)
@@ -9,8 +9,6 @@ class SearchSettings:
     first_page_n: int = 20
     lazy_load_n: int = 20
     results_ttl_s: int = 15 * 60  # 15 minutes
-    dedup_categories: List[str] = field(default_factory=list)
-    mapping_preference: Dict[str, Any] = field(default_factory=dict)
 
     @classmethod
     def from_config(cls, cfg: Dict[str, Any]) -> "SearchSettings":
@@ -22,6 +20,4 @@ class SearchSettings:
             lazy_load_n=int(
                 cfg.get("NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD", 20)),
             results_ttl_s=int(cfg.get("SEARCH_RESULTS_TTL_SECONDS", 15 * 60)),
-            dedup_categories=cfg.get("DEDUP_CATEGORIES", []),
-            mapping_preference=cfg.get("MAPPING_PREFERENCE", {}),
         )
