@@ -174,6 +174,7 @@ class Config:
             "module": "zenodo",
             "search-endpoint": f"https://zenodo.org/api/records?size=25&q=",
             "get-publication-endpoint": f"https://zenodo.org/api/records/",
+            "get-resource-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
             "logo": {
@@ -232,6 +233,7 @@ class Config:
             "module": "openaire_products",
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
             "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
+            "get-resource-endpoint": f"https://api.openaire.eu/graph/v2/researchProducts/",
         },
         "OPENAIRE - Projects": {
             "logo": {
