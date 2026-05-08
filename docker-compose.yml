@@ -4,6 +4,15 @@ services:
         ports:
             - 6000:8000
         restart: unless-stopped
+        depends_on:
+            - jaeger
+        networks:
+            - nfdi-search-engine_default
+
+    jaeger:
+        image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
+        ports:
+            - 16686:16686
         networks:
             - nfdi-search-engine_default
 networks:

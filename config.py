@@ -1,8 +1,8 @@
 import os
 from dotenv import find_dotenv, load_dotenv
 
-from typing import Optional, Dict, Any
-from pydantic import Field, HttpUrl, ValidationError
+from typing import Optional
+from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # load environment variables
@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     ELASTIC_USERNAME: str = Field(default="elastic")
     ELASTIC_PASSWORD: Optional[str] = None
     CHATBOT_SERVER: str = Field(default="https://nfdi-chatbot.nliwod.org")
+
+    # OpenTelemetry tracing
+    TRACING_ENABLED: bool = False
+    TRACING_SERVICE_NAME: str = "nfdi-search-engine"
+    TRACING_OTLP_ENDPOINT: str = "http://jaeger:4317"
+    TRACING_OTLP_PROTOCOL: str = "grpc"  # "grpc" | "http/protobuf"
+    TRACING_SAMPLER: str = "always_on"   # "always_on" | "always_off" | "traceidratio" | "parentbased_traceidratio"
+    TRACING_SAMPLER_ARG: Optional[float] = None
+    TRACING_INSTRUMENT_FLASK: bool = True
+    TRACING_INSTRUMENT_REQUESTS: bool = True
 
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
@@ -100,6 +110,15 @@ class Config:
         ELASTIC_USERNAME = app_settings.ELASTIC_USERNAME
         ELASTIC_PASSWORD = app_settings.ELASTIC_PASSWORD
         CHATBOT_SERVER = app_settings.CHATBOT_SERVER
+
+        TRACING_ENABLED = app_settings.TRACING_ENABLED
+        TRACING_SERVICE_NAME = app_settings.TRACING_SERVICE_NAME
+        TRACING_OTLP_ENDPOINT = app_settings.TRACING_OTLP_ENDPOINT
+        TRACING_OTLP_PROTOCOL = app_settings.TRACING_OTLP_PROTOCOL
+        TRACING_SAMPLER = app_settings.TRACING_SAMPLER
+        TRACING_SAMPLER_ARG = app_settings.TRACING_SAMPLER_ARG
+        TRACING_INSTRUMENT_FLASK = app_settings.TRACING_INSTRUMENT_FLASK
+        TRACING_INSTRUMENT_REQUESTS = app_settings.TRACING_INSTRUMENT_REQUESTS
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
