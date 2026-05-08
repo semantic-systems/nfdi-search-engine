@@ -10,7 +10,7 @@ from nfdi_search_engine.common.models.objects import Author
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.common.models.openai_settings import OpenAISettings
 from nfdi_search_engine.services.tracking_service import TrackingService
-from nfdi_search_engine.common.merge import merge_objects
+from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 
 
 class ResearcherDetailsService:
@@ -34,6 +34,7 @@ class ResearcherDetailsService:
         self.openai = openai
         self.tracking = tracking
         self.http = http or requests.Session()
+        self.merger = ObjectMerger()
 
     def get_researchers_for_details_page(
         self,
@@ -113,9 +114,7 @@ class ResearcherDetailsService:
         """
         if not researchers:
             return None
-        if len(researchers) == 1:
-            return researchers[0]
-        return merge_objects(researchers, self.settings.mapping_preference["researchers"])
+        return self.merger.merge(researchers, self.settings.mapping_preference["researchers"])
 
     def generate_about_me(self, researcher_details_json: dict | str) -> str:
         """
