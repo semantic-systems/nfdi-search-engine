@@ -5,12 +5,25 @@ services:
             - 6000:8000
         restart: unless-stopped
         depends_on:
-            - jaeger
+            jaeger:
+                condition: service_healthy
         networks:
             - nfdi-search-engine_default
 
     jaeger:
         image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
+        command: ["--config", "/etc/jaeger/config.yaml"]
+        volumes:
+            - ./jaeger-config.yaml:/etc/jaeger/config.yaml:ro
+        environment:
+            JAEGER_ES_SERVER_URLS: "${ELASTIC_SERVER}"
+            JAEGER_ES_USERNAME: "${ELASTIC_USERNAME}"
+            JAEGER_ES_PASSWORD: "${ELASTIC_PASSWORD}"
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://localhost:13133/health/status >/dev/null || exit 1"]
+            interval: 10s
+            timeout: 3s
+            retries: 10
         ports:
             - 16686:16686
         networks:

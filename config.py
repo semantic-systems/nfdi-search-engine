@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     CHATBOT_SERVER: str = Field(default="https://nfdi-chatbot.nliwod.org")
 
     # OpenTelemetry tracing
-    TRACING_ENABLED: bool = False
+    TRACING_ENABLED: bool = True
     TRACING_SERVICE_NAME: str = "nfdi-search-engine"
     TRACING_OTLP_ENDPOINT: str = "http://jaeger:4317"
     TRACING_OTLP_PROTOCOL: str = "grpc"  # "grpc" | "http/protobuf"
