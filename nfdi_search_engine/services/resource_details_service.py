@@ -9,6 +9,7 @@ import requests
 from nfdi_search_engine.common.models.objects import CreativeWork
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
+from nfdi_search_engine.infra.observability.decorators import traced
 
 
 class ResourceDetailsService:
@@ -29,6 +30,13 @@ class ResourceDetailsService:
         self.tracking = tracking
         self.http = http
 
+    @traced(
+        "resource_details_service.get_resource_details",
+        attrs=lambda self, doi, source_name: {
+            "resource.doi": doi,
+            "source.name": source_name,
+        }
+    )
     def get_resource_details(self, doi: str, source_name: str) -> Optional[CreativeWork]:
         """
         Returns resource details for the given doi from the given source.

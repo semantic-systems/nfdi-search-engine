@@ -11,6 +11,7 @@ from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.common.models.openai_settings import OpenAISettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
+from nfdi_search_engine.infra.observability.decorators import traced
 
 
 class ResearcherDetailsService:
@@ -36,6 +37,13 @@ class ResearcherDetailsService:
         self.http = http or requests.Session()
         self.merger = ObjectMerger()
 
+    @traced(
+        "researcher_details_service.get_researchers_for_details_page",
+        attrs=lambda self, *, orcid, excluded_sources: {
+            "researcher.orcid": orcid,
+            "sources.excluded_count": len(excluded_sources),
+        }
+    )
     def get_researchers_for_details_page(
         self,
         *,
