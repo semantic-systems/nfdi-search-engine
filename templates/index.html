@@ -51,8 +51,14 @@
                             Explore the gateway with example queries:
                         </span>
 
-                        <div id="exampleQueries"
-                            class="d-flex justify-content-center flex-wrap">
+                        <div class="d-flex justify-content-center flex-wrap">
+                            {% for term in example_queries[:5] %}
+                                <a href="/results?txtSearchTerm={{ term | urlencode }}"
+                                   class="btn btn-outline-primary btn-sm rounded-pill m-2"
+                                   role="button">
+                                    {{ term }}
+                                </a>
+                            {% endfor %}
                         </div>
                     </div>
 
@@ -350,72 +356,6 @@
         else {
             $(dataSourcesCarousel).addClass("slide");
             $(partnersCarousel).addClass("slide");
-        }
-
-        // Curated example queries for improving first impression
-        const exampleTerms = [
-            "York Sure-Vetter",
-            "Allard Oelen",
-            "FAIR research data management",
-            "FAIR metadata for machine learning datasets",
-            "Semantic Web Knowledge Graph",
-            "Semantic interoperability in research infrastructures",
-            "Large Language Models in science",
-            "Explainable AI for research workflows",
-            "NFDI4DS research data lifecycle",
-            "NFDI4DS services",
-            "RDF SPARQL query examples",
-            "SPARQL endpoints for open research data",
-            "Knowledge graphs for social science",
-            "Metadata standards for research data",
-            "OpenAlex publications data",
-            "GESIS knowledge graph",
-            "Scientific benchmark datasets",
-            "Research infrastructure metadata",
-            "FAIR digital objects",
-            "Open research datasets for NLP"
-        ];
-
-        const exampleContainer = document.getElementById("exampleQueries");
-
-        // Fisher-Yates shuffle for unbiased randomization
-        function shuffleArray(array) {
-
-            const arr = [...array];
-
-            for (let i = arr.length - 1; i > 0; i--) {
-
-                const j = Math.floor(Math.random() * (i + 1));
-
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-
-            return arr;
-        }
-
-        if (exampleContainer) {
-
-            // Show lightweight dynamic examples on each page load
-            const visibleExamples = shuffleArray(exampleTerms).slice(0, 5);
-
-            exampleContainer.innerHTML = "";
-
-            visibleExamples.forEach(function (term) {
-
-                const link = document.createElement("a");
-
-                link.href =
-                    "/results?txtSearchTerm=" + encodeURIComponent(term);
-
-                link.className =
-                    "btn btn-outline-primary btn-sm rounded-pill m-2";
-
-                link.setAttribute("role", "button");
-
-                link.textContent = term;
-
-                exampleContainer.appendChild(link);
-            });
         }
 
     });
