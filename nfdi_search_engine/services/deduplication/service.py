@@ -4,6 +4,7 @@ import logging
 from collections import defaultdict
 from typing import Any
 
+from nfdi_search_engine.common.models.search_result import SearchResult
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 from nfdi_search_engine.services.deduplication.policies.base import DedupPolicy
 
@@ -24,12 +25,27 @@ class DeduplicationService:
 
     def deduplicate(self, results: dict) -> dict:
         """Deduplicate search results according to the policies."""
+        results = dict(results)
+        policy_categories = set()
         for policy in self.policies:
+            policy_categories.add(policy.category)
             pref = self.mapping_preference.get(policy.category, {})
             objects = results.get(policy.category, [])
             objects = self._primary_pass(objects, policy, pref)
             objects = self._secondary_pass(objects, policy, pref)
             results[policy.category] = objects
+
+        for category, objects in results.items():
+            pref = self.mapping_preference.get(category, {})
+            if category in policy_categories:
+                results[category] = [self._ensure_result(category, obj, pref) for obj in objects]
+            else:
+                results[category] = [
+                    self.merger.merge([obj], pref, category=category)
+                    for obj in objects
+                    if obj is not None
+                ]
+
         return results
 
     def _primary_pass(self, objects: list[Any], policy: DedupPolicy, pref: dict) -> list[Any]:
@@ -43,7 +59,7 @@ class DeduplicationService:
         no_key: list[Any] = []              # objects without a primary key, to be merged individually at the end
 
         for obj in objects:
-            key = next(iter(policy.primary_keys(obj)), None)
+            key = next(iter(policy.primary_keys(self._item(obj))), None)
             if key:
                 keyed.setdefault(key, []).append(obj)
             else:
@@ -51,9 +67,16 @@ class DeduplicationService:
 
         # merge each primary-key cluster
         merged = []
-        for group in keyed.values():
+        for key, group in keyed.items():
             try:
-                merged.append(self.merger.merge(group, pref))
+                merged.append(
+                    self.merger.merge(
+                        group,
+                        pref,
+                        category=policy.category,
+                        entity_key=f"{policy.category}:{key}",
+                    )
+                )
             except Exception as e:
                 log.warning("merge failed for primary-key cluster (%s): %s", [getattr(o, "identifier", None) for o in group], e)
                 merged.extend(group)
@@ -61,7 +84,7 @@ class DeduplicationService:
         # merge keyless objects individually (e.g. to clean up union fields)
         for obj in no_key:
             try:
-                merged.append(self.merger.merge([obj], pref))
+                merged.append(self.merger.merge([obj], pref, category=policy.category))
             except Exception as e:
                 log.warning("merge failed for keyless object: %s", e)
                 merged.append(obj)
@@ -79,7 +102,7 @@ class DeduplicationService:
             return objects
 
         # build key -> object index map
-        key_sets = [list(policy.secondary_keys(obj)) for obj in objects]
+        key_sets = [list(policy.secondary_keys(self._item(obj))) for obj in objects]
         key_to_indices: dict[str, list[int]] = defaultdict(list)
         for i, keys in enumerate(key_sets):
             for key in keys:
@@ -111,10 +134,10 @@ class DeduplicationService:
                 continue
 
             # should we merge this cluster?
-            if policy.should_merge_secondary_group(group):
+            if policy.should_merge_secondary_group([self._item(obj) for obj in group]):
                 # merge it
                 try:
-                    result.append(self.merger.merge(group, pref))
+                    result.append(self.merger.merge(group, pref, category=policy.category))
                 except Exception as e:
                     log.warning("merge failed for secondary-key cluster: %s", e)
                     result.extend(group)
@@ -123,3 +146,11 @@ class DeduplicationService:
                 result.extend(group)
 
         return result
+
+    def _ensure_result(self, category: str, obj: Any, pref: dict) -> SearchResult:
+        if isinstance(obj, SearchResult):
+            return obj
+        return self.merger.merge([obj], pref, category=category)
+
+    def _item(self, obj: Any) -> Any:
+        return obj.item if isinstance(obj, SearchResult) else obj
