@@ -27,7 +27,8 @@ class DeduplicationService:
         "deduplication_service.deduplicate",
         attrs=lambda self, results: {
             "policies.count": len(self.policies),
-            "results.category_count": len(results)
+            "results.category_count": len(results),
+            "results.total_value_count": sum(len(c) for c in results.values()),
         }
     )
     def deduplicate(self, results: dict) -> dict:

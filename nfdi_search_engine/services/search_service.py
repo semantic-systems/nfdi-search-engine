@@ -195,6 +195,7 @@ class SearchService:
         "search_service.load_more",
         attrs=lambda self, ctx: {
             "search.id": ctx.search_id,
+            "search.object_type": ctx.object_type,
         }
     )
     def load_more(self, ctx: SearchContext) -> List[Any]:
@@ -280,6 +281,7 @@ class SearchService:
         "search_service._harvest",
         attrs=lambda self, sources, search_term: {
             "search.term": search_term,
+            "search.n_sources": len(sources),
         }
     )
     def _harvest(self, sources: List[str], search_term: str) -> Tuple[Dict[str, List[Any]], List[str]]:

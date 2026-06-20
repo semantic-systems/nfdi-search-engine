@@ -19,6 +19,7 @@ services:
             JAEGER_ES_SERVER_URLS: "${ELASTIC_SERVER}"
             JAEGER_ES_USERNAME: "${ELASTIC_USERNAME}"
             JAEGER_ES_PASSWORD: "${ELASTIC_PASSWORD}"
+        restart: unless-stopped
         healthcheck:
             test: ["CMD-SHELL", "wget -qO- http://localhost:13133/health/status >/dev/null || exit 1"]
             interval: 10s
