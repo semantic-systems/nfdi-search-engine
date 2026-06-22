@@ -1,8 +1,8 @@
 import os
 from dotenv import find_dotenv, load_dotenv
 
-from typing import Optional, Dict, Any
-from pydantic import Field, HttpUrl, ValidationError
+from typing import Optional
+from pydantic import Field, ValidationError
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # load environment variables
@@ -42,6 +42,16 @@ class Settings(BaseSettings):
     ELASTIC_USERNAME: str = Field(default="elastic")
     ELASTIC_PASSWORD: Optional[str] = None
     CHATBOT_SERVER: str = Field(default="https://nfdi-chatbot.nliwod.org")
+
+    # OpenTelemetry tracing
+    TRACING_ENABLED: bool = True
+    TRACING_SERVICE_NAME: str = "nfdi-search-engine"
+    TRACING_OTLP_ENDPOINT: str = "http://jaeger:4317"
+    TRACING_OTLP_PROTOCOL: str = "grpc"  # "grpc" | "http/protobuf"
+    TRACING_SAMPLER: str = "always_on"   # "always_on" | "always_off" | "traceidratio" | "parentbased_traceidratio"
+    TRACING_SAMPLER_ARG: Optional[float] = None
+    TRACING_INSTRUMENT_FLASK: bool = True
+    TRACING_INSTRUMENT_REQUESTS: bool = True
 
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
@@ -100,6 +110,15 @@ class Config:
         ELASTIC_USERNAME = app_settings.ELASTIC_USERNAME
         ELASTIC_PASSWORD = app_settings.ELASTIC_PASSWORD
         CHATBOT_SERVER = app_settings.CHATBOT_SERVER
+
+        TRACING_ENABLED = app_settings.TRACING_ENABLED
+        TRACING_SERVICE_NAME = app_settings.TRACING_SERVICE_NAME
+        TRACING_OTLP_ENDPOINT = app_settings.TRACING_OTLP_ENDPOINT
+        TRACING_OTLP_PROTOCOL = app_settings.TRACING_OTLP_PROTOCOL
+        TRACING_SAMPLER = app_settings.TRACING_SAMPLER
+        TRACING_SAMPLER_ARG = app_settings.TRACING_SAMPLER_ARG
+        TRACING_INSTRUMENT_FLASK = app_settings.TRACING_INSTRUMENT_FLASK
+        TRACING_INSTRUMENT_REQUESTS = app_settings.TRACING_INSTRUMENT_REQUESTS
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
@@ -174,6 +193,7 @@ class Config:
             "module": "zenodo",
             "search-endpoint": f"https://zenodo.org/api/records?size=25&q=",
             "get-publication-endpoint": f"https://zenodo.org/api/records/",
+            "get-resource-endpoint": f"https://zenodo.org/api/records/",
         },
         "WIKIDATA - Publications": {
             "logo": {
@@ -232,6 +252,7 @@ class Config:
             "module": "openaire_products",
             "search-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&size={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&keywords=",
             "get-publication-endpoint": f"https://api.openaire.eu/search/researchProducts?format=json&doi=",
+            "get-resource-endpoint": f"https://api.openaire.eu/graph/v2/researchProducts/",
         },
         "OPENAIRE - Projects": {
             "logo": {
@@ -254,6 +275,7 @@ class Config:
             },
             "module": "orcid",
             "search-endpoint": f"https://pub.orcid.org/v3.0/expanded-search/?start=0&rows={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&q=",
+            "get-researcher-endpoint": "https://pub.orcid.org/v3.0/",
         },
         "CROSSREF - Publications": {
             "logo": {
@@ -694,3 +716,26 @@ class Config:
         502: "Error 502: Bad Gateway.",
         503: "Error 503: Service Unavailable.",
     }
+
+    EXAMPLE_QUERIES = [
+        "York Sure-Vetter",
+        "Allard Oelen",
+        "FAIR research data management",
+        "FAIR metadata for machine learning datasets",
+        "Semantic Web Knowledge Graph",
+        "Semantic interoperability in research infrastructures",
+        "Large Language Models in science",
+        "Explainable AI for research workflows",
+        "NFDI4DS research data lifecycle",
+        "NFDI4DS services",
+        "RDF SPARQL query examples",
+        "SPARQL endpoints for open research data",
+        "Knowledge graphs for social science",
+        "Metadata standards for research data",
+        "OpenAlex publications data",
+        "GESIS knowledge graph",
+        "Scientific benchmark datasets",
+        "Research infrastructure metadata",
+        "FAIR digital objects",
+        "Open research datasets for NLP"
+    ]

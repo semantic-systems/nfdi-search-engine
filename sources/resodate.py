@@ -267,7 +267,7 @@ class Resodate(BaseSource):
             "size": 1,
             "query": {
                 "ids": {
-                    "values": [self.SOURCE],
+                    "values": [doi],
                 }
             },
         }

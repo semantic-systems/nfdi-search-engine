@@ -26,12 +26,17 @@ def index():
     sources = []
     for module in current_app.config["DATA_SOURCES"]:
         sources.append(
-            current_app.config["DATA_SOURCES"][module].get("logo", {}))
+            current_app.config["DATA_SOURCES"][module].get("logo", {})
+        )
+
     # remove duplicates
     sources = [dict(t) for t in {tuple(d.items()) for d in sources}]
-    template_response = render_template("index.html", sources=sources)
 
-    return template_response
+    import random
+    example_queries = current_app.config.get("EXAMPLE_QUERIES", []).copy()
+    random.shuffle(example_queries)
+
+    return render_template("index.html", sources=sources, example_queries=example_queries,)
 
 
 @bp.route("/ping")

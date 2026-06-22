@@ -60,7 +60,7 @@
                 </div>
                 {% endif %}
                 {% if researcher.cited_by_count %}
-                <div class="summary-block p-2 ms-3"></div>
+                <div class="summary-block p-2 ms-3">
                     <i class="bi bi-chat-quote fs-4"></i>
                     <div class="fs-7 my-1">Citations</div>
                     <div class="fs-5 fw-bold">{{ researcher.cited_by_count }}</div>
@@ -115,22 +115,32 @@
                                             src="{{ url_for('static', filename='images/sources/orcid-id.png') }}"
                                             >{{researcher.orcid |replace('https://', '')}}</a>
                     </div> -->
+                    {% for s in researcher.source %}
+                    {% if s.name == 'OPENALEX - Researchers' %}
                     <div class="d-flex bd-highlight">
-                        <a href="https://openalex.org/{{researcher.source[0].identifier}}"
+                        <a href="{{ s.url or ('https://openalex.org/' ~ s.identifier) }}"
                             class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
                             aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
-                                src="{{ url_for('static', filename='images/sources/openalex-small.png') }}">{{researcher.source[0].identifier
+                                src="{{ url_for('static', filename='images/sources/openalex-small.png') }}">{{ s.identifier
                             |replace('https://openalex.org/', '')}}</a>
                     </div>
-                    {% if researcher.source | length > 1 %}
+                    {% elif s.name == 'ORCID' %}
                     <div class="d-flex bd-highlight">
-                        <a href="{{researcher.source[1].url}}"
+                        <a href="{{ s.url or ('https://orcid.org/' ~ s.identifier) }}"
                             class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
                             aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
-                                src="{{ url_for('static', filename='images/sources/semantic-scholar.png') }}">{{researcher.source[1].identifier
+                                src="{{ url_for('static', filename='images/sources/orcid-id.png') }}">{{ s.identifier }}</a>
+                    </div>
+                    {% elif s.url and s.name == 'SEMANTIC SCHOLAR - Researchers' %}
+                    <div class="d-flex bd-highlight">
+                        <a href="{{ s.url }}"
+                            class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1" role="button"
+                            aria-disabled="true"><img class="ps-1 pe-2 align-text-bottom"
+                                src="{{ url_for('static', filename='images/sources/semantic-scholar.png') }}">{{ s.identifier
                             |replace('https://', '')}}</a>
                     </div>
                     {% endif %}
+                    {% endfor %}
                     <!-- <div class="d-flex bd-highlight">
                         <a href="#" class="btn btn-outline-dark text-dark contact-box p-1 pe-2 mb-1" tabindex="-1"
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-twitter"></i>@albertocorona</a>

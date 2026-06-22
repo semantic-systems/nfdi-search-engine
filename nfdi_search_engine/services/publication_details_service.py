@@ -11,6 +11,7 @@ from nfdi_search_engine.common.models.objects import Article
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
+from nfdi_search_engine.infra.observability.decorators import traced
 
 
 class PublicationDetailsService:
@@ -182,6 +183,13 @@ class PublicationDetailsService:
 
         return payload
 
+    @traced(
+        "publication_details_service.get_publications_for_details_page",
+        attrs=lambda self, *, doi, excluded_sources: {
+            "publication.doi": doi,
+            "sources.excluded_count": len(excluded_sources),
+        }
+    )
     def get_publications_for_details_page(
         self,
         *,

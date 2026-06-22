@@ -14,6 +14,7 @@ from nfdi_search_engine.web.errors import register_error_handlers
 from nfdi_search_engine.web.auth.login import init_login_loader
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
+from nfdi_search_engine.infra.observability.init import init_tracing, TracingConfig
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
@@ -171,6 +172,10 @@ def create_app() -> Flask:
 
     # register user loader
     init_login_loader()
+
+    # initialize tracing
+    tracing_conf = TracingConfig.from_config(app.config)
+    init_tracing(app, tracing_conf)
 
     # register blueprints
     from nfdi_search_engine.web.public import bp as public_bp
