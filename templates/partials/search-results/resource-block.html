@@ -6,22 +6,25 @@
         <div class="col-11 fs-6">
             <div class="row mb-2">
                 <div class="col-9 fs-6">
-                    {% if resource.identifier == '' %}
+                    {% set resource_detail_path = resource | format_digital_obj_url('source-name','source-id') %}
+                    {% if resource.identifier == '' or 'source-id:na' in resource_detail_path %}
                     <span class="text-secondary fw-bold">
                         {{resource.name}}</span>
                     {% else %}
                     <a class="text-secondary fw-bold"
-                        href="/resource-details/{{resource | format_digital_obj_url('source-name','doi')}}"
+                        href="/resource-details/{{resource_detail_path}}"
                         target='_blank'><i class="pull-left bi bi-link-45deg"></i>&nbsp;{{resource.name}}</a>
                     {% endif %}
                 </div>
                 <div class="col-3 text-end">
-                    {% for source in resource.source %}
+                    {% for source in (resource.source or []) %}
+                    {% if source.url %}
                     <a id="source_link" href="{{source.url}}" target=_blank>
                         <span class="badge bg-pill text-wrap text-break">
                             <span class="source_name">{{source.name}}</span>
                             &nbsp;<i class="pull-right bi bi-box-arrow-up-right"></i></span>
                     </a>
+                    {% endif %}
                     <span class="badge bg-pill bg-secondary text-wrap text-break visually-hidden source_identifier"
                         data-bs-toggle="tooltip" data-bs-placement="top"
                         title="ID in source system">{{source.identifier}}</span>
@@ -37,7 +40,7 @@
             <div class="row">
                 <div class="col-12 my-2 authors">
                     {% set author_count = namespace(value=0) %}
-                    {% for author in resource.author %}
+                    {% for author in (resource.author or []) %}
                     {% if author_count.value == 5 %}
                     <a href="#" class="tag_more_authors">and {{ (resource.author|count) - 5 }}
                         more</a>
@@ -68,7 +71,7 @@
                         data-bs-placement="top" title="Source">{{resource.originalSource}}</span>
                     <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
                         data-bs-placement="top" title="Type">{{resource.additionalType}}</span>
-                    {% for language in resource.inLanguage %}
+                    {% for language in (resource.inLanguage or []) %}
                     <span class="badge bg-pill bg-secondary text-wrap text-break" data-bs-toggle="tooltip"
                         data-bs-placement="top" title="Language">{{language|upper}}</span>
                     {% endfor %}
@@ -109,7 +112,7 @@
         {% with share_modal_id='share-resource-'+resource.identifier | regex_replace ('\W',''),
         preview_modal_id='preview-resource-'+resource.identifier | regex_replace ('\W',''),
         download_modal_id='download-resource-'+resource.identifier | regex_replace ('\W',''),
-        url = '/resource-details/'+ resource | format_digital_obj_url('doi','source-name'),
+        url = '/resource-details/'+ resource | format_digital_obj_url('source-name','source-id'),
         img_src = resource.image,
         encoding_contentUrl = resource.encoding_contentUrl,
         title = resource.name | trim

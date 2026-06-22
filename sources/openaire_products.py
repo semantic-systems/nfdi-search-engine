@@ -2,6 +2,7 @@ from nfdi_search_engine.common.models.objects import thing, Article, Author, Cre
 from sources import data_retriever
 from config import Config
 from typing import Union, Iterable, Dict, Any
+from urllib.parse import quote
 
 from sources.base import BaseSource
 from nfdi_search_engine.common.formatting import remove_html_tags
@@ -205,6 +206,86 @@ class OpenAIRE_Products(BaseSource):
 
         return None
 
+    def get_resource(self, identifier: str):
+        """
+        Retrieve detailed information for a single OpenAIRE resource.
+        Uses OpenAIRE Graph API by OpenAIRE id.
+        """
+        endpoint = Config.DATA_SOURCES[self.SOURCE].get('get-resource-endpoint', '')
+        if not endpoint:
+            self.log_event(type="error", message=f"{self.SOURCE} - get-resource-endpoint is missing")
+            return None
+
+        graph_item = data_retriever.retrieve_data(
+            base_url="",
+            search_term="",
+            url=f"{endpoint}{quote(identifier, safe='')}",
+            quote=False,
+        )
+
+        resource_type = str(graph_item.get("type", "")).upper()
+        if resource_type not in ["DATASET", "SOFTWARE"]:
+            self.log_event(
+                type="error",
+                message=f"{self.SOURCE} - detail record is not a resource type: {resource_type}",
+            )
+            return None
+
+        digital_obj = Dataset() if resource_type == "DATASET" else SoftwareApplication()
+        digital_obj.additionalType = resource_type
+
+        # prefer DOI pid as canonical identifier, fallback to OpenAIRE id
+        pids = graph_item.get("pids", []) or []
+        doi_pid = next((p.get("value", "") for p in pids if str(p.get("scheme", "")).lower() == "doi"), "")
+        digital_obj.identifier = doi_pid or graph_item.get("id", "")
+        digital_obj.name = graph_item.get("mainTitle", "")
+
+        descriptions = graph_item.get("descriptions", []) or []
+        if descriptions:
+            digital_obj.description = remove_html_tags(str(descriptions[0]))
+            digital_obj.abstract = digital_obj.description
+
+        digital_obj.datePublished = graph_item.get("publicationDate", "")
+        digital_obj.license = (graph_item.get("bestAccessRight", {}) or {}).get("label", "")
+
+        language = graph_item.get("language")
+        if language:
+            if isinstance(language, str):
+                digital_obj.inLanguage.append(language)
+            elif isinstance(language, dict):
+                lang_val = language.get("value") or language.get("label") or language.get("code")
+                if lang_val:
+                    digital_obj.inLanguage.append(lang_val)
+
+        for subj in (graph_item.get("subjects", []) or []):
+            value = (subj.get("subject", {}) or {}).get("value", "")
+            if value:
+                digital_obj.keywords.append(value)
+
+        for a in (graph_item.get("authors", []) or []):
+            person = Author()
+            person.additionalType = "Person"
+            person.name = a.get("fullName", "") or " ".join(filter(None, [a.get("name", ""), a.get("surname", "")])).strip()
+            pid = a.get("pid", {}) or {}
+            person.identifier = (pid.get("id", {}) or {}).get("value", "")
+            if person.name:
+                digital_obj.author.append(person)
+
+        urls = []
+        for inst in (graph_item.get("instances", []) or []):
+            urls.extend(inst.get("urls", []) or [])
+        if urls:
+            digital_obj.url = urls[0]
+
+        src = thing()
+        src.name = self.SOURCE
+        src.identifier = graph_item.get("id", identifier)
+        src.url = digital_obj.url
+        digital_obj.source.append(src)
+
+        self.log_event(type="info", message=f"{self.SOURCE} - retrieved resource details")
+        return digital_obj
+
 
 def search(search_term: str, results: dict, tracking=None):
     """
@@ -219,3 +300,7 @@ def get_publication(doi, publications, tracking=None) -> None:
 
     if publication:
         publications.append(publication)
+
+
+def get_resource(doi: str, tracking=None):
+    return OpenAIRE_Products(tracking).get_resource(doi)

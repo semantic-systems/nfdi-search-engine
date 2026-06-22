@@ -36,10 +36,29 @@ class ResourceDetailsService:
         """
         mod = None
         try:
-            mod_name = self.settings.data_sources[source_name].get(
+            source_cfg = self.settings.data_sources.get(source_name)
+            if not source_cfg:
+                self.tracking.log_event_async(
+                    log_type="warning",
+                    method="get_resource_details",
+                    args=[source_name, doi],
+                    message=f"resource source not configured: {source_name}",
+                )
+                return None
+
+            mod_name = source_cfg.get(
                 "module", ""
             )
             mod = importlib.import_module(f"sources.{mod_name}")
+            if not hasattr(mod, "get_resource"):
+                self.tracking.log_event_async(
+                    log_type="warning",
+                    filename=getattr(mod, "__file__", mod_name),
+                    method="get_resource_details",
+                    args=[source_name, doi],
+                    message=f"resource details not supported for source: {source_name}",
+                )
+                return None
             return mod.get_resource(doi, tracking=self.tracking)
         except Exception as e:
             self.tracking.log_event_async(
