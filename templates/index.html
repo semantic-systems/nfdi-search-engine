@@ -48,11 +48,11 @@
                     <!-- Example search queries -->
                     <div class="text-center mt-4">
                         <span class="text-secondary d-block mb-2">
-                            Explore the gateway with example queries:
+                            Example queries
                         </span>
 
                         <div class="d-flex justify-content-center flex-wrap">
-                            {% for term in example_queries[:5] %}
+                            {% for term in example_queries[:4] %}
                                 <a href="/results?txtSearchTerm={{ term | urlencode }}"
                                    class="btn btn-outline-primary btn-sm rounded-pill m-2"
                                    role="button">
