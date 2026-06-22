@@ -5,6 +5,7 @@ import traceback
 from dataclasses import dataclass, asdict
 from typing import Any, Dict, List, Optional, Set, Tuple
 from rank_bm25 import BM25Plus
+from opentelemetry import trace
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -14,7 +15,10 @@ from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.infra.store.result_store import ResultStore
 from nfdi_search_engine.services.chatbot_service import ChatbotService
 from nfdi_search_engine.services.tracking_service import TrackingService
+from nfdi_search_engine.infra.observability.context import with_parent_context
+from nfdi_search_engine.infra.observability.decorators import traced
 
+tracer = trace.get_tracer("nfdi_search_engine")
 
 CATEGORIES: List[str] = [
     "publications",
@@ -98,6 +102,13 @@ class SearchService:
         self.tracking = tracking
         self.deduplication = deduplication
 
+    @traced(
+        "search_service.run_search",
+        attrs=lambda self, ctx: {
+            "search.id": ctx.search_id,
+            "search.term": ctx.search_term
+        }
+    )
     def run_search(self, ctx: SearchContext) -> SearchPage:
         """
         Execute a search request end-to-end and return the first-page results.
@@ -180,6 +191,13 @@ class SearchService:
             failed_sources=failed_sources,
         )
 
+    @traced(
+        "search_service.load_more",
+        attrs=lambda self, ctx: {
+            "search.id": ctx.search_id,
+            "search.object_type": ctx.object_type,
+        }
+    )
     def load_more(self, ctx: SearchContext) -> List[Any]:
         """
         Load the next chunk of results for a single category (lazy-load / pagination).
@@ -259,6 +277,13 @@ class SearchService:
                 traceback=traceback.format_exception(e),
             )
 
+    @traced(
+        "search_service._harvest",
+        attrs=lambda self, sources, search_term: {
+            "search.term": search_term,
+            "search.n_sources": len(sources),
+        }
+    )
     def _harvest(self, sources: List[str], search_term: str) -> Tuple[Dict[str, List[Any]], List[str]]:
         """
         Harvest search results across multiple data sources in parallel.
@@ -278,20 +303,25 @@ class SearchService:
         failed: List[str] = []
 
         def search_source(module_name: str, term: str) -> tuple[Optional[dict], Optional[Exception]]:
-            try:
-                mod = importlib.import_module(f"sources.{module_name}")
-                partial = {c: [] for c in CATEGORIES}
-                mod.search(
-                    term, partial, tracking=self.tracking
-                )
-                return partial, None
-            except Exception as e:
-                return None, e
+            with tracer.start_as_current_span("source.search") as span:
+                span.set_attribute("source.module", module_name)
+                span.set_attribute("search.term", term)
+                try:
+                    mod = importlib.import_module(f"sources.{module_name}")
+                    partial = {c: [] for c in CATEGORIES}
+                    mod.search(
+                        term, partial, tracking=self.tracking
+                    )
+                    return partial, None
+                except Exception as e:
+                    span.record_exception(e)
+                    return None, e
 
         max_workers = min(self.settings.max_workers, len(sources) or 1)
         with ThreadPoolExecutor(max_workers=max_workers) as ex:
+            search_source_with_ctx = with_parent_context(search_source)
             futures = {
-                ex.submit(search_source, self.settings.data_sources[src]["module"], search_term): src
+                ex.submit(search_source_with_ctx, self.settings.data_sources[src]["module"], search_term): src
                 for src in sources
             }
             for fut in as_completed(futures):
@@ -315,6 +345,12 @@ class SearchService:
 
         return results, failed
 
+    @traced(
+        "search_service.sort_search_results",
+        attrs=lambda self, search_term, search_results: {
+            "search.term": search_term
+        }
+    )
     def _sort_search_results(self, search_term, search_results) -> list:
         """
         Rank and sort search results by textual relevance using BM25Plus.

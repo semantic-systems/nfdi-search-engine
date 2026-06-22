@@ -6,6 +6,7 @@ from typing import Any
 
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 from nfdi_search_engine.services.deduplication.policies.base import DedupPolicy
+from nfdi_search_engine.infra.observability.decorators import traced
 
 log = logging.getLogger(__name__)
 
@@ -22,6 +23,14 @@ class DeduplicationService:
         self.mapping_preference = mapping_preference
         self.merger = ObjectMerger()
 
+    @traced(
+        "deduplication_service.deduplicate",
+        attrs=lambda self, results: {
+            "policies.count": len(self.policies),
+            "results.category_count": len(results),
+            "results.total_value_count": sum(len(c) for c in results.values()),
+        }
+    )
     def deduplicate(self, results: dict) -> dict:
         """Deduplicate search results according to the policies."""
         for policy in self.policies:
