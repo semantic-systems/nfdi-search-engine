@@ -561,4 +561,25 @@ class Config:
         503: "Error 503: Service Unavailable.",
     }
 
-    
+    EXAMPLE_QUERIES = [
+        "York Sure-Vetter",
+        "Allard Oelen",
+        "FAIR research data management",
+        "FAIR metadata for machine learning datasets",
+        "Semantic Web Knowledge Graph",
+        "Semantic interoperability in research infrastructures",
+        "Large Language Models in science",
+        "Explainable AI for research workflows",
+        "NFDI4DS research data lifecycle",
+        "NFDI4DS services",
+        "RDF SPARQL query examples",
+        "SPARQL endpoints for open research data",
+        "Knowledge graphs for social science",
+        "Metadata standards for research data",
+        "OpenAlex publications data",
+        "GESIS knowledge graph",
+        "Scientific benchmark datasets",
+        "Research infrastructure metadata",
+        "FAIR digital objects",
+        "Open research datasets for NLP"
+    ]
