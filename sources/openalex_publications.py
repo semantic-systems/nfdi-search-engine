@@ -169,6 +169,50 @@ class OpenAlexPublications(BaseSource):
         if search_result:
             return self.map_hit(search_result)
 
+    def get_recommendations_for_publication(self, doi: str, limit: int = 100) -> List[Union[Article, CreativeWork]]:
+        """
+        Fetch recommendedations for a DOI via OpenAlex.
+
+        :param doi: DOI of the source publication.
+        :param limit: Maximum number of related works to resolve.
+        :return: Mapped publication objects for the related works.
+        """
+        works_base = Config.DATA_SOURCES[self.SOURCE].get("recommendations-endpoint", "")
+        if not works_base:
+            return []
+
+        # 1. resolve the DOI to its work and read the related_works ids
+        work = data_retriever.retrieve_object(
+            base_url=works_base,
+            identifier="https://doi.org/" + doi,
+        ) or {}
+        related = work.get("related_works", []) or []
+        if not related:
+            return []
+
+        # keep only the bare OpenAlex ids (e.g. "W123"), capped by limit
+        ids = [w.rsplit("/", 1)[-1] for w in related[:limit] if w]
+        if not ids:
+            return []
+
+        # 2. batch-fetch metadata for all related works in a single request
+        list_url = (
+            f"{works_base.rstrip('/')}"
+            f"?filter=ids.openalex:{'|'.join(ids)}&per-page={len(ids)}"
+        )
+        raw = data_retriever.retrieve_data(
+            base_url=works_base,
+            search_term="",
+            url=list_url,
+        ) or {}
+
+        recommendations: List[Union[Article, CreativeWork]] = []
+        for hit in self.extract_hits(raw):
+            publication = self.map_hit(hit)
+            if getattr(publication, "identifier", ""):
+                recommendations.append(publication)
+        return recommendations
+
 
 def search(search_term: str, results, tracking=None):
     """
@@ -188,3 +232,10 @@ def get_publication(doi: str, publications, tracking=None):
 
 def get_publications(url: str, results, tracking=None):
     OpenAlexPublications(tracking).get_publications(url, results)
+
+
+def get_recommendations_for_publication(doi: str, tracking=None, limit: int = 100) -> List[Union[Article, CreativeWork]]:
+    """
+    Entrypoint: fetch recommended publications for a DOI via OpenAlex related_works.
+    """
+    return OpenAlexPublications(tracking).get_recommendations_for_publication(doi, limit=limit)

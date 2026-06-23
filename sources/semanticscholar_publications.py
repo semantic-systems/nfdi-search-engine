@@ -8,7 +8,9 @@ publication-details citations and recommendations. Integration points: get_dois_
 get_citations_for_publication, get_recommendations_for_publication.
 """
 import time
-from typing import Dict, Any, List
+from typing import Any, Callable, Dict, List
+
+import requests
 
 from config import Config
 from nfdi_search_engine.common.models.objects import thing, Article, Author
@@ -78,33 +80,54 @@ class SemanticScholarPublications:
         ]
         return [d for d in dois_citation if d]
 
-    def get_dois_recommendations(self, doi: str) -> List[str]:
+    def _request_with_retries(self, fetch: Callable[[], Any], context: str) -> Dict[str, Any]:
         """
-        Fetch the DOIs of recommendations for a given DOI.
+        Call ``fetch`` with retries, logging HTTP and parse errors.
 
-        Args:
-            source: Data source name (used for config lookup).
-            doi: The DOI of the article to fetch recommendations for.
+        Returns the response dict, or None if it never succeeds. Client errors
+        (4xx other than 429) are not retried, since retrying won't help and the
+        fixed back-off would otherwise block the request for MAX_RETRIES * delay.
 
-        Returns:
-            A list of DOIs of the recommended articles.
+        :param fetch: Zero-arg callable performing the HTTP request.
+        :param context: Human-readable label used in log messages.
         """
-        base_url = self._get_config(self.SOURCE, "recommendations-endpoint", "")
-        identifier = f"{doi}?fields=externalIds"
-        response = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier=identifier,
-            quote=False,
+        for attempt in range(MAX_RETRIES):
+            try:
+                response = fetch()
+            except requests.HTTPError as e:
+                resp = e.response
+                status = resp.status_code if resp is not None else "?"
+                body = (resp.text[:300] if resp is not None else "").replace("\n", " ")
+                self.log_event(
+                    type="error",
+                    message=f"{self.SOURCE} - {context} - HTTP {status}: {body}",
+                )
+                if resp is not None and 400 <= resp.status_code < 500 and resp.status_code != 429:
+                    return None
+                time.sleep(RETRY_DELAY_SECONDS)
+                continue
+            except Exception as e:
+                self.log_event(
+                    type="error",
+                    message=f"{self.SOURCE} - {context} - request failed: {e!r}",
+                )
+                time.sleep(RETRY_DELAY_SECONDS)
+                continue
+
+            if isinstance(response, dict):
+                return response
+
+            self.log_event(
+                type="info",
+                message=f"{self.SOURCE} - {context} - retry {attempt + 1}/{MAX_RETRIES} (non-dict response)",
+            )
+            time.sleep(RETRY_DELAY_SECONDS)
+
+        self.log_event(
+            type="error",
+            message=f"{self.SOURCE} - {context} - gave up after {MAX_RETRIES} attempts",
         )
-
-        if not response or "recommendedPapers" not in response:
-            return []
-
-        dois_reference = [
-            ref.get("externalIds", {}).get("DOI", "")
-            for ref in response["recommendedPapers"]
-        ]
-        return [d for d in dois_reference if d]
+        return None
 
     def _fetch_paper_by_doi(self, doi: str) -> Dict[str, Any]:
         """
@@ -112,52 +135,43 @@ class SemanticScholarPublications:
         Returns the raw response dict or None on failure.
         """
         base_url = self._get_config(self.SOURCE, "citations-endpoint", "")
-        for attempt in range(MAX_RETRIES):
-            response = data_retriever.retrieve_object(
-                base_url=base_url,
-                identifier=doi,
-                quote=False,
-            )
-            if isinstance(response, dict):
-                return response
-            self.log_event(
-                type="info",
-                message=f"{self.SOURCE} - Retry {attempt + 1}/{MAX_RETRIES} for Semantic Scholar paper ID",
-            )
-            time.sleep(RETRY_DELAY_SECONDS)
-        return None
+        return self._request_with_retries(
+            lambda: data_retriever.retrieve_object(
+                base_url=base_url, identifier=doi, quote=False,
+            ),
+            context=f"resolve DOI->paperId ({doi})",
+        )
 
-    def _fetch_recommendations_by_paper_id(self, paper_id: str) -> Dict[str, Any]:
+    def _fetch_recommendations_by_paper_id(self, paper_id: str, limit: int = 100) -> Dict[str, Any]:
         """
         Retrieve recommendations for a paper by its Semantic Scholar paper ID (with retries).
         Returns the raw response dict or None on failure.
+
+        Note: the recommendations endpoint does not support nested author field
+        selection (e.g. ``authors.externalIds``), so ORCIDs are not available here.
         """
         base_url = self._get_config(self.SOURCE, "recommendations-endpoint", "")
-        search_term = f"{paper_id}?fields=title,publicationDate,externalIds&limit=10"
-        for attempt in range(MAX_RETRIES):
-            response = data_retriever.retrieve_data(
-                base_url=base_url,
-                search_term=search_term,
-            )
-            if isinstance(response, dict):
-                return response
-            self.log_event(
-                type="info",
-                message=f"{self.SOURCE} - Retry {attempt + 1}/{MAX_RETRIES} for recommendations",
-            )
-            time.sleep(RETRY_DELAY_SECONDS)
-        return None
+        fields = "title,publicationDate,externalIds,authors,isOpenAccess,openAccessPdf"
+        search_term = f"{paper_id}?fields={fields}&limit={limit}"
+        return self._request_with_retries(
+            lambda: data_retriever.retrieve_data(
+                base_url=base_url, search_term=search_term,
+            ),
+            context=f"recommendations (paper_id={paper_id}, limit={limit})",
+        )
 
-    def get_recommendations_for_publication(self, doi: str) -> List[Article]:
+    def get_recommendations_for_publication(self, doi: str, limit: int = 100) -> List[Article]:
         """
         Fetch recommended publications for a given DOI as Article objects.
 
         Resolves the DOI to a Semantic Scholar paper ID, then fetches recommendations.
-        Only articles with a non-empty DOI are included.
+        Only articles with a non-empty DOI are included. Each Article is populated
+        with authors, publication date, source, and (when available) an open-access
+        content URL so it can be rendered like a search result.
 
         Args:
-            source: Data source name (used for config lookup).
             doi: The DOI of the article.
+            limit: Maximum number of recommendations to request.
 
         Returns:
             List of Article objects for recommended publications.
@@ -177,11 +191,15 @@ class SemanticScholarPublications:
             message=f"{self.SOURCE} - Resolved DOI to Semantic Scholar paper_id: {paper_id}",
         )
 
-        rec_response = self._fetch_recommendations_by_paper_id(paper_id)
+        rec_response = self._fetch_recommendations_by_paper_id(paper_id, limit=limit)
         if not rec_response:
             return recommended_publications
 
         recommended_papers = rec_response.get("recommendedPapers", [])
+        self.log_event(
+            type="info",
+            message=f"{self.SOURCE} - received {len(recommended_papers)} recommendations for paper_id {paper_id}",
+        )
         for recommended_paper in recommended_papers:
             publication = Article()
             publication.name = remove_html_tags(
@@ -192,7 +210,25 @@ class SemanticScholarPublications:
             )
             publication.datePublished = recommended_paper.get(
                 "publicationDate", ""
-            )
+            ) or ""
+
+            for author in recommended_paper.get("authors", []) or []:
+                _author = Author()
+                _author.additionalType = "Person"
+                _author.name = author.get("name", "")
+                publication.author.append(_author)
+
+            open_access_pdf = recommended_paper.get("openAccessPdf") or {}
+            if recommended_paper.get("isOpenAccess") and open_access_pdf.get("url"):
+                publication.encoding_contentUrl = open_access_pdf.get("url", "")
+
+            _source = thing()
+            _source.name = self.SOURCE
+            rec_paper_id = recommended_paper.get("paperId", "")
+            if rec_paper_id:
+                _source.identifier = rec_paper_id
+                _source.url = f"https://www.semanticscholar.org/paper/{rec_paper_id}"
+            publication.source.append(_source)
 
             if publication.identifier:
                 recommended_publications.append(publication)
@@ -273,18 +309,11 @@ def get_dois_citations(doi: str, tracking=None) -> List[str]:
     return SemanticScholarPublications(tracking).get_dois_citations(doi)
 
 
-def get_dois_recommendations(doi: str, tracking=None) -> List[str]:
-    """
-    Entrypoint: fetch DOIs of recommendations for a given DOI.
-    """
-    return SemanticScholarPublications(tracking).get_dois_recommendations(doi)
-
-
-def get_recommendations_for_publication(doi: str, tracking=None) -> List[Article]:
+def get_recommendations_for_publication(doi: str, tracking=None, limit: int = 100) -> List[Article]:
     """
     Entrypoint: fetch recommended publications for a given DOI as Article objects.
     """
-    return SemanticScholarPublications(tracking).get_recommendations_for_publication(doi)
+    return SemanticScholarPublications(tracking).get_recommendations_for_publication(doi, limit=limit)
 
 
 def get_citations_for_publication(doi: str, tracking=None) -> List[Article]:
