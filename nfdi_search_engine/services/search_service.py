@@ -2,18 +2,19 @@ from __future__ import annotations
 
 import importlib
 import traceback
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Set, Tuple
-from rank_bm25 import BM25Plus
 from opentelemetry import trace
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
+from nfdi_search_engine.common.models.search_result import SearchResult
 from nfdi_search_engine.common.models.search_settings import SearchSettings
 from nfdi_search_engine.services.deduplication import DeduplicationService
 from nfdi_search_engine.common.models.request_meta import RequestMeta
 from nfdi_search_engine.infra.store.result_store import ResultStore
 from nfdi_search_engine.services.chatbot_service import ChatbotService
+from nfdi_search_engine.services.ranking import RankingService
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.infra.observability.context import with_parent_context
 from nfdi_search_engine.infra.observability.decorators import traced
@@ -83,6 +84,7 @@ class SearchService:
         store: ResultStore,
         tracking: TrackingService,
         deduplication: DeduplicationService,
+        ranking: RankingService,
     ) -> None:
         """
         Initialize the search service.
@@ -101,6 +103,7 @@ class SearchService:
         self.store = store
         self.tracking = tracking
         self.deduplication = deduplication
+        self.ranking = ranking
 
     @traced(
         "search_service.run_search",
@@ -138,22 +141,24 @@ class SearchService:
             if has_endpoint and src not in ctx.excluded_sources:
                 active_sources.append(src)
 
-        results_full, failed_sources = self._harvest(
+        raw_results, failed_sources = self._harvest(
             active_sources,
             ctx.search_term
         )
 
         # filter empty results per category
         for k in CATEGORIES:
-            results_full[k] = [r for r in results_full[k] if r is not None]
+            raw_results[k] = [r for r in raw_results[k] if r is not None]
 
         # deduplicate before ranking
-        results_full = self.deduplication.deduplicate(results_full)
+        results_full: Dict[str, List[SearchResult]] = self.deduplication.deduplicate(raw_results)
 
         # sort per category
         for k in CATEGORIES:
-            results_full[k] = self._sort_search_results(
-                ctx.search_term, results_full[k]
+            results_full[k] = self.ranking.rank(
+                ctx.search_term,
+                k,
+                results_full[k],
             )
 
         total_results = {k: len(v) for k, v in results_full.items()}
@@ -179,7 +184,8 @@ class SearchService:
 
         # first page slice
         page_results = {
-            k: results_full[k][: self.settings.first_page_n] for k in CATEGORIES
+            k: self._items(results_full[k][: self.settings.first_page_n])
+            for k in CATEGORIES
         }
 
         return SearchPage(
@@ -215,7 +221,7 @@ class SearchService:
         if rec is None:
             raise KeyError("search_id not found or expired")
 
-        results_full: Dict[str, List[Any]] = rec.results
+        results_full: Dict[str, List[SearchResult]] = rec.results
         meta = rec.meta
 
         total = int(meta["total_results"][ctx.object_type])
@@ -235,7 +241,7 @@ class SearchService:
             user_id=ctx.user_id,
         )
 
-        return chunk, new_displayed, total
+        return self._items(chunk), new_displayed, total
 
     def update_search_result_block(self, source: str, source_identifier: str, doi: str) -> Any:
         """
@@ -345,38 +351,6 @@ class SearchService:
 
         return results, failed
 
-    @traced(
-        "search_service.sort_search_results",
-        attrs=lambda self, search_term, search_results: {
-            "search.term": search_term
-        }
-    )
-    def _sort_search_results(self, search_term, search_results) -> list:
-        """
-        Rank and sort search results by textual relevance using BM25Plus.
-
-        This method tokenizes each result object's string representation and
-        computes BM25 scores relative to the tokenized query. The score is stored
-        on each result object as `rankScore`, and the list is sorted descending.
-
-        :param search_term: User query string.
-        :type search_term: str
-        :param search_results: List of result objects to score and sort.
-        :type search_results: List[Any]
-        :return: Sorted list of results in descending relevance.
-        :rtype: List[Any]
-        """
-        tokenized_results = [
-            str(result).lower().split(" ")
-            for result in search_results
-        ]
-        if len(tokenized_results) > 0:
-            bm25 = BM25Plus(tokenized_results)
-
-            tokenized_query = search_term.lower().split(" ")
-            doc_scores = bm25.get_scores(tokenized_query)
-
-            for idx, doc_score in enumerate(doc_scores):
-                search_results[idx].rankScore = doc_score
-
-        return sorted(search_results, key=lambda x: x.rankScore, reverse=True)
+    def _items(self, results: List[SearchResult]) -> List[Any]:
+        """Return domain objects for template compatibility."""
+        return [result.item if isinstance(result, SearchResult) else result for result in results]

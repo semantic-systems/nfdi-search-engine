@@ -124,7 +124,7 @@ class Config:
     SESSION_TYPE = "filesystem"
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
-    REQUEST_TIMEOUT = 5
+    REQUEST_TIMEOUT = 10
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
@@ -517,6 +517,143 @@ class Config:
             "referenceCount": "max",
             "keywords":       "union",
             "alternateName":  "union",
+        },
+    }
+
+    RANKING_PROFILES = {
+        "__default__": {
+            "field_weights": {
+                "identifier": 20.0,
+                "name": 10.0,
+                "title": 10.0,
+                "aliases": 5.0,
+                "keywords": 3.0,
+                "authors": 3.0,
+                "description": 2.0,
+                "source": 1.0,
+                "type": 1.0,
+                "url": 1.0,
+                "publication": 1.0,
+                "publisher": 1.0,
+                "language": 0.2,
+                "license": 0.2,
+                "version": 0.5,
+                "status": 1.0,
+                "location": 1.0,
+                "address": 1.0,
+                "legal_name": 3.0,
+            },
+            "numeric_feature_weights": {
+                "citation_count": 1.0,
+                "year": 1.0,
+            },
+            "boolean_feature_weights": {
+                "has_identifier": 3.0,
+                "has_description": 1.0,
+                "has_url": 0.5,
+            },
+            "exact_field_boosts": {
+                "name": 15.0,
+                "title": 15.0,
+            },
+        },
+        "publications": {
+            "field_weights": {
+                "identifier": 30.0,
+                "title": 12.0,
+                "authors": 4.0,
+                "keywords": 4.0,
+                "abstract": 2.0,
+                "body": 1.0,
+                "publication": 1.5,
+                "publisher": 1.0,
+                "source": 0.5,
+                "type": 0.5,
+                "genre": 1.0,
+                "language": 0.2,
+                "license": 0.2,
+                "version": 0.5,
+            },
+            "numeric_feature_weights": {
+                "citation_count": 2.5,
+                "year": 1.5,
+                "reference_count": 0.2,
+            },
+            "boolean_feature_weights": {
+                "has_identifier": 5.0,
+                "has_abstract": 1.0,
+                "has_full_text": 0.5,
+                "has_open_access_url": 0.5,
+            },
+            "exact_field_boosts": {
+                "title": 20.0,
+            },
+        },
+        "researchers": {
+            "field_weights": {
+                "identifier": 30.0,
+                "name": 20.0,
+                "aliases": 12.0,
+                "given_name": 4.0,
+                "family_name": 4.0,
+                "additional_name": 4.0,
+                "affiliations": 3.0,
+                "alumni": 1.0,
+                "works_for": 2.0,
+                "research_areas": 5.0,
+                "about": 2.0,
+                "works": 1.0,
+                "job_title": 1.0,
+                "description": 1.0,
+            },
+            "numeric_feature_weights": {
+                "cited_by_count": 1.5,
+                "works_count": 0.7,
+            },
+            "boolean_feature_weights": {
+                "has_identifier": 8.0,
+                "has_affiliation": 1.0,
+                "has_research_areas": 1.0,
+                "has_works": 0.5,
+            },
+            "exact_field_boosts": {
+                "name": 40.0,
+                "aliases": 25.0,
+            },
+        },
+        "projects": {
+            "field_weights": {
+                "identifier": 15.0,
+                "title": 12.0,
+                "name": 12.0,
+                "aliases": 6.0,
+                "keywords": 4.0,
+                "description": 3.0,
+                "status": 2.0,
+                "funding": 2.0,
+                "funder": 2.0,
+                "sponsor": 1.0,
+                "source_organization": 1.0,
+                "source": 1.0,
+                "type": 0.5,
+                "duration": 0.5,
+                "publication": 0.5,
+                "language": 0.2,
+            },
+            "numeric_feature_weights": {
+                "year": 1.2,
+            },
+            "boolean_feature_weights": {
+                "has_identifier": 3.0,
+                "has_description": 1.0,
+                "has_dates": 0.5,
+                "has_funding": 0.5,
+            },
+            "exact_field_boosts": {
+                "title": 20.0,
+                "name": 20.0,
+                "aliases": 10.0,
+            },
         },
     }
 

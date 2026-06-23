@@ -5,6 +5,7 @@ from urllib.parse import urljoin
 
 import requests
 
+from nfdi_search_engine.common.models.search_result import SearchResult
 from nfdi_search_engine.common.models.chatbot_settings import ChatbotSettings
 from nfdi_search_engine.infra.store.result_store import ResultStore
 
@@ -13,6 +14,7 @@ class ChatbotProcessor:
     """
     Provides job handlers for asynchronous chatbot operations
     """
+
     def __init__(self, result_store: ResultStore, settings: ChatbotSettings, http_timeout_s: int = 30):
         self.store = result_store
         self.settings = settings
@@ -31,7 +33,15 @@ class ChatbotProcessor:
         )
         request_url = f"{base_url}/{search_id}"
 
-        results_json = json.dumps(rec.results, default=vars)
+        # compatibility with SearchResult type
+        results = {}
+        for category, rows in rec.results.items():
+            results[category] = [
+                row.item if isinstance(row, SearchResult) else row
+                for row in rows
+            ]
+
+        results_json = json.dumps(results, default=vars)
         resp = requests.post(
             request_url,
             json=results_json,
