@@ -1,4 +1,5 @@
 import os
+import tempfile
 from dotenv import find_dotenv, load_dotenv
 
 from typing import Optional
@@ -52,6 +53,10 @@ class Settings(BaseSettings):
     TRACING_SAMPLER_ARG: Optional[float] = None
     TRACING_INSTRUMENT_FLASK: bool = True
     TRACING_INSTRUMENT_REQUESTS: bool = True
+    TRACING_INSTRUMENT_CELERY: bool = True
+
+    # Celery. "memory://" runs the worker in-process; a real broker (redis://) does not.
+    CELERY_BROKER_URL: str = Field(default="memory://")
 
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
@@ -119,6 +124,9 @@ class Config:
         TRACING_SAMPLER_ARG = app_settings.TRACING_SAMPLER_ARG
         TRACING_INSTRUMENT_FLASK = app_settings.TRACING_INSTRUMENT_FLASK
         TRACING_INSTRUMENT_REQUESTS = app_settings.TRACING_INSTRUMENT_REQUESTS
+        TRACING_INSTRUMENT_CELERY = app_settings.TRACING_INSTRUMENT_CELERY
+
+        CELERY_BROKER_URL = app_settings.CELERY_BROKER_URL
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
@@ -655,6 +663,29 @@ class Config:
                 "aliases": 10.0,
             },
         },
+    }
+
+    JOBS = {
+        # Jobs are registered by dropping a file into infra/jobs/tasks/. Listing one
+        # here additionally runs it on a timer. Example:
+        # "beat_schedule": {
+        #     "hello-world-every-10s": {
+        #         "task": "hello.world",
+        #         "schedule": 10.0,
+        #     }
+        # }
+        "beat_schedule": {},
+    }
+
+    CELERY = {
+        "broker_url": app_settings.CELERY_BROKER_URL,
+        "beat_schedule_filename": os.path.join(
+            tempfile.gettempdir(), "celerybeat-schedule"
+        ),
+        # The in-memory broker lives inside the process, so the web process runs the
+        # worker and beat itself. Keep gunicorn at one worker: a second one runs a
+        # second beat, firing every scheduled job twice.
+        "run_worker_in_process": app_settings.CELERY_BROKER_URL.startswith("memory://"),
     }
 
     ELASTIC = {

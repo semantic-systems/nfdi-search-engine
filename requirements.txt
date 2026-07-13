@@ -24,3 +24,5 @@ opentelemetry-sdk==1.39.1
 opentelemetry-exporter-otlp==1.39.1
 opentelemetry-instrumentation-flask==0.60b1
 opentelemetry-instrumentation-requests==0.60b1
+opentelemetry-instrumentation-celery==0.60b1
+celery==5.6.3

@@ -35,6 +35,8 @@ class TracingConfig:
     :type instrument_flask: bool
     :param instrument_requests: Enable requests auto-instrumentation.
     :type instrument_requests: bool
+    :param instrument_celery: Enable Celery auto-instrumentation.
+    :type instrument_celery: bool
     """
     enabled: bool
     service_name: str = "nfdi-search-engine"
@@ -44,6 +46,7 @@ class TracingConfig:
     traces_sampler_arg: Optional[float] = None
     instrument_flask: bool = True
     instrument_requests: bool = True
+    instrument_celery: bool = True
 
     @classmethod
     def from_config(cls, cfg: Dict[str, Any]) -> "TracingConfig":
@@ -68,4 +71,5 @@ class TracingConfig:
                 "TRACING_INSTRUMENT_REQUESTS",
                 True
             )),
+            instrument_celery=bool(cfg.get("TRACING_INSTRUMENT_CELERY", True)),
         )

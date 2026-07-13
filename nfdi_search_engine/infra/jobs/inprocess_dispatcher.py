@@ -12,7 +12,12 @@ log = logging.getLogger(__name__)
 
 class InProcessDispatcher(JobDispatcher):
     """
-    In-process background queue
+    In-process background queue.
+
+    OBSOLETE: no longer used in create_app(). All job dispatching now goes
+    through CeleryDispatcher (nfdi_search_engine/infra/jobs/celery_dispatcher.py),
+    which routes jobs to the Celery tasks in nfdi_search_engine/infra/jobs/tasks/.
+    Kept for reference only.
     """
 
     def __init__(self, handlers: Dict[str, Callable[[Dict[str, Any]], None]]) -> None:
