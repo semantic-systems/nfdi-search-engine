@@ -1,0 +1,77 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+
+extensions:
+  healthcheckv2:
+    use_v2: true
+    http:
+      endpoint: "0.0.0.0:13133"
+      status:
+        enabled: true
+        path: "/health/status"
+  jaeger_storage:
+    backends:
+      es:
+        elasticsearch:
+          server_urls:
+            - "${env:JAEGER_ES_SERVER_URLS}"
+
+          auth:
+            basic:
+              username: "${env:JAEGER_ES_USERNAME}"
+              password: "${env:JAEGER_ES_PASSWORD}"
+
+          indices:
+            index_prefix: "jaeger-main"
+
+            spans:
+              date_layout: "2006-01-02"
+              rollover_frequency: "week"
+              shards: 1
+              replicas: 0
+
+            services:
+              date_layout: "2006-01-02"
+              rollover_frequency: "week"
+              shards: 1
+              replicas: 0
+
+            dependencies:
+              date_layout: "2006-01-02"
+              rollover_frequency: "week"
+              shards: 1
+              replicas: 0
+
+            sampling:
+              date_layout: "2006-01-02"
+              rollover_frequency: "week"
+              shards: 1
+              replicas: 0
+
+  jaeger_query:
+    storage:
+      traces: es
+    http:
+      endpoint: 0.0.0.0:16686
+    grpc:
+      endpoint: 0.0.0.0:16685
+
+exporters:
+  jaeger_storage_exporter:
+    trace_storage: es
+
+service:
+  extensions: [healthcheckv2, jaeger_storage, jaeger_query]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [jaeger_storage_exporter]

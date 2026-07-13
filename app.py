@@ -14,16 +14,18 @@ from nfdi_search_engine.web.errors import register_error_handlers
 from nfdi_search_engine.web.auth.login import init_login_loader
 from nfdi_search_engine.infra.elastic.client import get_es_client
 from nfdi_search_engine.infra.elastic.indices import ensure_indices
+from nfdi_search_engine.infra.observability.init import init_tracing, TracingConfig
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
 from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
 from nfdi_search_engine.services.user_service import UserService
-from nfdi_search_engine.services.search_service import SearchService, SearchSettings
+from nfdi_search_engine.services.search_service import CATEGORIES, SearchService, SearchSettings
 from nfdi_search_engine.services.deduplication import DeduplicationService
 from nfdi_search_engine.services.deduplication.policies import default_policies
 from nfdi_search_engine.services.chatbot_service import ChatbotService, ChatbotSettings
+from nfdi_search_engine.services.ranking import RankingService
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.analytics_service import AnalyticsService
 from nfdi_search_engine.services.publication_details_service import PublicationDetailsService, DetailsSettings
@@ -120,12 +122,18 @@ def create_app() -> Flask:
         mapping_preference=app.config.get("MAPPING_PREFERENCE", {}),
     )
 
+    ranking_service = RankingService(
+        categories=CATEGORIES,
+        profile_config=app.config.get("RANKING_PROFILES", {}),
+    )
+
     search_service = SearchService(
         settings=SearchSettings.from_config(app.config),
         chatbot=chatbot_service,
         store=result_store,
         tracking=tracking_service,
         deduplication=deduplication_service,
+        ranking=ranking_service,
     )
 
     pub_details_service = PublicationDetailsService(
@@ -156,6 +164,7 @@ def create_app() -> Flask:
         "tracking": tracking_service,
         "analytics": analytics_service,
         "chatbot": chatbot_service,
+        "ranking": ranking_service,
         "publication_details": pub_details_service,
         "researcher_details": researcher_details_service,
         "resource_details": resource_details_service,
@@ -163,6 +172,10 @@ def create_app() -> Flask:
 
     # register user loader
     init_login_loader()
+
+    # initialize tracing
+    tracing_conf = TracingConfig.from_config(app.config)
+    init_tracing(app, tracing_conf)
 
     # register blueprints
     from nfdi_search_engine.web.public import bp as public_bp
