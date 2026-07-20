@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     TRACING_INSTRUMENT_FLASK: bool = True
     TRACING_INSTRUMENT_REQUESTS: bool = True
 
+    # Field-level merge provenance ({value, sources} per field in search results)
+    ENABLE_PROVENANCE: bool = True
+
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
 def validate_env():
@@ -119,6 +122,8 @@ class Config:
         TRACING_SAMPLER_ARG = app_settings.TRACING_SAMPLER_ARG
         TRACING_INSTRUMENT_FLASK = app_settings.TRACING_INSTRUMENT_FLASK
         TRACING_INSTRUMENT_REQUESTS = app_settings.TRACING_INSTRUMENT_REQUESTS
+
+        ENABLE_PROVENANCE = app_settings.ENABLE_PROVENANCE
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"

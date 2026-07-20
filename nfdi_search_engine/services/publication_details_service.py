@@ -9,6 +9,13 @@ import requests
 
 from nfdi_search_engine.common.models.objects import Article
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
+from nfdi_search_engine.common.models.search_result import (
+    ProvenanceDisplayRow,
+    SearchResult,
+)
+from nfdi_search_engine.services.publication_provenance_display import (
+    publication_provenance_display_rows,
+)
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 from nfdi_search_engine.infra.observability.decorators import traced
@@ -31,12 +38,13 @@ class PublicationDetailsService:
         self,
         settings: DetailsSettings,
         tracking: TrackingService,
+        merger: ObjectMerger,
         http: Optional[requests.Session] = None,
     ):
         self.settings = settings
         self.tracking = tracking
+        self.merger = merger
         self.http = http or requests.Session()
-        self.merger = ObjectMerger()
 
         # we can think about moving this to the config
         self.references_sources = {
@@ -257,18 +265,34 @@ class PublicationDetailsService:
 
         return publications, failed
 
-    def merge_publications(self, publications: List[Any]) -> Any:
+    def merge_publications(
+        self, publications: List[Any]
+    ) -> tuple[Any, list[ProvenanceDisplayRow]]:
         """
         Merge multiple publication objects into a single publication representation.
 
+        When provenance is enabled, also returns display rows for the details page.
+
         :param publications: List of publication-like objects
         :type publications: List[Any]
-        :return: Single object with merged fields
-        :rtype: Any
+        :return: Merged publication item and optional provenance rows
+        :rtype: tuple[Any, list[ProvenanceDisplayRow]]
         """
         if not publications:
-            return None
-        return self.merger.merge(publications, self.settings.mapping_preference["publications"])
+            return None, []
+
+        pref = self.settings.mapping_preference["publications"]
+        if self.merger.enable_provenance:
+            merged = self.merger.merge(
+                publications,
+                pref,
+                category="publications",
+            )
+            if isinstance(merged, SearchResult):
+                return merged.item, publication_provenance_display_rows(merged)
+            return merged, []
+
+        return self.merger.merge(publications, pref), []
 
     def get_citations_for_publication(self, doi: str) -> List[Article]:
         """

@@ -120,7 +120,14 @@ def create_app() -> Flask:
     deduplication_service = DeduplicationService(
         policies=default_policies(),
         mapping_preference=app.config.get("MAPPING_PREFERENCE", {}),
+        enable_provenance=bool(app.config["ENABLE_PROVENANCE"]),
     )
+    if app.config["ENABLE_PROVENANCE"]:
+        logger.info("Field-level provenance is ENABLED")
+    else:
+        logger.info(
+            "Field-level provenance is disabled (set ENABLE_PROVENANCE=false in .env to disable)"
+        )
 
     ranking_service = RankingService(
         categories=CATEGORIES,
@@ -139,6 +146,7 @@ def create_app() -> Flask:
     pub_details_service = PublicationDetailsService(
         settings=DetailsSettings.from_config(app.config),
         tracking=tracking_service,
+        merger=deduplication_service.merger,
     )
 
     researcher_details_service = ResearcherDetailsService(
