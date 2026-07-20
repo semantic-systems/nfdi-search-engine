@@ -5,6 +5,7 @@ from typing import Any
 from nfdi_search_engine.common.models.search_result import (
     FieldContribution,
     FieldProvenance,
+    FieldValueProvenance,
     SearchResult,
 )
 from nfdi_search_engine.services.deduplication.normalize import normalize_string
@@ -40,6 +41,21 @@ def _source_name(obj: Any) -> str | None:
     return names[0] if names else None
 
 
+def _sources_from_contributions(
+    group: list[Any],
+    field_prov_record: FieldProvenance,
+) -> list[str]:
+    seen: set[str] = set()
+    sources: list[str] = []
+    for contribution in field_prov_record.contributions:
+        for obj in group:
+            for name in _source_names(obj):
+                if name == contribution.source and name not in seen:
+                    seen.add(name)
+                    sources.append(name)
+    return sources
+
+
 def _preference_index(obj: Any, field: str, mapping_preference: dict) -> float:
     """
     Helper to get the preference index of an object's field value based on its source.
@@ -63,18 +79,27 @@ class ObjectMerger:
     When category is provided it returns a SearchResult with provenance metadata for search-result storage/ranking.
     """
 
+    def __init__(self, enable_provenance: bool = False) -> None:
+        self.enable_provenance = enable_provenance
+
     def merge(
         self,
         group: list[Any],
         mapping_preference: dict,
         category: str | None = None,
         entity_key: str = "",
+        enable_provenance: bool | None = None,
     ) -> Any:
         """
         Merge a list of result objects into one.
         Returns a SearchResult if a category if provided, the domain object otherwise.
         Applies strategies from mapping_preference and adds the provenance record.
         """
+        use_provenance = (
+            self.enable_provenance
+            if enable_provenance is None
+            else enable_provenance
+        )
         source_items = self._source_items(group)
         if not source_items:
             log.warning("ObjectMerger.merge() called with an empty list")
@@ -88,6 +113,7 @@ class ObjectMerger:
         ))
         merged = target_cls()
         provenance = {}
+        field_level_provenance: dict[str, FieldValueProvenance] = {}
 
         # iterate through all fields of the target class
         for field in type(merged).model_fields:
@@ -98,11 +124,11 @@ class ObjectMerger:
 
             # build the merged value for this field based on the strategy
             if strategy == "max":
-                value, field_provenance = self._value_max(group, field)
+                value, field_prov_record = self._value_max(group, field)
             elif strategy == "union":
-                value, field_provenance = self._value_union(group, field)
+                value, field_prov_record = self._value_union(group, field)
             else:
-                value, field_provenance = self._value_preference(
+                value, field_prov_record = self._value_preference(
                     group,
                     field,
                     mapping_preference
@@ -116,8 +142,14 @@ class ObjectMerger:
                     log.warning(
                         "Could not set field %r on %s during merge, skipping", field, target_cls.__name__)
 
-            if field_provenance.contributions:
-                provenance[field] = field_provenance
+            if field_prov_record.contributions:
+                provenance[field] = field_prov_record
+
+            if use_provenance and not _is_empty(value):
+                field_level_provenance[field] = FieldValueProvenance(
+                    value=value,
+                    sources=_sources_from_contributions(group, field_prov_record),
+                )
 
         if category is None:
             return merged
@@ -128,6 +160,7 @@ class ObjectMerger:
             item=merged,
             sources=self._sources(source_items),
             provenance=provenance,
+            field_provenance=field_level_provenance if use_provenance else {},
             source_items=source_items,
         )
 

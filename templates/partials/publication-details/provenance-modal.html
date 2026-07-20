@@ -1,0 +1,34 @@
+{% macro provenanceModal(modal_id, provenance_rows) %}
+<div id="{{ modal_id }}" class="modal fade" tabindex="-1" aria-labelledby="{{ modal_id }}-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ modal_id }}-label">Field Provenance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-striped align-middle mb-0">
+                        <thead>
+                            <tr>
+                                <th scope="col">Field</th>
+                                <th scope="col">Value</th>
+                                <th scope="col">Source</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in provenance_rows %}
+                            <tr>
+                                <td class="text-nowrap">{{ row.field }}</td>
+                                <td>{{ row.value }}</td>
+                                <td>{{ row.sources }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endmacro %}

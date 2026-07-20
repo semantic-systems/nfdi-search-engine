@@ -13,6 +13,8 @@
 
 {% block content %}
 
+{% from 'partials/publication-details/provenance-modal.html' import provenanceModal %}
+
 <!-- ### main content ### -->
 <main class=''>
     <div id='mainContent' class="container">
@@ -245,6 +247,20 @@
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-recommendations">Load</button>
                 </div>
 
+                {% if provenance_rows %}
+                <div class="d-flex p-2 bd-highlight pt-4">
+                    <span class="fw-bold fs-6">PROVENANCE <i class="bi bi-info-circle-fill text-secondary"
+                            data-bs-toggle="tooltip" data-bs-placement="top"
+                            title="Shows which data sources contributed each merged field"></i></span>
+                </div>
+                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="provenance_block">
+                    <button type="button" class="btn btn-outline-secondary" id="btn-view-provenance"
+                        data-bs-toggle="modal" data-bs-target="#publication-provenance-modal">
+                        View
+                    </button>
+                </div>
+                {% endif %}
+
                 <!-- 
                 <div class=" d-flex p-2 bd-highlight pt-4">
                     <span class="fw-bold fs-6">FAIR ASSESSMENT</span>
@@ -278,6 +294,10 @@
 
     </div>
 </main>
+
+{% if provenance_rows %}
+{{ provenanceModal('publication-provenance-modal', provenance_rows) }}
+{% endif %}
 
 {% endblock content %}
 
