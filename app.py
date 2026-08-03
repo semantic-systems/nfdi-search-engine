@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 import logging
 import logging.config
-import threading
 
 from flask import Flask
 from werkzeug.middleware.proxy_fix import ProxyFix
@@ -18,7 +17,7 @@ from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.observability.init import init_tracing, TracingConfig
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
-from nfdi_search_engine.infra.jobs.celery_app import celery_app, init_celery
+from nfdi_search_engine.infra.jobs.celery_app import init_celery
 from nfdi_search_engine.infra.jobs.celery_dispatcher import CeleryDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
@@ -194,27 +193,7 @@ def create_app() -> Flask:
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(details_bp)
 
-    # register the celery tasks, then run the worker in-process if the broker
-    # is the in-memory one (see Config.CELERY)
+    # register the celery tasks; main.py starts the worker
     init_celery(app)
-    if app.config["CELERY"]["run_worker_in_process"]:
-        _start_worker_threads()
 
     return app
-
-
-def _start_worker_threads() -> None:
-    # pool="solo", concurrency=1 keeps jobs strictly ordered, which
-    # tracking.visitor_id.propagate depends on (see init_celery)
-    threading.Thread(
-        target=lambda: celery_app.Worker(
-            loglevel="WARNING", pool="solo", concurrency=1, quiet=True
-        ).start(),
-        daemon=True,
-        name="celery-worker",
-    ).start()
-    threading.Thread(
-        target=lambda: celery_app.Beat(loglevel="WARNING", quiet=True).run(),
-        daemon=True,
-        name="celery-beat",
-    ).start()

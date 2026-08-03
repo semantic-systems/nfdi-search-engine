@@ -79,6 +79,7 @@ def init_celery(flask_app: "Flask") -> Celery:
         ", ".join(t for t in sorted(celery_app.tasks) if not t.startswith("celery.")),
     )
 
+    flask_app.extensions["celery"] = celery_app
     return celery_app
 
 
