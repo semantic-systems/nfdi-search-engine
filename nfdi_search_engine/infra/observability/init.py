@@ -56,4 +56,10 @@ def init_tracing(app, cfg: TracingConfig) -> None:
         from opentelemetry.instrumentation.requests import RequestsInstrumentor
         RequestsInstrumentor().instrument()
 
+    if cfg.instrument_celery:
+        # background jobs run after the request has returned, so their spans are
+        # linked to the enqueuing request through the broker message headers
+        from opentelemetry.instrumentation.celery import CeleryInstrumentor
+        CeleryInstrumentor().instrument()
+
     app._otel_initialized = True

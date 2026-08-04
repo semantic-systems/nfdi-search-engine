@@ -17,7 +17,8 @@ from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.observability.init import init_tracing, TracingConfig
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
-from nfdi_search_engine.infra.jobs.inprocess_dispatcher import InProcessDispatcher
+from nfdi_search_engine.infra.jobs.celery_app import init_celery
+from nfdi_search_engine.infra.jobs.celery_dispatcher import CeleryDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
 from nfdi_search_engine.infra.jobs.chatbot_processor import ChatbotProcessor
 from nfdi_search_engine.services.user_service import UserService
@@ -74,23 +75,18 @@ def create_app() -> Flask:
     )
     ensure_indices(es)
 
-    # background jobs‚
-    tracking_tasks = TrackingProcessor(es)
-    chatbot_tasks = ChatbotProcessor(
-        result_store=result_store,
-        settings=ChatbotSettings.from_config(app.config)
-    )
+    # background jobs
+    # the processors hold the job logic
+    # the Celery tasks in infra/jobs/tasks/ look them up here at run time (see init_celery)
+    processors = {
+        "tracking": TrackingProcessor(es),
+        "chatbot": ChatbotProcessor(
+            result_store=result_store,
+            settings=ChatbotSettings.from_config(app.config)
+        ),
+    }
 
-    jobs = InProcessDispatcher(
-        handlers={
-            "tracking.activity.write": tracking_tasks.handle_write_activity,
-            "tracking.search_term.write": tracking_tasks.handle_write_search_term,
-            "tracking.user_agent.upsert": tracking_tasks.handle_upsert_user_agent,
-            "tracking.event.write": tracking_tasks.handle_write_event,
-            "tracking.visitor_id.propagate": tracking_tasks.handle_propagate_visitor_id,
-            "chatbot.index_search_results": chatbot_tasks.handle_index_search_results,
-        }
-    )
+    jobs = CeleryDispatcher()
 
     # services
     user_service = UserService(
@@ -157,6 +153,7 @@ def create_app() -> Flask:
     app.extensions["result_store"] = result_store
     app.extensions["details_store"] = details_store
     app.extensions["job_dispatcher"] = jobs
+    app.extensions["processors"] = processors
     app.extensions["es_client"] = es
     app.extensions["services"] = {
         "search": search_service,
@@ -195,5 +192,8 @@ def create_app() -> Flask:
     app.register_blueprint(account_bp)
     app.register_blueprint(chatbot_bp)
     app.register_blueprint(details_bp)
+
+    # register the celery tasks; main.py starts the worker
+    init_celery(app)
 
     return app
