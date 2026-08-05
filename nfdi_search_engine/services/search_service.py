@@ -8,7 +8,7 @@ from opentelemetry import trace
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from nfdi_search_engine.common.models.search_result import SearchResult
+from nfdi_search_engine.common.models.search_result import SearchResult, unwrap
 from nfdi_search_engine.common.models.search_settings import SearchSettings
 from nfdi_search_engine.services.deduplication import DeduplicationService
 from nfdi_search_engine.common.models.request_meta import RequestMeta
@@ -353,4 +353,4 @@ class SearchService:
 
     def _items(self, results: List[SearchResult]) -> List[Any]:
         """Return domain objects for template compatibility."""
-        return [result.item if isinstance(result, SearchResult) else result for result in results]
+        return [unwrap(result) for result in results]

@@ -14,6 +14,7 @@ from nfdi_search_engine.web.helpers.timestamp_token import validate_ts_token
 from nfdi_search_engine.web.helpers.params import parse_prefixed_and_unquote
 from nfdi_search_engine.web.decorators import set_cookies, timeit
 from nfdi_search_engine.common.models.request_meta import RequestMeta
+from nfdi_search_engine.common.models.search_result import unwrap
 from nfdi_search_engine.services.publication_details_service import PublicationDetailsService
 from nfdi_search_engine.services.tracking_service import TrackingService
 
@@ -120,7 +121,8 @@ def publication_details(source_name, doi, ts):
     if not publications:
         return make_response(render_template("no-results.html", type="publication", identifier=doi))
 
-    merged = pub_svc.merge_publications(publications)
+    # merge_publications returns a SearchResult once it is called with a category
+    merged = unwrap(pub_svc.merge_publications(publications))
     return make_response(render_template("publication-details.html", publication=merged))
 
 

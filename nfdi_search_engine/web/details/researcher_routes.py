@@ -13,7 +13,10 @@ from nfdi_search_engine.web.helpers.ip import get_client_ip
 from nfdi_search_engine.web.helpers.timestamp_token import validate_ts_token
 from nfdi_search_engine.web.helpers.params import parse_prefixed_and_unquote
 from nfdi_search_engine.web.decorators import set_cookies, timeit
+from nfdi_search_engine.common.models.objects import thing
 from nfdi_search_engine.common.models.request_meta import RequestMeta
+from nfdi_search_engine.common.models.search_result import unwrap
+from nfdi_search_engine.common.serialization import encode_thing
 from nfdi_search_engine.infra.store.kv_store import KVStore
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.researcher_details_service import ResearcherDetailsService
@@ -82,23 +85,24 @@ def researcher_details(source_name, orcid, ts):
     if not researchers:
         return make_response(render_template("no-results.html", type="researcher", identifier=orcid))
 
-    merged = researcher_details_svc.merge_researchers(researchers)
+    # merge_researchers returns a SearchResult once it is called with a category
+    merged = unwrap(researcher_details_svc.merge_researchers(researchers))
 
     # store snapshot for /generate-researcher-about-me
+    if not isinstance(merged, thing):
+        # fail loudly rather than store a repr the LLM would silently summarize
+        raise TypeError(
+            f"merge_researchers returned {type(merged).__name__}, expected a domain object"
+        )
+
     details_store = _get_store()
     key = f"researcher:{orcid}"
 
-    # store as dict
-    if hasattr(merged, "model_dump"):
-        snapshot = merged.model_dump(mode="python", exclude_none=True)
-    elif isinstance(merged, dict):
-        snapshot = merged
-    else:
-        snapshot = {"obj": str(merged)}
-
-    details_store.put(key, snapshot, ttl_s=int(
-        # keep the researcher details in memory for 30 minutes
-        current_app.config.get("DETAILS_SNAPSHOT_TTL_S", 30*60))
+    details_store.put(
+        key,
+        encode_thing(merged, drop_empty=True),
+        # keep the researcher details around for 30 minutes
+        ttl_s=int(current_app.config.get("DETAILS_SNAPSHOT_TTL_S", 30 * 60)),
     )
 
     return make_response(render_template("researcher-details.html", researcher=merged))
