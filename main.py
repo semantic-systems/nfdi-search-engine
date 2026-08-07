@@ -3,6 +3,9 @@ from nfdi_search_engine.infra.jobs.worker import start_worker_threads
 
 app = create_app()
 
+# target for out-of-process celery workers
+celery_app = app.extensions["celery"]
+
 # must run at module level: gunicorn loads main:app and skips the __main__ block
 start_worker_threads(app)
 
