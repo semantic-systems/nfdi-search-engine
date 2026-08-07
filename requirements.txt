@@ -26,3 +26,4 @@ opentelemetry-instrumentation-flask==0.60b1
 opentelemetry-instrumentation-requests==0.60b1
 opentelemetry-instrumentation-celery==0.60b1
 celery[redis]==5.6.3
+redis==6.4.0
