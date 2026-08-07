@@ -101,8 +101,7 @@ def researcher_details(source_name, orcid, ts):
     details_store.put(
         key,
         encode_thing(merged, drop_empty=True),
-        # keep the researcher details around for 30 minutes
-        ttl_s=int(current_app.config.get("DETAILS_SNAPSHOT_TTL_S", 30 * 60)),
+        ttl_s=int(current_app.config["DETAILS_SNAPSHOT_TTL_S"]),
     )
 
     return make_response(render_template("researcher-details.html", researcher=merged))
