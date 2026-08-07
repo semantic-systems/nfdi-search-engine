@@ -45,6 +45,17 @@ def create_app() -> Flask:
 
     app.config.from_object(Config)
 
+    # Redis is required for concurrency
+    web_concurrency = app.config["WEB_CONCURRENCY"]
+    if not app.config["REDIS_URL"] and web_concurrency > 1:
+        raise RuntimeError(
+            f"WEB_CONCURRENCY={web_concurrency} requires REDIS_URL"
+        )
+    logger.info(
+        "Storage mode: %s",
+        "redis" if app.config["REDIS_URL"] else "in-process (single web process only)",
+    )
+
     # register jinja filters
     register_filters(app)
 
