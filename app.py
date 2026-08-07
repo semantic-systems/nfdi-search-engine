@@ -19,6 +19,7 @@ from nfdi_search_engine.infra.observability.init import init_tracing, TracingCon
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
 from nfdi_search_engine.infra.store.redis_result_store import RedisResultStore
+from nfdi_search_engine.infra.store.redis_kv_store import RedisKVStore
 from nfdi_search_engine.infra.jobs.celery_app import init_celery
 from nfdi_search_engine.infra.jobs.celery_dispatcher import CeleryDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
@@ -74,16 +75,15 @@ def create_app() -> Flask:
     # register error handlers
     register_error_handlers(app)
 
-    # result store: redis makes it visible to the other web and worker processes
+    # redis makes the stores visible to the other web and worker processes
     if app.config["REDIS_URL"]:
         redis_client = Redis.from_url(
             app.config["REDIS_URL"], decode_responses=True)
         result_store = RedisResultStore(redis_client)
+        details_store = RedisKVStore[dict](redis_client, key_prefix="details")
     else:
         result_store = InMemoryTTLResultStore()
-
-    # details store
-    details_store = InMemoryTTLKVStore[dict]()
+        details_store = InMemoryTTLKVStore[dict]()
 
     # elastic client and setup
     es = get_es_client(
