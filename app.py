@@ -59,6 +59,17 @@ def create_app() -> Flask:
         "redis" if app.config["REDIS_URL"] else "in-process (single web process only)",
     )
 
+    # redis makes every kind of per-process state visible to the other processes
+    redis_client = Redis.from_url(
+        app.config["REDIS_URL"]) if app.config["REDIS_URL"] else None
+
+    app.config["RATELIMIT_STORAGE_URI"] = app.config["REDIS_URL"] or "memory://"
+
+    if redis_client is not None:
+        app.config["SESSION_TYPE"] = "redis"
+        app.config["SESSION_REDIS"] = redis_client
+        app.config["RATELIMIT_IN_MEMORY_FALLBACK_ENABLED"] = True
+
     # register jinja filters
     register_filters(app)
 
@@ -75,10 +86,7 @@ def create_app() -> Flask:
     # register error handlers
     register_error_handlers(app)
 
-    # redis makes the stores visible to the other web and worker processes
-    if app.config["REDIS_URL"]:
-        redis_client = Redis.from_url(
-            app.config["REDIS_URL"], decode_responses=True)
+    if redis_client is not None:
         result_store = RedisResultStore(redis_client)
         details_store = RedisKVStore[dict](redis_client, key_prefix="details")
     else:
