@@ -217,19 +217,21 @@ class SearchService:
         if ctx.object_type not in CATEGORIES:
             raise KeyError(f"Invalid object_type: {ctx.object_type}")
 
-        rec = self.store.get(ctx.search_id)
-        if rec is None:
+        # read only the counters and the requested page
+        meta = self.store.get_meta(ctx.search_id)
+        if meta is None:
             raise KeyError("search_id not found or expired")
-
-        results_full: Dict[str, List[SearchResult]] = rec.results
-        meta = rec.meta
 
         total = int(meta["total_results"][ctx.object_type])
         displayed = int(meta["displayed"][ctx.object_type])
 
-        n = self.settings.lazy_load_n
-        chunk = results_full[ctx.object_type][displayed: min(
-            displayed + n, total)]
+        count = min(self.settings.lazy_load_n, total - displayed)
+        chunk = self.store.get_slice(
+            ctx.search_id, 
+            ctx.object_type, 
+            displayed, 
+            count
+        )
 
         new_displayed = min(displayed + len(chunk), total)
         meta["displayed"][ctx.object_type] = new_displayed
