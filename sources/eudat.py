@@ -1,6 +1,6 @@
 from nfdi_search_engine.common.models.objects import thing, Dataset, Author, Article, CreativeWork, VideoObject
 from typing import Iterable, Dict, Any, List
-from sources import data_retriever
+from sources.http_client import quote_term
 from config import Config
 from datetime import datetime
 from dateutil import parser
@@ -17,9 +17,9 @@ class EUDAT(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('endpoint', ''),
-            search_term=search_term
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('endpoint', '')
+            + quote_term(search_term)
         )
 
         return search_result

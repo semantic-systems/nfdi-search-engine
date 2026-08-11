@@ -12,7 +12,7 @@ from typing import Dict, Any, List
 
 from config import Config
 from nfdi_search_engine.common.models.objects import thing, Article, Author
-from sources import data_retriever
+from sources.http_client import HttpClient, quote_term
 from nfdi_search_engine.common.formatting import remove_html_tags
 from nfdi_search_engine.services.tracking_service import TrackingService
 
@@ -28,8 +28,9 @@ class SemanticScholarPublications:
 
     SOURCE = "SEMANTIC SCHOLAR - Publications"
 
-    def __init__(self, tracking: TrackingService = None):
+    def __init__(self, tracking: TrackingService = None, http: HttpClient = None):
         self.tracking = tracking
+        self.http = http or HttpClient()
 
     def log_event(self, type: str, message: str):
         """
@@ -63,11 +64,7 @@ class SemanticScholarPublications:
         """
         base_url = self._get_config(self.SOURCE, "citations-endpoint", "")
         identifier = f"{doi}?fields=citations.externalIds"
-        response = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier=identifier,
-            quote=False,
-        )
+        response = self.http.get_json(base_url + identifier)
 
         if not response or "citations" not in response:
             return []
@@ -91,11 +88,7 @@ class SemanticScholarPublications:
         """
         base_url = self._get_config(self.SOURCE, "recommendations-endpoint", "")
         identifier = f"{doi}?fields=externalIds"
-        response = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier=identifier,
-            quote=False,
-        )
+        response = self.http.get_json(base_url + identifier)
 
         if not response or "recommendedPapers" not in response:
             return []
@@ -113,11 +106,7 @@ class SemanticScholarPublications:
         """
         base_url = self._get_config(self.SOURCE, "citations-endpoint", "")
         for attempt in range(MAX_RETRIES):
-            response = data_retriever.retrieve_object(
-                base_url=base_url,
-                identifier=doi,
-                quote=False,
-            )
+            response = self.http.get_json(base_url + doi)
             if isinstance(response, dict):
                 return response
             self.log_event(
@@ -135,10 +124,7 @@ class SemanticScholarPublications:
         base_url = self._get_config(self.SOURCE, "recommendations-endpoint", "")
         search_term = f"{paper_id}?fields=title,publicationDate,externalIds&limit=10"
         for attempt in range(MAX_RETRIES):
-            response = data_retriever.retrieve_data(
-                base_url=base_url,
-                search_term=search_term,
-            )
+            response = self.http.get_json(base_url + quote_term(search_term))
             if isinstance(response, dict):
                 return response
             self.log_event(
@@ -207,11 +193,7 @@ class SemanticScholarPublications:
         base_url = self._get_config(self.SOURCE, "citations-endpoint", "")
         identifier = f"{doi}?fields=citations.title,citations.year,citations.externalIds,citations.authors"
         for attempt in range(MAX_RETRIES):
-            response = data_retriever.retrieve_object(
-                base_url=base_url,
-                identifier=identifier,
-                quote=False,
-            )
+            response = self.http.get_json(base_url + identifier)
             if isinstance(response, dict):
                 return response
             self.log_event(

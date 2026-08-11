@@ -1,10 +1,11 @@
 from nfdi_search_engine.common.models.objects import Project, Person, Organization, Place, Author, thing
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any
-import requests
 from bs4 import BeautifulSoup
+import requests
 import re
 from config import Config
+
 
 
 class GEPRIS(BaseSource):
@@ -30,10 +31,7 @@ class GEPRIS(BaseSource):
         # First request to get total count
         url = f"{base_url}?context={context}&hitsPerPage=1&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
 
-        response = requests.get(url, timeout=3)
-        response.raise_for_status()
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
+        soup = BeautifulSoup(self.http.get_text(url, timeout=3), 'html.parser')
         result = soup.find("span", id="result-info")
         
         if not result:
@@ -55,11 +53,8 @@ class GEPRIS(BaseSource):
         
         # Second request to get actual results
         url = f"{base_url}?context={context}&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
-        response = requests.get(url, timeout=10)
-        response.raise_for_status()
-        
         return {
-            'html': response.content,
+            'html': self.http.get_text(url, timeout=10),
             'total_available': total_available,
             'context': context
         }
@@ -383,80 +378,73 @@ class GEPRIS(BaseSource):
             url_address_details = f'https://gepris.dfg.de/gepris/institution/{organization_id}?context=institution&task=showDetail&id={organization_id}'
             
             # Send an HTTP GET request to retrieve the organization details
-            response = requests.get(url_address_details)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            
-            if response.status_code == 200:
-                # Parse the HTML response content
-                soup = BeautifulSoup(response.content, 'html.parser')
-                address_data = soup.find("div", id="address_data")
+            # get_text raises on any non-2xx response
+            soup = BeautifulSoup(self.http.get_text(url_address_details), 'html.parser')
+            address_data = soup.find("div", id="address_data")
 
-                if address_data:
-                    organization.source = 'GEPRIS'
-                    organization.name = organization_name
-                    address_span = address_data.find("span", class_="value")
+            if address_data:
+                organization.source = 'GEPRIS'
+                organization.name = organization_name
+                address_span = address_data.find("span", class_="value")
                     
-                    if address_span:
-                        # Extract and format the organization's address
-                        organization.address = '\n'.join([line.strip() for line in address_span.stripped_strings])
-                        organization.identifier = organization_id
+                if address_span:
+                    # Extract and format the organization's address
+                    organization.address = '\n'.join([line.strip() for line in address_span.stripped_strings])
+                    organization.identifier = organization_id
 
-                        # Example usage:
-                        # address = 'Vogt-Kölln-Straße 30 22527 Hamburg'
-                        try:
-                            coordinates = self.geocode_address(organization.address)
-                            if coordinates:
-                                latitude, longitude, place_id, place_rank, place_type, address_type, licence = coordinates
-                                organization.latitude = latitude
-                                organization.longitude = longitude
-                                organization.identifier = place_id
-                                organization.aggregateRating = place_rank
-                                organization.placType = place_type
-                                organization.addressType = address_type
-                                organization.licence = licence
-                            else:
-                                self.log_event(type="error", message='Latitude and Longitude are not available.')
-                        except Exception as e:
-                            self.log_event(type="error", message=f'An error occurred: {e}')
-                    else:
-                        organization.address = ""
-
-                    # an empty list for sub_organizations
-                    sub_organizations_list = []
-                    sub_organizations = soup.find("div", id="untergeordneteInstitutionen")
-
-                    if sub_organizations:
-                        for sub_organization in sub_organizations.find_all("li"):
-                            sub_org = Organization()
-                            sub_org.source = 'GEPRIS'
-                            sub_org.identifier = sub_organization.get("id")
-                            sub_org.url = 'https://gepris.dfg.de/gepris/institution/' + sub_org.identifier
-                            sub_org.name = sub_organization.find("a").text.strip()
-                            sub_organizations_list.append(sub_org)
-                    else:
-                        self.log_event(type="error", message="Sub organizations not available.")
-
-                    # an empty list for sub_projects
-                    sub_projects_list = []
-                    sub_project = soup.find("div", id="beteiligungen-main")
-                    if sub_project:
-                        for sub_proj in sub_project.find_all("a", class_=["intern", "hrefWithNewLine"]):
-                            sub_project = Project()
-                            if "intern" in sub_proj.get("class", []) and "hrefWithNewLine" in sub_proj.get("class", []):
-                                sub_project_link_id = sub_proj["href"]
-                                sub_project.identifier = sub_project_link_id.split("/")[-1]
-                                sub_project.url = 'https://gepris.dfg.de/gepris/projekt/' + sub_project.identifier
-                                sub_project.name = sub_proj.text.strip()
-                                sub_projects_list.append(sub_project)
-                                
-                    else:
-                        self.log_event(type="error", message="Sub projects not available.")
+                    # Example usage:
+                    # address = 'Vogt-Kölln-Straße 30 22527 Hamburg'
+                    try:
+                        coordinates = self.geocode_address(organization.address)
+                        if coordinates:
+                            latitude, longitude, place_id, place_rank, place_type, address_type, licence = coordinates
+                            organization.latitude = latitude
+                            organization.longitude = longitude
+                            organization.identifier = place_id
+                            organization.aggregateRating = place_rank
+                            organization.placType = place_type
+                            organization.addressType = address_type
+                            organization.licence = licence
+                        else:
+                            self.log_event(type="error", message='Latitude and Longitude are not available.')
+                    except Exception as e:
+                        self.log_event(type="error", message=f'An error occurred: {e}')
                 else:
-                    # Log an error message if address details are not found
-                    self.log_event(type="error", message="Address details not found.")
+                    organization.address = ""
+
+                # an empty list for sub_organizations
+                sub_organizations_list = []
+                sub_organizations = soup.find("div", id="untergeordneteInstitutionen")
+
+                if sub_organizations:
+                    for sub_organization in sub_organizations.find_all("li"):
+                        sub_org = Organization()
+                        sub_org.source = 'GEPRIS'
+                        sub_org.identifier = sub_organization.get("id")
+                        sub_org.url = 'https://gepris.dfg.de/gepris/institution/' + sub_org.identifier
+                        sub_org.name = sub_organization.find("a").text.strip()
+                        sub_organizations_list.append(sub_org)
+                else:
+                    self.log_event(type="error", message="Sub organizations not available.")
+
+                # an empty list for sub_projects
+                sub_projects_list = []
+                sub_project = soup.find("div", id="beteiligungen-main")
+                if sub_project:
+                    for sub_proj in sub_project.find_all("a", class_=["intern", "hrefWithNewLine"]):
+                        sub_project = Project()
+                        if "intern" in sub_proj.get("class", []) and "hrefWithNewLine" in sub_proj.get("class", []):
+                            sub_project_link_id = sub_proj["href"]
+                            sub_project.identifier = sub_project_link_id.split("/")[-1]
+                            sub_project.url = 'https://gepris.dfg.de/gepris/projekt/' + sub_project.identifier
+                            sub_project.name = sub_proj.text.strip()
+                            sub_projects_list.append(sub_project)
+                                
+                else:
+                    self.log_event(type="error", message="Sub projects not available.")
             else:
-                # Log an error message for unexpected HTTP status codes
-                self.log_event(type="error", message=f"Failed to retrieve data. Status code: {response.status_code}")
+                # Log an error message if address details are not found
+                self.log_event(type="error", message="Address details not found.")
             
             return organization, sub_organizations_list, sub_projects_list
         except requests.exceptions.Timeout as ex:
@@ -483,29 +471,23 @@ class GEPRIS(BaseSource):
         try:
             # Make a GET request to the Nominatim API
             url = f'https://nominatim.openstreetmap.org/search?format=json&q={address}'
-            response = requests.get(url)
+            data = self.http.get_json(url)
 
-            # Check if the request was successful
-            if response.status_code == 200:
-                data = response.json()
-                
-                # Check if the response contains results
-                if data:
-                    # Extract attributes from the first result
-                    first_result = data[0]
-                    latitude = first_result.get('lat', 'none')
-                    longitude = first_result.get('lon', 'none')
-                    place_id = first_result.get('place_id', 'none')
-                    place_rank = first_result.get('place_rank', 'none')
-                    place_type = first_result.get('type', 'none')
-                    address_type = first_result.get('addresstype', 'none')
-                    licence = first_result.get('licence', 'none')
+            # Check if the response contains results
+            if data:
+                # Extract attributes from the first result
+                first_result = data[0]
+                latitude = first_result.get('lat', 'none')
+                longitude = first_result.get('lon', 'none')
+                place_id = first_result.get('place_id', 'none')
+                place_rank = first_result.get('place_rank', 'none')
+                place_type = first_result.get('type', 'none')
+                address_type = first_result.get('addresstype', 'none')
+                licence = first_result.get('licence', 'none')
 
-                    return latitude, longitude, place_id, place_rank, place_type, address_type, licence  # Return the attributes
-                else:
-                    return None  # Address not found
+                return latitude, longitude, place_id, place_rank, place_type, address_type, licence  # Return the attributes
             else:
-                raise Exception(f'Error: {response.status_code}')
+                return None  # Address not found
         except requests.exceptions.RequestException as req_err:
             # Handle errors related to the HTTP request (e.g., network issues)
             raise Exception(f'An error occurred during the HTTP request: {req_err}')

@@ -2,7 +2,7 @@ import re
 from typing import Any, Dict, Iterable, List, Optional
 
 from nfdi_search_engine.common.models.objects import Article, Author, Organization, thing
-from sources import data_retriever
+from sources.http_client import quote_term
 from config import Config
 
 from sources.base import BaseSource
@@ -65,9 +65,9 @@ class ORCID(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-            search_term=search_term,
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
         return search_result
@@ -127,11 +127,7 @@ class ORCID(BaseSource):
         if not str(base).strip():
             return
 
-        record = data_retriever.retrieve_object(
-            base_url=base,
-            identifier=f"{orcid_path}/record",
-            quote=False,
-        )
+        record = self.http.get_json(base + f"{orcid_path}/record")
 
         if not record or not isinstance(record, dict):
             return

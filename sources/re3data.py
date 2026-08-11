@@ -2,7 +2,7 @@ from typing import Iterable, Dict, Any, List, Optional
 
 from nfdi_search_engine.common.models.objects import Dataset, Organization
 from config import Config
-from sources import data_retriever
+from sources.http_client import quote_term
 from nfdi_search_engine.common.models.objects import thing, Author, Article
 
 from sources.base import BaseSource
@@ -22,10 +22,7 @@ class RE3DATA(BaseSource):
         Fetch raw json from the source using the given search term.
         """
         search_url = Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
-        search_results = data_retriever.retrieve_data(
-            base_url=search_url,
-            search_term=search_term,
-        )
+        search_results = self.http.get_xml(search_url + quote_term(search_term))
         return search_results
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -194,10 +191,7 @@ class RE3DATA(BaseSource):
         """
 
         base_url = Config.DATA_SOURCES[self.SOURCE].get('get-resource-endpoint', '')     
-        search_result = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier=doi
-        ) #source identifier will be passed on with the base url
+        search_result = self.http.get_xml(base_url + quote_term(doi)) #source identifier will be passed on with the base url
 
         if search_result:
             dataset = self.map_hit_detailled(search_result, doi)

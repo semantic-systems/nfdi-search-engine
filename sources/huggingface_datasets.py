@@ -2,7 +2,7 @@ from typing import Union, Dict, Any, List, Iterable
 
 from config import Config
 from sources.base import BaseSource
-from sources import data_retriever
+from sources.http_client import quote_term
 from nfdi_search_engine.common.models.objects import thing, Article, Author, Dataset, Person
 
 from nfdi_search_engine.common.formatting import remove_html_tags
@@ -17,10 +17,7 @@ class HuggingFaceDatasets(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        return data_retriever.retrieve_data(
-            base_url=self.SEARCH_ENDPOINT,
-            search_term=search_term,
-        ) or {}
+        return self.http.get_json(self.SEARCH_ENDPOINT + quote_term(search_term)) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -90,11 +87,7 @@ class HuggingFaceDatasets(BaseSource):
                 results['resources'].append(dataset)
 
     def get_resource(self, doi: str) -> Dataset | None:
-        search_result = data_retriever.retrieve_object(
-            base_url=self.RESOURCE_ENDPOINT,
-            identifier=doi,
-            quote=False,
-        )
+        search_result = self.http.get_json(self.RESOURCE_ENDPOINT + doi)
         if search_result:
             dataset = self.map_hit(search_result)
             self.log_event(type="info", message=f"{self.SOURCE} - retrieved dataset details")
