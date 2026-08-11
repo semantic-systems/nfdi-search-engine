@@ -132,7 +132,7 @@ class Config:
     SESSION_TYPE = "filesystem"
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
-    REQUEST_TIMEOUT = 10
+    REQUEST_TIMEOUT = 5
 
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10

@@ -54,7 +54,7 @@ class GEPRIS(BaseSource):
         # Second request to get actual results
         url = f"{base_url}?context={context}&hitsPerPage={hits_per_page}&index=0&keywords_criterion={search_term}&language=en&task=doSearchSimple"
         return {
-            'html': self.http.get_text(url, timeout=10),
+            'html': self.http.get_text(url),
             'total_available': total_available,
             'context': context
         }
