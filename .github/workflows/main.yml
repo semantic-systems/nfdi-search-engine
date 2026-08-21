@@ -1,4 +1,4 @@
-name: 'Deploy NFDI Search Engine on sems-kg-1'
+name: 'Deploy NFDI Search Engine on aixsrv1'
 on:
   workflow_dispatch:
   push:
@@ -7,7 +7,7 @@ on:
 
 jobs:
   deploy:
-    runs-on: [sems-kg-1-runner]    
+    runs-on: [aixsrv1-tohuus-runner]    
     steps:
       - name: 'Check out repo'
         uses: actions/checkout@v3
@@ -38,5 +38,7 @@ jobs:
           echo "ELASTIC_USERNAME=${{ secrets.ELASTIC_USERNAME }}" >> ./.env
           echo "ELASTIC_PASSWORD=${{ secrets.ELASTIC_PASSWORD }}" >> ./.env
           echo "CHATBOT_SERVER=${{ secrets.CHATBOT_SERVER }}" >> ./.env
+          echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> ./.env
+          echo "WEB_CONCURRENCY=${{ secrets.WEB_CONCURRENCY }}" >> ./.env
       - name: 'Re-build Docker container from current source'
         run: docker compose up --force-recreate --build --detach
