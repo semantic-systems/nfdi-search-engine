@@ -32,6 +32,7 @@ from nfdi_search_engine.services.analytics_service import AnalyticsService
 from nfdi_search_engine.services.publication_details_service import PublicationDetailsService, DetailsSettings
 from nfdi_search_engine.services.researcher_details_service import ResearcherDetailsService, OpenAISettings
 from nfdi_search_engine.services.resource_details_service import ResourceDetailsService
+from nfdi_search_engine.services.recommendation_service import RecommendationService, RecommendationSettings
 
 
 def create_app() -> Flask:
@@ -148,6 +149,11 @@ def create_app() -> Flask:
         tracking=tracking_service,
     )
 
+    recommendation_service = RecommendationService(
+        settings=RecommendationSettings.from_config(app.config),
+        tracking=tracking_service,
+    )
+
     # expose shared objects in app.extensions‚
     app.extensions["logger"] = logger
     app.extensions["result_store"] = result_store
@@ -165,6 +171,7 @@ def create_app() -> Flask:
         "publication_details": pub_details_service,
         "researcher_details": researcher_details_service,
         "resource_details": resource_details_service,
+        "recommendations": recommendation_service,
     }
 
     # register user loader

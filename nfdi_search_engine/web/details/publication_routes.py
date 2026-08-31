@@ -141,6 +141,7 @@ def publication_details_citations(doi):
 
 
 @bp.route("/publication-details-recommendations/<path:doi>", methods=["GET"])
+@limiter.limit("10 per minute")
 @timeit
 def publication_details_recommendations(doi):
     """
@@ -148,7 +149,7 @@ def publication_details_recommendations(doi):
     
     :param doi: The DOI string
     """
-    svc, _ = _get_services()
+    svc = current_app.extensions["services"]["recommendations"]
     pubs = svc.get_recommendations_for_publication(doi)
     return make_response(
         render_template(

@@ -175,6 +175,7 @@ class Config:
             "module": "openalex_publications",
             "search-endpoint": f"https://api.openalex.org/works?page=1&per-page={NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT}&search=",
             "get-publication-endpoint": "https://api.openalex.org/works/",
+            "recommendations-endpoint": "https://api.openalex.org/works/",
             "get-researcher-publications-endpoint": "https://api.openalex.org/works?filter=author.id:",
         },
         "OPENALEX - Researchers": {

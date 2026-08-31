@@ -23,7 +23,7 @@ class PublicationDetailsService:
     - DOI -> metadata resolution for batches
     - Publication details page harvesting across sources
     - Publication merging
-    - Publication citations/recommendations partial lists
+    - Publication citations partial lists
     - External DOI citation string formatting
     """
 
@@ -49,9 +49,6 @@ class PublicationDetailsService:
         }
         self.metadata_sources = {
             "OpenCitations": "opencitations",
-        }
-        self.recommendation_sources = {
-            "SEMANTIC SCHOLAR - Publications": "semanticscholar_publications",
         }
 
     def get_reference_dois(self, doi: str) -> List[str]:
@@ -309,39 +306,6 @@ class PublicationDetailsService:
             for pub in found:
                 if getattr(pub, "identifier", "") not in doi_list and (getattr(pub, "name", "") or "").lower() not in name_list:
                     publications.append(pub)
-
-        return publications
-
-    def get_recommendations_for_publication(self, doi: str) -> List[Article]:
-        """
-        Fetch recommended publications for a DOI from semantic scholar
-        Uses the .get_recommendations_for_publication() method from source modules.
-
-        :param doi: DOI to fetch recommendations for
-        :type doi: str
-        :return: List of recommended Articles
-        :rtype: List[Article]
-        """
-        doi = doi.lower()
-        publications: List[Article] = []
-
-        for source, module_name in self.citation_sources.items():
-            try:
-                mod = importlib.import_module(f"sources.{module_name}")
-                found = mod.get_recommendations_for_publication(
-                    doi=doi, tracking=self.tracking
-                ) or []
-            except Exception as e:
-                self.tracking.log_event_async(
-                    log_type="error",
-                    filename=f"sources/{module_name}.py",
-                    args=[source, doi],
-                    method=f"get_recommendations_for_publication",
-                    message=traceback.format_exception_only(e),
-                    traceback=traceback.format_exception(e),
-                )
-                continue
-            publications.extend(found)
 
         return publications
 

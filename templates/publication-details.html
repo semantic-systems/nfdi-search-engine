@@ -236,12 +236,12 @@
                     </div>
                 </div>
 
-                <div class="d-flex p-2 bd-highlight pt-4">
+                <div class="d-flex px-2 pt-4 pb-1 bd-highlight">
                     <span class="fw-bold fs-6">RECOMMENDATIONS <i class="bi bi-info-circle-fill text-secondary"
                             data-bs-toggle="tooltip" data-bs-placement="top"
-                            title="Retrieved from Semantic Scholar"></i></span>
+                            title="Retrieved from Semantic Scholar and OpenAlex"></i></span>
                 </div>
-                <div class="d-flex flex-column p-2 fs-6 border-bottom pb-4" id="recommendations_block">
+                <div class="d-flex flex-column px-2 pb-4 fs-6 border-bottom" id="recommendations_block">
                     <button type="button" class="btn btn-outline-secondary" id="btn-load-recommendations">Load</button>
                 </div>
 
@@ -467,7 +467,90 @@ document.addEventListener("DOMContentLoaded", () => {
             e.currentTarget.classList.add("d-none");
             render(keyCit, "citations_list", "btn-load-citations", false);
         });
-    
+
+    // (re)initialize bootstrap tooltips within a scope, skipping already-initialized ones
+    function reinitTooltips(scope) {
+        (scope || document).querySelectorAll('[data-bs-toggle="tooltip"]').forEach((el) => {
+            if (!bootstrap.Tooltip.getInstance(el)) new bootstrap.Tooltip(el);
+        });
+    }
+
+    // page-load tooltips (e.g. the RECOMMENDATIONS info icon)
+    reinitTooltips(document);
+
+    // paginate the injected recommendation cards: 10 per page with prev/next controls
+    function setupRecommendations(block) {
+        const cards = Array.from(block.querySelectorAll(".rec-card"));
+        const total = cards.length;
+        if (total === 0) return;
+
+        const pageSize = 10;
+        const pageCount = Math.ceil(total / pageSize);
+        let page = 0;
+
+        const bar = document.createElement("div");
+        bar.className = "d-flex justify-content-between align-items-center mb-2 fs-7";
+        const label = document.createElement("span");
+        label.className = "text-secondary";
+        const nav = document.createElement("div");
+        const prev = document.createElement("button");
+        prev.type = "button";
+        prev.className = "btn btn-sm btn-outline-secondary py-0 px-2 me-1";
+        prev.innerHTML = '<i class="bi bi-chevron-left"></i>';
+        const next = document.createElement("button");
+        next.type = "button";
+        next.className = "btn btn-sm btn-outline-secondary py-0 px-2";
+        next.innerHTML = '<i class="bi bi-chevron-right"></i>';
+        nav.append(prev, next);
+        bar.append(label, nav);
+        if (pageCount <= 1) nav.classList.add("d-none");
+        block.prepend(bar);
+
+        function render() {
+            const start = page * pageSize;
+            const end = Math.min(start + pageSize, total);
+            cards.forEach((c, i) => c.classList.toggle("d-none", i < start || i >= end));
+            label.textContent = `Showing ${start + 1}-${end} of ${total}`;
+            prev.disabled = page === 0;
+            next.disabled = page >= pageCount - 1;
+        }
+        // ctrl/cmd + click jumps to the first (prev) or last (next) page
+        prev.addEventListener("click", (ev) => {
+            if (page === 0) return;
+            page = (ev.ctrlKey || ev.metaKey) ? 0 : page - 1;
+            render();
+        });
+        next.addEventListener("click", (ev) => {
+            if (page >= pageCount - 1) return;
+            page = (ev.ctrlKey || ev.metaKey) ? pageCount - 1 : page + 1;
+            render();
+        });
+        render();
+    }
+
+    // recommendations: fetch the server-rendered partial on demand and inject it
+    document.getElementById("btn-load-recommendations")
+        ?.addEventListener("click", async (e) => {
+            const btn   = e.currentTarget;
+            const block = document.getElementById("recommendations_block");
+            btn.disabled = true;
+            btn.textContent = "Loading...";
+            try {
+                const res = await fetch(
+                    `/publication-details-recommendations/${encodeURIComponent(doiPage)}`,
+                    { method: "GET" }
+                );
+                if (!res.ok) throw new Error(`recommendations fetch failed (${res.status})`);
+                block.innerHTML = await res.text();
+                setupRecommendations(block);
+                reinitTooltips(block);
+            } catch (err) {
+                console.error(err);
+                btn.disabled = false;
+                btn.textContent = "Load";
+            }
+        });
+
     });
 
     document.addEventListener("DOMContentLoaded", () => {
