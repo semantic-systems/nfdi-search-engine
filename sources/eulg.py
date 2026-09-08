@@ -1,13 +1,12 @@
 import urllib
 from typing import List, Dict, Any, Iterable
 
-import requests
-
 from elg import Catalog
 from config import Config
 from nfdi_search_engine.common.models.objects import Dataset, SoftwareApplication
 from sources.base import BaseSource
 from nfdi_search_engine.common.formatting import remove_html_tags
+from sources.http_client import HttpClient
 
 
 class EULG(BaseSource):
@@ -17,6 +16,10 @@ class EULG(BaseSource):
     SOURCE = "EULG"
 
     class _CatalogWithTimeout(Catalog):
+        def __init__(self, http: HttpClient, domain: str = "live"):
+            super().__init__(domain)
+            self._http = http
+
         def _get(self, path: str, queries: List[set] = [], json: bool = False):
             url = (
                 "https://live.european-language-grid.eu/catalogue_backend/api/registry/"
@@ -29,7 +32,7 @@ class EULG(BaseSource):
                     ]
                 )
             )
-            response = requests.get(url, timeout=int(Config.REQUEST_TIMEOUT))
+            response = self._http.get(url)
             return response.json() if json else response
 
     def fetch(self, search_term: str) -> Dict[str, Any]:
@@ -38,7 +41,7 @@ class EULG(BaseSource):
         (as in Elastic-style APIs). Instead we call the ELG python client and return a raw dict
         that our extract_hits() understands.
         """
-        catalog = self._CatalogWithTimeout()
+        catalog = self._CatalogWithTimeout(self.http)
 
         resource_items = ["Corpus", "Tool/Service", "Lexical/Conceptual resource"]
         all_results = []

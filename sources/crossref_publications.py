@@ -1,5 +1,5 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork
-from sources import data_retriever
+from sources.http_client import quote_term
 from typing import Iterable, Dict, Any, List
 from config import Config
 from sources.base import BaseSource
@@ -15,9 +15,9 @@ class CROSSREF_Publications(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-            search_term=search_term
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
         return search_result
@@ -93,10 +93,9 @@ class CROSSREF_Publications(BaseSource):
                 results['publications'].append(publication)
 
     def get_publication(self, doi: str):
-        search_result = data_retriever.retrieve_object(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get(
-                'get-publication-endpoint', ''),
-            identifier=doi
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', '')
+            + quote_term(doi)
         )
 
         if search_result:
@@ -114,10 +113,9 @@ class CROSSREF_Publications(BaseSource):
         Returns:
             list: A list of DOIs that are referenced by the given DOI.
         """
-        search_result = data_retriever.retrieve_object(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''),
-            identifier=doi,
-            quote=False
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', '')
+            + doi
         )
 
         if search_result:
@@ -134,9 +132,9 @@ class CROSSREF_Publications(BaseSource):
         return []
 
     def get_publication_references(self, doi: str):
-        search_result = data_retriever.retrieve_object(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', ''), 
-            identifier=doi
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('get-publication-references-endpoint', '')
+            + quote_term(doi)
         )
         if search_result:
             search_result = search_result.get('message', {})

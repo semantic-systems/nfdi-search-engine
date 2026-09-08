@@ -2,10 +2,9 @@ import re
 from time import sleep
 from typing import List
 
-from requests import get
-
 from config import Config
 from nfdi_search_engine.common.models.objects import Person, Article, thing, Organization
+from sources.http_client import HttpClient
 
 
 _RX_DOI = re.compile(r"10\.\d{4,9}/\S+", re.I)
@@ -76,10 +75,9 @@ def fetch_citations(doi: str, access_token: str = ACCESS_TOKEN, tracking=None):
 
     search_url = API_CITATION + doi
 
-    r = get(search_url, timeout=30, headers=HTTP_HEADERS)
-    r.raise_for_status()
-
-    return r.json()
+    # module level function, so it owns a client for the duration of the call
+    with HttpClient() as client:
+        return client.get_json(search_url, headers=HTTP_HEADERS, timeout=30)
 
 def fetch_references(doi: str, access_token: str = ACCESS_TOKEN, tracking=None):
 
@@ -91,10 +89,9 @@ def fetch_references(doi: str, access_token: str = ACCESS_TOKEN, tracking=None):
 
     search_url = API_REFERENCE + doi
 
-    r = get(search_url, timeout=30, headers=HTTP_HEADERS)
-    r.raise_for_status()
-
-    return r.json()
+    # module level function, so it owns a client for the duration of the call
+    with HttpClient() as client:
+        return client.get_json(search_url, headers=HTTP_HEADERS, timeout=30)
 
 def fetch_metadata(dois: list[str], access_token: str = ACCESS_TOKEN, tracking=None):
     """
@@ -129,10 +126,9 @@ def fetch_metadata(dois: list[str], access_token: str = ACCESS_TOKEN, tracking=N
 
     search_url = API_METADATA + "__doi:".join(dois)
 
-    r = get(search_url, timeout=30, headers=HTTP_HEADERS)
-    r.raise_for_status()
-
-    return r.json()
+    # module level function, so it owns a client for the duration of the call
+    with HttpClient() as client:
+        return client.get_json(search_url, headers=HTTP_HEADERS, timeout=30)
 
 
 def _extract_doi(id_field: str) -> str:

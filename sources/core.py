@@ -1,8 +1,7 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization
-from sources import data_retriever
+from sources.http_client import quote_term
 from config import Config
 from typing import Iterable, Dict, Any, List
-import requests
 
 from sources.base import BaseSource
 from nfdi_search_engine.common.formatting import remove_html_tags
@@ -16,18 +15,12 @@ class CORE(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        # we cannot use data_retriever.retrieve_data here because we need to send the request with an API key in the header
-        # learn more: https://api.core.ac.uk/docs/v3#tag/Search
         limit = Config.NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT
         api_url = f'https://api.core.ac.uk/v3/search/works/?limit={limit}&q={search_term}&_exists_:doi'
         headers = {"Authorization": "Bearer " + Config.CORE_API_KEY}
 
-        # send the request
-        response = requests.get(api_url, headers=headers)
-        response.raise_for_status()
-
-        search_result = response.json()
-        return search_result
+        # the api key goes per request
+        return self.http.get_json(api_url, headers=headers)
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """

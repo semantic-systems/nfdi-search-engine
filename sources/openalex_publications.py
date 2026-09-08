@@ -1,5 +1,5 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork
-from sources import data_retriever
+from sources.http_client import quote_term
 from sources.base import BaseSource
 from config import Config
 from typing import Union, Dict, Any, List, Iterable
@@ -19,10 +19,7 @@ class OpenAlexPublications(BaseSource):
 
         base_url = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
 
-        return data_retriever.retrieve_data(
-            base_url=base_url,
-            search_term=search_term,
-        ) or {}
+        return self.http.get_json(base_url + quote_term(search_term)) or {}
 
     def extract_hits(self, raw) -> Iterable[Dict[str, Any]]:
         """
@@ -132,11 +129,7 @@ class OpenAlexPublications(BaseSource):
 
         base_url = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
 
-        raw = data_retriever.retrieve_data(
-            base_url=base_url,
-            search_term="",
-            url=url
-        )
+        raw = self.http.get_json(url)
 
         # 2. extract the hits
         hits = list(self.extract_hits(raw))
@@ -162,10 +155,7 @@ class OpenAlexPublications(BaseSource):
 
     def get_publication(self, doi: str):
         base_url = Config.DATA_SOURCES[self.SOURCE].get("get-publication-endpoint", "")
-        search_result = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier="https://doi.org/" + doi,
-        )
+        search_result = self.http.get_json(base_url + quote_term("https://doi.org/" + doi))
         if search_result:
             return self.map_hit(search_result)
 

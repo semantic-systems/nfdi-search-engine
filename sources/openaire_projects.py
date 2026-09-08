@@ -1,5 +1,5 @@
 from nfdi_search_engine.common.models.objects import thing, Project, Author, Organization
-from sources import data_retriever
+from sources.http_client import quote_term
 from typing import Iterable, Dict, Any
 from config import Config
 
@@ -13,9 +13,9 @@ class OpenAIRE_Projects(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        return data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-            search_term=search_term,
+        return self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
