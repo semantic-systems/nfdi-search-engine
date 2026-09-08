@@ -6,28 +6,54 @@ services:
       elastic:
         condition: service_healthy
       jaeger:
-        condition: service_healthy
+        condition: service_started
 
-  jaeger:
+  worker:
     depends_on:
       elastic:
         condition: service_healthy
+
+  beat:
+    depends_on:
+      elastic:
+        condition: service_healthy
+
+  jaeger:
+    image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
+    ports:
+      - "16686:16686"
+    restart: unless-stopped
+    networks:
+      - nfdi-infra
 
   elastic:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
     ports:
       - "9200:9200"
-      - "9300:9300"
     environment:
       discovery.type: single-node
-      xpack.security.enabled: "false"
+      xpack.security.enabled: "true"
       xpack.security.http.ssl.enabled: "false"
+      ELASTIC_PASSWORD: "${ELASTIC_PASSWORD}"
+      ES_JAVA_OPTS: "-Xms1g -Xmx1g"
+    volumes:
+      # a dev volume of its own, never the provisioned nfdi-elastic-data
+      - elastic-dev-data:/usr/share/elasticsearch/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s >/dev/null || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s' >/dev/null || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 30
-      start_period: 20s
+      start_period: 60s
     restart: unless-stopped
     networks:
-        - nfdi-search-engine_default
+      - nfdi-infra
+
+volumes:
+  elastic-dev-data:
+
+networks:
+  # replaces the external network from the base file, so dev needs no provisioning
+  nfdi-infra:
+    name: nfdi-search-engine-dev
+    external: false

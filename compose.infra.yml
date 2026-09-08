@@ -1,0 +1,134 @@
+name: nfdi-infra
+
+services:
+    elastic:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
+        environment:
+            discovery.type: single-node
+            xpack.security.enabled: "true"
+            xpack.security.http.ssl.enabled: "false"
+            ELASTIC_PASSWORD: "${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env}"
+            ES_JAVA_OPTS: "${ES_JAVA_OPTS:--Xms2g -Xmx2g}"
+        volumes:
+            - elastic-data:/usr/share/elasticsearch/data
+        ulimits:
+            memlock:
+                soft: -1
+                hard: -1
+            nofile:
+                soft: 65536
+                hard: 65536
+        ports:
+            - 9200:9200
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "curl -fsS -u elastic:$$ELASTIC_PASSWORD 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s' >/dev/null || exit 1"]
+            interval: 5s
+            timeout: 3s
+            retries: 30
+            start_period: 60s
+        networks:
+            - nfdi-infra
+
+    # retention policy for the jaeger indices, plus the kibana service account password
+    elastic-init:
+        image: curlimages/curl:8.8.0
+        restart: "no"
+        environment:
+            ELASTIC_PASSWORD: "${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env}"
+            KIBANA_SYSTEM_PASSWORD: "${KIBANA_SYSTEM_PASSWORD:?set KIBANA_SYSTEM_PASSWORD in .env}"
+        volumes:
+            - ./elastic-ilm-policy.json:/policy.json:ro
+        entrypoint: ["sh", "-c"]
+        command:
+            - |
+              set -e
+              curl -fsS -u "elastic:$$ELASTIC_PASSWORD" \
+                -XPUT http://elastic:9200/_ilm/policy/jaeger-one-week \
+                -H 'Content-Type: application/json' --data-binary @/policy.json
+              curl -fsS -u "elastic:$$ELASTIC_PASSWORD" \
+                -XPOST http://elastic:9200/_security/user/kibana_system/_password \
+                -H 'Content-Type: application/json' \
+                -d "{\"password\":\"$$KIBANA_SYSTEM_PASSWORD\"}"
+        depends_on:
+            elastic:
+                condition: service_healthy
+        networks:
+            - nfdi-infra
+
+    # creates the jaeger index templates and write aliases. Jaeger refuses
+    # to start with use_ilm unless the templates come from here instead of itself.
+    # Each run moves the write alias to a fresh index, which is why this is not part
+    # of any deploy
+    jaeger-rollover-init:
+        image: jaegertracing/jaeger-es-rollover:latest
+        restart: "no"
+        environment:
+            INDEX_PREFIX: jaeger-main
+            ES_USE_ILM: "true"
+            ES_ILM_POLICY_NAME: jaeger-one-week
+            ES_USERNAME: elastic
+            ES_PASSWORD: "${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env}"
+        command: ["init", "http://elastic:9200", "--shards", "1", "--replicas", "0"]
+        depends_on:
+            elastic-init:
+                condition: service_completed_successfully
+        networks:
+            - nfdi-infra
+
+    jaeger:
+        image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
+        command: ["--config", "/etc/jaeger/config.yaml"]
+        volumes:
+            - ./jaeger-config.yaml:/etc/jaeger/config.yaml:ro
+        environment:
+            JAEGER_ES_SERVER_URLS: "http://elastic:9200"
+            JAEGER_ES_USERNAME: elastic
+            JAEGER_ES_PASSWORD: "${ELASTIC_PASSWORD:?set ELASTIC_PASSWORD in .env}"
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://localhost:13133/health/status >/dev/null || exit 1"]
+            interval: 10s
+            timeout: 3s
+            retries: 10
+        ports:
+            - 16686:16686
+        depends_on:
+            jaeger-rollover-init:
+                condition: service_completed_successfully
+        networks:
+            - nfdi-infra
+
+    kibana:
+        image: docker.elastic.co/kibana/kibana:8.13.4
+        environment:
+            ELASTICSEARCH_HOSTS: "http://elastic:9200"
+            ELASTICSEARCH_USERNAME: kibana_system
+            ELASTICSEARCH_PASSWORD: "${KIBANA_SYSTEM_PASSWORD:?set KIBANA_SYSTEM_PASSWORD in .env}"
+            # kibana refuses to start without a 32+ character key
+            XPACK_SECURITY_ENCRYPTIONKEY: "${KIBANA_ENCRYPTION_KEY:?set KIBANA_ENCRYPTION_KEY in .env, 32+ chars}"
+            XPACK_REPORTING_ENCRYPTIONKEY: "${KIBANA_ENCRYPTION_KEY:?set KIBANA_ENCRYPTION_KEY in .env, 32+ chars}"
+            XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY: "${KIBANA_ENCRYPTION_KEY:?set KIBANA_ENCRYPTION_KEY in .env, 32+ chars}"
+        ports:
+            - 5601:5601
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "curl -fsS http://localhost:5601/api/status >/dev/null || exit 1"]
+            interval: 10s
+            timeout: 5s
+            retries: 30
+            start_period: 60s
+        depends_on:
+            elastic-init:
+                condition: service_completed_successfully
+        networks:
+            - nfdi-infra
+
+volumes:
+    elastic-data:
+        external: true
+        name: nfdi-elastic-data
+
+networks:
+    nfdi-infra:
+        name: nfdi-infra
