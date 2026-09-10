@@ -61,13 +61,20 @@ def create_app() -> Flask:
 
     # redis makes every kind of per-process state visible to the other processes
     redis_client = Redis.from_url(
-        app.config["REDIS_URL"]) if app.config["REDIS_URL"] else None
+        app.config["REDIS_URL"],
+        socket_timeout=2,
+        socket_connect_timeout=2,
+    ) if app.config["REDIS_URL"] else None
 
     app.config["RATELIMIT_STORAGE_URI"] = app.config["REDIS_URL"] or "memory://"
 
     if redis_client is not None:
         app.config["SESSION_TYPE"] = "redis"
         app.config["SESSION_REDIS"] = redis_client
+        app.config["RATELIMIT_STORAGE_OPTIONS"] = {
+            "socket_timeout": 2,
+            "socket_connect_timeout": 2,
+        }
         app.config["RATELIMIT_IN_MEMORY_FALLBACK_ENABLED"] = True
 
     # register jinja filters

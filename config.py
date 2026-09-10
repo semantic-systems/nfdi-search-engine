@@ -140,6 +140,7 @@ class Config:
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
+    PERMANENT_SESSION_LIFETIME = 7 * 24 * 60 * 60
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 10

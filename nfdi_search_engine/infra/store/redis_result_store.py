@@ -95,11 +95,16 @@ class RedisResultStore(ResultStore):
             return False
 
         envelope["meta"].update(patch)
-        ttl = self.redis.ttl(key)
+
         # concurrent load-more calls for one search can lose an update here and serve
         # a repeated chunk; they are driven by a single session, so it is not guarded
-        self.redis.set(key, json.dumps(envelope), ex=ttl if ttl > 0 else None)
-        return True
+        written = self.redis.set(
+            key, 
+            json.dumps(envelope), 
+            xx=True, 
+            keepttl=True
+        )
+        return bool(written)
 
     def _envelope(self, search_id: str) -> Optional[Dict[str, Any]]:
         raw = self.redis.get(self._meta_key(search_id))
