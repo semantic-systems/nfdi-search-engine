@@ -55,8 +55,16 @@ class Settings(BaseSettings):
     TRACING_INSTRUMENT_REQUESTS: bool = True
     TRACING_INSTRUMENT_CELERY: bool = True
 
-    # Celery. "memory://" runs the worker in-process; a real broker (redis://) does not.
-    CELERY_BROKER_URL: str = Field(default="memory://")
+    # Full Redis url, e.g. redis://redis:6379/0
+    # Unset means celery runs in-process on an in-memory broker
+    REDIS_URL: Optional[str] = None
+
+    # last-run times of scheduled jobs, defaults to a temp file
+    CELERY_BEAT_SCHEDULE_FILE: Optional[str] = None
+
+    # gunicorn worker processes; anything above 1 requires REDIS_URL.
+    # Must be a real env var: gunicorn reads it before .env is loaded
+    WEB_CONCURRENCY: int = 1
 
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
@@ -126,10 +134,13 @@ class Config:
         TRACING_INSTRUMENT_REQUESTS = app_settings.TRACING_INSTRUMENT_REQUESTS
         TRACING_INSTRUMENT_CELERY = app_settings.TRACING_INSTRUMENT_CELERY
 
-        CELERY_BROKER_URL = app_settings.CELERY_BROKER_URL
+        REDIS_URL = app_settings.REDIS_URL
+        CELERY_BEAT_SCHEDULE_FILE = app_settings.CELERY_BEAT_SCHEDULE_FILE
+        WEB_CONCURRENCY = app_settings.WEB_CONCURRENCY
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
+    PERMANENT_SESSION_LIFETIME = 7 * 24 * 60 * 60
 
     REQUEST_HEADER_USER_AGENT = "nfdi4dsBot/1.0 (https://www.nfdi4datascience.de/nfdi4dsBot/; nfdi4dsBot@nfdi4datascience.de)"
     REQUEST_TIMEOUT = 5
@@ -137,6 +148,9 @@ class Config:
     NUMBER_OF_RECORDS_TO_SHOW_ON_PAGE_LOAD = 20
     NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD = 10
     NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT = 100
+
+    SEARCH_RESULTS_TTL_SECONDS = 15 * 60
+    DETAILS_SNAPSHOT_TTL_S = 30 * 60
 
     DATE_FORMAT_FOR_REPORT = "%B %d, %Y"
     DATE_FORMAT_FOR_ELASTIC = "%Y-%m-%d"
@@ -674,18 +688,18 @@ class Config:
         #         "schedule": 10.0,
         #     }
         # }
+        # Prefer crontab() over an interval for anything rarer than a restart:
+        # an interval counts from the last run, which beat only remembers via
+        # CELERY_BEAT_SCHEDULE_FILE
         "beat_schedule": {},
     }
 
     CELERY = {
-        "broker_url": app_settings.CELERY_BROKER_URL,
-        "beat_schedule_filename": os.path.join(
+        "broker_url": app_settings.REDIS_URL or "memory://",
+        "beat_schedule_filename": app_settings.CELERY_BEAT_SCHEDULE_FILE or os.path.join(
             tempfile.gettempdir(), "celerybeat-schedule"
         ),
-        # The in-memory broker lives inside the process, so the web process runs the
-        # worker and beat itself. Keep gunicorn at one worker: a second one runs a
-        # second beat, firing every scheduled job twice.
-        "run_worker_in_process": app_settings.CELERY_BROKER_URL.startswith("memory://"),
+        "run_worker_in_process": not app_settings.REDIS_URL,
     }
 
     ELASTIC = {

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import threading
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 
 from nfdi_search_engine.infra.store.result_store import SearchRecord, ResultStore
 
@@ -32,6 +32,18 @@ class InMemoryTTLResultStore(ResultStore):
                 self._data.pop(search_id, None)
                 return None
             return rec
+
+    def get_meta(self, search_id: str) -> Optional[Dict[str, Any]]:
+        rec = self.get(search_id)
+        return rec.meta if rec is not None else None
+
+    def get_slice(self, search_id: str, category: str, start: int, count: int) -> List[Any]:
+        if count <= 0:
+            return []
+        rec = self.get(search_id)
+        if rec is None:
+            return []
+        return rec.results.get(category, [])[start:start + count]
 
     def update_meta(self, search_id: str, patch: Dict[str, Any]) -> bool:
         with self._lock:

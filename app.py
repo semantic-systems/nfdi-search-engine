@@ -5,6 +5,7 @@ import logging
 import logging.config
 
 from flask import Flask
+from redis import Redis
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from config import Config
@@ -17,6 +18,8 @@ from nfdi_search_engine.infra.elastic.indices import ensure_indices
 from nfdi_search_engine.infra.observability.init import init_tracing, TracingConfig
 from nfdi_search_engine.infra.store.in_memory_result_store import InMemoryTTLResultStore
 from nfdi_search_engine.infra.store.in_memory_kv_store import InMemoryTTLKVStore
+from nfdi_search_engine.infra.store.redis_result_store import RedisResultStore
+from nfdi_search_engine.infra.store.redis_kv_store import RedisKVStore
 from nfdi_search_engine.infra.jobs.celery_app import init_celery
 from nfdi_search_engine.infra.jobs.celery_dispatcher import CeleryDispatcher
 from nfdi_search_engine.infra.jobs.tracking_processor import TrackingProcessor
@@ -45,6 +48,35 @@ def create_app() -> Flask:
 
     app.config.from_object(Config)
 
+    # Redis is required for concurrency
+    web_concurrency = app.config["WEB_CONCURRENCY"]
+    if not app.config["REDIS_URL"] and web_concurrency > 1:
+        raise RuntimeError(
+            f"WEB_CONCURRENCY={web_concurrency} requires REDIS_URL"
+        )
+    logger.info(
+        "Storage mode: %s",
+        "redis" if app.config["REDIS_URL"] else "in-process (single web process only)",
+    )
+
+    # redis makes every kind of per-process state visible to the other processes
+    redis_client = Redis.from_url(
+        app.config["REDIS_URL"],
+        socket_timeout=2,
+        socket_connect_timeout=2,
+    ) if app.config["REDIS_URL"] else None
+
+    app.config["RATELIMIT_STORAGE_URI"] = app.config["REDIS_URL"] or "memory://"
+
+    if redis_client is not None:
+        app.config["SESSION_TYPE"] = "redis"
+        app.config["SESSION_REDIS"] = redis_client
+        app.config["RATELIMIT_STORAGE_OPTIONS"] = {
+            "socket_timeout": 2,
+            "socket_connect_timeout": 2,
+        }
+        app.config["RATELIMIT_IN_MEMORY_FALLBACK_ENABLED"] = True
+
     # register jinja filters
     register_filters(app)
 
@@ -61,11 +93,12 @@ def create_app() -> Flask:
     # register error handlers
     register_error_handlers(app)
 
-    # result store
-    result_store = InMemoryTTLResultStore()
-
-    # details store
-    details_store = InMemoryTTLKVStore[dict]()
+    if redis_client is not None:
+        result_store = RedisResultStore(redis_client)
+        details_store = RedisKVStore[dict](redis_client, key_prefix="details")
+    else:
+        result_store = InMemoryTTLResultStore()
+        details_store = InMemoryTTLKVStore[dict]()
 
     # elastic client and setup
     es = get_es_client(

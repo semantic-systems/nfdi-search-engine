@@ -9,6 +9,7 @@ import requests
 
 from nfdi_search_engine.common.models.objects import Article
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
+from nfdi_search_engine.common.serialization import encode_thing
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 from nfdi_search_engine.infra.observability.decorators import traced
@@ -178,8 +179,7 @@ class PublicationDetailsService:
             if d not in collected:
                 collected[d] = Article(identifier=d, partiallyLoaded=True)
 
-        payload = [a.model_dump(mode="python", exclude_none=True)
-                   for a in collected.values()]
+        payload = [encode_thing(a, drop_empty=False) for a in collected.values()]
 
         return payload
 
