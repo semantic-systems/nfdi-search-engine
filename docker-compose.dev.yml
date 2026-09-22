@@ -1,33 +1,34 @@
 services:
-  search-engine:
-    ports:
-      - "6001:8000"
-    depends_on:
-      elastic:
-        condition: service_healthy
-      jaeger:
-        condition: service_healthy
+    search-engine:
+        build: .
+        ports:
+            - 127.0.0.1:6001:8000
+        restart: unless-stopped
+        depends_on:
+            jaeger:
+                condition: service_healthy
+        networks:
+            - nfdi-search-engine_default
 
-  jaeger:
-    depends_on:
-      elastic:
-        condition: service_healthy
-
-  elastic:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.13.4
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    environment:
-      discovery.type: single-node
-      xpack.security.enabled: "false"
-      xpack.security.http.ssl.enabled: "false"
-    healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s >/dev/null || exit 1"]
-      interval: 5s
-      timeout: 3s
-      retries: 30
-      start_period: 20s
-    restart: unless-stopped
-    networks:
-        - nfdi-search-engine_default
+    jaeger:
+        image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
+        command: ["--config", "/etc/jaeger/config.yaml"]
+        volumes:
+            - ./jaeger-config.yaml:/etc/jaeger/config.yaml:ro
+        environment:
+            JAEGER_ES_SERVER_URLS: "${ELASTIC_SERVER}"
+            JAEGER_ES_USERNAME: "${ELASTIC_USERNAME}"
+            JAEGER_ES_PASSWORD: "${ELASTIC_PASSWORD}"
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD-SHELL", "wget -qO- http://localhost:13133/health/status >/dev/null || exit 1"]
+            interval: 10s
+            timeout: 3s
+            retries: 10
+        ports:
+            - 127.0.0.1:16687:16686
+        networks:
+            - nfdi-search-engine_default
+networks:
+    nfdi-search-engine_default:
+        external: false
