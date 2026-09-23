@@ -466,6 +466,21 @@ class Config:
                             + "&keywords=",
             "get-resource-endpoint": "https://worksheets.codalab.org/rest/bundles/",
         },
+        "RDMC": {
+            "logo": {
+                "name": "RDMC",
+                "link": "https://nfdixcs.org/",
+                "src": "rdmc.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "rdmc",
+            # the registry rejects a page_size above 50
+            "search-endpoint": "https://api.nfdixcs.org/registryservice/rdmcs/search?page=1&page_size="
+                            + str(min(NUMBER_OF_RECORDS_FOR_SEARCH_ENDPOINT, 50))
+                            + "&q=",
+            "get-resource-endpoint": "https://api.nfdixcs.org/registryservice/rdmcs/",
+        },
     }
 
     LLMS = {
