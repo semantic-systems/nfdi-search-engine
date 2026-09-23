@@ -466,6 +466,21 @@ class Config:
                             + "&keywords=",
             "get-resource-endpoint": "https://worksheets.codalab.org/rest/bundles/",
         },
+        "MARDI KG": {
+            "logo": {
+                "name": "MARDI",
+                "link": "https://portal.mardi4nfdi.de/",
+                "src": "mardi.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "mardi_kg",
+            # both endpoints take their query string as request params
+            "search-endpoint": "https://portal.mardi4nfdi.de/w/api.php",
+            "sparql-endpoint": "https://query.portal.mardi4nfdi.de/sparql",
+            # the portal needs 4 to 9 seconds, and answers 503 past about 10
+            "request-timeout": 12,
+        },
     }
 
     LLMS = {
