@@ -4,9 +4,54 @@ services:
         ports:
             - 6000:8000
         restart: unless-stopped
+        env_file: .env
         depends_on:
+            redis:
+                condition: service_healthy
             jaeger:
                 condition: service_healthy
+        networks:
+            - nfdi-search-engine_default
+
+    worker:
+        build: .
+        command: ["celery", "-A", "main.celery_app", "worker", "--loglevel=INFO"]
+        restart: unless-stopped
+        env_file: .env
+        depends_on:
+            redis:
+                condition: service_healthy
+            jaeger:
+                condition: service_healthy
+        networks:
+            - nfdi-search-engine_default
+
+    beat:
+        build: .
+        command: ["celery", "-A", "main.celery_app", "beat", "--loglevel=INFO"]
+        restart: unless-stopped
+        deploy:
+            replicas: 1
+        env_file: .env
+        environment:
+            CELERY_BEAT_SCHEDULE_FILE: /var/lib/celery/celerybeat-schedule
+        volumes:
+            - beat-schedule:/var/lib/celery
+        depends_on:
+            redis:
+                condition: service_healthy
+        networks:
+            - nfdi-search-engine_default
+
+    redis:
+        image: redis:7-alpine
+        command: ["redis-server", "--maxmemory-policy", "noeviction"]
+        restart: unless-stopped
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 5s
+            timeout: 3s
+            retries: 10
         networks:
             - nfdi-search-engine_default
 
@@ -29,6 +74,10 @@ services:
             - 16686:16686
         networks:
             - nfdi-search-engine_default
+
+volumes:
+    beat-schedule:
+
 networks:
     nfdi-search-engine_default:
         external: false

@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import os
+import socket
+
 from opentelemetry import trace
 from opentelemetry.trace import NoOpTracerProvider
 from opentelemetry.sdk.resources import Resource
@@ -37,7 +40,12 @@ def init_tracing(app, cfg: TracingConfig) -> None:
     else:
         sampler = ALWAYS_ON
 
-    resource = Resource.create({"service.name": cfg.service_name})
+    # include the container name and the process within it for tracing
+    resource = Resource.create({
+        "service.name": cfg.service_name,
+        "service.instance.id": f"{socket.gethostname()}:{os.getpid()}",
+        "process.pid": os.getpid(),
+    })
     provider = TracerProvider(resource=resource, sampler=sampler)
     trace.set_tracer_provider(provider)
 

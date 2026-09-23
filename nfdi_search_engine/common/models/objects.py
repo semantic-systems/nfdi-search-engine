@@ -1,4 +1,4 @@
-from typing import Union, List
+from typing import Optional, Union, List
 from pydantic.dataclasses import dataclass
 from pydantic import Field, BaseModel
 from dataclasses import fields
@@ -59,7 +59,7 @@ class Person(thing):
     jobTitle: str = ""  #this should be a list
     nationality: str = "" # we can later link it to country   #this should be a list
     workLocation: str = ""  #this should be a list
-    worksFor: Organization = None  #this should be a list
+    worksFor: Optional[Organization] = None  #this should be a list
     
 Organization.founder = List[Person]  
 # Organization.funder = Union[Organization(), Person()]
@@ -79,7 +79,7 @@ class CreativeWork(thing):
     datePublished: str = ""
     encoding_contentUrl: str = "" 
     encodingFormat: str = ""
-    funder: Union[Organization, Person] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10 
+    funder: Optional[Union[Organization, Person]] = None # Organization | Person # we can use pipe operator for Union in Python >= 3.10
     funding: str = "" # we can change this to Grant
     genre: str = ""
     headline: str = ""
@@ -87,9 +87,9 @@ class CreativeWork(thing):
     keywords: List[str] = Field(default_factory=list)
     license: str = "" # url or license type
     publication: str = "" #publication event
-    publisher: Union[Organization, Person] = None
-    sourceOrganization: Organization = None
-    sponsor: Union[Organization, Person] = None
+    publisher: Optional[Union[Organization, Person]] = None
+    sourceOrganization: Optional[Organization] = None
+    sponsor: Optional[Union[Organization, Person]] = None
     text: str = ""
     thumbnail: str = "" #ImageObject
     thumbnailUrl: str = "" #url

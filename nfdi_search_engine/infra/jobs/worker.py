@@ -29,8 +29,11 @@ def start_worker_threads(app: Flask) -> None:
         daemon=True,
         name=WORKER_THREAD_NAME,
     ).start()
-    threading.Thread(
-        target=lambda: celery_app.Beat(loglevel="WARNING", quiet=True).run(),
-        daemon=True,
-        name="celery-beat",
-    ).start()
+
+    # beat only earns its thread and its schedule file once something is scheduled
+    if app.config["JOBS"]["beat_schedule"]:
+        threading.Thread(
+            target=lambda: celery_app.Beat(loglevel="WARNING", quiet=True).run(),
+            daemon=True,
+            name="celery-beat",
+        ).start()

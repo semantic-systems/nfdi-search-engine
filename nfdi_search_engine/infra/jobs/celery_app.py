@@ -6,7 +6,9 @@ import pkgutil
 from typing import TYPE_CHECKING
 
 from celery import Celery
-from celery.signals import task_failure, task_prerun
+from celery.signals import task_failure, task_prerun, worker_process_init
+
+from nfdi_search_engine.infra.elastic.client import get_es_client
 
 if TYPE_CHECKING:
     from flask import Flask
@@ -66,7 +68,12 @@ def init_celery(flask_app: "Flask") -> Celery:
         enable_utc=True,
         beat_schedule=jobs["beat_schedule"],
         beat_schedule_filename=cfg["beat_schedule_filename"],
-        include=modules,
+        # publishing runs in the request thread, so it must not block on a slow broker
+        broker_transport_options={
+            "socket_timeout": 2,
+            "socket_connect_timeout": 2,
+        },
+        task_publish_retry=False,
     )
 
     # import eagerly, so a broken task module fails at startup instead of
@@ -80,7 +87,28 @@ def init_celery(flask_app: "Flask") -> Celery:
     )
 
     flask_app.extensions["celery"] = celery_app
+    # _reset_forked_connections needs it after the prefork children are forked
+    celery_app.flask_app = flask_app
     return celery_app
+
+
+@worker_process_init.connect
+def _reset_forked_connections(**kwargs):
+    """
+    Give every prefork child its own Elasticsearch client.
+
+    create_app() runs in the worker parent, so its connection pool is inherited by all
+    forked children. Sharing those sockets interleaves requests and corrupts responses.
+    """
+    flask_app = getattr(celery_app, "flask_app", None)
+    if flask_app is None:
+        return
+
+    elastic = flask_app.config["ELASTIC"]
+    es = get_es_client(elastic["server"], elastic["username"], elastic["password"])
+
+    flask_app.extensions["es_client"] = es
+    flask_app.extensions["processors"]["tracking"].es = es
 
 
 @task_prerun.connect

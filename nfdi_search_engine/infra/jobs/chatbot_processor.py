@@ -5,8 +5,9 @@ from urllib.parse import urljoin
 
 import requests
 
-from nfdi_search_engine.common.models.search_result import SearchResult
+from nfdi_search_engine.common.models.search_result import unwrap
 from nfdi_search_engine.common.models.chatbot_settings import ChatbotSettings
+from nfdi_search_engine.common.serialization import encode_thing
 from nfdi_search_engine.infra.store.result_store import ResultStore
 
 
@@ -33,15 +34,17 @@ class ChatbotProcessor:
         )
         request_url = f"{base_url}/{search_id}"
 
-        # compatibility with SearchResult type
-        results = {}
-        for category, rows in rec.results.items():
-            results[category] = [
-                row.item if isinstance(row, SearchResult) else row
+        # the chatbot indexes the domain objects, not the SearchResult wrapper.
+        # drop_empty is off so the payload keeps every key the backend saw before.
+        results = {
+            category: [
+                encode_thing(unwrap(row), drop_empty=False)
                 for row in rows
             ]
+            for category, rows in rec.results.items()
+        }
 
-        results_json = json.dumps(results, default=vars)
+        results_json = json.dumps(results)
         resp = requests.post(
             request_url,
             json=results_json,
