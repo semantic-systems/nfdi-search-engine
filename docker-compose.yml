@@ -7,6 +7,8 @@ services:
         depends_on:
             jaeger:
                 condition: service_healthy
+        volumes:
+            - static-data:/app/data
         networks:
             - nfdi-search-engine_default
 
@@ -29,6 +31,10 @@ services:
             - 16686:16686
         networks:
             - nfdi-search-engine_default
+
+volumes:
+    static-data:
+
 networks:
     nfdi-search-engine_default:
         external: false

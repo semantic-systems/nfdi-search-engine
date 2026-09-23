@@ -1,5 +1,7 @@
 import os
 import tempfile
+
+from celery.schedules import crontab
 from dotenv import find_dotenv, load_dotenv
 
 from typing import Optional
@@ -57,6 +59,9 @@ class Settings(BaseSettings):
 
     # Celery. "memory://" runs the worker in-process; a real broker (redis://) does not.
     CELERY_BROKER_URL: str = Field(default="memory://")
+
+    # static sources keep their downloaded data here
+    STATIC_DATA_DIR: str = Field(default="data")
 
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
@@ -127,6 +132,7 @@ class Config:
         TRACING_INSTRUMENT_CELERY = app_settings.TRACING_INSTRUMENT_CELERY
 
         CELERY_BROKER_URL = app_settings.CELERY_BROKER_URL
+        STATIC_DATA_DIR = app_settings.STATIC_DATA_DIR
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
@@ -452,6 +458,21 @@ class Config:
             "module": "gepris",
             "search-endpoint": f"https://gepris.dfg.de/gepris/OCTOPUS?context=projekt&hitsPerPage=1&index=0&language=en&task=doSearchSimple&keywords_criterion=",
         },
+        "GERiT": {
+            "logo": {
+                "name": "GERiT",
+                "link": "https://gerit.org/",
+                "src": "gerit.png",
+                "width": "w-100",
+                "height": "h-100",
+            },
+            "module": "gerit",
+            # GERiT has no search API, so the export is searched locally and refreshed by job gerit.refresh
+            "static": True,
+            "download-url": "https://www.gerit.org/downloads/institutionen_gerit.xlsx",
+            "local-path": os.path.join(app_settings.STATIC_DATA_DIR, "gerit.json"),
+            "request-timeout": 30,
+        },
         "CODALAB": {
             "logo": {
                 "name": "CODALAB",
@@ -675,7 +696,12 @@ class Config:
         #         "schedule": 10.0,
         #     }
         # }
-        "beat_schedule": {},
+        "beat_schedule": {
+            "gerit-refresh-weekly": {
+                "task": "gerit.refresh",
+                "schedule": crontab(day_of_week="monday", hour=4, minute=0),
+            },
+        },
     }
 
     CELERY = {

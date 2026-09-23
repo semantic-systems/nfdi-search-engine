@@ -50,6 +50,13 @@ class HttpClient(requests.Session):
         response.raise_for_status()
         return clean_json(xmltodict.parse(response.text))
 
+    def get_bytes(self, url: str, **kwargs) -> bytes:
+        """GET a binary response, e.g. a spreadsheet or an archive."""
+        headers = {"Accept": "*/*", **(kwargs.pop("headers", None) or {})}
+        response = self.get(url, headers=headers, **kwargs)
+        response.raise_for_status()
+        return response.content
+
     def get_text(self, url: str, **kwargs) -> str:
         """GET a response that is neither JSON nor XML, e.g. an HTML page."""
         headers = {"Accept": "*/*", **(kwargs.pop("headers", None) or {})}
