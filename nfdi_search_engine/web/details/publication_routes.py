@@ -120,8 +120,14 @@ def publication_details(source_name, doi, ts):
     if not publications:
         return make_response(render_template("no-results.html", type="publication", identifier=doi))
 
-    merged = pub_svc.merge_publications(publications)
-    return make_response(render_template("publication-details.html", publication=merged))
+    merged, provenance_rows = pub_svc.merge_publications(publications)
+    return make_response(
+        render_template(
+            "publication-details.html",
+            publication=merged,
+            provenance_rows=provenance_rows,
+        )
+    )
 
 
 @bp.route("/publication-details-citations/<path:doi>", methods=["GET"])

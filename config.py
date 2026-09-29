@@ -58,6 +58,9 @@ class Settings(BaseSettings):
     # Celery. "memory://" runs the worker in-process; a real broker (redis://) does not.
     CELERY_BROKER_URL: str = Field(default="memory://")
 
+    # Field-level merge provenance ({value, sources} per field in search results)
+    ENABLE_PROVENANCE: bool = True
+
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
 def validate_env():
@@ -127,6 +130,8 @@ class Config:
         TRACING_INSTRUMENT_CELERY = app_settings.TRACING_INSTRUMENT_CELERY
 
         CELERY_BROKER_URL = app_settings.CELERY_BROKER_URL
+
+        ENABLE_PROVENANCE = app_settings.ENABLE_PROVENANCE
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"
