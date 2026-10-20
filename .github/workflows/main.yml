@@ -40,5 +40,7 @@ jobs:
           echo "CHATBOT_SERVER=${{ secrets.CHATBOT_SERVER }}" >> ./.env
           echo "REDIS_URL=${{ secrets.REDIS_URL }}" >> ./.env
           echo "WEB_CONCURRENCY=${{ secrets.WEB_CONCURRENCY }}" >> ./.env
+          echo "KIBANA_SYSTEM_PASSWORD=${{ secrets.KIBANA_SYSTEM_PASSWORD }}" >> ./.env
+          echo "KIBANA_ENCRYPTION_KEY=${{ secrets.KIBANA_ENCRYPTION_KEY }}" >> ./.env
       - name: 'Re-build Docker container from current source'
         run: docker compose up --force-recreate --build --detach
