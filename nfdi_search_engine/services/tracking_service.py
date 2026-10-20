@@ -68,7 +68,7 @@ class TrackingService:
         :rtype: None
         """
         doc = {
-            "timestamp": datetime.now(timezone.utc),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "description": description,
             "user_id": user_id,
             **asdict(request_meta),
@@ -91,7 +91,7 @@ class TrackingService:
         :rtype: None
         """
         doc = {
-            "timestamp": datetime.now(timezone.utc),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "search_term": search_term,
             "user_id": user_id,
             **asdict(request_meta),
@@ -114,8 +114,8 @@ class TrackingService:
         :rtype: None
         """
         payload = {
-            "timestamp_created": datetime.now(timezone.utc),
-            "timestamp_updated": datetime.now(timezone.utc),
+            "timestamp_created": datetime.now(timezone.utc).isoformat(),
+            "timestamp_updated": datetime.now(timezone.utc).isoformat(),
             **user_agent_doc,
         }
         self.jobs.enqueue("tracking.user_agent.upsert", payload)
@@ -162,7 +162,7 @@ class TrackingService:
             method = inspect.stack()[1][3]
 
         doc = {
-            "timestamp": datetime.now(timezone.utc),
+            "timestamp": datetime.now(timezone.utc).isoformat(),
             "type": log_type,
             "filename": filename,
             "method": method,

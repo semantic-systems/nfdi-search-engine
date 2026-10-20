@@ -8,6 +8,16 @@ services:
       jaeger:
         condition: service_healthy
 
+  worker:
+    depends_on:
+      elastic:
+        condition: service_healthy
+
+  beat:
+    depends_on:
+      elastic:
+        condition: service_healthy
+
   jaeger:
     depends_on:
       elastic:

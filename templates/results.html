@@ -354,12 +354,12 @@
                 },
                 complete: function () {
                     $('.loader').remove();
+                    // Unset the flag
+                    ajax_request_sent = false;
                 },
                 success: function (data) {
                     $('#' + object_type).append(data);
                     console.log('successfully loaded more ' + object_type)
-                    // Unset the flag
-                    ajax_request_sent = false;
 
                     // observe the newly added elements; if they are partially loaded then more details should be loaded via ajax calls
                     document.querySelectorAll('.partially_loaded').forEach(element => {
