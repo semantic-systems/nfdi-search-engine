@@ -1,8 +1,6 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork
-from sources import data_retriever
+from sources.http_client import quote_term
 from typing import Iterable, Dict, Any, List
-
-import requests
 
 from config import Config
 from sources.base import BaseSource
@@ -17,10 +15,9 @@ class DataCite(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get(
-                'search-endpoint', ''),
-            search_term=search_term,
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
         return search_result
@@ -123,20 +120,8 @@ class DataCite(BaseSource):
         url = Config.DATA_SOURCES[self.SOURCE].get(
             'get-publication-endpoint', '') + doi
 
-        headers = {
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'User-Agent': Config.REQUEST_HEADER_USER_AGENT,
-        }
+        raw = self.http.get_json(url)
 
-        response = requests.get(
-            url,
-            headers=headers,
-            timeout=int(Config.REQUEST_TIMEOUT)
-        )
-        response.raise_for_status()
-
-        raw = response.json()
         # this directly returns the hit, not a list!
         hit = self.extract_hits(raw)
         publication = self.map_hit(hit['attributes'])

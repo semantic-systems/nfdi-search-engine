@@ -1,9 +1,9 @@
 from typing import Union, Dict, Any, List, Iterable
 
 from config import Config
-from sources import data_retriever
 from sources.base import BaseSource
 from nfdi_search_engine.common.models.objects import thing, CreativeWork, Author
+from sources.http_client import quote_term
 
 import requests
 
@@ -18,10 +18,7 @@ class HuggingFaceModels(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        return data_retriever.retrieve_data(
-            base_url=self.SEARCH_ENDPOINT,
-            search_term=search_term,
-        ) or {}
+        return self.http.get_json(self.SEARCH_ENDPOINT + quote_term(search_term)) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -44,11 +41,9 @@ class HuggingFaceModels(BaseSource):
         if request_readme:
             readme_url = f"https://huggingface.co/{model.name}/raw/main/README.md"
             try:
-                response = requests.get(readme_url, timeout=5)
-                if response.status_code == 200:
-                    model.description = remove_html_tags(response.text)
-                else:
-                    model.description = remove_html_tags(hit.get("description", ""))
+                model.description = remove_html_tags(
+                    self.http.get_text(readme_url, timeout=5)
+                )
             except requests.RequestException:
                 model.description = remove_html_tags(hit.get("description", ""))
         else:
@@ -105,11 +100,7 @@ class HuggingFaceModels(BaseSource):
                 results['resources'].append(model)
 
     def get_resource(self, doi: str, request_readme: bool = False) -> CreativeWork | None:
-        search_result = data_retriever.retrieve_object(
-            base_url=self.RESOURCE_ENDPOINT,
-            identifier=doi,
-            quote=False,
-        )
+        search_result = self.http.get_json(self.RESOURCE_ENDPOINT + doi)
         if search_result:
             model = self.map_hit(search_result, request_readme)
             self.log_event(type="info", message=f"{self.SOURCE} - retrieved model details")

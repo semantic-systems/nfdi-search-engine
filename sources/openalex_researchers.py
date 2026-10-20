@@ -1,5 +1,5 @@
 from nfdi_search_engine.common.models.objects import thing, Author, Organization
-from sources import data_retriever
+from sources.http_client import quote_term
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any, List
 from config import Config
@@ -19,10 +19,7 @@ class OpenAlexResearchers(BaseSource):
         # Fallback for backward compatibility
         base_url = Config.DATA_SOURCES.get(self.SOURCE, {}).get("search-endpoint", "")
 
-        return data_retriever.retrieve_data(
-            base_url=base_url,
-            search_term=search_term,
-        ) or {}
+        return self.http.get_json(base_url + quote_term(search_term)) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -123,9 +120,9 @@ class OpenAlexResearchers(BaseSource):
         if not orcid.startswith("https://orcid.org"):
             orcid = "https://orcid.org/" + orcid
 
-        hit = data_retriever.retrieve_object(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get("get-researcher-endpoint", ""),
-            identifier=orcid
+        hit = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get("get-researcher-endpoint", "")
+            + quote_term(orcid)
         )
         
         if not hit:

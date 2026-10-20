@@ -1,7 +1,6 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author
-from sources import data_retriever
+from sources.http_client import quote_term
 from config import Config
-import requests
 from typing import Iterable, Dict, Any, List
 
 from sources.base import BaseSource
@@ -14,9 +13,9 @@ class ORKG(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-            search_term=search_term,
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
         return search_result
@@ -45,8 +44,8 @@ class ORKG(BaseSource):
 
         if 'Paper' in classes:
             api_url = details_api + 'papers/' + id
-            response = requests.get(api_url)
-            paper = response.json()
+            # otherwise we get 406 to Accept: application/json
+            paper = self.http.get_json(api_url, headers={"Accept": "*/*"})
 
             publication = Article()
             publication.name = paper.get('title', '')

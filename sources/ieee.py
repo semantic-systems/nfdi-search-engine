@@ -1,7 +1,7 @@
 # sources/ieee.py
 
 from nfdi_search_engine.common.models.objects import thing, Article, Author
-from sources import data_retriever
+from sources.http_client import quote_term
 from sources.base import BaseSource
 from typing import Iterable, Dict, Any
 from config import Config
@@ -34,10 +34,7 @@ class IEEE(BaseSource):
         else:
             base_url = f"{base_url_template}?{api_key_param}={api_key}"
 
-        search_result = data_retriever.retrieve_data(
-            base_url=base_url,
-            search_term=search_term,
-        )
+        search_result = self.http.get_json(base_url + quote_term(search_term))
         return search_result
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -156,10 +153,7 @@ class IEEE(BaseSource):
         else:
             base_url = f"{base_url_template}?{api_key_param}={api_key}"
 
-        search_result = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier=doi,
-        )
+        search_result = self.http.get_json(base_url + quote_term(doi))
 
         if not search_result:
             return None

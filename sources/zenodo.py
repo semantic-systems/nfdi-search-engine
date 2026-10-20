@@ -1,7 +1,7 @@
 from typing import Union, Dict, Any, List, Iterable
 
 from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
-from sources import data_retriever
+from sources.http_client import quote_term
 from sources.base import BaseSource
 from config import Config
 from nfdi_search_engine.common.formatting import remove_html_tags
@@ -14,9 +14,9 @@ class ZENODO(BaseSource):
     SOURCE = "ZENODO"
 
     def fetch(self, search_term: str) -> Dict[str, Any]:
-        return data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-            search_term=search_term,
+        return self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
@@ -120,10 +120,9 @@ class ZENODO(BaseSource):
         Retrieve detailed information for a single Zenodo resource.
         The identifier is the Zenodo record id from source metadata.
         """
-        search_result = data_retriever.retrieve_object(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('get-resource-endpoint', ''),
-            identifier=identifier,
-            quote=False,
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('get-resource-endpoint', '')
+            + identifier
         )
         if not search_result:
             self.log_event(type="error", message=f"{self.SOURCE} - failed to retrieve resource details")

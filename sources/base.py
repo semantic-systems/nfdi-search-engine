@@ -5,11 +5,13 @@ from abc import ABC, abstractmethod
 from typing import Iterable, Dict, Any
 
 from nfdi_search_engine.services.tracking_service import TrackingService
+from sources.http_client import HttpClient
 
 
 class BaseSource(ABC):
-    def __init__(self, tracking: TrackingService = None):
+    def __init__(self, tracking: TrackingService = None, http: HttpClient = None):
         self.tracking = tracking
+        self.http = http or HttpClient()
 
     def log_event(self, type: str, message: str):
         """

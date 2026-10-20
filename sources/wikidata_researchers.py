@@ -1,7 +1,7 @@
 from typing import Iterable, Dict, Any, List
 from string import Template
 
-from sources import data_retriever
+from sources.http_client import quote_term
 from nfdi_search_engine.common.models.objects import thing, Article, Author, Organization, Person
 from sources.base import BaseSource
 from config import Config
@@ -59,9 +59,9 @@ class WIKIDATA_Researchers(BaseSource):
         }
         query = query_template.substitute(replacement_dict)
         query = ' '.join(query.split())
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', ''),
-            search_term=query,
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(query)
         )
         return search_result
 

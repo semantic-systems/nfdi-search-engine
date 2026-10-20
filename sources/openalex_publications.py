@@ -1,5 +1,5 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork
-from sources import data_retriever
+from sources.http_client import quote_term
 from sources.base import BaseSource
 from config import Config
 from typing import Union, Dict, Any, List, Iterable
@@ -19,10 +19,7 @@ class OpenAlexPublications(BaseSource):
 
         base_url = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
 
-        return data_retriever.retrieve_data(
-            base_url=base_url,
-            search_term=search_term,
-        ) or {}
+        return self.http.get_json(base_url + quote_term(search_term)) or {}
 
     def extract_hits(self, raw) -> Iterable[Dict[str, Any]]:
         """
@@ -132,11 +129,7 @@ class OpenAlexPublications(BaseSource):
 
         base_url = Config.DATA_SOURCES[self.SOURCE].get("search-endpoint", "")
 
-        raw = data_retriever.retrieve_data(
-            base_url=base_url,
-            search_term="",
-            url=url
-        )
+        raw = self.http.get_json(url)
 
         # 2. extract the hits
         hits = list(self.extract_hits(raw))
@@ -162,12 +155,46 @@ class OpenAlexPublications(BaseSource):
 
     def get_publication(self, doi: str):
         base_url = Config.DATA_SOURCES[self.SOURCE].get("get-publication-endpoint", "")
-        search_result = data_retriever.retrieve_object(
-            base_url=base_url,
-            identifier="https://doi.org/" + doi,
-        )
+        search_result = self.http.get_json(base_url + quote_term("https://doi.org/" + doi))
         if search_result:
             return self.map_hit(search_result)
+
+    def get_recommendations_for_publication(self, doi: str, limit: int = 100) -> List[Union[Article, CreativeWork]]:
+        """
+        Fetch recommendedations for a DOI via OpenAlex.
+
+        :param doi: DOI of the source publication.
+        :param limit: Maximum number of related works to resolve.
+        :return: Mapped publication objects for the related works.
+        """
+        works_base = Config.DATA_SOURCES[self.SOURCE].get("recommendations-endpoint", "")
+        if not works_base:
+            return []
+
+        # 1. resolve the DOI to its work and read the related_works ids
+        work = self.http.get_json(works_base + quote_term("https://doi.org/" + doi)) or {}
+        related = work.get("related_works", []) or []
+        if not related:
+            return []
+
+        # keep only the bare OpenAlex ids (e.g. "W123"), capped by limit
+        ids = [w.rsplit("/", 1)[-1] for w in related[:limit] if w]
+        if not ids:
+            return []
+
+        # 2. batch-fetch metadata for all related works in a single request
+        list_url = (
+            f"{works_base.rstrip('/')}"
+            f"?filter=ids.openalex:{'|'.join(ids)}&per-page={len(ids)}"
+        )
+        raw = self.http.get_json(list_url) or {}
+
+        recommendations: List[Union[Article, CreativeWork]] = []
+        for hit in self.extract_hits(raw):
+            publication = self.map_hit(hit)
+            if getattr(publication, "identifier", ""):
+                recommendations.append(publication)
+        return recommendations
 
 
 def search(search_term: str, results, tracking=None):
@@ -188,3 +215,10 @@ def get_publication(doi: str, publications, tracking=None):
 
 def get_publications(url: str, results, tracking=None):
     OpenAlexPublications(tracking).get_publications(url, results)
+
+
+def get_recommendations_for_publication(doi: str, tracking=None, limit: int = 100) -> List[Union[Article, CreativeWork]]:
+    """
+    Entrypoint: fetch recommended publications for a DOI via OpenAlex related_works.
+    """
+    return OpenAlexPublications(tracking).get_recommendations_for_publication(doi, limit=limit)

@@ -1,5 +1,5 @@
 from nfdi_search_engine.common.models.objects import thing, Article, Author, CreativeWork, Dataset, SoftwareApplication, VideoObject, ImageObject, LearningResource
-from sources import data_retriever
+from sources.http_client import quote_term
 from config import Config
 from typing import Union, Iterable, Dict, Any
 from urllib.parse import quote
@@ -16,10 +16,9 @@ class OpenAIRE_Products(BaseSource):
         """
         Fetch raw json from the source using the given search term.
         """
-        search_result = data_retriever.retrieve_data(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get(
-                'search-endpoint', ''),
-            search_term=search_term,
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('search-endpoint', '')
+            + quote_term(search_term)
         )
 
         return search_result
@@ -180,9 +179,9 @@ class OpenAIRE_Products(BaseSource):
                 results['others'].append(digitalObj)
 
     def get_publication(self, doi: str):
-        search_result = data_retriever.retrieve_object(
-            base_url=Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', ''),
-            identifier=doi
+        search_result = self.http.get_json(
+            Config.DATA_SOURCES[self.SOURCE].get('get-publication-endpoint', '')
+            + quote_term(doi)
         )
         response = search_result.get("response", {})
         total_records_found = response.get("header", {}).get("total", "").get("$", "")
@@ -216,12 +215,7 @@ class OpenAIRE_Products(BaseSource):
             self.log_event(type="error", message=f"{self.SOURCE} - get-resource-endpoint is missing")
             return None
 
-        graph_item = data_retriever.retrieve_data(
-            base_url="",
-            search_term="",
-            url=f"{endpoint}{quote(identifier, safe='')}",
-            quote=False,
-        )
+        graph_item = self.http.get_json(f"{endpoint}{quote(identifier, safe='')}")
 
         resource_type = str(graph_item.get("type", "")).upper()
         if resource_type not in ["DATASET", "SOFTWARE"]:

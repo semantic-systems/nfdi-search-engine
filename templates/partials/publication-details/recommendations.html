@@ -1,21 +1,62 @@
+{% macro lock_icon(publication) %}
+{%- if publication.encoding_contentUrl -%}
+<img src="{{ url_for('static', filename='images/icons/open_lock.png') }}"
+    alt="open" style="height:0.6rem;position:relative;top:-1px;">
+{%- else -%}
+<img src="{{ url_for('static', filename='images/icons/closed_lock.png') }}"
+    alt="closed" style="height:0.6rem;position:relative;top:-1px;">
+{%- endif -%}
+{% endmacro %}
+
 {% for publication in publications %}
-<div class="card mb-2 p-2 rounded-extra shadow-bottom-right">
-    <div class="card-body">
-        <div class="d-flex bd-highlight fw-bold">
-            {{publication.name}}
+<div class="card mb-2 rec-card">
+    <div class="card-body p-2 fs-7">
+        <div class="mb-2">
+            {% if publication.identifier == '' %}
+            <span class="text-secondary fw-bold">{{ publication.name }}&nbsp;{{ lock_icon(publication) }}</span>
+            {% else %}
+            <a class="text-secondary fw-bold"
+                href="/publication-details/{{ publication | format_digital_obj_url('source-name','doi') }}"
+                target="_blank">{{ publication.name }}&nbsp;{{ lock_icon(publication) }}</a>
+            {% endif %}
         </div>
-        <div class="d-flex justify-content-between fs-7 pt-3">
-            <span class="">
-                <a class="text-decoration-none fw-bold" href='/publication-details/{{publication.identifier}}'
-                    target='_blank'>
-                    READ MORE ></a>
-            </span>
-            <span class="badge bg-pill">{{publication.datePublished}}</span>
+
+        {% if publication.author %}
+        {% set names = publication.author | map(attribute='name') | select | list %}
+        {% if names %}
+        <div class="authors mb-2 fs-7 text-secondary">
+            {{ names[:5] | join(', ') }}{% if names|length > 5 %} and {{ names|length - 5 }} more{% endif %}
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <div class="d-flex flex-wrap gap-1 align-items-center">
+            {% if publication.identifier %}
+            <span class="badge bg-pill bg-secondary text-break" data-bs-toggle="tooltip"
+                data-bs-placement="top" title="DOI">{{ publication.identifier }}</span>
+            {% endif %}
+            {% if publication.datePublished %}
+            <span class="badge bg-pill bg-secondary" data-bs-toggle="tooltip"
+                data-bs-placement="top" title="Publication Date">{{ publication.datePublished }}</span>
+            {% endif %}
+            {% if publication.source and publication.source[0].name %}
+            {% set src = publication.source[0] %}
+            {% if src.url %}
+            <a class="text-decoration-none" href="{{ src.url }}" target="_blank">
+                <span class="badge bg-pill" data-bs-toggle="tooltip" data-bs-placement="top"
+                    title="Source">{{ src.name.split(' - ')[0] }}&nbsp;<i
+                        class="bi bi-box-arrow-up-right"></i></span>
+            </a>
+            {% else %}
+            <span class="badge bg-pill" data-bs-toggle="tooltip" data-bs-placement="top"
+                title="Source">{{ src.name.split(' - ')[0] }}</span>
+            {% endif %}
+            {% endif %}
         </div>
     </div>
 </div>
 {% endfor %}
 
 {% if publications|length == 0 %}
-No recommendations found
+<span class="text-secondary">No recommendations found</span>
 {% endif %}

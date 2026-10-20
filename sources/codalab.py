@@ -2,7 +2,7 @@ from typing import Dict, Any, Iterable, List
 
 from config import Config
 from sources.base import BaseSource
-from sources import data_retriever
+from sources.http_client import quote_term
 from nfdi_search_engine.common.models.objects import Dataset, Person, Author, thing
 
 from nfdi_search_engine.common.dates import parse_date
@@ -22,10 +22,7 @@ class Codalab(BaseSource):
         """
         Fetch raw JSON from Codalab bundles API.
         """
-        return data_retriever.retrieve_data(
-            base_url=self.SEARCH_ENDPOINT,
-            search_term=search_term,
-        ) or {}
+        return self.http.get_json(self.SEARCH_ENDPOINT + quote_term(search_term)) or {}
 
     def extract_hits(self, raw: Dict[str, Any]) -> Iterable[Dict[str, Any]]:
         """
@@ -139,11 +136,7 @@ class Codalab(BaseSource):
         """
         Retrieve a single Codalab bundle by UUID.
         """
-        raw = data_retriever.retrieve_object(
-            base_url=self.RESOURCE_ENDPOINT,
-            identifier=identifier,
-            quote=False,
-        )
+        raw = self.http.get_json(self.RESOURCE_ENDPOINT + identifier)
 
         if not raw:
             self.log_event(

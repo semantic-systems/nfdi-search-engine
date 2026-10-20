@@ -38,3 +38,10 @@ class SearchResult(Generic[T]):
 
     # for debugging
     source_items: list[Any] = field(default_factory=list, repr=False)
+
+
+def unwrap(obj: Any) -> Any:
+    """
+    Return the merged domain object, whether or not it is wrapped in a SearchResult.
+    """
+    return obj.item if isinstance(obj, SearchResult) else obj
