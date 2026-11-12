@@ -5,7 +5,6 @@ from typing import Any
 from nfdi_search_engine.common.models.search_result import (
     FieldContribution,
     FieldProvenance,
-    FieldValueProvenance,
     SearchResult,
 )
 from nfdi_search_engine.services.deduplication.normalize import normalize_string
@@ -36,39 +35,34 @@ def _source_names(obj: Any) -> list[str]:
     return list(dict.fromkeys(name for name in names if name))
 
 
-def _source_name(obj: Any) -> str | None:
+def source_name(obj: Any) -> str | None:
     names = _source_names(obj)
     return names[0] if names else None
 
 
-def _sources_from_contributions(
-    group: list[Any],
-    field_prov_record: FieldProvenance,
-) -> list[str]:
-    seen: set[str] = set()
-    sources: list[str] = []
-    for contribution in field_prov_record.contributions:
-        for obj in group:
-            for name in _source_names(obj):
-                if name == contribution.source and name not in seen:
-                    seen.add(name)
-                    sources.append(name)
-    return sources
+def preview(value: Any) -> str:
+    """
+    Short text form of a field value, stored as FieldContribution.value_preview.
+    """
+    if _is_empty(value):
+        return ""
+    if isinstance(value, list):
+        value = ", ".join(preview(v) for v in value[:3])
+    else:
+        value = getattr(value, "name", None) or str(value)
+    value = " ".join(str(value).split())
+    return value[:160]
 
 
-def _preference_index(obj: Any, field: str, mapping_preference: dict) -> float:
+def _source_rank(source: str | None, field: str, mapping_preference: dict) -> float:
     """
-    Helper to get the preference index of an object's field value based on its source.
-    See MAPPING_PREFERENCE in config.py.
+    Position of a source in the preference order of a field, see MAPPING_PREFERENCE in config.py.
+    Fields with a "max" or "union" strategy have no order of their own and use __default__.
     """
-    pref = mapping_preference.get(
-        field,
-        mapping_preference.get("__default__", [])
-    )
+    pref = mapping_preference.get(field)
     if not isinstance(pref, list):
-        return float("inf")
-    src = _source_name(obj)
-    return pref.index(src) if src in pref else float("inf")
+        pref = mapping_preference.get("__default__", [])
+    return pref.index(source) if source in pref else float("inf")
 
 
 class ObjectMerger:
@@ -79,27 +73,18 @@ class ObjectMerger:
     When category is provided it returns a SearchResult with provenance metadata for search-result storage/ranking.
     """
 
-    def __init__(self, enable_provenance: bool = False) -> None:
-        self.enable_provenance = enable_provenance
-
     def merge(
         self,
         group: list[Any],
         mapping_preference: dict,
         category: str | None = None,
         entity_key: str = "",
-        enable_provenance: bool | None = None,
     ) -> Any:
         """
         Merge a list of result objects into one.
         Returns a SearchResult if a category if provided, the domain object otherwise.
         Applies strategies from mapping_preference and adds the provenance record.
         """
-        use_provenance = (
-            self.enable_provenance
-            if enable_provenance is None
-            else enable_provenance
-        )
         source_items = self._source_items(group)
         if not source_items:
             log.warning("ObjectMerger.merge() called with an empty list")
@@ -113,7 +98,6 @@ class ObjectMerger:
         ))
         merged = target_cls()
         provenance = {}
-        field_level_provenance: dict[str, FieldValueProvenance] = {}
 
         # iterate through all fields of the target class
         for field in type(merged).model_fields:
@@ -124,11 +108,11 @@ class ObjectMerger:
 
             # build the merged value for this field based on the strategy
             if strategy == "max":
-                value, field_prov_record = self._value_max(group, field)
+                value, field_provenance = self._value_max(group, field)
             elif strategy == "union":
-                value, field_prov_record = self._value_union(group, field)
+                value, field_provenance = self._value_union(group, field)
             else:
-                value, field_prov_record = self._value_preference(
+                value, field_provenance = self._value_preference(
                     group,
                     field,
                     mapping_preference
@@ -142,14 +126,12 @@ class ObjectMerger:
                     log.warning(
                         "Could not set field %r on %s during merge, skipping", field, target_cls.__name__)
 
-            if field_prov_record.contributions:
-                provenance[field] = field_prov_record
-
-            if use_provenance and not _is_empty(value):
-                field_level_provenance[field] = FieldValueProvenance(
-                    value=value,
-                    sources=_sources_from_contributions(group, field_prov_record),
+            if field_provenance.contributions:
+                # contributions are listed in source preference order
+                field_provenance.contributions.sort(
+                    key=lambda c: _source_rank(c.source, field, mapping_preference)
                 )
+                provenance[field] = field_provenance
 
         if category is None:
             return merged
@@ -160,15 +142,14 @@ class ObjectMerger:
             item=merged,
             sources=self._sources(source_items),
             provenance=provenance,
-            field_provenance=field_level_provenance if use_provenance else {},
             source_items=source_items,
         )
 
     def _contribution(self, obj: Any, field: str, selected: bool) -> FieldContribution:
         return FieldContribution(
-            source=_source_name(obj) or type(obj).__name__,
+            source=source_name(obj) or type(obj).__name__,
             selected=selected,
-            value_preview=self._preview(getattr(obj, field, "")),
+            value_preview=preview(getattr(obj, field, "")),
         )
 
     def _value_max(self, group: list[Any], field: str) -> tuple[Any, FieldProvenance]:
@@ -236,7 +217,7 @@ class ObjectMerger:
         field_values = {id(obj): getattr(obj, field, None) for obj in group}
 
         selected_obj = None
-        for obj in sorted(group, key=lambda o: _preference_index(o, field, mapping_preference)):
+        for obj in sorted(group, key=lambda o: _source_rank(source_name(o), field, mapping_preference)):
             if not _is_empty(field_values[id(obj)]):
                 selected_obj = obj
                 break
@@ -288,16 +269,6 @@ class ObjectMerger:
         if isinstance(value, tuple):
             return list(value)
         return [value]
-
-    def _preview(self, value: Any) -> str:
-        if _is_empty(value):
-            return ""
-        if isinstance(value, list):
-            value = ", ".join(self._preview(v) for v in value[:3])
-        else:
-            value = getattr(value, "name", None) or str(value)
-        value = " ".join(str(value).split())
-        return value[:160]
 
     def _union_key(self, item: Any) -> str:
         """

@@ -1,0 +1,94 @@
+.provenance-modal .prov-value-cell {
+    width: 60%;
+}
+
+.provenance-modal .prov-sources {
+    min-width: 10rem;
+}
+
+.provenance-modal .prov-value {
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+
+.provenance-modal .prov-value.prov-clamped {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+}
+
+.provenance-modal .prov-toggle {
+    font-size: .8rem;
+    text-decoration: none;
+}
+
+.provenance-modal .prov-pill {
+    display: inline-block;
+    margin: 0 .25rem .25rem 0;
+    padding: .1rem .55rem;
+    border: 1px solid #dee2e6;
+    border-radius: 50rem;
+    background-color: #f1f3f5;
+    color: #495057;
+    font-size: .8rem;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.provenance-modal button.prov-pill {
+    cursor: pointer;
+    transition: border-color .15s ease-in-out;
+}
+
+.provenance-modal button.prov-pill[aria-pressed="true"] {
+    border-color: currentColor;
+}
+
+.provenance-modal .prov-text[data-source]:not([data-source=""]) {
+    padding: .05rem .35rem;
+    border-radius: .4rem;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+.provenance-modal .prov-g0 { background-color: #e7f1fb; border-color: #c5dcf3; color: #0b4f8a; }
+.provenance-modal .prov-g1 { background-color: #fdf0e1; border-color: #f2d1a6; color: #85480a; }
+.provenance-modal .prov-g2 { background-color: #e6f4ea; border-color: #bfe3c9; color: #1e6b34; }
+.provenance-modal .prov-g3 { background-color: #f1eafb; border-color: #d8c7f1; color: #5b2d91; }
+.provenance-modal .prov-g4 { background-color: #e3f5f5; border-color: #b5e2e2; color: #0e6363; }
+.provenance-modal .prov-g5 { background-color: #fbe9ee; border-color: #f2c3d0; color: #8c1d40; }
+
+.provenance-modal .prov-text.prov-g0,
+.provenance-modal .prov-text.prov-g1,
+.provenance-modal .prov-text.prov-g2,
+.provenance-modal .prov-text.prov-g3,
+.provenance-modal .prov-text.prov-g4,
+.provenance-modal .prov-text.prov-g5 {
+    color: inherit;
+}
+
+@media (max-width: 575.98px) {
+    .provenance-modal thead {
+        display: none;
+    }
+
+    .provenance-modal .prov-row {
+        display: block;
+        padding: .5rem 0;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .provenance-modal .prov-row > td {
+        display: block;
+        width: auto;
+        min-width: 0;
+        padding: .15rem 0;
+        border-bottom: 0;
+    }
+
+    .provenance-modal .prov-row > td:first-child {
+        font-weight: 600;
+    }
+}

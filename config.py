@@ -66,7 +66,7 @@ class Settings(BaseSettings):
     # Must be a real env var: gunicorn reads it before .env is loaded
     WEB_CONCURRENCY: int = 1
 
-    # Field-level merge provenance ({value, sources} per field in search results)
+    # show the field provenance modal on details pages
     ENABLE_PROVENANCE: bool = True
 
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')

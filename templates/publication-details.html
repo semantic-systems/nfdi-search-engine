@@ -13,7 +13,7 @@
 
 {% block content %}
 
-{% from 'partials/publication-details/provenance-modal.html' import provenanceModal %}
+{% from 'partials/common/provenance-modal.html' import provenanceModal %}
 
 <!-- ### main content ### -->
 <main class=''>
@@ -295,9 +295,7 @@
     </div>
 </main>
 
-{% if provenance_rows %}
 {{ provenanceModal('publication-provenance-modal', provenance_rows) }}
-{% endif %}
 
 {% endblock content %}
 

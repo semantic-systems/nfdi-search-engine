@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from config import Settings
-
 
 @dataclass(frozen=True)
 class SearchSettings:
@@ -11,7 +9,6 @@ class SearchSettings:
     first_page_n: int = 20
     lazy_load_n: int = 20
     results_ttl_s: int = 15 * 60  # 15 minutes
-    enable_provenance: bool = Settings.model_fields["ENABLE_PROVENANCE"].default
 
     @classmethod
     def from_config(cls, cfg: Dict[str, Any]) -> "SearchSettings":
@@ -23,10 +20,4 @@ class SearchSettings:
             lazy_load_n=int(
                 cfg.get("NUMBER_OF_RECORDS_TO_APPEND_ON_LAZY_LOAD", 20)),
             results_ttl_s=int(cfg.get("SEARCH_RESULTS_TTL_SECONDS", 15 * 60)),
-            enable_provenance=bool(
-                cfg.get(
-                    "ENABLE_PROVENANCE",
-                    Settings.model_fields["ENABLE_PROVENANCE"].default,
-                )
-            ),
         )

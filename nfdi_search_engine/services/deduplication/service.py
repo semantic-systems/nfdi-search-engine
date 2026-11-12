@@ -19,15 +19,10 @@ class DeduplicationService:
     duplicate objects merged according to the policies (see `nfdi_search_engine/services/deduplication/policies`).
     """
 
-    def __init__(
-        self,
-        policies: list[DedupPolicy],
-        mapping_preference: dict,
-        enable_provenance: bool = False,
-    ) -> None:
+    def __init__(self, policies: list[DedupPolicy], mapping_preference: dict) -> None:
         self.policies = policies
         self.mapping_preference = mapping_preference
-        self.merger = ObjectMerger(enable_provenance=enable_provenance)
+        self.merger = ObjectMerger()
 
     @traced(
         "deduplication_service.deduplicate",
