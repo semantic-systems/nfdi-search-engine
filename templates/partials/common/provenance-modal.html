@@ -1,0 +1,54 @@
+{% macro provenanceModal(modal_id, rows) %}
+{% if rows %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/provenance-modal.css') }}" />
+<div id="{{ modal_id }}" class="modal fade provenance-modal" tabindex="-1" aria-labelledby="{{ modal_id }}-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="{{ modal_id }}-label">Field Provenance</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Field</th>
+                            <th scope="col">Value</th>
+                            <th scope="col">Source</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                        <tr class="prov-row">
+                            <td class="text-nowrap">{{ row.label }}</td>
+                            <td class="prov-value-cell">
+                                <div class="prov-value prov-clamped" aria-live="polite">
+                                    <span class="prov-text" data-source="">{{ row.value }}</span>
+                                    {%- if row.conflict %}
+                                    {%- for source in row.sources %}
+                                    <span class="prov-text prov-g{{ source.group % 6 }} d-none" data-source="{{ loop.index0 }}">{{ source.value }}</span>
+                                    {%- endfor %}
+                                    {%- endif %}
+                                </div>
+                                <button type="button" class="btn btn-link btn-sm p-0 prov-toggle d-none">Show more</button>
+                            </td>
+                            <td class="prov-sources">
+                                {%- for source in row.sources %}
+                                {%- if row.conflict %}
+                                <button type="button" class="prov-pill prov-g{{ source.group % 6 }}" data-source="{{ loop.index0 }}" aria-pressed="false">{{ source.source }}</button>
+                                {%- else %}
+                                <span class="prov-pill">{{ source.source }}</span>
+                                {%- endif %}
+                                {%- endfor %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="{{ url_for('static', filename='js/provenance-modal.js') }}"></script>
+{% endif %}
+{% endmacro %}

@@ -10,6 +10,7 @@ import requests
 from nfdi_search_engine.common.models.objects import Article
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.common.serialization import encode_thing
+from nfdi_search_engine.common.models.search_result import SearchResult
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 from nfdi_search_engine.infra.observability.decorators import traced
@@ -254,18 +255,22 @@ class PublicationDetailsService:
 
         return publications, failed
 
-    def merge_publications(self, publications: List[Any]) -> Any:
+    def merge_publications(self, publications: List[Any]) -> Optional[SearchResult]:
         """
         Merge multiple publication objects into a single publication representation.
 
         :param publications: List of publication-like objects
         :type publications: List[Any]
-        :return: Single object with merged fields
-        :rtype: Any
+        :return: SearchResult with the merged publication and its field provenance
+        :rtype: Optional[SearchResult]
         """
         if not publications:
             return None
-        return self.merger.merge(publications, self.settings.mapping_preference["publications"])
+        return self.merger.merge(
+            publications,
+            self.settings.mapping_preference["publications"],
+            category="publications",
+        )
 
     def get_citations_for_publication(self, doi: str) -> List[Article]:
         """

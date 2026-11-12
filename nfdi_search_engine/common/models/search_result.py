@@ -36,7 +36,7 @@ class SearchResult(Generic[T]):
     provenance: dict[str, FieldProvenance] = field(default_factory=dict)
     ranking: RankingInfo = field(default_factory=RankingInfo)
 
-    # for debugging
+    # original per-source items, used by the provenance modal and for debugging
     source_items: list[Any] = field(default_factory=list, repr=False)
 
 

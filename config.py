@@ -66,6 +66,9 @@ class Settings(BaseSettings):
     # Must be a real env var: gunicorn reads it before .env is loaded
     WEB_CONCURRENCY: int = 1
 
+    # show the field provenance modal on details pages
+    ENABLE_PROVENANCE: bool = True
+
     model_config = SettingsConfigDict(env_file=find_dotenv(), env_file_encoding='utf-8', extra='ignore')
 
 def validate_env():
@@ -137,6 +140,8 @@ class Config:
         REDIS_URL = app_settings.REDIS_URL
         CELERY_BEAT_SCHEDULE_FILE = app_settings.CELERY_BEAT_SCHEDULE_FILE
         WEB_CONCURRENCY = app_settings.WEB_CONCURRENCY
+
+        ENABLE_PROVENANCE = app_settings.ENABLE_PROVENANCE
 
     SESSION_PERMANENT = False
     SESSION_TYPE = "filesystem"

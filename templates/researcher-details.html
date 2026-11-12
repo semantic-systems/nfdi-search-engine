@@ -1,6 +1,7 @@
 {% from 'partials/common/share-modal.html' import shareModal %}
 {% from 'partials/common/preview-modal.html' import previewModal %}
 {% from 'partials/common/download-modal.html' import downloadModal %}
+{% from 'partials/common/provenance-modal.html' import provenanceModal %}
 {% extends "layouts/base.html" %}
 
 {% block title %} Publication Details {% endblock title %}
@@ -154,6 +155,18 @@
                             role="button" aria-disabled="true"><i class="ps-1 pe-2 fs-5 bi-facebook"></i>Alberto Corona</a>
                     </div> -->
                 </div>
+                {% if provenance_rows %}
+                <div class="d-flex pt-4">
+                    <span class="fs-6 fw-bold">Provenance</span>
+                </div>
+                <div class="py-2">
+                    <div class="d-flex bd-highlight">
+                        <button type="button" class="btn btn-outline-dark text-dark contact-box px-2 py-1 mb-1"
+                            id="btn-view-provenance" data-bs-toggle="modal" data-bs-target="#researcher-provenance-modal">
+                            Field sources</button>
+                    </div>
+                </div>
+                {% endif %}
                 <div class="d-flex pt-4 pb-2">
                     <span class="fs-6 fw-bold">Research Areas</span>
                 </div>
@@ -338,6 +351,8 @@
         </div>
     </div>
 </main>
+
+{{ provenanceModal('researcher-provenance-modal', provenance_rows) }}
 
 {% endblock content %}
 

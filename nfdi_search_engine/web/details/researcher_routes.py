@@ -15,11 +15,11 @@ from nfdi_search_engine.web.helpers.params import parse_prefixed_and_unquote
 from nfdi_search_engine.web.decorators import set_cookies, timeit
 from nfdi_search_engine.common.models.objects import thing
 from nfdi_search_engine.common.models.request_meta import RequestMeta
-from nfdi_search_engine.common.models.search_result import unwrap
 from nfdi_search_engine.common.serialization import encode_thing
 from nfdi_search_engine.infra.store.kv_store import KVStore
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.researcher_details_service import ResearcherDetailsService
+from nfdi_search_engine.web.details.provenance import provenance_rows
 
 def _get_store() -> KVStore:
     return current_app.extensions["details_store"]
@@ -85,8 +85,8 @@ def researcher_details(source_name, orcid, ts):
     if not researchers:
         return make_response(render_template("no-results.html", type="researcher", identifier=orcid))
 
-    # merge_researchers returns a SearchResult once it is called with a category
-    merged = unwrap(researcher_details_svc.merge_researchers(researchers))
+    result = researcher_details_svc.merge_researchers(researchers)
+    merged = result.item
 
     # store snapshot for /generate-researcher-about-me
     if not isinstance(merged, thing):
@@ -104,7 +104,11 @@ def researcher_details(source_name, orcid, ts):
         ttl_s=int(current_app.config["DETAILS_SNAPSHOT_TTL_S"]),
     )
 
-    return make_response(render_template("researcher-details.html", researcher=merged))
+    return make_response(render_template(
+        "researcher-details.html",
+        researcher=merged,
+        provenance_rows=provenance_rows(result) if current_app.config["ENABLE_PROVENANCE"] else [],
+    ))
 
 
 @bp.route("/generate-researcher-about-me/<string:orcid>", methods=["GET"])

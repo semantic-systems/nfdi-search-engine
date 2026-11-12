@@ -9,6 +9,7 @@ import requests
 from nfdi_search_engine.common.models.objects import Author
 from nfdi_search_engine.common.models.details_settings import DetailsSettings
 from nfdi_search_engine.common.models.openai_settings import OpenAISettings
+from nfdi_search_engine.common.models.search_result import SearchResult
 from nfdi_search_engine.services.tracking_service import TrackingService
 from nfdi_search_engine.services.deduplication.merger import ObjectMerger
 from nfdi_search_engine.infra.observability.decorators import traced
@@ -111,18 +112,22 @@ class ResearcherDetailsService:
 
         return researchers, failed
 
-    def merge_researchers(self, researchers: List[Any]) -> Any:
+    def merge_researchers(self, researchers: List[Any]) -> Optional[SearchResult]:
         """
         Merge multiple researcher objects into a single researcher representation.
 
         :param researchers: List of researcher-like objects
         :type researchers: List[Any]
-        :return: Single object with merged fields
-        :rtype: Any
+        :return: SearchResult with the merged researcher and its field provenance
+        :rtype: Optional[SearchResult]
         """
         if not researchers:
             return None
-        return self.merger.merge(researchers, self.settings.mapping_preference["researchers"])
+        return self.merger.merge(
+            researchers,
+            self.settings.mapping_preference["researchers"],
+            category="researchers",
+        )
 
     def generate_about_me(self, researcher_details_json: dict | str) -> str:
         """
