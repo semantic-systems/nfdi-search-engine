@@ -8,10 +8,8 @@ services:
         depends_on:
             redis:
                 condition: service_healthy
-            jaeger:
-                condition: service_healthy
         networks:
-            - nfdi-search-engine_default
+            - nfdi-infra
 
     worker:
         build: .
@@ -21,10 +19,8 @@ services:
         depends_on:
             redis:
                 condition: service_healthy
-            jaeger:
-                condition: service_healthy
         networks:
-            - nfdi-search-engine_default
+            - nfdi-infra
 
     beat:
         build: .
@@ -41,11 +37,11 @@ services:
             redis:
                 condition: service_healthy
         networks:
-            - nfdi-search-engine_default
+            - nfdi-infra
 
     redis:
         image: redis:7-alpine
-        command: ["redis-server", "--maxmemory-policy", "noeviction"]
+        command: ["redis-server", "--maxmemory-policy", "noeviction", "--save", ""]
         restart: unless-stopped
         healthcheck:
             test: ["CMD", "redis-cli", "ping"]
@@ -53,31 +49,13 @@ services:
             timeout: 3s
             retries: 10
         networks:
-            - nfdi-search-engine_default
-
-    jaeger:
-        image: cr.jaegertracing.io/jaegertracing/jaeger:2.17.0
-        command: ["--config", "/etc/jaeger/config.yaml"]
-        volumes:
-            - ./jaeger-config.yaml:/etc/jaeger/config.yaml:ro
-        environment:
-            JAEGER_ES_SERVER_URLS: "${ELASTIC_SERVER}"
-            JAEGER_ES_USERNAME: "${ELASTIC_USERNAME}"
-            JAEGER_ES_PASSWORD: "${ELASTIC_PASSWORD}"
-        restart: unless-stopped
-        healthcheck:
-            test: ["CMD-SHELL", "wget -qO- http://localhost:13133/health/status >/dev/null || exit 1"]
-            interval: 10s
-            timeout: 3s
-            retries: 10
-        ports:
-            - 16686:16686
-        networks:
-            - nfdi-search-engine_default
+            - nfdi-infra
 
 volumes:
     beat-schedule:
 
 networks:
-    nfdi-search-engine_default:
-        external: false
+    # created by compose.infra.yml. The dev overlay replaces this with a local network
+    nfdi-infra:
+        name: nfdi-infra
+        external: true

@@ -29,6 +29,11 @@ extensions:
               username: "${env:JAEGER_ES_USERNAME}"
               password: "${env:JAEGER_ES_PASSWORD}"
 
+          use_ilm: true
+          use_aliases: true
+
+          create_mappings: false
+
           indices:
             index_prefix: "jaeger-main"
 

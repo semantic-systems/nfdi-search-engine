@@ -107,13 +107,45 @@ python main.py
 After starting, the web interface will be available on the configured port.
 
 ## Docker usage
-A Dockerfile and Docker Compose configuration are provided for container based deployment.
 
-### Build and run using Docker Compose
+Deployment is split into two independent compose stacks.
+
+| Stack | File | Contains | Lifecycle |
+| --- | --- | --- | --- |
+| Application | `docker-compose.yml` | web, celery worker, celery beat, redis | recreated on every deploy |
+| Infrastructure | `compose.infra.yml` | elasticsearch, kibana, jaeger, index bootstrap | provisioned once per server |
+
+Nothing in the application stack holds state that cannot be rebuilt, which is what makes it safe to recreate on every push. Elasticsearch holds tracking history and user accounts, so it is deliberately outside the deploy path: `docker compose down` on the application leaves it running.
+
+### Application
+
 ```bash
-docker compose up --build
+docker compose up --build --detach
 ```
-By default, the application is exposed on port 6000 on the host system.
+
+Exposed on port 6000. It reaches elasticsearch and jaeger over the external `nfdi-infra` network using the endpoints in `.env`, so the infrastructure stack must be running first.
+
+### Infrastructure (once per server)
+
+```bash
+docker volume create nfdi-elastic-data
+docker compose -f compose.infra.yml up --detach
+```
+
+Using an external volume, it cant be removed by accident via docker compose down -v.
+
+Required in `.env`: `ELASTIC_PASSWORD`, `KIBANA_SYSTEM_PASSWORD`, and `KIBANA_ENCRYPTION_KEY`. Kibana is published on port 5601 and is the only authenticated way into elasticsearch from outside the network; elasticsearch itself publishes no port.
+
+### Local development
+
+```bash
+docker compose -f docker-compose.yml -f docker-compose.dev.yml up --build
+```
+
+Exposed on port 6001, with the Jaeger UI on 16686.
+
+The overlay adds a throwaway elasticsearch on its own volume and its own network.
+Kibana is not included. To inspect elasticsearch locally, query it directly on port 9200, or run `compose.infra.yml` if you want the full production-shaped observability stack.
 
 ## Intended audience
 This project is intended for:
